@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Zen Theme (Minimal, Stone, Calm) */
+  --color-zen-50: #fafaf9;
+  --color-zen-100: #f5f5f4;
+  --color-zen-800: #292524;
+  --color-zen-900: #1c1917;
+
+  /* Traditional Theme (Agarwood Red, Amber, Trust) */
+  --color-trad-red-900: #450a0a;
+  --color-trad-red-950: #450a0a;
+  --color-trad-amber-50: #fffbeb;
+  --color-trad-amber-100: #fef3c7;
+  --color-trad-amber-600: #d97706;
+  --color-trad-amber-700: #b45309;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
