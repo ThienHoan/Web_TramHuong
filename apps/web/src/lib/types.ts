@@ -17,7 +17,39 @@ export interface Product {
     translations: ProductTranslation[];
 }
 
-// Helper to flatten data for frontend usage if needed, 
-// though we usually keep it nested to allow switching locales on the fly if we wanted.
 // For this project, we fetch based on current locale, so we might return a 'ResolvedProduct'
 // but let's stick to the raw shape for now to mimic the Backend response closely.
+
+export interface User {
+    id: string;
+    email: string;
+    full_name?: string;
+    phone_number?: string;
+    shipping_address?: string;
+    avatar_url?: string;
+    role: 'ADMIN' | 'STAFF_ORDER' | 'STAFF_PRODUCT' | 'CUSTOMER';
+}
+
+export interface OrderItem {
+    id: string;
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+    product?: {
+        slug: string;
+        images: string[];
+    };
+}
+
+export interface Order {
+    id: string;
+    created_at: string;
+    status: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
+    total_amount: number;
+    items: OrderItem[];
+    shipping_name: string;
+    shipping_phone: string;
+    shipping_address: string;
+}
+

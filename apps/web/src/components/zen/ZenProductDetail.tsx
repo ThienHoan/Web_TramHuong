@@ -1,7 +1,23 @@
+'use client';
+
 import ZenButton from './ZenButton';
 import ProductImage from '../ui/ProductImage';
+import { useCart } from '../providers/CartProvider';
 
 export default function ZenProductDetail({ product }: { product: any }) {
+    const { addItem } = useCart();
+
+    const handleAddToCart = () => {
+        addItem({
+            id: product.id,
+            slug: product.slug,
+            title: product.translation.title,
+            price: Number(product.price),
+            image: product.images[0]
+        });
+        alert('Artifact acquired.');
+    };
+
     return (
         <div className="bg-zen-50 min-h-screen grid grid-cols-1 md:grid-cols-2 text-zen-900 font-serif">
             <div className="bg-zen-100 flex items-center justify-center p-20 text-zen-300 italic text-4xl relative">
@@ -20,7 +36,7 @@ export default function ZenProductDetail({ product }: { product: any }) {
                 </div>
 
                 <div className="pt-8">
-                    <ZenButton>Acquire — ${product.price}</ZenButton>
+                    <ZenButton onClick={handleAddToCart}>Acquire — ${product.price}</ZenButton>
                 </div>
             </div>
         </div>

@@ -2,6 +2,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./../globals.css";
+import { AuthProvider } from '@/components/providers/AuthProvider';
+import { CartProvider } from '@/components/providers/CartProvider';
+import Header from '@/components/layout/Header';
 import { Metadata } from 'next';
 
 const geistSans = Geist({
@@ -64,7 +67,12 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>
+            <CartProvider>
+              <Header locale={locale} />
+              {children}
+            </CartProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

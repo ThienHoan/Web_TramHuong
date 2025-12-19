@@ -1,11 +1,27 @@
+'use client';
+
+import { useCart } from '../providers/CartProvider';
 import TraditionalButton from './TraditionalButton';
 import ProductImage from '../ui/ProductImage';
 
 export default function TraditionalProductDetail({ product }: { product: any }) {
+    const { addItem } = useCart();
+
+    const handleAddToCart = () => {
+        addItem({
+            id: product.id,
+            slug: product.slug,
+            title: product.translation.title,
+            price: Number(product.price),
+            image: product.images[0]
+        });
+        alert('Added to cart!');
+    };
+
     return (
         <div className="bg-trad-red-900 min-h-screen text-trad-amber-50">
             <div className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Gallery Column */}
+                {/* ... existing Gallery ... */}
                 <div className="lg:col-span-1 space-y-4">
                     <div className="aspect-[3/4] bg-black/20 border border-trad-amber-700 rounded-sm flex items-center justify-center text-trad-amber-600/50 relative">
                         <ProductImage src={product.images[0]} alt={product.translation.title} />
@@ -62,7 +78,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             <p className="text-4xl font-bold text-trad-amber-600">${product.price}</p>
                         </div>
                         <div className="flex gap-4">
-                            <TraditionalButton className="px-8 py-4 text-xl">Mua Ngay</TraditionalButton>
+                            <TraditionalButton onClick={handleAddToCart} className="px-8 py-4 text-xl">Mua Ngay</TraditionalButton>
                         </div>
                     </div>
                 </div>
