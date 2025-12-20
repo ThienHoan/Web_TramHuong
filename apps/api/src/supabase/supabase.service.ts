@@ -15,12 +15,23 @@ export class SupabaseService {
         const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
         const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
 
+        this.logger.log(`Initializing Supabase Client... URL: ${supabaseUrl}`);
+        this.logger.log(`Service Role Key Present: ${!!supabaseKey}`);
+        if (supabaseKey) {
+            this.logger.log(`Key length: ${supabaseKey.length}, Starts with: ${supabaseKey.substring(0, 5)}...`);
+        }
+
         if (!supabaseUrl || !supabaseKey) {
             this.logger.error('Supabase URL or Key is missing!');
             return;
         }
 
-        this.clientInstance = createClient(supabaseUrl, supabaseKey);
+        this.clientInstance = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        });
         this.logger.log('Supabase client initialized');
     }
 
