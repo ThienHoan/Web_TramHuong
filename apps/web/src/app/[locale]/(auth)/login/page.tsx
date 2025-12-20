@@ -51,6 +51,7 @@ export default function LoginPage() {
                     email: email.trim(),
                     password,
                     options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
                         data: {
                             full_name: email.trim().split('@')[0], // Default name from email
                             avatar_url: '',

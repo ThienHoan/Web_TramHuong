@@ -42,14 +42,17 @@ export async function getProduct(slug: string, locale: string): Promise<any> {
     }
 }
 
-export async function createOrder(items: { productId: string; quantity: number }[]) {
+export async function createOrder(items: { productId: string; quantity: number }[], shippingInfo: any) {
     try {
         const res = await fetch(`${API_URL}/orders`, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ items }),
+            body: JSON.stringify({ items, shipping_info: shippingInfo }),
         });
-        if (!res.ok) throw new Error('Failed to create order');
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || 'Failed to create order');
+        }
         return await res.json();
     } catch (e) {
         console.error("Create Order Error:", e);

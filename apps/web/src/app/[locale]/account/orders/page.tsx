@@ -45,7 +45,7 @@ export default function MyOrdersPage() {
                                     </div>
                                     <div className="text-right">
                                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100'
+                                            order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100'
                                             }`}>
                                             {order.status}
                                         </span>
@@ -53,16 +53,24 @@ export default function MyOrdersPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    {order.items.map((item: any) => (
-                                        <div key={item.id} className="flex items-center gap-4 text-sm">
-                                            <div className="w-10 h-10 bg-gray-100 relative">
-                                                <ProductImage src={item.product?.images?.[0]} alt="Product" />
+                                    {order.items?.map((item: any, index: number) => {
+                                        // Support both old structure (nested product) and new snapshot (flat)
+                                        const title = item.title || item.product?.title || item.product?.slug || 'Unknown Product';
+                                        const image = item.image || item.product?.images?.[0] || item.product?.image;
+
+                                        return (
+                                            <div key={`${order.id}-item-${index}`} className="flex items-center gap-4 text-sm">
+                                                <div className="w-10 h-10 bg-gray-100 relative overflow-hidden rounded">
+                                                    <ProductImage src={image} alt={title} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-medium">{title}</p>
+                                                    <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                                                </div>
+                                                <span>${(item.price || 0) * item.quantity}</span>
                                             </div>
-                                            <span className="flex-1">{item.product?.slug || 'Unknown Product'}</span>
-                                            <span>x{item.quantity}</span>
-                                            <span>${item.subtotal}</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

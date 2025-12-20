@@ -18,7 +18,7 @@ export default function AdminDashboardPage() {
         if (!authLoading) {
             if (!user) {
                 router.push('/login');
-            } else if (role !== 'ADMIN' && role !== 'STAFF_ORDER') {
+            } else if (role !== 'ADMIN' && role !== 'STAFF') {
                 router.push('/');
             } else if (session) {
                 setAccessToken(session.access_token);

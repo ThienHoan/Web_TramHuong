@@ -47,14 +47,18 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {products.slice(0, 6).map(product => (
+                    {products.slice(0, 6).map((product, index) => (
                         <div key={product.id} className="bg-trad-red-950 border border-trad-amber-700 p-4 rounded-sm hover:-translate-y-1 transition-transform group">
                             <div className="aspect-[4/3] bg-black/40 mb-4 border border-trad-amber-900 relative">
                                 <span className="absolute top-2 left-2 bg-trad-amber-600 text-trad-red-950 text-xs font-bold px-2 py-1 z-10">
                                     HOT
                                 </span>
                                 { /* Use local fallback but allow onError to handle it if src is valid */}
-                                <ProductImage src={product.images[0]?.startsWith('http') ? product.images[0] : '/placeholder-bracelet.jpg'} alt={product.translation.title} />
+                                <ProductImage
+                                    src={product.images[0]?.startsWith('http') ? product.images[0] : '/placeholder-bracelet.jpg'}
+                                    alt={product.translation.title}
+                                    priority={index < 3} // Eager load first 3 images for LCP optimization
+                                />
                             </div>
                             <h3 className="font-bold text-lg mb-2 text-trad-amber-50 line-clamp-1">{product.translation.title}</h3>
                             <div className="text-xs text-trad-amber-200/60 mb-3 space-y-1 font-mono">

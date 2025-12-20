@@ -6,7 +6,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
-type Role = 'ADMIN' | 'STAFF_ORDER' | 'STAFF_PRODUCT' | 'CUSTOMER';
+type Role = 'ADMIN' | 'STAFF' | 'CUSTOMER';
 
 interface AuthContextType {
     user: User | null;
@@ -36,7 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .single();
 
             if (data) {
+                console.log('AuthProvider: Fetched role', data.role);
                 setRole(data.role as Role);
+            } else {
+                console.log('AuthProvider: No role found for user', userId, error);
             }
         };
 
@@ -71,7 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signOut = async () => {
         await supabase.auth.signOut();
-        router.refresh();
+        // Force a hard refresh to clear any client-side state/cache
+        window.location.href = '/';
     };
 
     return (

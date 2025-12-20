@@ -9,6 +9,10 @@ const nextConfig: import('next').NextConfig = {
                 protocol: 'https' as const,
                 hostname: 'images.unsplash.com',
             },
+            {
+                protocol: 'https' as const,
+                hostname: 'rzbcqbbkjbylvdpoixhp.supabase.co',
+            },
         ],
     },
 };
