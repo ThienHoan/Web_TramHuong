@@ -17,6 +17,8 @@ export default function AdminLayout({
     const tabs = [
         { name: 'Orders', href: '/admin/dashboard' },
         { name: 'Products', href: '/admin/products' },
+        { name: 'Categories', href: '/admin/categories' },
+        { name: 'Users', href: '/admin/users' },
     ];
 
     return (

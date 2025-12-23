@@ -47,8 +47,8 @@ export default function Header({ locale }: { locale: string }) {
                             {menuOpen && (
                                 <div className="absolute right-0 top-full mt-2 w-48 bg-white text-black text-sm rounded shadow-lg py-1">
                                     <Link href="/account/orders" className="block px-4 py-2 hover:bg-gray-100">My Orders</Link>
-                                    {(role === 'ADMIN' || role === 'STAFF_ORDER') && (
-                                        <Link href="/admin/dashboard" className="block px-4 py-2 hover:bg-gray-100 text-red-600">Admin Dashboard</Link>
+                                    {(role === 'ADMIN' || role === 'STAFF') && (
+                                        <Link href="/admin/dashboard" className="block px-4 py-2 hover:bg-gray-100 text-red-600 font-bold">Admin Dashboard</Link>
                                     )}
                                     <button
                                         onClick={() => signOut()}

@@ -4,8 +4,11 @@ import { useCart } from '../providers/CartProvider';
 import TraditionalButton from './TraditionalButton';
 import ProductImage from '../ui/ProductImage';
 
+import { useCurrency } from '@/hooks/useCurrency';
+
 export default function TraditionalProductDetail({ product }: { product: any }) {
     const { addItem } = useCart();
+    const { formatPrice } = useCurrency();
 
     const handleAddToCart = () => {
         addItem({
@@ -75,11 +78,22 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                     <div className="bg-trad-amber-50/5 p-6 rounded flex items-center justify-between border border-trad-amber-700/30">
                         <div>
                             <p className="text-xs text-trad-amber-200 mb-1">Giá bán niêm yết:</p>
-                            <p className="text-4xl font-bold text-trad-amber-600">${product.price}</p>
+                            <p className="text-4xl font-bold text-trad-amber-600">{formatPrice(Number(product.price))}</p>
                         </div>
                         <div className="flex gap-4">
-                            <TraditionalButton onClick={handleAddToCart} className="px-8 py-4 text-xl">Mua Ngay</TraditionalButton>
+                            {product.quantity > 0 ? (
+                                <TraditionalButton onClick={handleAddToCart} className="px-8 py-4 text-xl">Mua Ngay</TraditionalButton>
+                            ) : (
+                                <button disabled className="px-8 py-4 text-xl bg-gray-500 text-white cursor-not-allowed font-bold border border-gray-600">
+                                    Hết Hàng
+                                </button>
+                            )}
                         </div>
+                        {product.quantity > 0 && product.quantity < 5 && (
+                            <div className="absolute bottom-20 right-6 text-red-500 text-sm font-bold animate-pulse">
+                                Chỉ còn {product.quantity} sản phẩm!
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

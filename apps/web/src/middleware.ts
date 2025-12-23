@@ -43,47 +43,33 @@ export async function middleware(request: NextRequest) {
     console.log(`[Middleware] Path: ${pathname}, User: ${user?.email || 'None'}`);
 
     if (isAdminRoute) {
-        if (!user) {
-            console.log('[Middleware] No user, redirecting to Login');
-            const locale = pathname.match(/^\/(vi|en)/)?.[1] || 'en';
-            const logUrl = request.nextUrl.clone();
-            logUrl.pathname = `/${locale}/login`;
+        let hasAccess = false;
 
-            // Create redirect response
-            const response = NextResponse.redirect(logUrl);
+        if (user) {
+            // Fetch role
+            const { data: userData, error: roleError } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single();
 
-            // CRITICAL: Copy cookies from supabaseResponse (which has updated session) to the redirect response
-            // This prevents "Login Loop" where token is refreshed but redirect loses the new cookie
-            supabaseResponse.cookies.getAll().forEach(cookie => {
-                response.cookies.set(cookie.name, cookie.value, cookie);
-            });
+            const role = userData?.role;
+            console.log(`[Middleware] Role Check: ${role} | Error: ${roleError?.message}`);
 
-            return response;
+            if (role === 'ADMIN' || role === 'STAFF') {
+                hasAccess = true;
+            }
+        } else {
+            console.log('[Middleware] No user found for Admin route');
         }
 
-        // Fetch role
-        const { data: userData, error: roleError } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        const role = userData?.role;
-        console.log(`[Middleware] Role Check: ${role} | Error: ${roleError?.message}`);
-
-        // Strict check: Must be ADMIN or STAFF
-        if (role !== 'ADMIN' && role !== 'STAFF') {
-            console.log('[Middleware] Unauthorized Role, redirecting Home');
+        if (!hasAccess) {
+            console.log('[Middleware] Unauthorized Admin Access -> Hiding with 404');
             const locale = pathname.match(/^\/(vi|en)/)?.[1] || 'en';
-            const homeUrl = request.nextUrl.clone();
-            homeUrl.pathname = `/${locale}/`;
-
-            const response = NextResponse.redirect(homeUrl);
-            // Copy cookies to redirect response
-            supabaseResponse.cookies.getAll().forEach(cookie => {
-                response.cookies.set(cookie.name, cookie.value, cookie);
-            });
-            return response;
+            // Rewrite to a non-existent path to trigger 404
+            const url = request.nextUrl.clone();
+            url.pathname = `/${locale}/404`;
+            return NextResponse.rewrite(url);
         }
     }
 

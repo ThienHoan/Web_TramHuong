@@ -14,6 +14,9 @@ const app_service_1 = require("./app.service");
 const supabase_module_1 = require("./supabase/supabase.module");
 const products_module_1 = require("./products/products.module");
 const orders_module_1 = require("./orders/orders.module");
+const categories_module_1 = require("./categories/categories.module");
+const cart_module_1 = require("./cart/cart.module");
+const users_module_1 = require("./users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -24,6 +27,9 @@ exports.AppModule = AppModule = __decorate([
             supabase_module_1.SupabaseModule,
             products_module_1.ProductsModule,
             orders_module_1.OrdersModule,
+            categories_module_1.CategoriesModule,
+            cart_module_1.CartModule,
+            users_module_1.UsersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

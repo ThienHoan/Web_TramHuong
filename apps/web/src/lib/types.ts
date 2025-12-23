@@ -53,3 +53,17 @@ export interface Order {
     shipping_address: string;
 }
 
+export interface CategoryTranslation {
+    locale: 'en' | 'vi';
+    name: string;
+    description: string;
+}
+
+export interface Category {
+    id: string;
+    slug: string;
+    is_active: boolean;
+    translations?: CategoryTranslation[]; // Helper for frontend
+    translation?: CategoryTranslation;   // Flattened structure
+}
+

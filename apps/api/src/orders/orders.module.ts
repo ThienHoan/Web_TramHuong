@@ -3,9 +3,12 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
+import { CartModule } from '../cart/cart.module';
+
 @Module({
-    imports: [SupabaseModule],
+    imports: [SupabaseModule, CartModule],
     controllers: [OrdersController],
     providers: [OrdersService],
+    exports: [OrdersService], // Export for UsersModule
 })
 export class OrdersModule { }

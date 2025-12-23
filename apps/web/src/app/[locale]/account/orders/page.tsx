@@ -7,11 +7,14 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 
+import { useCurrency } from '@/hooks/useCurrency';
+
 export default function MyOrdersPage() {
     const { session, user, loading: authLoading } = useAuth();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const { formatPrice } = useCurrency();
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -49,7 +52,7 @@ export default function MyOrdersPage() {
                                             }`}>
                                             {order.status}
                                         </span>
-                                        <p className="font-bold mt-1">${order.total_amount}</p>
+                                        <p className="font-bold mt-1">{formatPrice(order.total_amount || order.total)}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -67,7 +70,7 @@ export default function MyOrdersPage() {
                                                     <p className="font-medium">{title}</p>
                                                     <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
                                                 </div>
-                                                <span>${(item.price || 0) * item.quantity}</span>
+                                                <span>{formatPrice((item.price || 0) * item.quantity)}</span>
                                             </div>
                                         );
                                     })}

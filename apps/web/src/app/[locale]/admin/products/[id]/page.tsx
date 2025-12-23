@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import ProductImage from '@/components/ui/ProductImage';
+import { Category } from '@/lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -13,12 +14,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     // Form State
     const [slug, setSlug] = useState('');
     const [price, setPrice] = useState('');
-    const [category, setCategory] = useState('bracelet');
-    const [style, setStyle] = useState('zen');
+    const [category, setCategory] = useState('');
+    const [style, setStyle] = useState('both');
+    const [quantity, setQuantity] = useState('0');
     const [titleEn, setTitleEn] = useState('');
     const [descEn, setDescEn] = useState('');
     const [titleVi, setTitleVi] = useState('');
@@ -29,15 +32,26 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     useEffect(() => {
         if (!session) return;
 
-        fetch(`${API_URL}/products/admin/${id}`, {
+        // Fetch Categories first
+        fetch(`${API_URL}/categories`, {
             headers: { 'Authorization': `Bearer ${session.access_token}` }
+        })
+            .then(res => res.json())
+            .then(data => setCategories(data))
+            .catch(err => console.error(err));
+
+        // Fetch Product
+        fetch(`${API_URL}/products/admin/${id}`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` },
+            cache: 'no-store'
         })
             .then(res => res.json())
             .then(data => {
                 setSlug(data.slug);
                 setPrice(data.price.toString());
-                setCategory(data.category);
-                setStyle(data.style || 'zen');
+                setQuantity(data.quantity?.toString() || '0');
+                setCategory(data.category || (categories.length > 0 ? categories[0].slug : ''));
+                setStyle(data.style_affinity || 'both');
                 // Support images array primarily
                 const img = data.images && data.images.length > 0 ? data.images[0] : data.image;
                 setCurrentImage(img || '');
@@ -66,16 +80,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         setSubmitting(true);
 
         try {
-            // Check if using FormData or JSON
-            // Since controller expects Multipart if file is present, or maybe JSON if not?
-            // Usually simpler to always use FormData for this endpoint if it supports it, 
-            // but our backend update logic might handle it.
-            // Let's inspect backend: It uses FileInterceptor.
-            // If we don't send a file, we can still send fields.
-
             const formData = new FormData();
             formData.append('slug', slug);
             formData.append('price', price);
+            formData.append('quantity', quantity);
             formData.append('category', category);
             formData.append('style', style);
             formData.append('title_en', titleEn);
@@ -136,11 +144,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">Category</label>
-                        <select className="w-full border p-2 rounded" value={category} onChange={e => setCategory(e.target.value)}>
-                            <option value="bracelet">Bracelet</option>
-                            <option value="incense">Incense</option>
-                            <option value="oil">Essential Oil</option>
-                            <option value="statue">Statue</option>
+                        <select
+                            className="w-full border p-2 rounded capitalize"
+                            value={category}
+                            onChange={e => setCategory(e.target.value)}
+                            required
+                        >
+                            <option value="" disabled>Select Category</option>
+                            {categories.map(cat => {
+                                const name = cat.translations?.find(t => t.locale === 'en')?.name || cat.slug;
+                                return (
+                                    <option key={cat.id} value={cat.slug}>{name}</option>
+                                );
+                            })}
                         </select>
                     </div>
                     <div>
@@ -148,7 +164,23 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <select className="w-full border p-2 rounded" value={style} onChange={e => setStyle(e.target.value)}>
                             <option value="zen">Zen (Minimal)</option>
                             <option value="traditional">Traditional (Vietnam)</option>
+                            <option value="both">Both</option>
                         </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Stock Quantity</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            className="w-full border p-2 rounded"
+                            value={quantity}
+                            onChange={e => setQuantity(e.target.value)}
+                            required
+                            min="0"
+                        />
                     </div>
                 </div>
 

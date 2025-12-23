@@ -1,36 +1,77 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { CartService } from '../cart/cart.service';
 
 @Injectable()
 export class OrdersService {
-    constructor(private readonly supabaseService: SupabaseService) { }
+    constructor(
+        private readonly supabaseService: SupabaseService,
+        private readonly cartService: CartService
+    ) { }
 
     private get client() {
         return this.supabaseService.getClient();
     }
 
-    async findAll() {
-        const { data, error } = await this.client
+    async findAll(options?: { page?: number; limit?: number }) {
+        const page = options?.page || 1;
+        const limit = options?.limit || 20;
+
+        const { data, count, error } = await this.client
             .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range((page - 1) * limit, page * limit - 1);
 
         if (error) throw new BadRequestException(error.message);
-        return data;
+
+        return {
+            data,
+            meta: {
+                total: count,
+                page,
+                limit,
+                last_page: Math.ceil((count || 0) / limit) || 1
+            }
+        };
     }
 
-    async findAllForUser(userId: string) {
-        const { data, error } = await this.client
+    async findAllForUser(userId: string, options?: { page?: number; limit?: number }) {
+        const page = options?.page || 1;
+        const limit = options?.limit || 20;
+
+        const { data, count, error } = await this.client
             .from('orders')
-            .select('*')
+            .select('*', { count: 'exact' })
             .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .range((page - 1) * limit, page * limit - 1);
 
         if (error) throw new BadRequestException(error.message);
+
+        return {
+            data,
+            meta: {
+                total: count,
+                page,
+                limit,
+                last_page: Math.ceil((count || 0) / limit) || 1
+            }
+        };
+    }
+
+    async findOne(id: string) {
+        const { data, error } = await this.client
+            .from('orders')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw new BadRequestException('Order not found');
         return data;
     }
 
-    async create(userId: string, items: any[], shippingInfo: any) {
+    async create(userId: string, items: any[], shippingInfo: any, paymentMethod: string = 'cod') {
         if (!items || items.length === 0) {
             throw new BadRequestException('Items are required');
         }
@@ -38,61 +79,178 @@ export class OrdersService {
             throw new BadRequestException('Shipping info is required');
         }
 
-        // Calculate total (Fetching prices from DB to be secure)
-        // For now, assuming items have productId. We should fetch fresh prices.
+        // Fetch products to validate and get prices
         const productIds = items.map(i => i.productId);
         const { data: products, error: productsError } = await this.client
             .from('products')
             .select(`
-                id, 
-                price, 
-                slug, 
+                id,
+                price,
+                slug,
                 images,
+                is_active,
+                quantity,
                 translations:product_translations(title, locale)
             `)
             .in('id', productIds);
 
         if (productsError) {
-            console.error('Error fetching products during order creation:', productsError);
+            console.error('Error fetching products:', productsError);
             throw new BadRequestException('Database error while fetching products');
+        }
+
+        // 1. Validate Stock & Active Status
+        for (const item of items) {
+            const product = products?.find(p => p.id === item.productId);
+            if (!product) continue;
+
+            // Check Active
+            if (!product.is_active) {
+                const title = product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                throw new BadRequestException(`Product '${title}' is currently unavailable.`);
+            }
+
+            // Check Stock
+            if (product.quantity < item.quantity) {
+                const title = product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                throw new BadRequestException(`Product '${title}' is out of stock (Only ${product.quantity} left).`);
+            }
         }
 
         let total = 0;
         const enrichedItems = items.map(item => {
             const product = products?.find(p => p.id === item.productId);
             if (!product) {
-                console.error(`Product ID ${item.productId} not found in DB query. Available IDs:`, products?.map(p => p.id));
-                throw new BadRequestException(`Product '${item.productId}' is unavailable (Archived or Deleted). Please remove it from your cart.`);
+                throw new BadRequestException(`One or more items in your cart are invalid.`);
             }
 
             const itemTotal = product.price * item.quantity;
             total += itemTotal;
 
-            // Get English title as default snapshot (or first available)
             const title = product.translations?.find((t: any) => t.locale === 'en')?.title
                 || product.translations?.[0]?.title
                 || product.slug;
-
             const image = product.images?.[0] || null;
 
             return {
                 ...item,
-                price: product.price, // Snapshot price
+                price: product.price,
                 slug: product.slug,
-                title,   // Snapshot title
-                image    // Snapshot image
+                title,
+                image
             };
         });
 
-        const { data, error } = await this.client
+        // 2. Insert Order
+        const { data: orderData, error: orderError } = await this.client
             .from('orders')
             .insert({
                 user_id: userId,
                 status: 'PENDING',
                 total,
                 items: enrichedItems,
-                shipping_info: shippingInfo
+                shipping_info: shippingInfo,
+                payment_method: paymentMethod,
+                payment_status: 'pending' // Default pending
             })
+            .select()
+            .single();
+
+        if (orderError) throw new BadRequestException(orderError.message);
+
+        // 3. Decrement Stock
+        for (const item of items) {
+            const product = products?.find(p => p.id === item.productId);
+            if (product) {
+                const newQty = product.quantity - item.quantity;
+                await this.client
+                    .from('products')
+                    .update({ quantity: newQty })
+                    .eq('id', item.productId);
+            }
+        }
+
+        // 4. Clear Cart
+        await this.cartService.clearCart(userId);
+
+        return orderData;
+    }
+
+    async updateStatus(id: string, status: string) {
+        const allowedStatuses = ['PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELED'];
+        if (!allowedStatuses.includes(status)) {
+            throw new BadRequestException('Invalid status');
+        }
+
+        // Fetch current order with items to handle stock logic
+        const { data: currentOrder } = await this.client
+            .from('orders')
+            .select('status, items') // Fetch items too
+            .eq('id', id)
+            .single();
+
+        if (!currentOrder) throw new BadRequestException('Order not found');
+
+        const currentStatus = currentOrder.status;
+
+        // 1. STRICT TRANSITION CHECK
+        // Define allowed next steps for each status
+        const validTransitions: Record<string, string[]> = {
+            'PENDING': ['PAID', 'CANCELED'],
+            'PAID': ['SHIPPED', 'CANCELED'],
+            'SHIPPED': ['COMPLETED'],
+            'COMPLETED': [], // Terminal
+            'CANCELED': []   // Terminal
+        };
+
+        const allowedNext = validTransitions[currentStatus] || [];
+
+        // Allow staying in same status (idempotent), otherwise must be in allowed list
+        if (currentStatus !== status && !allowedNext.includes(status)) {
+            throw new BadRequestException(`Invalid status transition from ${currentStatus} to ${status}`);
+        }
+
+        // STOCK REVERSION LOGIC
+        // If moving TO Canceled FROM non-canceled
+        if (status === 'CANCELED' && currentOrder.status !== 'CANCELED') {
+            console.log(`Canceling Order ${id}: Returning stock...`);
+            const items = currentOrder.items;
+            if (Array.isArray(items)) {
+                for (const item of items) {
+                    if (item.productId && item.quantity) {
+                        // Fetch current product to get latest quantity
+                        const { data: product } = await this.client
+                            .from('products')
+                            .select('quantity')
+                            .eq('id', item.productId)
+                            .single();
+
+                        if (product) {
+                            await this.client
+                                .from('products')
+                                .update({ quantity: product.quantity + item.quantity })
+                                .eq('id', item.productId);
+                            console.log(`Returned ${item.quantity} to Product ${item.productId}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // SYNC LOGIC: If Admin sets status to PAID, ensure payment_status is 'paid'
+        let paymentStatusUpdate = {};
+        if (status === 'PAID') {
+            paymentStatusUpdate = { payment_status: 'paid' };
+        }
+
+        // Prevent reverting a paid order to pending/unpaid via simple status change if it was already paid?
+        // Actually, if admin forces status to 'PENDING', maybe they INTEND to revert?
+        // For now, let's just ensure if they say PAID, we set paid.
+
+        const { data, error } = await this.client
+            .from('orders')
+            .update({ status, ...paymentStatusUpdate })
+            .eq('id', id)
             .select()
             .single();
 
@@ -100,28 +258,61 @@ export class OrdersService {
         return data;
     }
 
-    async updateStatus(id: string, status: string) {
-        // Validate status
-        const allowedStatuses = ['PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELED'];
-        if (!allowedStatuses.includes(status)) {
-            throw new BadRequestException('Invalid status');
+    async verifyPayment(content: string, amount: number, transactionCode: string) {
+        // Regex for UUID (Standard)
+        const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+        let match = content.match(uuidRegex);
+
+        let orderId = match ? match[0] : null;
+
+        // Fallback: Check for UUID without hyphens (some banks strip special chars)
+        if (!orderId) {
+            const hex32Regex = /[0-9a-f]{32}/i;
+            const matchHex = content.match(hex32Regex);
+            if (matchHex) {
+                const raw = matchHex[0];
+                // Reconstruct UUID: 8-4-4-4-12
+                orderId = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
+            }
         }
 
-        // Check current status if needed (e.g. prevent reviving CANCELED)
-        const { data: currentOrder } = await this.client.from('orders').select('status').eq('id', id).single();
-
-        if (currentOrder?.status === 'CANCELED' && status !== 'CANCELED') {
-            throw new BadRequestException('Cannot update a CANCELED order');
+        if (!orderId) {
+            console.log('Webhook ignored: No UUID found in content', content);
+            return { success: false, reason: 'No Order ID found' };
         }
 
-        const { data, error } = await this.client
+        const { data: order, error } = await this.client
             .from('orders')
-            .update({ status })
-            .eq('id', id)
-            .select()
+            .select('*')
+            .eq('id', orderId)
             .single();
 
-        if (error) throw new BadRequestException(error.message);
-        return data;
+        if (error || !order) {
+            console.log('Webhook ignored: Order not found', orderId);
+            return { success: false, reason: 'Order not found' };
+        }
+
+        // Idempotency Check
+        if (order.payment_status === 'paid') {
+            return { success: true, message: 'Already paid' };
+        }
+
+        // Amount Check 
+        if (amount < order.total) {
+            console.log(`Webhook Warning: Amount mismatch for ${orderId}. Expected ${order.total}, got ${amount}`);
+            return { success: false, reason: 'Amount mismatch' };
+        }
+
+        // Update Order
+        await this.client
+            .from('orders')
+            .update({
+                payment_status: 'paid',
+                transaction_code: transactionCode,
+                status: 'PAID'
+            })
+            .eq('id', orderId);
+
+        return { success: true, orderId };
     }
 }

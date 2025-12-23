@@ -3,9 +3,11 @@
 import ZenButton from './ZenButton';
 import ProductImage from '../ui/ProductImage';
 import { useCart } from '../providers/CartProvider';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function ZenProductDetail({ product }: { product: any }) {
     const { addItem } = useCart();
+    const { formatPrice } = useCurrency();
 
     const handleAddToCart = () => {
         addItem({
@@ -36,7 +38,16 @@ export default function ZenProductDetail({ product }: { product: any }) {
                 </div>
 
                 <div className="pt-8">
-                    <ZenButton onClick={handleAddToCart}>Acquire — ${product.price}</ZenButton>
+                    {product.quantity > 0 ? (
+                        <ZenButton onClick={handleAddToCart}>Acquire — {formatPrice(Number(product.price))}</ZenButton>
+                    ) : (
+                        <button disabled className="px-8 py-3 bg-gray-300 text-gray-500 cursor-not-allowed font-serif tracking-widest uppercase text-sm border border-gray-400">
+                            Sold Out
+                        </button>
+                    )}
+                    {product.quantity > 0 && product.quantity < 5 && (
+                        <p className="text-xs text-red-800 mt-2 italic">Only {product.quantity} left in archive.</p>
+                    )}
                 </div>
             </div>
         </div>

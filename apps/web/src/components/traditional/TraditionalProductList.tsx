@@ -2,7 +2,10 @@ import { Link } from '@/i18n/routing';
 import TraditionalButton from './TraditionalButton';
 import ProductImage from '../ui/ProductImage';
 
+import { useCurrency } from '@/hooks/useCurrency';
+
 export default function TraditionalProductList({ products }: { products: any[] }) {
+    const { formatPrice } = useCurrency();
     return (
         <div className="bg-trad-red-900 min-h-screen p-8 text-trad-amber-50">
             <div className="max-w-7xl mx-auto">
@@ -36,7 +39,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 </p>
 
                                 <div className="flex items-center justify-between mt-auto">
-                                    <span className="text-xl font-bold text-trad-amber-600">${product.price}</span>
+                                    <span className="text-xl font-bold text-trad-amber-600">{formatPrice(Number(product.price))}</span>
                                     <Link href={`/products/${product.slug}`}>
                                         <TraditionalButton className="text-sm py-2 px-4 shadow-none">Chi Tiết</TraditionalButton>
                                     </Link>

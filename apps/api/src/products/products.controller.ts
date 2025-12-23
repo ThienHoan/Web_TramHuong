@@ -11,9 +11,26 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Get()
-    async findAll(@Query('locale') locale: string, @Query('include_inactive') include_inactive?: string) {
+    async findAll(
+        @Query('locale') locale: string,
+        @Query('include_inactive') include_inactive?: string,
+        @Query('search') search?: string,
+        @Query('category') category?: string,
+        @Query('sort') sort?: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('stock_status') stock_status?: string,
+    ) {
         const validLocale = locale === 'vi' ? 'vi' : 'en';
-        return this.productsService.findAll(validLocale, { include_inactive: include_inactive === 'true' });
+        return this.productsService.findAll(validLocale, {
+            include_inactive: include_inactive === 'true',
+            search,
+            category,
+            sort,
+            page: page ? parseInt(page) : 1,
+            limit: limit ? parseInt(limit) : 20,
+            stock_status
+        });
     }
 
     @Get(':slug')
@@ -58,5 +75,29 @@ export class ProductsController {
     @Roles(Role.ADMIN, Role.STAFF)
     async remove(@Param('id') id: string) {
         return this.productsService.softDelete(id);
+    }
+
+    @Patch('bulk/update')
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN, Role.STAFF)
+    async bulkUpdate(@Body() body: { ids: string[], action: 'delete' | 'archive' | 'restore' | 'update_category', payload?: any }) {
+        return this.productsService.bulkUpdate(body.ids, body.action, body.payload);
+    }
+
+    @Get('data/export')
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN, Role.STAFF)
+    async exportData(
+        @Query('locale') locale: string,
+        @Query('search') search?: string,
+        @Query('category') category?: string,
+        @Query('stock_status') stock_status?: string,
+        @Query('include_inactive') include_inactive?: string,
+    ) {
+        const validLocale = locale === 'vi' ? 'vi' : 'en';
+        const csv = await this.productsService.exportProducts(validLocale, {
+            search, category, stock_status, include_inactive: include_inactive === 'true'
+        });
+        return { csv };
     }
 }
