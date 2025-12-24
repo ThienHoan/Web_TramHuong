@@ -88,7 +88,7 @@ export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
                 </div>
             </td>
             <td className="p-4 align-top font-bold text-gray-900">
-                {formatPrice(order.total)}
+                {formatPrice(Number(order.total))}
             </td>
             <td className="p-4 align-top">
                 <button

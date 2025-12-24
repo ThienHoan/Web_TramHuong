@@ -15,7 +15,8 @@ export default function AdminLayout({
     const pathname = usePathname();
 
     const tabs = [
-        { name: 'Orders', href: '/admin/dashboard' },
+        { name: 'Dashboard', href: '/admin/dashboard' },
+        { name: 'Orders', href: '/admin/orders' },
         { name: 'Products', href: '/admin/products' },
         { name: 'Categories', href: '/admin/categories' },
         { name: 'Users', href: '/admin/users' },

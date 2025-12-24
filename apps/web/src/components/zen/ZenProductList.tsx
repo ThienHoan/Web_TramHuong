@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/routing';
 import ZenButton from './ZenButton';
 import ProductImage from '../ui/ProductImage';
+import WishlistButton from '../product/WishlistButton';
 
 export default function ZenProductList({ products }: { products: any[] }) {
     return (
@@ -9,8 +10,12 @@ export default function ZenProductList({ products }: { products: any[] }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
                 {products.map((product) => (
                     <div key={product.id} className="group cursor-pointer">
+
                         <div className="bg-zen-100 aspect-square mb-6 flex items-center justify-center text-zen-300 italic relative">
                             <ProductImage src={product.images[0]} alt={product.translation.title} />
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <WishlistButton productId={product.id} className="text-zen-700 hover:text-red-500" />
+                            </div>
                         </div>
                         <div className="text-center space-y-2">
                             <h2 className="text-xl font-light">{product.translation.title}</h2>

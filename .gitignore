@@ -23,7 +23,7 @@ dist/              # NestJS build output
 .next/             # Next.js build output
 out/               # Next.js static export
 coverage/          # Test coverage
-*dist/  
+dist/
 
 # IDE / editor configs
 .vscode/

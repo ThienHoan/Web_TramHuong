@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./../globals.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
+import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import Header from '@/components/layout/Header';
 import { Metadata } from 'next';
 
@@ -69,8 +70,10 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <CartProvider>
-              <Header locale={locale} />
-              {children}
+              <WishlistProvider>
+                <Header locale={locale} />
+                {children}
+              </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </NextIntlClientProvider>

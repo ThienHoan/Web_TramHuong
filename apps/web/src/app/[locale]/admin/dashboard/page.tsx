@@ -1,141 +1,137 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { setAccessToken } from '@/lib/api-client';
-import { useAuth } from '@/components/providers/AuthProvider';
-import { useRouter } from '@/i18n/routing';
-import OrderRow from '@/components/admin/OrderRow';
-import Pagination from '@/components/ui/Pagination';
-import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
+import { useState } from 'react';
+import { useAnalytics } from '../../../../hooks/useAnalytics';
+import { useCurrency } from '../../../../hooks/useCurrency';
+import DashboardCharts from '../../../../components/admin/DashboardCharts';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+export default function AdminDashboard() {
+    const [range, setRange] = useState('7d');
+    const { data, isLoading, error } = useAnalytics(range);
+    const { formatPrice } = useCurrency();
 
-export default function AdminDashboardPage() {
-    const { session, user, role, loading: authLoading } = useAuth();
-    const [orders, setOrders] = useState<any[]>([]);
-    const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-
-    const fetchOrders = (page = 1) => {
-        if (!session) return;
-        setLoading(true);
-        fetch(`${API_URL}/orders?page=${page}&limit=${ADMIN_PAGE_LIMIT}`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.data) {
-                    setOrders(data.data);
-                    setMeta(data.meta);
-                } else {
-                    setOrders([]); // Fallback
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    };
-
-    useEffect(() => {
-        if (!authLoading) {
-            if (!user) {
-                router.push('/login');
-            } else if (role !== 'ADMIN' && role !== 'STAFF') {
-                router.push('/');
-            } else if (session) {
-                setAccessToken(session.access_token);
-                fetchOrders(1);
-            }
-        }
-    }, [user, session, role, authLoading, router]);
-
-    const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-        if (!session) return;
-        try {
-            const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            if (res.ok) {
-                const updatedOrder = await res.json();
-                setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: updatedOrder.status } : o));
-            } else {
-                const err = await res.json();
-                alert(`Failed: ${err.message}`);
-            }
-        } catch (e) {
-            alert('Connection Error updating status');
-        }
-    };
-
-    if (loading) return (
+    if (isLoading) return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900"></div>
         </div>
     );
 
+    if (error) return (
+        <div className="flex items-center justify-center min-h-screen text-red-500">
+            Failed to load dashboard data. Please try again.
+        </div>
+    );
+
+    if (!data) return null;
+
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 pt-24 text-black">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-end mb-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex justify-between items-center sm:flex-row flex-col gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-                        <p className="text-gray-500 mt-1">Manage and track customer orders.</p>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-amber-900 bg-clip-text text-transparent">
+                            Dashboard Overview
+                        </h1>
+                        <p className="text-gray-500 mt-1">Track your business performance throughout the selected period.</p>
                     </div>
 
-                    <span className="bg-black text-white px-3 py-1 text-xs font-bold tracking-widest uppercase">
-                        {role} Mode
-                    </span>
+                    {/* Time Range Filter */}
+                    <div className="flex bg-white rounded-lg shadow-sm p-1 border border-gray-200">
+                        {['7d', '30d', 'all'].map((r) => (
+                            <button
+                                key={r}
+                                onClick={() => setRange(r)}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${range === r
+                                        ? 'bg-amber-900 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {r === '7d' ? 'Last 7 Days' : r === '30d' ? 'Last 30 Days' : 'All Time'}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-100">
+                {/* Top Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <MetricCard
+                        title="Total Revenue"
+                        value={formatPrice(data.summary.totalRevenue)}
+                        icon="💰"
+                        color="bg-emerald-50 text-emerald-700 border-emerald-100"
+                    />
+                    <MetricCard
+                        title="Total Orders"
+                        value={data.summary.totalOrders}
+                        icon="📦"
+                        color="bg-blue-50 text-blue-700 border-blue-100"
+                    />
+                    <MetricCard
+                        title="Pending Orders"
+                        value={data.summary.pendingOrders}
+                        icon="⏳"
+                        color="bg-amber-50 text-amber-700 border-amber-100"
+                    />
+                </div>
+
+                {/* Charts Section */}
+                <DashboardCharts data={data} />
+
+                {/* Top Products Table */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-gray-800">Top Selling Products</h3>
+                        <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                            Based on {range === '7d' ? 'Last 7 Days' : range === 'all' ? 'All Time' : 'Last 30 Days'}
+                        </span>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                            <thead className="bg-gray-50 text-gray-600 text-sm">
                                 <tr>
-                                    <th className="p-4">Order Info</th>
-                                    <th className="p-4">Customer</th>
-                                    <th className="p-4">Status & Action</th>
-                                    <th className="p-4">Total</th>
-                                    <th className="p-4">View</th>
+                                    <th className="p-4 font-medium">Rank</th>
+                                    <th className="p-4 font-medium">Product Name</th>
+                                    <th className="p-4 font-medium text-right">Sold</th>
+                                    <th className="p-4 font-medium text-right">Revenue</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {orders.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="p-8 text-center text-gray-400">
-                                            No orders found.
+                                {data.topProducts.map((product: any, index: number) => (
+                                    <tr key={product.name} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="p-4 text-gray-500 font-medium w-16">
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                        </td>
+                                        <td className="p-4 font-medium text-gray-800">{product.name}</td>
+                                        <td className="p-4 text-right text-gray-600">{product.quantity}</td>
+                                        <td className="p-4 text-right font-medium text-amber-700">
+                                            {formatPrice(product.revenue)}
                                         </td>
                                     </tr>
-                                ) : (
-                                    orders.map(order => (
-                                        <OrderRow
-                                            key={order.id}
-                                            order={order}
-                                            onStatusUpdate={handleStatusUpdate}
-                                        />
-                                    ))
+                                ))}
+                                {data.topProducts.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="p-8 text-center text-gray-400 italic">
+                                            No sales data available for this period.
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <div className="bg-white border-t border-gray-100">
-                    <Pagination
-                        meta={meta}
-                        onPageChange={(page) => fetchOrders(page)}
-                    />
-                </div>
             </div>
+        </div>
+    );
+}
+
+function MetricCard({ title, value, icon, color }: any) {
+    return (
+        <div className={`p-6 rounded-lg border ${color} shadow-sm flex items-center justify-between transition-transform hover:scale-[1.02]`}>
+            <div>
+                <p className="text-sm font-medium opacity-80">{title}</p>
+                <p className="text-2xl font-bold mt-1">{value}</p>
+            </div>
+            <div className="text-4xl opacity-50">{icon}</div>
         </div>
     );
 }

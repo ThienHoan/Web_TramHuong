@@ -16,6 +16,23 @@ const getHeaders = () => {
     return headers;
 };
 
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
+    const headers = { ...getHeaders(), ...(options.headers as any) };
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+        // Safe json parsing
+        try {
+            const err = await res.json();
+            throw new Error(err.message || 'Request failed');
+        } catch (e: any) {
+            throw new Error(res.statusText || 'Request failed');
+        }
+    }
+    // Safe response parsing
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
+}
+
 export async function getProducts(locale: string): Promise<any[]> {
     try {
         const res = await fetch(`${API_URL}/products?locale=${locale}`, {
@@ -133,6 +150,58 @@ export async function createReview(productId: string, rating: number, comment: s
     }
 }
 
+export async function seedReview(data: any) {
+    try {
+        const res = await fetch(`${API_URL}/reviews/seed`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || 'Failed to seed review');
+        }
+        return await res.json();
+    } catch (e) {
+        console.error("Seed Review Error:", e);
+        throw e;
+    }
+}
+
+export async function getProfile() {
+    return fetchWithAuth(`${API_URL}/users/profile`, {
+        method: 'GET'
+    });
+}
+
+export async function updateProfile(data: any) {
+    return fetchWithAuth(`${API_URL}/users/profile`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+}
+
+export async function getMyReviews() {
+    return fetchWithAuth(`${API_URL}/reviews/user/me`, {
+        method: 'GET'
+    });
+}
+
+export async function updateReview(id: string, data: any) {
+    // Ideally use fetchWithAuth and PATCH endpoint. 
+    // Assuming backend endpoint exists or will exist.
+    return fetchWithAuth(`${API_URL}/reviews/${id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+}
+
 export async function deleteReview(id: string) {
     try {
         const res = await fetch(`${API_URL}/reviews/${id}`, {
@@ -147,5 +216,30 @@ export async function deleteReview(id: string) {
     } catch (e) {
         console.error("Delete Review Error:", e);
         throw e;
+    }
+}
+
+// Wishlist
+export async function toggleWishlist(productId: string) {
+    return fetchWithAuth(`${API_URL}/wishlist/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getHeaders() } as any,
+        body: JSON.stringify({ productId }),
+    });
+}
+
+export async function getWishlist() {
+    return fetchWithAuth(`${API_URL}/wishlist`, { method: 'GET' });
+}
+
+export async function getLikedIds() {
+    try {
+        const res = await fetch(`${API_URL}/wishlist/ids`, {
+            headers: getHeaders(),
+        });
+        if (!res.ok) return []; // Fail silent
+        return await res.json();
+    } catch (e) {
+        return [];
     }
 }

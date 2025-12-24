@@ -245,6 +245,94 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </button>
                 </div>
             </form>
+
+            {/* SEED REVIEW SECTION */}
+            <div className="mt-12 border-t pt-8">
+                <h2 className="text-xl font-bold mb-6 text-gray-800">Seed Fake Review (Buffing)</h2>
+                <SeedReviewForm productId={id} />
+            </div>
         </div>
+    );
+}
+
+function SeedReviewForm({ productId }: { productId: string }) {
+    const [name, setName] = useState('');
+    const [avatarUrl, setAvatarUrl] = useState('');
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { session } = useAuth();
+    const router = useRouter();
+
+    const handleSeed = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        if (session?.access_token) setAccessToken(session.access_token);
+
+        try {
+            const { seedReview } = await import('@/lib/api-client');
+            // Use provided URL or generate one
+            const finalAvatar = avatarUrl.trim() || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
+            await seedReview({
+                productId,
+                rating,
+                comment,
+                reviewerName: name,
+                reviewerAvatar: finalAvatar
+            });
+            alert('Review seeded successfully!');
+            setName('');
+            setAvatarUrl('');
+            setComment('');
+            router.refresh();
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSeed} className="bg-gray-50 p-6 rounded border border-gray-200">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Reviewer Name</label>
+                    <input required type="text" className="w-full border p-2 rounded"
+                        placeholder="e.g. Nguyen Van A"
+                        value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">Rating</label>
+                    <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(star => (
+                            <button type="button" key={star} onClick={() => setRating(star)}
+                                className={`text-2xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                ★
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Avatar URL (Optional)</label>
+                <input type="url" className="w-full border p-2 rounded"
+                    placeholder="https://example.com/avatar.jpg"
+                    value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} />
+                <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate from name.</p>
+            </div>
+
+            <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Comment</label>
+                <textarea required className="w-full border p-2 rounded" rows={2}
+                    placeholder="Very good product..."
+                    value={comment} onChange={e => setComment(e.target.value)} />
+            </div>
+            <button type="submit" disabled={loading}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 w-full">
+                {loading ? 'Seeding...' : 'Add Fake Review'}
+            </button>
+        </form>
     );
 }

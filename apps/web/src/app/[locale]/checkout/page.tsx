@@ -2,9 +2,9 @@
 
 import { useCart } from '@/components/providers/CartProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { createOrder, setAccessToken } from '@/lib/api-client';
+import { createOrder, setAccessToken, getProfile } from '@/lib/api-client';
 import { useRouter } from '@/i18n/routing';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductImage from '@/components/ui/ProductImage';
 import LocationSelector from '@/components/checkout/LocationSelector';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -33,6 +33,34 @@ export default function CheckoutPage() {
     const [error, setError] = useState<string | null>(null);
 
     const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay'>('cod');
+
+    useEffect(() => {
+        if (session?.access_token) {
+            setAccessToken(session.access_token);
+            getProfile().then(profile => {
+                if (profile) {
+                    setShippingInfo(prev => ({
+                        ...prev,
+                        name: prev.name || profile.full_name || '',
+                        phone: prev.phone || profile.phone_number || '',
+                        address: prev.address || profile.street_address || '',
+                        city: prev.city || profile.province || ''
+                    }));
+
+                    if (profile.province && profile.district && profile.ward) {
+                        setLocationParts(prev => {
+                            if (prev.province) return prev;
+                            return {
+                                province: profile.province,
+                                district: profile.district,
+                                ward: profile.ward
+                            };
+                        });
+                    }
+                }
+            }).catch(console.error);
+        }
+    }, [session]);
 
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -106,7 +134,7 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-medium">{item.title}</h3>
-                                        <p className="text-sm text-gray-500">{formatPrice(item.price)}</p>
+                                        <p className="text-sm text-gray-500">{formatPrice(Number(item.price))}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <button onClick={() => updateQuantity(item.id, -1)} className="px-2 border rounded">-</button>
@@ -140,6 +168,10 @@ export default function CheckoutPage() {
                             </div>
                             <div className="space-y-4">
                                 <LocationSelector
+                                    key={`${locationParts.province}-${locationParts.district}-${locationParts.ward}`} // Re-render on load
+                                    initialProvince={locationParts.province}
+                                    initialDistrict={locationParts.district}
+                                    initialWard={locationParts.ward}
                                     onLocationChange={(loc) => {
                                         setLocationParts({
                                             province: loc.province,

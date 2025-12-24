@@ -388,7 +388,7 @@ export default function AdminProductsPage() {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm font-medium">
-                                                    {formatPrice(product.price)}
+                                                    {formatPrice(Number(product.price))}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`text-[10px] px-2 py-1 rounded-full font-bold border ${product.is_active

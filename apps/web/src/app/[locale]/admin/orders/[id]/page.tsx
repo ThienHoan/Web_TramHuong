@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { setAccessToken } from '@/lib/api-client';
 
@@ -60,6 +61,23 @@ export default function OrderDetailPage() {
                         <span className="px-2 py-0.5 rounded bg-gray-100 font-medium text-black">{order.status}</span>
                     </div>
 
+                    {/* Payment Deadline Info */}
+                    {order.payment_deadline && (
+                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-yellow-900">Payment Deadline:</span>
+                                <span className={order.expired_at ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                                    {new Date(order.payment_deadline).toLocaleString()}
+                                    {order.expired_at && (
+                                        <span className="ml-2 text-red-600">
+                                            (Expired at {new Date(order.expired_at).toLocaleString()})
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t pt-6">
                         <div>
                             <h2 className="font-bold text-lg mb-4">Customer Info</h2>
@@ -102,10 +120,10 @@ export default function OrderDetailPage() {
                                             <span className="text-sm font-medium">{item.title}</span>
                                         </div>
                                     </td>
-                                    <td className="p-3 text-sm">{formatPrice(item.price)}</td>
+                                    <td className="p-3 text-sm">{formatPrice(Number(item.price || 0))}</td>
                                     <td className="p-3 text-sm">{item.quantity}</td>
                                     <td className="p-3 text-sm text-right font-bold">
-                                        {formatPrice(item.price * item.quantity)}
+                                        {formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}
                                     </td>
 
                                 </tr>
@@ -115,7 +133,7 @@ export default function OrderDetailPage() {
                             <tr>
                                 <td colSpan={3} className="p-4 text-right font-bold">Total Amount</td>
                                 <td className="p-4 text-right font-bold text-lg">
-                                    {formatPrice(order.total || order.total_amount)}
+                                    {formatPrice(Number(order.total || order.total_amount || 0))}
                                 </td>
                             </tr>
                         </tfoot>

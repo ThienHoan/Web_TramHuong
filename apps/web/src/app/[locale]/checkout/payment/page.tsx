@@ -16,6 +16,7 @@ export default function CheckoutPaymentPage() {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [timeRemaining, setTimeRemaining] = useState<string>('');
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
     // SePay/VietQR Config (Should probably be environmental or API provided, but hardcoded template for now)
@@ -42,6 +43,37 @@ export default function CheckoutPaymentPage() {
             if (pollingRef.current) clearInterval(pollingRef.current);
         };
     }, [session, orderId]);
+
+    // Countdown timer for payment deadline
+    useEffect(() => {
+        console.log('[Payment] Order data:', order);
+        console.log('[Payment] payment_deadline:', order?.payment_deadline);
+
+        if (!order?.payment_deadline) {
+            console.log('[Payment] No payment_deadline found');
+            return;
+        }
+
+        const updateCountdown = () => {
+            const deadline = new Date(order.payment_deadline).getTime();
+            const now = Date.now();
+            const diff = deadline - now;
+
+            if (diff <= 0) {
+                setTimeRemaining('EXPIRED');
+                return;
+            }
+
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [order?.payment_deadline]);
 
     const fetchOrder = async () => {
         if (!orderId) return;
@@ -77,10 +109,9 @@ export default function CheckoutPaymentPage() {
     // Content structure: DH[orderId] (Shortened? UUID is too long for comfortable typing, but QR handles it).
     // Let's us just use the UUID for exact matching as implemented in backend.
 
-    // Force VND for Payment (VietQR only works with VND)
-    // Base system currency is USD, so we convert.
-    const EXCHANGE_RATE = 25000;
-    const amountInVND = order ? Math.round(order.total * EXCHANGE_RATE) : 0;
+    // order.total is already in VND from database
+    // No conversion needed for VietQR payment
+    const amountInVND = order ? Math.round(order.total) : 0;
 
     const qrUrl = order
         ? `https://qr.sepay.vn/img?bank=${BANK_CODE}&acc=${BANK_ACC}&template=compact&amount=${amountInVND}&des=${order.id}`
@@ -102,10 +133,33 @@ export default function CheckoutPaymentPage() {
                     <p className="text-sm text-blue-800 text-center max-w-xs">
                         Open your banking app and scan the QR code to complete payment.
                     </p>
-                    <div className="mt-6 flex items-center gap-2 text-blue-700 animate-pulse">
-                        <span className="loading loading-spinner loading-sm"></span>
-                        <span className="text-sm font-medium">Waiting for payment...</span>
-                    </div>
+
+                    {/* Countdown Timer */}
+                    {order.payment_deadline && (
+                        <div className="mt-6 bg-yellow-50 border border-yellow-200 p-4 rounded-lg w-full max-w-xs">
+                            <div className="flex items-center gap-3">
+                                <span className="text-3xl">⏰</span>
+                                <div className="flex-1">
+                                    <p className="font-bold text-yellow-900 text-sm">Payment Deadline</p>
+                                    <p className={`text-2xl font-mono font-bold ${timeRemaining === 'EXPIRED' ? 'text-red-600' : 'text-yellow-700'}`}>
+                                        {timeRemaining === 'EXPIRED' ? '⚠️ Expired' : timeRemaining}
+                                    </p>
+                                    {timeRemaining !== 'EXPIRED' && (
+                                        <p className="text-xs text-yellow-600 mt-1">
+                                            Complete payment before timer expires
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {timeRemaining !== 'EXPIRED' && (
+                        <div className="mt-4 flex items-center gap-2 text-blue-700 animate-pulse">
+                            <span className="loading loading-spinner loading-sm"></span>
+                            <span className="text-sm font-medium">Waiting for payment...</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Transfer Details */}
@@ -119,7 +173,7 @@ export default function CheckoutPaymentPage() {
                                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND)}
                             </p>
                             <p className="text-sm text-gray-500">
-                                (~{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.total)})
+                                (~{formatPrice(order.total)})
                             </p>
                         </div>
 

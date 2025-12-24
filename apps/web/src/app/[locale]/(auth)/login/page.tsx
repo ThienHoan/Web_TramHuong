@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -11,7 +12,9 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [mode, setMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
+    const [showCheckEmail, setShowCheckEmail] = useState(false);
     const router = useRouter();
+    const locale = useLocale();
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,27 +50,21 @@ export default function LoginPage() {
                     router.push('/');
                 }
             } else {
-                const { error, data } = await supabase.auth.signUp({
+                // Email-only signup using magic link (OTP)
+                const { error } = await supabase.auth.signInWithOtp({
                     email: email.trim(),
-                    password,
                     options: {
-                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                        emailRedirectTo: `${window.location.origin}/${locale}/auth/verify`,
                         data: {
-                            full_name: email.trim().split('@')[0], // Default name from email
+                            full_name: email.trim().split('@')[0],
                             avatar_url: '',
                         }
                     }
                 });
                 if (error) throw error;
-                // If auto-confirm is enabled, they might allow login immediately, 
-                // otherwise alert check email.
-                if (data.user && data.session) {
-                    // Check if session exists (auto confirm)
-                    router.push('/');
-                } else {
-                    alert('Check your email for confirmation link!');
-                    setMode('LOGIN');
-                }
+
+                // Show check email message
+                setShowCheckEmail(true);
             }
         } catch (err: any) {
             setError(err.message);
@@ -79,41 +76,88 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    {mode === 'LOGIN' ? 'Welcome Back' : 'Create Account'}
-                </h1>
-
-                {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
-
-                <form onSubmit={handleAuth} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Email</label>
-                        <input
-                            type="email"
-                            required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                        />
+                {showCheckEmail ? (
+                    // Check Email State
+                    <div className="text-center">
+                        <div className="mb-4 text-6xl">📧</div>
+                        <h1 className="text-2xl font-bold mb-4">Check Your Email</h1>
+                        <p className="text-gray-600 mb-6">
+                            We've sent a verification link to <strong>{email}</strong>
+                        </p>
+                        <p className="text-sm text-gray-500 mb-6">
+                            Click the link in the email to verify your account and create your password.
+                        </p>
+                        <button
+                            onClick={() => {
+                                setShowCheckEmail(false);
+                                setMode('LOGIN');
+                                setEmail('');
+                            }}
+                            className="text-blue-600 text-sm underline"
+                        >
+                            ← Back to Login
+                        </button>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Password</label>
-                        <input
-                            type="password"
-                            required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-                    >
-                        {loading ? 'Processing...' : (mode === 'LOGIN' ? 'Log In' : 'Sign Up')}
-                    </button>
-                </form>
+                ) : (
+                    // Login/Signup Form
+                    <>
+                        <h1 className="text-2xl font-bold mb-6 text-center">
+                            {mode === 'LOGIN' ? 'Welcome Back' : 'Create Account'}
+                        </h1>
+
+                        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+
+                        <form onSubmit={handleAuth} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Email</label>
+                                <input
+                                    type="email"
+                                    required
+                                    className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Only show password field for LOGIN */}
+                            {mode === 'LOGIN' && (
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                    />
+                                    <div className="mt-2 text-right">
+                                        <button
+                                            type="button"
+                                            className="text-sm text-blue-600 hover:underline"
+                                            onClick={() => router.push('/auth/forgot-password')}
+                                        >
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {mode === 'SIGNUP' && (
+                                <p className="text-sm text-gray-600">
+                                    You'll create your password after verifying your email.
+                                </p>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            >
+                                {loading ? 'Processing...' : (mode === 'LOGIN' ? 'Log In' : 'Continue with Email')}
+                            </button>
+                        </form>
+                    </>
+                )}
 
                 <div className="mt-6">
                     <div className="relative">

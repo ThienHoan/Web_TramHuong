@@ -1,15 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getReviews } from '@/lib/api-client';
+import { getReviews, setAccessToken } from '@/lib/api-client';
 import ReviewStats from './ReviewStats';
 import ReviewList from './ReviewList';
 import ReviewForm from './ReviewForm';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function ProductReviews({ productId }: { productId: string }) {
     const [reviews, setReviews] = useState<any[]>([]);
     const [meta, setMeta] = useState<any>({ total: 0, average: 0, distribution: {} });
     const [loading, setLoading] = useState(true);
+    const { session } = useAuth();
+
+    useEffect(() => {
+        if (session?.access_token) {
+            setAccessToken(session.access_token);
+        }
+    }, [session]);
 
     const fetchReviews = async () => {
         const res = await getReviews(productId);

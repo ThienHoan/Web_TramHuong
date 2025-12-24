@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/routing';
 import TraditionalButton from './TraditionalButton';
 import ProductImage from '../ui/ProductImage';
+import WishlistButton from '../product/WishlistButton';
 
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -25,8 +26,12 @@ export default function TraditionalProductList({ products }: { products: any[] }
                     <div className="col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {products.map((product) => (
                             <div key={product.id} className="bg-trad-red-950 border border-trad-amber-700 p-4 rounded-sm hover:border-trad-amber-600 transition-colors">
-                                <div className="aspect-[4/3] bg-black/20 mb-4 flex items-center justify-center border border-white/5 relative">
+
+                                <div className="aspect-[4/3] bg-black/20 mb-4 flex items-center justify-center border border-white/5 relative group/image">
                                     <ProductImage src={product.images[0]} alt={product.translation.title} />
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                                        <WishlistButton productId={product.id} className="text-trad-amber-600 hover:text-red-500 bg-trad-red-950/80 backdrop-blur-sm" />
+                                    </div>
                                 </div>
                                 <h2 className="font-bold text-lg mb-2 text-trad-amber-100">{product.translation.title}</h2>
 
