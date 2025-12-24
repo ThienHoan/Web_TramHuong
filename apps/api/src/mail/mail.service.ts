@@ -22,9 +22,7 @@ export class MailService {
     private formatPrice(amount: number): string {
         try {
             const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-            // Approx 1 USD = 25,000 VND
-            const usd = (amount / 25000).toFixed(2);
-            return `${vnd} (~ $${usd})`;
+            return vnd;
         } catch (e) {
             return `${amount} VND`;
         }
@@ -87,9 +85,24 @@ export class MailService {
         const email = order.shipping_info?.email;
         if (!email) return;
 
-        const subject = order.status === 'SHIPPED'
-            ? `Your order #${order.id} has been shipped!`
-            : `Order #${order.id} Completed`;
+        let subject = `Order #${order.id} Update`;
+
+        switch (order.status) {
+            case 'PAID':
+            case 'CONFIRMED':
+                subject = `Order #${order.id} Confirmed`;
+                break;
+            case 'SHIPPED':
+                subject = `Order #${order.id} is on the way!`;
+                break;
+            case 'COMPLETED':
+            case 'DELIVERED':
+                subject = `Order #${order.id} Delivered Successfully`;
+                break;
+            case 'CANCELED':
+                subject = `Order #${order.id} Canceled`;
+                break;
+        }
 
         await this.sendSafe({
             to: email,

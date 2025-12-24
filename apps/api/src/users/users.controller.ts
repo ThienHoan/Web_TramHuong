@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Patch, Body, UseGuards, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrdersService } from '../orders/orders.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -13,6 +13,22 @@ export class UsersController {
         private readonly usersService: UsersService,
         private readonly ordersService: OrdersService
     ) { }
+
+    @Get('profile')
+    @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
+    async getProfile(@Req() req: any) {
+        const user = req.user;
+        if (!user || !user.id) return null;
+        return this.usersService.findOne(user.id);
+    }
+
+    @Patch('profile')
+    @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
+    async updateProfile(@Body() body: any, @Req() req: any) {
+        const user = req.user;
+        if (!user || !user.id) return { success: false };
+        return this.usersService.updateProfile(user.id, body);
+    }
 
     @Get()
     @Roles(Role.ADMIN, Role.STAFF)

@@ -144,17 +144,30 @@ export class OrdersService {
             };
         });
 
-        // 2. Insert Order
+        // 2. Determine order status and deadline based on payment method
+        let orderStatus = 'PENDING';
+        let paymentDeadline = null;
+
+        if (paymentMethod === 'sepay') {
+            orderStatus = 'AWAITING_PAYMENT';
+            // Set deadline 15 minutes from now (in UTC)
+            const now = new Date();
+            const deadlineMs = now.getTime() + (15 * 60 * 1000); // Add 15 minutes in milliseconds
+            paymentDeadline = new Date(deadlineMs).toISOString();
+        }
+
+        // 3. Insert Order
         const { data: orderData, error: orderError } = await this.client
             .from('orders')
             .insert({
                 user_id: userId,
-                status: 'PENDING',
+                status: orderStatus,
+                payment_deadline: paymentDeadline,
                 total,
                 items: enrichedItems,
                 shipping_info: shippingInfo,
                 payment_method: paymentMethod,
-                payment_status: 'pending' // Default pending
+                payment_status: 'pending'
             })
             .select()
             .single();
@@ -182,7 +195,7 @@ export class OrdersService {
     }
 
     async updateStatus(id: string, status: string) {
-        const allowedStatuses = ['PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELED'];
+        const allowedStatuses = ['PENDING', 'AWAITING_PAYMENT', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELED', 'EXPIRED'];
         if (!allowedStatuses.includes(status)) {
             throw new BadRequestException('Invalid status');
         }
@@ -202,10 +215,12 @@ export class OrdersService {
         // Define allowed next steps for each status
         const validTransitions: Record<string, string[]> = {
             'PENDING': ['PAID', 'CANCELED'],
+            'AWAITING_PAYMENT': ['PAID', 'CANCELED', 'EXPIRED'],
             'PAID': ['SHIPPED', 'CANCELED'],
             'SHIPPED': ['COMPLETED'],
-            'COMPLETED': [], // Terminal
-            'CANCELED': []   // Terminal
+            'COMPLETED': [],
+            'CANCELED': [],
+            'EXPIRED': []
         };
 
         const allowedNext = validTransitions[currentStatus] || [];
@@ -248,10 +263,6 @@ export class OrdersService {
             paymentStatusUpdate = { payment_status: 'paid' };
         }
 
-        // Prevent reverting a paid order to pending/unpaid via simple status change if it was already paid?
-        // Actually, if admin forces status to 'PENDING', maybe they INTEND to revert?
-        // For now, let's just ensure if they say PAID, we set paid.
-
         const { data, error } = await this.client
             .from('orders')
             .update({ status, ...paymentStatusUpdate })
@@ -263,6 +274,23 @@ export class OrdersService {
 
         // Email Notification
         if (currentStatus !== status) {
+            console.log(`[OrdersService] Status changed ${currentStatus} -> ${status}. Attempting to send email...`);
+
+            // Email Fallback: If updated data has no email, try to fetch from User
+            if (!data.shipping_info?.email && data.user_id) {
+                const { data: user } = await this.client
+                    .from('users')
+                    .select('email')
+                    .eq('id', data.user_id)
+                    .single();
+
+                if (user?.email) {
+                    if (!data.shipping_info) data.shipping_info = {};
+                    data.shipping_info.email = user.email;
+                    console.log(`[OrdersService] Recovered Email for Status Update: ${user.email}`);
+                }
+            }
+
             this.mailService.sendOrderStatusUpdate(data).catch(err => console.error(err));
         }
 

@@ -65,4 +65,27 @@ export class UsersService {
 
         return { success: true };
     }
+
+    async updateProfile(id: string, data: {
+        full_name?: string;
+        phone_number?: string;
+        province?: string;
+        district?: string;
+        ward?: string;
+        street_address?: string;
+        avatar_url?: string;
+    }) {
+        const client = this.supabase.getClient();
+        const { error } = await client
+            .from('users')
+            .update(data)
+            .eq('id', id);
+
+        if (error) {
+            console.error('Update Profile Error:', error);
+            throw new BadRequestException(error.message);
+        }
+
+        return { success: true };
+    }
 }

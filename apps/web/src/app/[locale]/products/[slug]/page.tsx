@@ -1,6 +1,7 @@
 import { getProduct } from '@/lib/api-client';
 import ZenProductDetail from '@/components/zen/ZenProductDetail';
 import TraditionalProductDetail from '@/components/traditional/TraditionalProductDetail';
+import ProductReviews from '@/components/reviews/ProductReviews';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -45,8 +46,18 @@ export default async function ProductPage({
     }
 
     if (locale === 'vi') {
-        return <TraditionalProductDetail product={product} />;
+        return (
+            <>
+                <TraditionalProductDetail product={product} />
+                <ProductReviews productId={product.id} />
+            </>
+        );
     }
 
-    return <ZenProductDetail product={product} />;
+    return (
+        <>
+            <ZenProductDetail product={product} />
+            <ProductReviews productId={product.id} />
+        </>
+    );
 }

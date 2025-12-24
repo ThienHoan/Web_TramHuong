@@ -102,3 +102,50 @@ export async function getCategories(locale: string = 'en', includeInactive: bool
         return [];
     }
 }
+export async function getReviews(productId: string) {
+    try {
+        const res = await fetch(`${API_URL}/reviews/${productId}`, {
+            next: { revalidate: 0 } // Always fresh
+        });
+        if (!res.ok) return { data: [], meta: { total: 0, average: 0, distribution: {} } };
+        return await res.json();
+    } catch (e) {
+        console.error("Fetch Reviews Error:", e);
+        return { data: [], meta: { total: 0, average: 0, distribution: {} } };
+    }
+}
+
+export async function createReview(productId: string, rating: number, comment: string) {
+    try {
+        const res = await fetch(`${API_URL}/reviews`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ productId, rating, comment }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || 'Failed to submit review');
+        }
+        return await res.json();
+    } catch (e) {
+        console.error("Create Review Error:", e);
+        throw e;
+    }
+}
+
+export async function deleteReview(id: string) {
+    try {
+        const res = await fetch(`${API_URL}/reviews/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders(),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || 'Failed to delete review');
+        }
+        return await res.json();
+    } catch (e) {
+        console.error("Delete Review Error:", e);
+        throw e;
+    }
+}

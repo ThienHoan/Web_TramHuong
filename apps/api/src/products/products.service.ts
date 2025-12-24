@@ -226,7 +226,8 @@ export class ProductsService {
             .from('products')
             .insert({
                 slug,
-                price: parseFloat(price),
+                // Remove dots in price if present (frontend might send "50.000")
+                price: parseFloat(price.toString().replace(/\./g, '')),
                 images: [imageUrl], // Store as JSONB Array
                 category,
                 quantity: quantity ? parseInt(quantity) : 0,
@@ -261,7 +262,11 @@ export class ProductsService {
             const imageUrl = await this.uploadImage(file);
             updateData.images = [imageUrl]; // Replace images with new single image (for now)
         }
-        if (body.price) updateData.price = parseFloat(body.price);
+        if (body.price) {
+            // Remove dots (thousands separators) and convert to float
+            const cleanPrice = body.price.toString().replace(/\./g, '');
+            updateData.price = parseFloat(cleanPrice);
+        }
         if (body.slug) updateData.slug = body.slug;
         if (body.category) updateData.category = body.category;
         if (body.quantity !== undefined && body.quantity !== null) updateData.quantity = parseInt(body.quantity);
