@@ -2,11 +2,14 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
 
+import { MailService } from '../mail/mail.service';
+
 @Injectable()
 export class OrdersService {
     constructor(
         private readonly supabaseService: SupabaseService,
-        private readonly cartService: CartService
+        private readonly cartService: CartService,
+        private readonly mailService: MailService
     ) { }
 
     private get client() {
@@ -173,6 +176,8 @@ export class OrdersService {
         // 4. Clear Cart
         await this.cartService.clearCart(userId);
 
+        // 5. Emails are now triggered in verifyPayment (Webhook)
+
         return orderData;
     }
 
@@ -255,6 +260,12 @@ export class OrdersService {
             .single();
 
         if (error) throw new BadRequestException(error.message);
+
+        // Email Notification
+        if (currentStatus !== status) {
+            this.mailService.sendOrderStatusUpdate(data).catch(err => console.error(err));
+        }
+
         return data;
     }
 
@@ -312,6 +323,35 @@ export class OrdersService {
                 status: 'PAID'
             })
             .eq('id', orderId);
+
+        // Send Emails (Async - don't block response)
+        let customerEmail = order.shipping_info?.email;
+
+        // Fallback: If no email in shipping_info, try to get from User profile
+        if (!customerEmail && order.user_id) {
+            console.log('[VerifyPayment] Email missing in shipping_info, fetching from Users table...');
+            const { data: user } = await this.client
+                .from('users')
+                .select('email')
+                .eq('id', order.user_id)
+                .single();
+
+            if (user?.email) {
+                customerEmail = user.email;
+                // Patch the order object so MailService can use it
+                if (!order.shipping_info) order.shipping_info = {};
+                order.shipping_info.email = customerEmail;
+                console.log('[VerifyPayment] Recovered Email from User:', customerEmail);
+            }
+        } else {
+            console.log(`[VerifyPayment] Found Customer Email: '${customerEmail}'`);
+        }
+
+        // 1. Notify Verification/Payment Success to User
+        this.mailService.sendPaymentSuccess(order).catch(err => console.error('Email Error:', err));
+
+        // 2. Notify Admin about the New Paid Order
+        this.mailService.sendAdminAlert(order).catch(err => console.error('Admin Email Error:', err));
 
         return { success: true, orderId };
     }

@@ -31,8 +31,20 @@ export class OrdersController {
         // Assuming we configured SePay to send a key in headers or it's standard.
         // Let's implement a check for 'x-api-key' header against ENV variable.
 
-        const apiKey = req.headers['x-api-key'] || req.headers['authorization'];
+
+
+        const rawHeader = req.headers['x-api-key'] || req.headers['authorization'];
+        // Remove 'Apikey ' or 'Bearer ' prefix to get just the key
+        const apiKey = rawHeader?.toString().replace(/^(apikey|bearer)\s+/i, '').trim();
+
         const expectedKey = process.env.SEPAY_API_KEY;
+
+        console.log('--- Webhook Debug ---');
+        console.log('Received Header:', rawHeader);
+        console.log('Cleaned Key:', apiKey);
+        console.log('Expected Key:', expectedKey);
+
+
 
         if (expectedKey && apiKey !== expectedKey) {
             throw new ForbiddenException('Invalid API Key');

@@ -1,0 +1,10 @@
+<h1>Order Update</h1>
+<p>Your order <strong>#{{id}}</strong> is now <strong>{{status}}</strong>.</p>
+
+{{#if (eq status "SHIPPED")}}
+<p>Your package is on its way!</p>
+{{/if}}
+
+{{#if (eq status "COMPLETED")}}
+<p>Thank you for shopping with us. We hope you enjoy your product!</p>
+{{/if}}

@@ -67,7 +67,8 @@ export async function getMyOrders() {
             headers: getHeaders(),
         });
         if (!res.ok) return [];
-        return await res.json();
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.data || []);
     } catch (e) {
         console.error("Fetch Orders Error:", e);
         return [];
@@ -84,5 +85,20 @@ export async function getOrder(id: string) {
     } catch (e) {
         console.error("Fetch Order Error:", e);
         return null;
+    }
+}
+
+export async function getCategories(locale: string = 'en', includeInactive: boolean = false) {
+    try {
+        const res = await fetch(`${API_URL}/categories?locale=${locale}&include_inactive=${includeInactive}`, {
+            headers: getHeaders(),
+            next: { revalidate: 60 }
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.data || []);
+    } catch (e) {
+        console.error("Fetch Categories Error:", e);
+        return [];
     }
 }

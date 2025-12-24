@@ -1,0 +1,13 @@
+<h1>Order Confirmation</h1>
+<p>Thank you for your order!</p>
+<p><strong>Order ID:</strong> {{id}}</p>
+<p><strong>Total:</strong> {{total}}</p>
+
+<h3>Items:</h3>
+<ul>
+    {{#each items}}
+        <li>{{this.title}} x {{this.quantity}} - {{this.price}}</li>
+    {{/each}}
+</ul>
+
+<p>We will notify you when your order is shipped.</p>

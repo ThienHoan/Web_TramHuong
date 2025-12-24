@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Category } from '@/lib/types';
+import { getCategories, setAccessToken } from '@/lib/api-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -28,17 +29,13 @@ export default function NewProductPage() {
     // Fetch Categories
     useEffect(() => {
         if (session) {
-            fetch(`${API_URL}/categories`, {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    setCategories(data);
-                    if (data.length > 0) {
-                        setCategory(data[0].slug);
-                    }
-                })
-                .catch(err => console.error('Failed to load categories', err));
+            setAccessToken(session.access_token);
+            getCategories('en', true).then(data => {
+                setCategories(data);
+                if (data.length > 0) {
+                    setCategory(data[0].slug);
+                }
+            }).catch(err => console.error('Failed to load categories', err));
         }
     }, [session]);
 

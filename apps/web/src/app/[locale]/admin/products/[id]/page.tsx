@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { getCategories, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import ProductImage from '@/components/ui/ProductImage';
 import { Category } from '@/lib/types';
@@ -33,12 +34,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         if (!session) return;
 
         // Fetch Categories first
-        fetch(`${API_URL}/categories`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` }
-        })
-            .then(res => res.json())
-            .then(data => setCategories(data))
-            .catch(err => console.error(err));
+        // Fetch Categories first
+        if (session.access_token) {
+            setAccessToken(session.access_token);
+            getCategories('en', true).then(data => setCategories(data));
+        }
 
         // Fetch Product
         fetch(`${API_URL}/products/admin/${id}`, {
