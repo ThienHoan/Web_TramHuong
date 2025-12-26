@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { useEffect, useState, useRef } from 'react';
 import { getOrder, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -117,114 +117,238 @@ export default function CheckoutPaymentPage() {
         ? `https://qr.sepay.vn/img?bank=${BANK_CODE}&acc=${BANK_ACC}&template=compact&amount=${amountInVND}&des=${order.id}`
         : '';
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading payment info...</div>;
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0]">
+            <div className="flex flex-col items-center gap-4">
+                <span className="loading loading-spinner text-primary text-4xl"></span>
+                <p className="text-text-main font-display">Đang tải thông tin thanh toán...</p>
+            </div>
+        </div>
+    );
+
+    if (error) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0] text-red-600 font-display">
+            <div className="p-6 bg-white rounded-xl shadow-lg border border-red-200">
+                <p className="flex items-center gap-2">
+                    <span className="material-symbols-outlined">error</span>
+                    {error}
+                </p>
+                <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                    Về trang chủ
+                </button>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 pt-24">
-            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden flex flex-col md:flex-row">
-
-                {/* Left: QR Code */}
-                <div className="md:w-1/2 p-8 bg-blue-50 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-blue-100">
-                    <h2 className="text-xl font-bold text-blue-900 mb-6">Scan to Pay</h2>
-                    <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-                        <img src={qrUrl} alt="VietQR" className="w-64 h-64 object-contain" />
+        <div className="bg-[#FFF9F0] font-display text-text-main antialiased selection:bg-primary selection:text-white bg-pattern-lotus min-h-screen flex flex-col">
+            {/* Header */}
+            <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-accent-gold/20 shadow-sm transition-all duration-300">
+                <div className="bg-text-main text-accent-gold text-xs py-1.5 hidden md:block">
+                    <div className="container mx-auto px-4 flex justify-between items-center">
+                        <span className="font-medium">🎁 Freeship đơn hàng từ 500k toàn quốc</span>
+                        <div className="flex gap-4 font-medium">
+                            <Link href="/lookup" className="hover:text-white transition-colors">Tra cứu đơn hàng</Link>
+                            <span className="text-white/20">|</span>
+                            <Link href="/agency" className="hover:text-white transition-colors">Đại lý &amp; Phân phối</Link>
+                        </div>
                     </div>
-                    <p className="text-sm text-blue-800 text-center max-w-xs">
-                        Open your banking app and scan the QR code to complete payment.
-                    </p>
+                </div>
+                <div className="container mx-auto px-4 xl:px-8">
+                    <div className="flex h-20 items-center justify-between gap-6">
+                        <Link href="/" className="flex items-center gap-3 shrink-0 group cursor-pointer">
+                            <div className="size-12 text-primary flex items-center justify-center bg-surface-accent rounded-full border border-accent-gold/30 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                <span className="material-symbols-outlined text-3xl">spa</span>
+                            </div>
+                            <div>
+                                <h1 className="font-serif text-2xl font-bold leading-none tracking-tight text-primary-dark">Thiên Phúc</h1>
+                                <p className="text-[0.65rem] uppercase tracking-[0.2em] text-text-main font-bold mt-0.5">Trầm Hương Việt</p>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            </header>
 
-                    {/* Countdown Timer */}
-                    {order.payment_deadline && (
-                        <div className="mt-6 bg-yellow-50 border border-yellow-200 p-4 rounded-lg w-full max-w-xs">
-                            <div className="flex items-center gap-3">
-                                <span className="text-3xl">⏰</span>
-                                <div className="flex-1">
-                                    <p className="font-bold text-yellow-900 text-sm">Payment Deadline</p>
-                                    <p className={`text-2xl font-mono font-bold ${timeRemaining === 'EXPIRED' ? 'text-red-600' : 'text-yellow-700'}`}>
-                                        {timeRemaining === 'EXPIRED' ? '⚠️ Expired' : timeRemaining}
+            <main className="flex-1 bg-surface-accent/10 relative py-12 lg:py-20 flex items-center justify-center">
+                <div className="absolute inset-0 bg-pattern-lotus opacity-30 pointer-events-none"></div>
+                <div className="container mx-auto px-4 max-w-5xl relative z-10">
+                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-accent-gold/30 flex flex-col lg:flex-row ring-1 ring-black/5">
+                        {/* QR Code Section */}
+                        <div className="lg:w-5/12 bg-[#F9F5F0] relative overflow-hidden flex flex-col items-center justify-center p-8 lg:p-10 border-b lg:border-b-0 lg:border-r border-dashed border-accent-gold/40">
+                            <div className="absolute inset-0 bg-pattern-lotus opacity-10 mix-blend-multiply pointer-events-none"></div>
+                            <div className="relative z-10 w-full flex flex-col items-center">
+                                <h3 className="font-serif text-2xl font-bold text-primary-dark mb-6 text-center">Quét mã để thanh toán</h3>
+                                <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-primary/20 mb-6 w-full max-w-[280px] relative">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-accent-gold text-2xl">qr_code_scanner</span>
+                                            <span className="font-bold text-text-main text-sm">VietQR</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-blue-600 text-lg">payments</span>
+                                            <span className="font-bold text-blue-600 italic text-sm">SePay</span>
+                                        </div>
+                                    </div>
+                                    <div className="aspect-square w-full bg-white rounded-lg overflow-hidden relative border border-gray-100 p-1">
+                                        <img
+                                            alt="Quét mã VietQR"
+                                            className="w-full h-full object-contain mix-blend-darken"
+                                            src={qrUrl}
+                                            onError={(e) => {
+                                                // Fallback if generic QR fails? Actually SePay QR should be reliable.
+                                                // Maybe show icon.
+                                                (e.target as HTMLImageElement).src = 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+                                            }}
+                                        />
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full shadow-md">
+                                            <span className="material-symbols-outlined text-accent-gold text-2xl">spa</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex justify-between items-center text-[10px] text-gray-500 font-medium">
+                                        <span>Hỗ trợ 50+ Ngân hàng</span>
+                                        <div className="flex gap-1 items-center">
+                                            <span className="material-symbols-outlined text-sm">lock</span>
+                                            <span>Bảo mật</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-text-sub text-sm text-center mb-6 px-4 font-medium opacity-80">
+                                    Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>Camera</strong> trên điện thoại để quét mã.
+                                </p>
+
+                                {order?.payment_deadline && (
+                                    <div className="w-full bg-surface-accent/40 rounded-xl p-4 text-center border border-accent-gold/40 relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
+                                        <p className="text-xs font-bold text-trad-red uppercase tracking-widest mb-2 opacity-80">Thời hạn thanh toán</p>
+                                        <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-primary-dark">
+                                            <span className={`material-symbols-outlined text-3xl ${timeRemaining !== 'EXPIRED' ? 'animate-pulse text-trad-amber' : 'text-red-500'}`}>timer</span>
+                                            <span>{timeRemaining === 'EXPIRED' ? 'Đã hết hạn' : timeRemaining}</span>
+                                        </div>
+                                        <p className="text-[11px] text-text-sub mt-2 italic font-medium">Đơn hàng sẽ tự động hủy nếu quá hạn</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Payment Details Section */}
+                        <div className="lg:w-7/12 p-8 lg:p-12 relative flex flex-col justify-center bg-white">
+                            <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+                                <span className="material-symbols-outlined text-9xl">local_florist</span>
+                            </div>
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-1 h-8 bg-primary rounded-full"></div>
+                                <h2 className="font-serif text-3xl font-bold text-text-main">Thông tin chuyển khoản</h2>
+                            </div>
+                            <div className="space-y-6 relative z-10">
+                                <div className="bg-surface-accent/20 rounded-xl p-4 border border-accent-gold/20">
+                                    <label className="text-xs font-bold text-text-sub uppercase tracking-wider mb-2 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm">attach_money</span> Số tiền cần thanh toán
+                                    </label>
+                                    <div className="flex items-baseline gap-1 text-4xl font-bold text-primary-dark font-serif">
+                                        {formatPrice(amountInVND).replace('₫', '')} <span className="text-xl text-text-main font-sans">VNĐ</span>
+                                    </div>
+                                    <p className="text-xs text-text-sub/70 mt-1 italic">
+                                        (Bằng chữ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND)})
                                     </p>
-                                    {timeRemaining !== 'EXPIRED' && (
-                                        <p className="text-xs text-yellow-600 mt-1">
-                                            Complete payment before timer expires
-                                        </p>
-                                    )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Ngân hàng</label>
+                                        <div className="relative">
+                                            <input
+                                                className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
+                                                readOnly type="text" value={BANK_CODE}
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">account_balance</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Chủ tài khoản</label>
+                                        <div className="relative">
+                                            <input
+                                                className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
+                                                readOnly type="text" value={BANK_NAME}
+                                            />
+                                            <span className="absolute right--3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">person</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Số tài khoản</label>
+                                    <div className="flex shadow-sm rounded-lg overflow-hidden group">
+                                        <input
+                                            className="flex-1 bg-gray-50 border-gray-200 border-r-0 rounded-l-lg py-3 px-4 font-mono text-lg font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default tracking-wider"
+                                            readOnly type="text" value={BANK_ACC}
+                                        />
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(BANK_ACC)}
+                                            className="bg-surface-accent hover:bg-accent-gold border border-l-0 border-accent-gold/30 text-text-sub hover:text-white font-bold px-5 py-2 transition-all duration-300 flex items-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">content_copy</span>
+                                            <span>Sao chép</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Nội dung chuyển khoản</label>
+                                    <div className="flex shadow-sm rounded-lg overflow-hidden mb-3">
+                                        <input
+                                            className="flex-1 bg-amber-50 border-amber-200 border-r-0 rounded-l-lg py-3 px-4 font-mono font-bold text-text-main focus:ring-0 focus:border-accent-gold cursor-default truncate text-sm"
+                                            readOnly type="text" value={order?.id}
+                                        />
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(order?.id)}
+                                            className="bg-primary hover:bg-primary-dark border border-l-0 border-primary text-white font-bold px-5 py-2 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">content_copy</span>
+                                            <span>Sao chép</span>
+                                        </button>
+                                    </div>
+                                    <div className="flex items-start gap-3 text-xs text-trad-red bg-red-50 p-3 rounded-lg border border-red-100">
+                                        <span className="material-symbols-outlined text-lg shrink-0">warning</span>
+                                        <span className="font-medium leading-relaxed">
+                                            Lưu ý quan trọng: Bạn phải sao chép <strong>chính xác</strong> nội dung chuyển khoản ở trên để đơn hàng được kích hoạt tự động.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <Link
+                                    href="/"
+                                    className="text-sm font-bold text-text-sub/60 hover:text-primary transition-colors flex items-center gap-1 group"
+                                >
+                                    <span className="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                                    Quay lại trang chủ
+                                </Link>
+                                <div className="flex gap-3 w-full sm:w-auto">
+                                    <button
+                                        onClick={() => router.push('/account/orders')}
+                                        className="flex-1 sm:flex-none px-6 py-3 rounded-lg border border-accent-gold/30 text-text-main font-bold hover:bg-surface-accent transition-colors text-sm"
+                                    >
+                                        Xem đơn hàng
+                                    </button>
+                                    <button
+                                        onClick={checkPaymentStatus}
+                                        className="flex-1 sm:flex-none px-8 py-3 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
+                                    >
+                                        <span>Đã thanh toán</span>
+                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    {timeRemaining !== 'EXPIRED' && (
-                        <div className="mt-4 flex items-center gap-2 text-blue-700 animate-pulse">
-                            <span className="loading loading-spinner loading-sm"></span>
-                            <span className="text-sm font-medium">Waiting for payment...</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Right: Transfer Details */}
-                <div className="md:w-1/2 p-8">
-                    <h1 className="text-2xl font-bold mb-6">Payment Details</h1>
-
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Amount (VND)</label>
-                            <p className="text-3xl font-bold text-gray-900">
-                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND)}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                (~{formatPrice(order.total)})
-                            </p>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Bank Name</label>
-                            <div className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                                <span className="font-medium">{BANK_CODE}</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Account Number</label>
-                            <div className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                                <span className="font-medium font-mono text-lg">{BANK_ACC}</span>
-                                <button className="text-blue-600 text-sm font-bold hover:underline"
-                                    onClick={() => navigator.clipboard.writeText(BANK_ACC)}>
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Account Name</label>
-                            <div className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                                <span className="font-medium">{BANK_NAME}</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">Transfer Content</label>
-                            <div className="flex items-center justify-between bg-yellow-50 p-3 rounded border border-yellow-200">
-                                <span className="font-medium font-mono text-sm break-all">{order.id}</span>
-                                <button className="text-blue-600 text-sm font-bold hover:underline flex-shrink-0 ml-2"
-                                    onClick={() => navigator.clipboard.writeText(order.id)}>
-                                    Copy
-                                </button>
-                            </div>
-                            <p className="text-xs text-yellow-700 mt-1">⚠️ You must copy the exact content code.</p>
-                        </div>
                     </div>
-
-                    <div className="mt-8 pt-6 border-t">
-                        <button
-                            onClick={() => router.push('/account/orders')}
-                            className="w-full text-gray-500 hover:text-gray-900 text-sm"
-                        >
-                            I'll pay later, go to my orders &rarr;
-                        </button>
+                    <div className="mt-8 text-center">
+                        <p className="text-xs text-text-sub/50 font-medium">Thanh toán an toàn được bảo mật bởi SePay</p>
                     </div>
                 </div>
-            </div>
+            </main>
+
+            <footer className="bg-background-dark text-white pt-20 pb-10 border-t-4 border-accent-gold">
+                <div className="container mx-auto px-4 xl:px-8">
+                    <p className="text-center text-sm text-gray-500">© 2024 Trầm Hương Thiên Phúc. Bảo lưu mọi quyền.</p>
+                </div>
+            </footer>
         </div>
     );
 }

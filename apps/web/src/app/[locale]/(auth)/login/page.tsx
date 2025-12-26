@@ -74,145 +74,248 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-                {showCheckEmail ? (
-                    // Check Email State
-                    <div className="text-center">
-                        <div className="mb-4 text-6xl">📧</div>
-                        <h1 className="text-2xl font-bold mb-4">Check Your Email</h1>
-                        <p className="text-gray-600 mb-6">
-                            We've sent a verification link to <strong>{email}</strong>
-                        </p>
-                        <p className="text-sm text-gray-500 mb-6">
-                            Click the link in the email to verify your account and create your password.
-                        </p>
-                        <button
-                            onClick={() => {
-                                setShowCheckEmail(false);
-                                setMode('LOGIN');
-                                setEmail('');
-                            }}
-                            className="text-blue-600 text-sm underline"
-                        >
-                            ← Back to Login
-                        </button>
-                    </div>
-                ) : (
-                    // Login/Signup Form
-                    <>
-                        <h1 className="text-2xl font-bold mb-6 text-center">
-                            {mode === 'LOGIN' ? 'Welcome Back' : 'Create Account'}
-                        </h1>
+        <div className="bg-[#f8f7f5] dark:bg-[#221910] text-[#1c140d] dark:text-gray-100 font-display min-h-screen flex flex-col antialiased selection:bg-[#d56d0b]/20 selection:text-[#d56d0b]">
+            <style jsx global>{`
+                .lattice-pattern {
+                    background-color: #f8f7f5;
+                    background-image: radial-gradient(#d56d0b 0.5px, transparent 0.5px), radial-gradient(#d56d0b 0.5px, #f8f7f5 0.5px);
+                    background-size: 20px 20px;
+                    background-position: 0 0, 10px 10px;
+                    opacity: 0.05;
+                }
+                .dark .lattice-pattern {
+                    background-color: #221910;
+                    background-image: radial-gradient(#d56d0b 0.5px, transparent 0.5px), radial-gradient(#d56d0b 0.5px, #221910 0.5px);
+                    opacity: 0.1;
+                }
+            `}</style>
 
-                        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
-
-                        <form onSubmit={handleAuth} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Email</label>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                />
-                            </div>
-
-                            {/* Only show password field for LOGIN */}
-                            {mode === 'LOGIN' && (
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Password</label>
-                                    <input
-                                        type="password"
-                                        required
-                                        className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                    />
-                                    <div className="mt-2 text-right">
-                                        <button
-                                            type="button"
-                                            className="text-sm text-blue-600 hover:underline"
-                                            onClick={() => router.push('/auth/forgot-password')}
-                                        >
-                                            Forgot password?
-                                        </button>
-                                    </div>
+            {/* Header - Only render if needed or intended to override layout header */}
+            <div className="relative w-full bg-[#f8f7f5] dark:bg-[#221910] border-b border-[#f4ede7] dark:border-[#3e2b1e] z-50">
+                <div className="layout-container flex justify-center w-full">
+                    <div className="flex max-w-[1200px] flex-1 flex-col">
+                        <header className="flex flex-wrap items-center justify-between whitespace-nowrap px-6 py-3 lg:px-10">
+                            <div className="flex items-center gap-4 text-[#d56d0b]">
+                                <div className="size-8 flex items-center justify-center rounded-full bg-[#d56d0b]/10">
+                                    <span className="material-symbols-outlined text-2xl">spa</span>
                                 </div>
-                            )}
-
-                            {mode === 'SIGNUP' && (
-                                <p className="text-sm text-gray-600">
-                                    You'll create your password after verifying your email.
-                                </p>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-                            >
-                                {loading ? 'Processing...' : (mode === 'LOGIN' ? 'Log In' : 'Continue with Email')}
-                            </button>
-                        </form>
-                    </>
-                )}
-
-                <div className="mt-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                        </div>
+                                <h2 className="text-[#1c140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Trầm Hương Thiên Phúc</h2>
+                            </div>
+                            <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
+                                <div className="flex items-center gap-6">
+                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/">Trang chủ</a>
+                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/products">Sản phẩm</a>
+                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/story">Câu chuyện</a>
+                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/contact">Liên hệ</a>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button className="flex h-9 items-center justify-center rounded-full px-4 bg-[#d56d0b] hover:bg-[#b05705] transition-colors text-white text-sm font-bold shadow-sm">
+                                        <span className="truncate">Đăng nhập</span>
+                                    </button>
+                                    <button className="flex h-9 items-center justify-center rounded-full px-4 bg-[#f4ede7] dark:bg-zinc-800 hover:bg-[#e8dbce] dark:hover:bg-zinc-700 transition-colors text-[#1c140d] dark:text-white text-sm font-bold">
+                                        <span className="material-symbols-outlined mr-2 text-lg">shopping_bag</span>
+                                        <span className="truncate">Giỏ hàng</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="md:hidden flex items-center">
+                                <span className="material-symbols-outlined text-[#1c140d] dark:text-white cursor-pointer">menu</span>
+                            </div>
+                        </header>
                     </div>
-
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                supabase.auth.signInWithOAuth({
-                                    provider: 'google',
-                                    options: {
-                                        redirectTo: `${window.location.origin}/auth/callback`
-                                    }
-                                });
-                            }}
-                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        >
-                            <span className="sr-only">Sign in with Google</span>
-                            <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.24-1.133 8.16-3.293 1.953-2.187 2.507-5.32 2.507-7.48 0-.667-.08-1.4-.2-1.933h-10.47z" />
-                            </svg>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                supabase.auth.signInWithOAuth({
-                                    provider: 'facebook',
-                                    options: {
-                                        redirectTo: `${window.location.origin}/auth/callback`
-                                    }
-                                });
-                            }}
-                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        >
-                            <span className="sr-only">Sign in with Facebook</span>
-                            <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-                                <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="mt-4 text-center text-sm text-gray-600">
-                    <button onClick={() => setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN')} className="underline">
-                        {mode === 'LOGIN' ? "Don't have an account? Sign Up" : "Already have an account? Log In"}
-                    </button>
                 </div>
             </div>
+
+            <main className="relative flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+                <div className="absolute inset-0 lattice-pattern pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
+                <div className="relative w-full max-w-md">
+                    <div className="bg-white dark:bg-[#1e150f] rounded-xl shadow-xl border border-[#e8dbce] dark:border-[#3e2b1e] overflow-hidden">
+                        <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH")' }}>
+                            <div className="absolute bottom-4 left-6">
+                                <h1 className="text-2xl font-bold text-white tracking-wide shadow-black drop-shadow-md">
+                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng Nhập' : 'Đăng Ký')}
+                                </h1>
+                                <p className="text-orange-100 text-sm font-medium opacity-90">
+                                    {showCheckEmail ? 'Vui lòng xác thực tài khoản' : 'Chào mừng quý khách quay trở lại'}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-8 pt-6">
+                            {showCheckEmail ? (
+                                <div className="text-center">
+                                    <div className="mb-4 text-6xl">📧</div>
+                                    <p className="text-gray-600 mb-6">
+                                        Chúng tôi đã gửi liên kết xác thực đến <strong>{email}</strong>
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setShowCheckEmail(false);
+                                            setMode('LOGIN');
+                                            setEmail('');
+                                        }}
+                                        className="text-[#d56d0b] text-sm underline font-bold"
+                                    >
+                                        ← Quay lại Đăng nhập
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium border border-red-100">{error}</div>}
+                                    <form onSubmit={handleAuth} className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-bold text-[#1c140d] dark:text-gray-200" htmlFor="email">
+                                                Email hoặc Tên đăng nhập
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <span className="material-symbols-outlined text-gray-400 text-xl">person</span>
+                                                </div>
+                                                <input
+                                                    autoComplete="username"
+                                                    className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
+                                                    id="email"
+                                                    name="email"
+                                                    placeholder="Ví dụ: ten_dang_nhap"
+                                                    required
+                                                    type="email" // Changed to email for compatibility with auth logic, text is fine if logic handles username
+                                                    value={email}
+                                                    onChange={e => setEmail(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {mode === 'LOGIN' && (
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-[#1c140d] dark:text-gray-200" htmlFor="password">
+                                                    Mật khẩu
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <span className="material-symbols-outlined text-gray-400 text-xl">lock</span>
+                                                    </div>
+                                                    <input
+                                                        autoComplete="current-password"
+                                                        className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
+                                                        id="password"
+                                                        name="password"
+                                                        placeholder="••••••••"
+                                                        required
+                                                        type="password"
+                                                        value={password}
+                                                        onChange={e => setPassword(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center justify-between">
+                                            {mode === 'LOGIN' && (
+                                                <div className="flex items-center">
+                                                    <input className="h-4 w-4 text-[#d56d0b] focus:ring-[#d56d0b] border-gray-300 rounded cursor-pointer" id="remember-me" name="remember-me" type="checkbox" />
+                                                    <label className="ml-2 block text-sm text-gray-600 dark:text-gray-400 cursor-pointer" htmlFor="remember-me">
+                                                        Ghi nhớ
+                                                    </label>
+                                                </div>
+                                            )}
+                                            {mode === 'LOGIN' && (
+                                                <div className="text-sm ml-auto">
+                                                    <a className="font-medium text-[#d56d0b] hover:text-[#b05705] hover:underline transition-all" href="#" onClick={(e) => { e.preventDefault(); router.push('/auth/forgot-password'); }}>
+                                                        Quên mật khẩu?
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <button
+                                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-[#d56d0b] hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d56d0b] transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                type="submit"
+                                                disabled={loading}
+                                            >
+                                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                                    <span className="material-symbols-outlined text-primary-200 group-hover:text-white">login</span>
+                                                </span>
+                                                {loading ? 'Đang xử lý...' : (mode === 'LOGIN' ? 'Đăng nhập' : 'Đăng ký ngay')}
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <div className="mt-6">
+                                        <div className="relative">
+                                            <div aria-hidden="true" className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-[#e8dbce] dark:border-[#3e2b1e]"></div>
+                                            </div>
+                                            <div className="relative flex justify-center text-sm">
+                                                <span className="px-3 bg-white dark:bg-[#1e150f] text-gray-500 dark:text-gray-400 font-sans">
+                                                    Hoặc tiếp tục với
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-6 grid grid-cols-2 gap-3">
+                                            <button
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-[#d56d0b]/40 focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 transition-all duration-200"
+                                                type="button"
+                                                onClick={() => {
+                                                    supabase.auth.signInWithOAuth({
+                                                        provider: 'google',
+                                                        options: { redirectTo: `${window.location.origin}/auth/callback` }
+                                                    });
+                                                }}
+                                            >
+                                                <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
+                                                    <path d="M12.0003 20.45c4.6461 0 8.0848-3.2306 8.0848-8.2045 0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.2863 1.2917-1.0022 2.1932-2.1954 2.8727l-.0232.1545 3.1894 2.4705.2211.0221c2.044-1.8841 3.2205-4.6614 3.2205-7.8546 0-.7704-.0841-1.4682-.2391-2.1409H20.45v2.1409h-3.4477v-3.4886h8.0848c.1527.6727.2368 1.3705.2368 2.1409 0 3.1932-1.1765 5.9705-3.2205 7.8546l-3.4338-2.6471z" fill="currentColor" fillOpacity="0" style={{ display: 'none' }}></path>
+                                                    <path d="M12.0003 20.45c4.6461 0 8.0848-3.2306 8.0848-8.2045 0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.1996.9014-.775 1.8352-1.6356 2.4114l2.6447 2.0522c1.5492-1.4284 2.4431-3.534 2.4431-6.1386 0-.5852-.0614-1.1523-.1731-1.6991H12.0003v3.2386h4.5511c-.1318.8477-.6398 1.8159-1.6841 2.5159l2.7106 2.1032c1.5796-1.4557 2.4925-3.5932 2.4925-6.2307 0-.5511-.058-1.0886-.1648-1.6068H12.0003v3.2386h4.5511c-.1318.8477-.6398 1.8159-1.6841 2.5159l2.7106 2.1032c1.5796-1.4557 2.4925-3.5932 2.4925-6.2307 0-.5511-.058-1.0886-.1648-1.6068H12.0003v3.2386h4.5511z" fill="currentColor" style={{ display: 'none' }}></path>
+                                                    <path d="M20.0848 12.2455c0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.2863 1.2917-1.0022 2.1932-2.1954 2.8727l2.6447 2.0522c1.5492-1.4284 2.4431-3.534 2.4431-6.1386 0-.1455-.0045-.2909-.0125-.4341z" fill="#4285F4"></path>
+                                                    <path d="M12.0003 20.45c2.1955 0 4.0409-.7273 5.4394-1.9841l-2.6447-2.0522c-.7295.4909-1.6636.7841-2.7947.7841-2.1557 0-3.9818-1.4568-4.6364-3.4136H4.632l-2.7152 2.0955C3.3003 18.5977 7.348 20.45 12.0003 20.45z" fill="#34A853"></path>
+                                                    <path d="M7.3639 13.7841c-.1682-.5045-.2636-1.0432-.2636-1.6023s.0955-1.0977.2636-1.6023V7.2273H4.632C3.5275 9.4295 3.5275 11.9523 4.632 14.1545l2.7319-2.1386z" fill="#FBBC05"></path>
+                                                    <path d="M12.0003 7.1136c1.1932 0 2.2659.4114 3.1091 1.2159l2.3318-2.3318C15.9934 4.5455 14.1389 3.6364 12.0003 3.6364 7.348 3.6364 3.3003 5.4886 1.9168 9.3841l2.7152 2.0955c.6545-1.9568 2.4807-3.4136 4.6364-3.4136z" fill="#EA4335"></path>
+                                                </svg>
+                                                Google
+                                            </button>
+                                            <button
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-[#d56d0b]/40 focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 transition-all duration-200"
+                                                type="button"
+                                                onClick={() => {
+                                                    supabase.auth.signInWithOAuth({
+                                                        provider: 'facebook',
+                                                        options: { redirectTo: `${window.location.origin}/auth/callback` }
+                                                    });
+                                                }}
+                                            >
+                                                <svg className="h-5 w-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.791-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fillRule="evenodd"></path>
+                                                </svg>
+                                                Facebook
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="mt-8 text-center">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            {mode === 'LOGIN' ? 'Bạn chưa có tài khoản?' : 'Bạn đã có tài khoản?'}
+                                            <button
+                                                onClick={() => { setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN'); setError(null); }}
+                                                className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
+                                            >
+                                                {mode === 'LOGIN' ? 'Đăng ký tài khoản mới' : 'Đăng nhập ngay'}
+                                            </button>
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#d56d0b] to-transparent opacity-50"></div>
+                    </div>
+                    <div className="mt-8 text-center space-y-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-500 flex items-center justify-center gap-1">
+                            <span className="material-symbols-outlined text-sm">verified_user</span>
+                            Bảo mật tuyệt đối • Sản phẩm chính hãng
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-600">
+                            © 2024 Trầm Hương Thiên Phúc. Mọi quyền được bảo lưu.
+                        </p>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }

@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ResetPasswordPage() {
     const [loading, setLoading] = useState(true);
@@ -113,28 +117,24 @@ export default function ResetPasswordPage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            New Password
-                        </label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="password">New Password</Label>
+                        <Input
+                            id="password"
                             type="password"
                             required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Min. 8 characters"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Confirm Password
-                        </label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Input
+                            id="confirmPassword"
                             type="password"
                             required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="Re-enter password"
@@ -157,13 +157,9 @@ export default function ResetPasswordPage() {
                         </ul>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={submitting}
-                        className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-                    >
+                    <Button type="submit" disabled={submitting} className="w-full">
                         {submitting ? 'Resetting...' : 'Reset Password'}
-                    </button>
+                    </Button>
                 </form>
             </div>
         </div>

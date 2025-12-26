@@ -1,59 +1,276 @@
-import { Link } from '@/i18n/routing';
-import TraditionalButton from './TraditionalButton';
-import ProductImage from '../ui/ProductImage';
-import WishlistButton from '../product/WishlistButton';
+'use client';
 
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/routing';
+import ProductImage from '../ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useCart } from '@/components/providers/CartProvider';
+import { useState, useEffect } from 'react';
+import TraditionalHeader from './TraditionalHeader';
+import TraditionalFooter from './TraditionalFooter';
 
 export default function TraditionalProductList({ products }: { products: any[] }) {
+    const t = useTranslations('HomePage');
     const { formatPrice } = useCurrency();
+    const router = useRouter();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Helper to filter products
+    const highEndProducts = products.filter(p => Number(p.price) > 1000000).slice(0, 2);
+    // const dailyProducts = products.filter(p => Number(p.price) <= 500000).slice(0, 2); // Unused in original but keeping logic if needed
+    // const giftSets = products.filter(p => p.category?.code === 'gift_set').slice(0, 1); // Unused in original
+
     return (
-        <div className="bg-trad-red-900 min-h-screen p-8 text-trad-amber-50">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8 border-b-2 border-trad-amber-700 pb-4">Danh Mục Sản Phẩm</h1>
+        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary selection:text-white">
+            <TraditionalHeader />
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {/* Sidebar Filter Placeholder */}
-                    <div className="hidden md:block col-span-1 bg-trad-red-950 p-4 border border-trad-amber-700 rounded-sm h-fit">
-                        <h3 className="font-bold text-lg mb-4 text-trad-amber-600">Bộ Lọc</h3>
-                        <ul className="space-y-2 text-sm text-trad-amber-100/80">
-                            <li>• Vòng Tay</li>
-                            <li>• Nhang Trầm</li>
-                            <li>• Tượng Phật</li>
-                        </ul>
+            {/* Hero Section */}
+            <section className="relative overflow-hidden bg-trad-bg-warm py-20 lg:py-28 border-b border-trad-border-warm">
+                <div className="absolute inset-0 z-0 opacity-40 bg-pattern-lotus"></div>
+                <div className="container relative z-10 mx-auto px-4 text-center md:px-8 xl:px-20">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="mb-4 flex items-center justify-center gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="h-px w-12 bg-trad-primary"></div>
+                            <span className="text-xs font-bold uppercase tracking-[0.25em] text-trad-primary">Tinh Hoa Đất Trời</span>
+                            <div className="h-px w-12 bg-trad-primary"></div>
+                        </div>
+                        <h1 className="mb-8 font-display text-4xl font-bold leading-tight text-trad-red-900 md:text-6xl lg:text-7xl opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                            Hành Trình Hương Trầm
+                        </h1>
+                        <p className="mx-auto max-w-2xl text-lg italic leading-relaxed text-trad-text-main/80 md:text-xl opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                            "Từ những vết thương của cây dó bầu nơi rừng già, thời gian và linh khí đất trời đã hun đúc nên trầm hương quý giá. Mỗi nén hương Thiên Phúc là một câu chuyện về sự chữa lành và an yên."
+                        </p>
+                        <div className="mt-10 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
+                            <span className="material-symbols-outlined animate-bounce text-3xl text-trad-primary/50">keyboard_arrow_down</span>
+                        </div>
                     </div>
+                </div>
+            </section>
 
-                    <div className="col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {products.map((product) => (
-                            <div key={product.id} className="bg-trad-red-950 border border-trad-amber-700 p-4 rounded-sm hover:border-trad-amber-600 transition-colors">
+            {/* Sticky Chapter Nav - Adjustment for new header height (80px) */}
+            <div className={`sticky top-20 z-40 w-full border-b border-trad-border-warm bg-trad-bg-light/95 backdrop-blur-md shadow-sm`}>
+                <div className="container mx-auto px-4 md:px-8 xl:px-20">
+                    <nav className="flex justify-center md:justify-start space-x-2 md:space-x-8 overflow-x-auto no-scrollbar py-2">
+                        <a className="relative px-4 py-3 text-sm font-bold uppercase tracking-widest text-trad-primary transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-trad-primary" href="#chuong-1">Chương I: Thượng Hạng</a>
+                        <a className="relative px-4 py-3 text-sm font-bold uppercase tracking-widest text-trad-text-muted transition-colors hover:text-trad-primary whitespace-nowrap group" href="#chuong-2"><span className="text-trad-border-warm group-hover:text-trad-primary mr-2">•</span>Chương II: An Yên</a>
+                        <a className="relative px-4 py-3 text-sm font-bold uppercase tracking-widest text-trad-text-muted transition-colors hover:text-trad-primary whitespace-nowrap group" href="#chuong-3"><span className="text-trad-border-warm group-hover:text-trad-primary mr-2">•</span>Chương III: Tâm Giao</a>
+                    </nav>
+                </div>
+            </div>
 
-                                <div className="aspect-[4/3] bg-black/20 mb-4 flex items-center justify-center border border-white/5 relative group/image">
-                                    <ProductImage src={product.images[0]} alt={product.translation.title} />
-                                    <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
-                                        <WishlistButton productId={product.id} className="text-trad-amber-600 hover:text-red-500 bg-trad-red-950/80 backdrop-blur-sm" />
+            <main>
+                {/* Chapter 1 */}
+                <section className="relative py-20 lg:py-24 scroll-mt-32" id="chuong-1">
+                    <div className="container mx-auto px-4 md:px-8 xl:px-20">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+                            <div className="lg:col-span-5 lg:sticky lg:top-48 h-fit">
+                                <div className="mb-6 flex items-center gap-2 text-trad-primary">
+                                    <span className="material-symbols-outlined">filter_vintage</span>
+                                    <span className="text-sm font-bold uppercase tracking-widest">Cao Cấp Nhất</span>
+                                </div>
+                                <h2 className="mb-6 text-4xl font-bold text-trad-text-main lg:text-5xl">
+                                    Nụ Trầm <span className="text-trad-primary italic block mt-2">Thượng Hạng</span>
+                                </h2>
+                                <div className="prose prose-lg text-trad-text-main/80 mb-8 font-light text-justify">
+                                    <p className="first-letter:float-left first-letter:mr-3 first-letter:mt-[-4px] first-letter:text-6xl first-letter:font-bold first-letter:leading-none first-letter:text-trad-primary first-letter:font-display">
+                                        Được tuyển chọn từ những phôi trầm có tuổi tích hương trên 15 năm, dòng sản phẩm Thượng Hạng mang hương thơm ngọt sâu, đầm ấm đặc trưng. Không gian thưởng trầm như lắng đọng, đưa tâm trí về trạng thái thiền định sâu sắc nhất.
+                                    </p>
+                                    <p className="text-base mt-4 italic text-trad-text-muted">
+                                        Thích hợp cho không gian thờ cúng trang trọng, bàn trà đạo hoặc quà tặng đối tác cao cấp.
+                                    </p>
+                                </div>
+                                <div className="mt-8 rounded-lg border border-trad-border-warm bg-white p-6 shadow-sm">
+                                    <h3 className="mb-3 font-display text-lg font-bold text-trad-text-main">Bạn đang tìm kiếm?</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        <button className="rounded-full border border-trad-primary bg-trad-primary px-4 py-1.5 text-xs font-bold text-white transition-colors">Tất cả</button>
+                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Hộp gỗ</button>
+                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Hộp giấy</button>
+                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Nụ tháp</button>
                                     </div>
                                 </div>
-                                <h2 className="font-bold text-lg mb-2 text-trad-amber-100">{product.translation.title}</h2>
-
-                                {/* Specs Teaser */}
-                                <p className="text-xs text-trad-amber-100/60 mb-3 font-mono">
-                                    {typeof product.translation.specifications === 'string'
-                                        ? product.translation.specifications.split('.')[0]
-                                        : Object.entries(product.translation.specifications || {}).map(([k, v]) => `${k}: ${v}`).join(', ')
-                                    }...
-                                </p>
-
-                                <div className="flex items-center justify-between mt-auto">
-                                    <span className="text-xl font-bold text-trad-amber-600">{formatPrice(Number(product.price))}</span>
-                                    <Link href={`/products/${product.slug}`}>
-                                        <TraditionalButton className="text-sm py-2 px-4 shadow-none">Chi Tiết</TraditionalButton>
+                            </div>
+                            <div className="lg:col-span-7">
+                                <div className="grid gap-8 sm:grid-cols-2">
+                                    {/* Mock Products/Real Products Mapping */}
+                                    {highEndProducts.length > 0 ? highEndProducts.map((product) => (
+                                        <div key={product.id} className="group relative flex flex-col overflow-hidden rounded-md bg-white shadow-sm hover:shadow-xl transition-all duration-300 border border-trad-border-warm">
+                                            <div className="relative aspect-[4/5] overflow-hidden bg-trad-bg-warm">
+                                                <ProductImage
+                                                    src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
+                                                    alt={product.translation?.title}
+                                                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                                                    <Link href={`/products/${product.slug}`}>
+                                                        <button className="w-full rounded bg-white py-3 text-xs font-bold uppercase tracking-widest text-trad-text-main shadow-lg hover:bg-trad-primary hover:text-white transition-colors">
+                                                            Thêm vào giỏ
+                                                        </button>
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-1 flex-col p-5">
+                                                <div className="mb-2 flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-trad-text-muted">Hộp gỗ sơn mài</span>
+                                                    <div className="flex text-trad-primary">
+                                                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                                                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                                                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                                                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                                                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                                                    </div>
+                                                </div>
+                                                <h3 className="font-display text-lg font-bold text-trad-text-main hover:text-trad-primary transition-colors">
+                                                    <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
+                                                </h3>
+                                                <div className="mt-auto pt-4 flex items-baseline gap-2">
+                                                    <span className="text-lg font-bold text-trad-primary">{formatPrice(product.price)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        // Fallback if no products
+                                        <div className="group relative flex flex-col overflow-hidden rounded-md bg-white shadow-sm hover:shadow-xl transition-all duration-300 border border-trad-border-warm">
+                                            {/* ... Static HTML fallback/mock from original file ... */}
+                                            <div className="relative aspect-[4/5] overflow-hidden bg-trad-bg-warm">
+                                                <img alt="Hộp Nụ Trầm Cao Cấp" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-10 flex justify-center">
+                                    <Link className="inline-flex items-center justify-center rounded-sm border border-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-trad-primary transition-all hover:bg-trad-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 group" href="/products/catalog">
+                                        Xem tất cả sản phẩm
+                                        <span className="material-symbols-outlined ml-2 text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
                                     </Link>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Chapter 2 Divider */}
+                <div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA53Ox39qBj5FKKQEZ3-qcETM9i39kEbUZT9Ynxi9nZXdV7h4KyLsGNrye5hur-9UYFhigs1i88IYbe_7ITlciEDyQtDqCt_6jMfm8bB-bcz-Bok2HRENwXpziMTSxvgkKinp1xXpLvRxBvcOUM0TXTMmzqPzDf7-pXLfglXt_NiFjfaG2hIDYvLw54kCZ-XR1RXvfs5RKE26OizUGUZc4xhXFHZ6D_iv6jTV1kz9Hv0L117p4mnPyak6oeyuTEmxu_tMTKCqXWwmre')" }}>
+                    <div className="absolute inset-0 bg-black/40"></div>
+                    <div className="relative z-10 text-center text-white px-4">
+                        <span className="material-symbols-outlined text-4xl mb-2 opacity-80">self_improvement</span>
+                        <p className="font-display text-2xl md:text-3xl italic font-medium">"Hương trầm tỏa ra, phiền muộn tan biến."</p>
                     </div>
                 </div>
-            </div>
+
+                {/* Chapter 2 */}
+                <section className="bg-trad-bg-warm/50 py-20 lg:py-24 scroll-mt-20" id="chuong-2">
+                    <div className="container mx-auto px-4 md:px-8 xl:px-20">
+                        <div className="mb-12 flex flex-col items-center text-center">
+                            <span className="mb-2 font-display text-4xl text-trad-primary/40">II</span>
+                            <h2 className="text-3xl font-bold text-trad-text-main lg:text-4xl">An Yên Thường Nhật</h2>
+                            <div className="mt-4 h-px w-24 bg-trad-primary/30"></div>
+                            <p className="mt-4 max-w-2xl text-trad-text-main/70">
+                                Dòng sản phẩm phổ thông với hương thơm dịu nhẹ, ít khói, được thiết kế riêng cho nhu cầu sử dụng hàng ngày trong gia đình và không gian sống hiện đại.
+                            </p>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="col-span-1 md:col-span-2 relative overflow-hidden rounded-lg bg-trad-red-900 p-8 text-white shadow-md flex flex-col justify-center min-h-[300px]">
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
+                                <div className="absolute -right-10 -bottom-10 opacity-20">
+                                    <span className="material-symbols-outlined text-[200px]">spa</span>
+                                </div>
+                                <div className="relative z-10">
+                                    <h3 className="mb-3 font-display text-2xl font-bold">Lựa chọn cho gia đình</h3>
+                                    <p className="mb-6 text-trad-bg-light/90 max-w-md">
+                                        100% Nguyên liệu tự nhiên, không hóa chất tạo mùi. An toàn cho người già, trẻ nhỏ và phụ nữ mang thai. Kiểm định bởi CASE.
+                                    </p>
+                                    <ul className="space-y-2 mb-6 text-sm">
+                                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-trad-primary">check_circle</span> Hương dịu, không gây đau đầu</li>
+                                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-trad-primary">check_circle</span> Ít khói, phù hợp chung cư</li>
+                                    </ul>
+                                    <a className="inline-block border-b border-white pb-1 font-bold hover:text-trad-primary hover:border-trad-primary transition-colors" href="#">Xem chứng nhận chất lượng</a>
+                                </div>
+                            </div>
+                            {/* Loop products here if available */}
+                            <div className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm">
+                                <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
+                                    <img alt="Combo Trải Nghiệm" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmLQp5pT5Y-cAkmxjCSjmiemDGOkD2xraiLcWSu4-BOzzp0baxiZSzRW-VBQWker0mQv25uem3U89YDE-PhDD_FmiIuxKdjQUPb9Qe9a188t2vqposa6njiyRntMMSo6Yq947ZjlujmFwbk_Tnw1qXUx0ZQNNYxbdSJJqGomqVdll0kMndDl8dDiKMk643X4e7pd2rKzFvePMAZpv_fKfYBCoyZCPbevp4ksM_AHHb4j7coG5fGIC9ggvwrnIdBsSX_pkfqLnWXnmf" />
+                                    <div className="absolute left-2 top-2 rounded bg-trad-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white">Best Seller</div>
+                                </div>
+                                <h3 className="font-bold text-trad-text-main group-hover:text-trad-primary transition-colors"><Link href="/products/combo-trai-nghiem">Combo Trải Nghiệm</Link></h3>
+                                <p className="text-xs text-trad-text-muted mt-1 mb-3">3 loại nụ hương</p>
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold text-trad-primary">120.000 ₫</span>
+                                    <button className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-bg-warm text-trad-text-main hover:bg-trad-primary hover:text-white transition-colors">
+                                        <span className="material-symbols-outlined text-sm">add</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Chapter 3 */}
+                <section className="py-20 lg:py-24 scroll-mt-20" id="chuong-3">
+                    <div className="container mx-auto px-4 md:px-8 xl:px-20">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                            <div>
+                                <span className="font-display text-4xl text-trad-primary/40 block mb-2">III</span>
+                                <h2 className="text-3xl font-bold text-trad-text-main lg:text-4xl">Tâm Giao Gửi Trao</h2>
+                            </div>
+                            <a className="hidden md:flex items-center text-sm font-bold text-trad-primary hover:text-trad-primary-dark transition-colors" href="#">
+                                Xem tất cả quà tặng <span className="material-symbols-outlined ml-1 text-lg">arrow_forward</span>
+                            </a>
+                        </div>
+                        {/* Static content for Gift Sets */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 group relative overflow-hidden rounded-xl bg-white shadow-md border border-trad-border-warm">
+                                <div className="grid md:grid-cols-2 h-full">
+                                    <div className="relative min-h-[300px] overflow-hidden">
+                                        <img alt="Gift Set" className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA53Ox39qBj5FKKQEZ3-qcETM9i39kEbUZT9Ynxi9nZXdV7h4KyLsGNrye5hur-9UYFhigs1i88IYbe_7ITlciEDyQtDqCt_6jMfm8bB-bcz-Bok2HRENwXpziMTSxvgkKinp1xXpLvRxBvcOUM0TXTMmzqPzDf7-pXLfglXt_NiFjfaG2hIDYvLw54kCZ-XR1RXvfs5RKE26OizUGUZc4xhXFHZ6D_iv6jTV1kz9Hv0L117p4mnPyak6oeyuTEmxu_tMTKCqXWwmre" />
+                                    </div>
+                                    <div className="flex flex-col justify-center p-8 bg-trad-bg-warm/30">
+                                        <span className="mb-2 inline-block rounded bg-trad-primary/10 px-2 py-1 text-xs font-bold text-trad-primary w-fit">Quà tặng Tết</span>
+                                        <h3 className="mb-4 font-display text-2xl font-bold text-trad-text-main">Set Quà Tâm An</h3>
+                                        <p className="mb-6 text-sm leading-relaxed text-trad-text-muted">
+                                            Gói trọn tâm tình trong hộp quà sơn mài sang trọng. Bao gồm Lư gốm men rạn, Nụ trầm thượng hạng và Khăn trải bàn trà thêu tay.
+                                        </p>
+                                        <div className="mt-auto flex items-center justify-between border-t border-trad-border-warm pt-6">
+                                            <div>
+                                                <span className="block text-xs text-trad-text-muted">Giá trọn bộ</span>
+                                                <span className="text-xl font-bold text-trad-primary">890.000 ₫</span>
+                                            </div>
+                                            <button className="inline-flex items-center justify-center rounded-sm bg-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition-all hover:bg-trad-primary-dark hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 shadow-md">Mua Ngay</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Newsletter */}
+                <section className="relative overflow-hidden bg-trad-red-900 py-16 text-center text-white">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
+                    <div className="container relative z-10 mx-auto px-4">
+                        <span className="material-symbols-outlined mb-4 text-5xl opacity-80">mark_email_unread</span>
+                        <h2 className="mb-4 font-display text-3xl font-bold">Thư Hương Từ Thiên Phúc</h2>
+                        <p className="mx-auto mb-8 max-w-lg text-trad-bg-light/80">
+                            Đăng ký để nhận những câu chuyện về Trầm Hương và ưu đãi dành riêng cho khách hàng thân thiết.
+                        </p>
+                        <form className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
+                            <input className="flex-1 rounded border-0 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 focus:bg-white focus:text-trad-text-main focus:ring-2 focus:ring-trad-primary outline-none transition-colors" placeholder="Email của bạn..." required type="email" />
+                            <button className="rounded bg-trad-primary px-8 py-3 font-bold text-white shadow-lg hover:bg-trad-primary-dark hover:text-white transition-colors" type="submit">ĐĂNG KÝ</button>
+                        </form>
+                    </div>
+                </section>
+            </main>
+
+            <TraditionalFooter />
         </div>
     );
 }

@@ -49,7 +49,7 @@ export default async function ProductPage({
         return (
             <>
                 <TraditionalProductDetail product={product} />
-                <ProductReviews productId={product.id} />
+                {/* <ProductReviews productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
             </>
         );
     }

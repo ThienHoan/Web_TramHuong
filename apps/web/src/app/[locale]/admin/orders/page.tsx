@@ -5,6 +5,10 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
 import { useCurrency } from '@/hooks/useCurrency';
 import Pagination from '@/components/ui/Pagination';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const PAGE_LIMIT = 20;
@@ -94,25 +98,25 @@ export default function AdminOrdersPage() {
                     </span>
                 </div>
 
-                <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-100">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
-                                <tr>
-                                    <th className="p-4">Order Info</th>
-                                    <th className="p-4">Customer</th>
-                                    <th className="p-4">Status & Action</th>
-                                    <th className="p-4">Total</th>
-                                    <th className="p-4">View</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
+                <Card>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Order Info</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Status & Action</TableHead>
+                                    <TableHead>Total</TableHead>
+                                    <TableHead>View</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {orders.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="p-8 text-center text-gray-400">
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                             No orders found.
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ) : (
                                     orders.map(order => (
                                         <OrderRow
@@ -123,10 +127,10 @@ export default function AdminOrdersPage() {
                                         />
                                     ))
                                 )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
 
                 <div className="bg-white border-t border-gray-100 mt-4">
                     <Pagination
@@ -135,7 +139,7 @@ export default function AdminOrdersPage() {
                     />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

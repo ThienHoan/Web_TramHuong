@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function VerifyPage() {
     const [loading, setLoading] = useState(true);
@@ -198,14 +203,12 @@ export default function VerifyPage() {
                 </div>
 
                 <form onSubmit={handlePasswordCreation} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Password
-                        </label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                            id="password"
                             type="password"
                             required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
@@ -215,14 +218,12 @@ export default function VerifyPage() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Confirm Password
-                        </label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Input
+                            id="confirmPassword"
                             type="password"
                             required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="Re-enter password"
@@ -246,18 +247,14 @@ export default function VerifyPage() {
                     </div>
 
                     {passwordError && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
-                            {passwordError}
-                        </div>
+                        <Alert variant="destructive">
+                            <AlertDescription>{passwordError}</AlertDescription>
+                        </Alert>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={submitting}
-                        className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-                    >
+                    <Button type="submit" disabled={submitting} className="w-full">
                         {submitting ? 'Creating...' : 'Create Password'}
-                    </button>
+                    </Button>
                 </form>
             </div>
         </div>

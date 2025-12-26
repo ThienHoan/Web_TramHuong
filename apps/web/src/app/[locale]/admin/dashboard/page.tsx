@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useAnalytics } from '../../../../hooks/useAnalytics';
 import { useCurrency } from '../../../../hooks/useCurrency';
 import DashboardCharts from '../../../../components/admin/DashboardCharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboard() {
     const [range, setRange] = useState('7d');
@@ -36,18 +41,16 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Time Range Filter */}
-                    <div className="flex bg-white rounded-lg shadow-sm p-1 border border-gray-200">
+                    <div className="flex gap-2">
                         {['7d', '30d', 'all'].map((r) => (
-                            <button
+                            <Button
                                 key={r}
                                 onClick={() => setRange(r)}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${range === r
-                                        ? 'bg-amber-900 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
+                                variant={range === r ? 'default' : 'outline'}
+                                size="sm"
                             >
                                 {r === '7d' ? 'Last 7 Days' : r === '30d' ? 'Last 30 Days' : 'All Time'}
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>
@@ -56,7 +59,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <MetricCard
                         title="Total Revenue"
-                        value={formatPrice(data.summary.totalRevenue)}
+                        value={formatPrice(Number(data.summary.totalRevenue || 0))}
                         icon="💰"
                         color="bg-emerald-50 text-emerald-700 border-emerald-100"
                     />
@@ -104,7 +107,7 @@ export default function AdminDashboard() {
                                         <td className="p-4 font-medium text-gray-800">{product.name}</td>
                                         <td className="p-4 text-right text-gray-600">{product.quantity}</td>
                                         <td className="p-4 text-right font-medium text-amber-700">
-                                            {formatPrice(product.revenue)}
+                                            {formatPrice(Number(product.revenue || 0))}
                                         </td>
                                     </tr>
                                 ))}
@@ -125,13 +128,20 @@ export default function AdminDashboard() {
 }
 
 function MetricCard({ title, value, icon, color }: any) {
+    // Extract text color class
+    const textColor = color.includes('emerald') ? 'text-emerald-700'
+        : color.includes('blue') ? 'text-blue-700'
+            : 'text-amber-700';
+
     return (
-        <div className={`p-6 rounded-lg border ${color} shadow-sm flex items-center justify-between transition-transform hover:scale-[1.02]`}>
-            <div>
-                <p className="text-sm font-medium opacity-80">{title}</p>
-                <p className="text-2xl font-bold mt-1">{value}</p>
-            </div>
-            <div className="text-4xl opacity-50">{icon}</div>
-        </div>
+        <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <span className="text-4xl opacity-50">{icon}</span>
+            </CardHeader>
+            <CardContent>
+                <div className={`text-2xl font-bold ${textColor}`}>{value}</div>
+            </CardContent>
+        </Card>
     );
 }

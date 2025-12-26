@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ForgotPasswordPage() {
     const locale = useLocale();
@@ -71,27 +75,21 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Email Address
-                        </label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                            id="email"
                             type="email"
                             required
-                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="your@email.com"
                         />
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-                    >
+                    <Button type="submit" disabled={loading} className="w-full">
                         {loading ? 'Sending...' : 'Send Reset Link'}
-                    </button>
+                    </Button>
                 </form>
 
                 <div className="mt-6 text-center">

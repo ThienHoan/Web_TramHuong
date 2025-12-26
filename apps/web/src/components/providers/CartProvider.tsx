@@ -15,7 +15,7 @@ interface CartItem {
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, 'quantity'>) => void;
+    addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
     removeItem: (id: string) => void;
     updateQuantity: (id: string, delta: number) => void;
     clearCart: () => void;
@@ -91,15 +91,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, user, initialized]);
 
-    const addItem = async (newItem: Omit<CartItem, 'quantity'>) => {
+    const addItem = async (newItem: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+        const qtyToAdd = newItem.quantity || 1;
+
         // Optimistic Update
         const oldItems = [...items];
         setItems(prev => {
             const existing = prev.find(i => i.id === newItem.id);
             if (existing) {
-                return prev.map(i => i.id === newItem.id ? { ...i, quantity: i.quantity + 1 } : i);
+                return prev.map(i => i.id === newItem.id ? { ...i, quantity: i.quantity + qtyToAdd } : i);
             }
-            return [...prev, { ...newItem, quantity: 1 }];
+            return [...prev, { ...newItem, quantity: qtyToAdd }];
         });
 
         if (user && session) {
@@ -110,7 +112,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session.access_token}`
                     },
-                    body: JSON.stringify({ productId: newItem.id, quantity: 1 })
+                    body: JSON.stringify({ productId: newItem.id, quantity: qtyToAdd })
                 });
             } catch (e) {
                 console.error('Failed to add item', e);

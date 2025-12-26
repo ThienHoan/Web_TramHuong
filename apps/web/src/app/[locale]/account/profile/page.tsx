@@ -4,6 +4,12 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getProfile, updateProfile, setAccessToken } from '@/lib/api-client';
 import LocationSelector from '@/components/checkout/LocationSelector';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRouter } from '@/i18n/routing';
 
 export default function ProfilePage() {
@@ -96,17 +102,18 @@ export default function ProfilePage() {
                             )}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1 text-left">Avatar URL</label>
-                            <input
+                        <div className="space-y-2">
+                            <Label htmlFor="avatar_url" className="text-left">Avatar URL</Label>
+                            <Input
+                                id="avatar_url"
                                 type="url"
                                 name="avatar_url"
                                 value={formData.avatar_url}
                                 onChange={handleChange}
                                 placeholder="https://..."
-                                className="w-full border p-2 rounded text-sm"
+                                className="text-sm"
                             />
-                            <p className="text-xs text-gray-500 mt-1 text-left">Paste an image URL to update your avatar.</p>
+                            <p className="text-xs text-muted-foreground mt-1 text-left">Paste an image URL to update your avatar.</p>
                         </div>
                     </div>
                 </div>
@@ -116,20 +123,21 @@ export default function ProfilePage() {
                     <div className="bg-white p-6 rounded-lg shadow-sm border">
                         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Personal Information</h2>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Full Name</label>
-                                <input
+                            <div className="space-y-2">
+                                <Label htmlFor="full_name">Full Name</Label>
+                                <Input
+                                    id="full_name"
                                     type="text"
                                     name="full_name"
                                     value={formData.full_name}
                                     onChange={handleChange}
-                                    className="w-full border p-2 rounded"
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Phone Number</label>
-                                <input
+                            <div className="space-y-2">
+                                <Label htmlFor="phone_number">Phone Number</Label>
+                                <Input
+                                    id="phone_number"
                                     type="tel"
                                     name="phone_number"
                                     value={formData.phone_number}
