@@ -54,7 +54,7 @@ export default function ContactPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Đường dây kết nối</p>
-                                                    <p className="text-sm text-stone-600 mt-1">1900-8888</p>
+                                                    <p className="text-sm text-stone-600 mt-1">035.617.68.78</p>
                                                     <p className="text-xs text-stone-500/70">Thứ 2 - Chủ Nhật: 8:00 - 21:00</p>
                                                 </div>
                                             </div>

@@ -9,6 +9,9 @@ import Header from '@/components/layout/Header';
 import { Metadata } from 'next';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from 'nextjs-toploader';
+
+// ... (existing font definitions)
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +88,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${playfairDisplay.variable} antialiased`}
       >
+        <NextTopLoader color="var(--color-trad-primary)" showSpinner={false} />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <CartProvider>

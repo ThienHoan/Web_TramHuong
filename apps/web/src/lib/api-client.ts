@@ -4,6 +4,7 @@ import { orderService } from '../services/order-service';
 import { authService } from '../services/auth-service';
 import { reviewService } from '../services/review-service';
 import { wishlistService } from '../services/wishlist-service';
+import { blogService } from '../services/blog-service';
 
 // Re-export types if needed, or consumers should import from types/
 export * from '../services/base-http';
@@ -37,4 +38,11 @@ export const seedReview = reviewService.seedReview;
 export const toggleWishlist = wishlistService.toggleWishlist;
 export const getWishlist = wishlistService.getWishlist;
 export const getLikedIds = wishlistService.getLikedIds;
+
+// Blog
+export const getPosts = blogService.getPosts;
+export const getPostBySlug = blogService.getPostBySlug;
+export const createPost = blogService.createPost;
+export const updatePost = blogService.updatePost;
+export const deletePost = blogService.deletePost;
 

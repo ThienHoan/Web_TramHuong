@@ -20,6 +20,7 @@ export default function AdminLayout({
         { name: 'Products', href: '/admin/products' },
         { name: 'Categories', href: '/admin/categories' },
         { name: 'Users', href: '/admin/users' },
+        { name: 'Blog', href: '/admin/blog' },
     ];
 
     return (

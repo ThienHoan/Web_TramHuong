@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useAnalytics } from '../../../../hooks/useAnalytics';
 import { useCurrency } from '../../../../hooks/useCurrency';
-import DashboardCharts from '../../../../components/admin/DashboardCharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load Recharts (Heavy library)
+const DashboardCharts = dynamic(() => import('../../../../components/admin/DashboardCharts'), {
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full bg-gray-100 animate-pulse rounded-xl"></div>
+});
 
 export default function AdminDashboard() {
     const [range, setRange] = useState('7d');

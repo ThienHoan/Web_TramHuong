@@ -9,6 +9,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { getOrder, setAccessToken } from '@/lib/api-client';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
+import { motion } from 'framer-motion';
 
 export default function CheckoutSuccessPage() {
     const searchParams = useSearchParams();
@@ -44,22 +45,28 @@ export default function CheckoutSuccessPage() {
             <main className="flex-grow flex flex-col items-center justify-center py-10 px-4 md:px-6">
                 <div className="w-full max-w-[800px] flex flex-col gap-6">
                     {/* Success Card */}
-                    <div className="relative overflow-hidden rounded-2xl bg-trad-red shadow-xl border border-[#7a3e3b]">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: "backOut" }}
+                        className="relative overflow-hidden rounded-2xl bg-trad-red shadow-xl border border-[#7a3e3b]"
+                    >
                         {/* Decorative corner accents */}
                         <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-trad-gold/20 to-transparent rounded-tl-2xl"></div>
                         <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-trad-gold/20 to-transparent rounded-br-2xl"></div>
 
                         <div className="flex flex-col items-center px-6 py-10 md:px-12 md:py-12 text-center">
                             {/* Success Icon */}
-                            <div className="mb-8 flex h-24 w-24 items-center justify-center 
-                rounded-full bg-trad-gold/15 ring-1 ring-trad-gold/40">
-                                <span className="material-symbols-outlined 
-                     text-6xl text-trad-gold leading-none">
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-trad-gold/15 ring-1 ring-trad-gold/40"
+                            >
+                                <span className="material-symbols-outlined text-6xl text-trad-gold leading-none">
                                     check_circle
                                 </span>
-                            </div>
-
-
+                            </motion.div>
 
                             {/* Main Headlines */}
                             <h1 className="text-3xl md:text-4xl font-bold text-[#fef3c7] mb-3">Đặt hàng thành công!</h1>
@@ -131,7 +138,7 @@ export default function CheckoutSuccessPage() {
                                 Nếu cần hỗ trợ, vui lòng liên hệ Hotline: <span className="text-[#fef3c7]">1900 1234</span>
                             </p>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </main>
 

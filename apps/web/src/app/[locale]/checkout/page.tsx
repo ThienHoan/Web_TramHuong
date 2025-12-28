@@ -308,9 +308,9 @@ export default function TraditionalCheckoutPage() {
                                         <p className="text-sm text-gray-600 mt-1">Bạn cần giúp đỡ? Hãy liên hệ với chúng tôi qua hotline.</p>
                                     </div>
                                 </div>
-                                <a className="flex items-center justify-center gap-2 w-full py-2 border border-trad-border-warm/30 rounded-lg text-trad-red-900 font-bold hover:bg-trad-bg-warm transition-colors" href="tel:1900xxxx">
+                                <a className="flex items-center justify-center gap-2 w-full py-2 border border-trad-border-warm/30 rounded-lg text-trad-red-900 font-bold hover:bg-trad-bg-warm transition-colors" href="tel:0356176878">
                                     <span className="material-symbols-outlined text-lg">call</span>
-                                    1900 xxxx
+                                    035.617.68.78
                                 </a>
                             </div>
                         </div>

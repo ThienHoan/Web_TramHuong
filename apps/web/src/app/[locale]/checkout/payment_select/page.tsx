@@ -9,6 +9,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import ProductImage from '@/components/ui/ProductImage';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ProcessingOrderOverlay } from '@/components/ui/ProcessingOrderOverlay';
 
 export default function PaymentSelectPage() {
     const { items, total, clearCart } = useCart();
@@ -46,30 +47,32 @@ export default function PaymentSelectPage() {
         }
 
         setLoading(true);
+        // Wait a bit to show the overlay animation properly before heavy work/redirect
+        await new Promise(resolve => setTimeout(resolve, 800));
+
         try {
             setAccessToken(session.access_token);
             const orderItems = items.map(i => ({
                 productId: i.id,
                 quantity: i.quantity,
-                variantId: i.variantId,
-                variantName: i.variantName
+                variantId: i.variantId || undefined,
+                variantName: i.variantName || undefined
             }));
-
-            // Reconstruct fullShippingInfo if needed, but assuming data from checkout is already formatted or close to it.
-            // shippingInfo from checkout/page.tsx: { name, phone, address, locationParts: { province, district, ward } }
-            // API expects: { name, phone, address, city } where address is full string
 
             const fullShippingInfo = {
                 name: shippingInfo.name,
                 phone: shippingInfo.phone,
                 city: shippingInfo.city, // The province name
-                address: shippingInfo.full_address // We will ensure this is saved correctly in previous page
+                address: shippingInfo.full_address
             };
 
-            const order = await createOrder(orderItems, fullShippingInfo, paymentMethod);
+            const order = await createOrder({
+                items: orderItems,
+                shipping_info: fullShippingInfo,
+                paymentMethod
+            });
 
             clearCart();
-            // Clear storage
             localStorage.removeItem('checkout_shipping_info');
 
             if (paymentMethod === 'cod') {
@@ -79,14 +82,14 @@ export default function PaymentSelectPage() {
             }
         } catch (e: any) {
             setError(e.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+            setLoading(false); // Only stop loading on error
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
         <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white">
+            <ProcessingOrderOverlay isVisible={loading} />
             <TraditionalHeader />
 
             {/* Main Content */}
@@ -186,7 +189,7 @@ export default function PaymentSelectPage() {
                             {/* Product List */}
                             <div className="flex flex-col max-h-[300px] overflow-y-auto custom-scrollbar p-6 gap-6">
                                 {items.map(item => (
-                                    <div key={item.id} className="flex gap-4">
+                                    <div key={item.key} className="flex gap-4">
                                         <div className="relative size-16 shrink-0 rounded-lg overflow-hidden border border-trad-border-warm">
                                             <ProductImage src={item.image} alt={item.title} />
 
