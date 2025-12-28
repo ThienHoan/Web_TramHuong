@@ -24,7 +24,7 @@ async function checkTable() {
     if (error) {
         console.error('Check Error:', error.message);
     } else {
-        console.log('User found:', data);
+
     }
 }
 

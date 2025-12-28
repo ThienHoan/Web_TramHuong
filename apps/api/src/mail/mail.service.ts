@@ -12,7 +12,7 @@ export class MailService {
     private async sendSafe(options: any) {
         try {
             await this.mailerService.sendMail(options);
-            console.log(`Email sent successfully to ${options.to}`);
+
         } catch (error) {
             console.error(`Failed to send email to ${options.to}:`, error);
             // Non-blocking: Do not re-throw error to prevent stopping the order flow

@@ -20,6 +20,7 @@ export class CartService {
                     slug,
                     price,
                     images,
+                    variants,
                     translations:product_translations(title, locale)
                 )
             `)
@@ -30,18 +31,32 @@ export class CartService {
         // Transform to simplified CartItem format for frontend
         return data.map((item: any) => {
             const product = item.product;
-            // Best effort title (EN or first available)
-            const title = product.translations?.find((t: any) => t.locale === 'en')?.title
+            // Best effort title (VI -> EN -> first available)
+            const title = product.translations?.find((t: any) => t.locale === 'vi')?.title
+                || product.translations?.find((t: any) => t.locale === 'en')?.title
                 || product.translations?.[0]?.title
                 || product.slug;
 
+            let price = product.price;
+            // Resolve variant price
+            if (item.variant_id && Array.isArray(product.variants)) {
+                // We stored variant name in variant_id for now
+                const variant = product.variants.find((v: any) => v.name === item.variant_id);
+                if (variant && variant.price !== undefined) {
+                    price = Number(variant.price);
+                }
+            }
+
             return {
+                cartItemId: item.id, // Primary Key of cart_item
                 id: product.id,
                 slug: product.slug,
                 title: title,
-                price: product.price,
+                price: price,
                 image: product.images?.[0] || null,
-                quantity: item.quantity
+                quantity: item.quantity,
+                variantId: item.variant_id || null,
+                variantName: item.variant_name || null
             };
         });
     }
@@ -49,28 +64,28 @@ export class CartService {
     async mergeCart(userId: string, items: any[]) {
         if (!items || items.length === 0) return { success: true };
 
-        // For each item, upsert into DB
-        // Since we have a unique constraint on (user_id, product_id), we can manage duplicates
-        // However, standard SQL UPSERT replaces value. We might want to sum quantities?
-        // For simplicity in MVP: Database quantity wins OR we sum them.
-        // Let's do a simple loop for now to handle logic:
-
         for (const item of items) {
             // Check existence
-            const { data: existing } = await this.client
+            let query = this.client
                 .from('cart_items')
-                .select('quantity')
+                .select('id, quantity')
                 .eq('user_id', userId)
-                .eq('product_id', item.id)
-                .single();
+                .eq('product_id', item.id);
+
+            if (item.variantId) {
+                query = query.eq('variant_id', item.variantId);
+            } else {
+                query = query.is('variant_id', null);
+            }
+
+            const { data: existing } = await query.maybeSingle();
 
             if (existing) {
-                // Update quantity (summing logic is safer for merges)
+                // Update quantity
                 await this.client
                     .from('cart_items')
                     .update({ quantity: existing.quantity + item.quantity })
-                    .eq('user_id', userId)
-                    .eq('product_id', item.id);
+                    .eq('id', existing.id);
             } else {
                 // Insert new
                 await this.client
@@ -78,7 +93,9 @@ export class CartService {
                     .insert({
                         user_id: userId,
                         product_id: item.id,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        variant_id: item.variantId || null,
+                        variant_name: item.variantName || null
                     });
             }
         }
@@ -86,21 +103,27 @@ export class CartService {
         return this.getCart(userId);
     }
 
-    async addItem(userId: string, productId: string, quantity: number = 1) {
+    async addItem(userId: string, productId: string, quantity: number = 1, variantId?: string, variantName?: string) {
         // Upsert logic (Summing)
-        const { data: existing } = await this.client
+        let query = this.client
             .from('cart_items')
-            .select('quantity')
+            .select('id, quantity')
             .eq('user_id', userId)
-            .eq('product_id', productId)
-            .single();
+            .eq('product_id', productId);
+
+        if (variantId) {
+            query = query.eq('variant_id', variantId);
+        } else {
+            query = query.is('variant_id', null);
+        }
+
+        const { data: existing } = await query.maybeSingle();
 
         if (existing) {
             const { error } = await this.client
                 .from('cart_items')
                 .update({ quantity: existing.quantity + quantity })
-                .eq('user_id', userId)
-                .eq('product_id', productId);
+                .eq('id', existing.id);
             if (error) throw new BadRequestException(error.message);
         } else {
             const { error } = await this.client
@@ -108,7 +131,9 @@ export class CartService {
                 .insert({
                     user_id: userId,
                     product_id: productId,
-                    quantity: quantity
+                    quantity: quantity,
+                    variant_id: variantId || null,
+                    variant_name: variantName || null
                 });
             if (error) throw new BadRequestException(error.message);
         }
@@ -116,23 +141,23 @@ export class CartService {
         return { success: true };
     }
 
-    async updateQuantity(userId: string, productId: string, quantity: number) {
+    async updateQuantity(userId: string, itemId: string, quantity: number) {
         const { error } = await this.client
             .from('cart_items')
             .update({ quantity })
             .eq('user_id', userId)
-            .eq('product_id', productId);
+            .eq('id', itemId); // Use Row ID
 
         if (error) throw new BadRequestException(error.message);
         return { success: true };
     }
 
-    async removeItem(userId: string, productId: string) {
+    async removeItem(userId: string, itemId: string) {
         const { error } = await this.client
             .from('cart_items')
             .delete()
             .eq('user_id', userId)
-            .eq('product_id', productId);
+            .eq('id', itemId); // Use Row ID
 
         if (error) throw new BadRequestException(error.message);
         return { success: true };

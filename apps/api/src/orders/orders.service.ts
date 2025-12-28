@@ -93,6 +93,7 @@ export class OrdersService {
                 images,
                 is_active,
                 quantity,
+                variants,
                 translations:product_translations(title, locale)
             `)
             .in('id', productIds);
@@ -109,13 +110,13 @@ export class OrdersService {
 
             // Check Active
             if (!product.is_active) {
-                const title = product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
                 throw new BadRequestException(`Product '${title}' is currently unavailable.`);
             }
 
             // Check Stock
             if (product.quantity < item.quantity) {
-                const title = product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
                 throw new BadRequestException(`Product '${title}' is out of stock (Only ${product.quantity} left).`);
             }
         }
@@ -127,24 +128,44 @@ export class OrdersService {
                 throw new BadRequestException(`One or more items in your cart are invalid.`);
             }
 
-            const itemTotal = product.price * item.quantity;
-            total += itemTotal;
-
-            const title = product.translations?.find((t: any) => t.locale === 'en')?.title
+            const title = product.translations?.find((t: any) => t.locale === 'vi')?.title
+                || product.translations?.find((t: any) => t.locale === 'en')?.title
                 || product.translations?.[0]?.title
                 || product.slug;
             const image = product.images?.[0] || null;
 
+            let price = product.price;
+            if (item.variantId && Array.isArray(product.variants)) {
+                const v = product.variants.find((v: any) => v.name === item.variantId);
+                if (v && v.price !== undefined) {
+                    price = Number(v.price);
+                }
+            }
+
+            const itemTotal = price * item.quantity;
+            total += itemTotal;
+
             return {
                 ...item,
-                price: product.price,
+                price: price,
                 slug: product.slug,
                 title,
-                image
+                image,
+                variant_id: item.variantId || null,
+                variant_name: item.variantName || null
             };
         });
 
-        // 2. Determine order status and deadline based on payment method
+        // 2. Calculate Shipping and Final Total
+        const shippingFee = total >= 300000 ? 0 : 30000;
+        total += shippingFee;
+
+        // Record shipping fee in shipping info
+        if (typeof shippingInfo === 'object') {
+            shippingInfo.shipping_fee = shippingFee;
+        }
+
+        // 3. Determine order status and deadline based on payment method
         let orderStatus = 'PENDING';
         let paymentDeadline = null;
 
@@ -233,7 +254,7 @@ export class OrdersService {
         // STOCK REVERSION LOGIC
         // If moving TO Canceled FROM non-canceled
         if (status === 'CANCELED' && currentOrder.status !== 'CANCELED') {
-            console.log(`Canceling Order ${id}: Returning stock...`);
+
             const items = currentOrder.items;
             if (Array.isArray(items)) {
                 for (const item of items) {
@@ -250,7 +271,7 @@ export class OrdersService {
                                 .from('products')
                                 .update({ quantity: product.quantity + item.quantity })
                                 .eq('id', item.productId);
-                            console.log(`Returned ${item.quantity} to Product ${item.productId}`);
+
                         }
                     }
                 }
@@ -274,7 +295,7 @@ export class OrdersService {
 
         // Email Notification
         if (currentStatus !== status) {
-            console.log(`[OrdersService] Status changed ${currentStatus} -> ${status}. Attempting to send email...`);
+
 
             // Email Fallback: If updated data has no email, try to fetch from User
             if (!data.shipping_info?.email && data.user_id) {
@@ -287,7 +308,7 @@ export class OrdersService {
                 if (user?.email) {
                     if (!data.shipping_info) data.shipping_info = {};
                     data.shipping_info.email = user.email;
-                    console.log(`[OrdersService] Recovered Email for Status Update: ${user.email}`);
+
                 }
             }
 
@@ -316,7 +337,7 @@ export class OrdersService {
         }
 
         if (!orderId) {
-            console.log('Webhook ignored: No UUID found in content', content);
+
             return { success: false, reason: 'No Order ID found' };
         }
 
@@ -327,7 +348,7 @@ export class OrdersService {
             .single();
 
         if (error || !order) {
-            console.log('Webhook ignored: Order not found', orderId);
+
             return { success: false, reason: 'Order not found' };
         }
 
@@ -338,7 +359,7 @@ export class OrdersService {
 
         // Amount Check 
         if (amount < order.total) {
-            console.log(`Webhook Warning: Amount mismatch for ${orderId}. Expected ${order.total}, got ${amount}`);
+
             return { success: false, reason: 'Amount mismatch' };
         }
 
@@ -357,7 +378,7 @@ export class OrdersService {
 
         // Fallback: If no email in shipping_info, try to get from User profile
         if (!customerEmail && order.user_id) {
-            console.log('[VerifyPayment] Email missing in shipping_info, fetching from Users table...');
+
             const { data: user } = await this.client
                 .from('users')
                 .select('email')
@@ -369,10 +390,10 @@ export class OrdersService {
                 // Patch the order object so MailService can use it
                 if (!order.shipping_info) order.shipping_info = {};
                 order.shipping_info.email = customerEmail;
-                console.log('[VerifyPayment] Recovered Email from User:', customerEmail);
+
             }
         } else {
-            console.log(`[VerifyPayment] Found Customer Email: '${customerEmail}'`);
+
         }
 
         // 1. Notify Verification/Payment Success to User

@@ -13,6 +13,8 @@ export class ProductsService {
         page?: number;
         limit?: number;
         stock_status?: string; // 'in_stock' | 'out_of_stock' | 'low_stock'
+        min_price?: number;
+        max_price?: number;
     }) {
         const client = this.supabase.getClient();
         let query = client
@@ -20,7 +22,12 @@ export class ProductsService {
             .select(`
         *,
         quantity,
-        translations:product_translations(*)
+        translations:product_translations(*),
+        category:categories!category_id(
+            id,
+            slug,
+            translations:category_translations(*)
+        )
       `, { count: 'exact' });
 
         // Filter by Locale for translations (Inner join trick: only products with this locale translation)
@@ -36,7 +43,17 @@ export class ProductsService {
 
         // Filter: Category
         if (options?.category) {
-            query = query.ilike('category', options.category);
+            // Filter by related category slug
+            // Note: This effectively enforces an Inner Join on 'category' when this filter is active
+            query = query.eq('category.slug', options.category);
+        }
+
+        // Filter: Price Range
+        if (options?.min_price !== undefined) {
+            query = query.gte('price', options.min_price);
+        }
+        if (options?.max_price !== undefined) {
+            query = query.lte('price', options.max_price);
         }
 
         // Filter: Stock Status (Backend Level)
@@ -153,7 +170,12 @@ export class ProductsService {
             .from('products')
             .select(`
         *,
-        translations:product_translations(*)
+        translations:product_translations(*),
+        category:categories!category_id(
+            id,
+            slug,
+            translations:category_translations(*)
+        )
       `)
             .eq('slug', slug)
             .eq('product_translations.locale', locale)
@@ -196,7 +218,12 @@ export class ProductsService {
             .from('products')
             .select(`
         *,
-        translations:product_translations(*)
+        translations:product_translations(*),
+        category:categories!category_id(
+            id,
+            slug,
+            translations:category_translations(*)
+        )
       `)
             .eq('id', id)
             .single();
@@ -214,12 +241,31 @@ export class ProductsService {
         };
     }
 
-    async create(body: any, file: Express.Multer.File) {
-        // Upload image and store as array for future gallery support
-        const imageUrl = await this.uploadImage(file);
-        const { title_en, title_vi, desc_en, desc_vi, price, slug, category, quantity } = body;
+    async create(body: any, files: Array<Express.Multer.File>) {
+        // Upload images
+        const imageUrls = files && files.length > 0
+            ? await Promise.all(files.map(file => this.uploadImage(file)))
+            : [];
+        const { title_en, title_vi, desc_en, desc_vi, price, original_price, slug, category, quantity, variants, specifications_en, specifications_vi } = body;
 
         const client = this.supabase.getClient();
+
+        // Resolve Category Slug to ID
+        let category_id = null;
+        if (category) {
+            const { data: catData } = await client.from('categories').select('id').eq('slug', category).single();
+            if (catData) category_id = catData.id;
+        }
+
+        // Parse Variants (if sent as stringified JSON in FormData)
+        let parsedVariants = [];
+        try {
+            if (variants) {
+                parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+            }
+        } catch (e) {
+            console.warn('Failed to parse variants', e);
+        }
 
         // 1. Create Product
         const { data: product, error: prodError } = await client
@@ -228,11 +274,13 @@ export class ProductsService {
                 slug,
                 // Remove dots in price if present (frontend might send "50.000")
                 price: parseFloat(price.toString().replace(/\./g, '')),
-                images: [imageUrl], // Store as JSONB Array
-                category,
+                original_price: original_price ? parseFloat(original_price.toString().replace(/\./g, '')) : null,
+                images: imageUrls, // Store as JSONB Array
+                category_id: category_id,
                 quantity: quantity ? parseInt(quantity) : 0,
-                style: body.style || 'default',
-                is_active: true
+                style: body.style || 'both',
+                is_active: true,
+                variants: parsedVariants
             })
             .select()
             .single();
@@ -241,8 +289,20 @@ export class ProductsService {
 
         // 2. Create Translations
         const translations = [
-            { product_id: product.id, locale: 'en', title: title_en, description: desc_en },
-            { product_id: product.id, locale: 'vi', title: title_vi, description: desc_vi }
+            {
+                product_id: product.id,
+                locale: 'en',
+                title: title_en,
+                description: desc_en,
+                specifications: specifications_en
+            },
+            {
+                product_id: product.id,
+                locale: 'vi',
+                title: title_vi,
+                description: desc_vi,
+                specifications: specifications_vi
+            }
         ];
 
         const { error: transError } = await client
@@ -254,23 +314,60 @@ export class ProductsService {
         return product;
     }
 
-    async update(id: string, body: any, file?: Express.Multer.File) {
+    async update(id: string, body: any, files?: Array<Express.Multer.File>) {
         const client = this.supabase.getClient();
         let updateData: any = {};
 
-        if (file) {
-            const imageUrl = await this.uploadImage(file);
-            updateData.images = [imageUrl]; // Replace images with new single image (for now)
+        // Parse keep_images
+        let keepImages: string[] = [];
+        if (body.keep_images) {
+            try {
+                keepImages = typeof body.keep_images === 'string' ? JSON.parse(body.keep_images) : body.keep_images;
+            } catch { }
+        }
+
+        // Upload new files
+        let newImageUrls: string[] = [];
+        if (files && files.length > 0) {
+            newImageUrls = await Promise.all(files.map(f => this.uploadImage(f)));
+        }
+
+        // Combine if any change (files uploaded OR keep_images field sent)
+        if ((files && files.length > 0) || body.keep_images) {
+            updateData.images = [...keepImages, ...newImageUrls];
         }
         if (body.price) {
             // Remove dots (thousands separators) and convert to float
             const cleanPrice = body.price.toString().replace(/\./g, '');
             updateData.price = parseFloat(cleanPrice);
         }
+        if (body.original_price !== undefined) {
+            if (body.original_price === '' || body.original_price === null) {
+                updateData.original_price = null;
+            } else {
+                updateData.original_price = parseFloat(body.original_price.toString().replace(/\./g, ''));
+            }
+        }
         if (body.slug) updateData.slug = body.slug;
-        if (body.category) updateData.category = body.category;
+        if (typeof body.category !== 'undefined') {
+            // If category is provided, resolve to ID
+            // If it's empty string, maybe unlink? For now assume valid slug.
+            if (body.category) {
+                const { data: catData } = await client.from('categories').select('id').eq('slug', body.category).single();
+                if (catData) updateData.category_id = catData.id;
+            }
+        }
         if (body.quantity !== undefined && body.quantity !== null) updateData.quantity = parseInt(body.quantity);
         if (body.is_active !== undefined) updateData.is_active = body.is_active === 'true' || body.is_active === true;
+
+        // Variants
+        if (body.variants) {
+            try {
+                updateData.variants = typeof body.variants === 'string' ? JSON.parse(body.variants) : body.variants;
+            } catch (e) {
+                console.warn('Failed to parse variants update', e);
+            }
+        }
 
 
         // Update Product
@@ -287,18 +384,25 @@ export class ProductsService {
         }
 
         // Update Translations (Upsert)
-        const { title_en, title_vi, desc_en, desc_vi } = body;
-        if (title_en || desc_en) {
-            await client.from('product_translations').upsert({
-                product_id: id, locale: 'en',
-                title: title_en, description: desc_en
-            }, { onConflict: 'product_id,locale' });
+        const { title_en, title_vi, desc_en, desc_vi, specifications_en, specifications_vi } = body;
+
+        // Prepare translation upserts
+        if (title_en !== undefined || desc_en !== undefined || specifications_en !== undefined) {
+            const payload: any = { product_id: id, locale: 'en' };
+            if (title_en !== undefined) payload.title = title_en;
+            if (desc_en !== undefined) payload.description = desc_en;
+            if (specifications_en !== undefined) payload.specifications = specifications_en; // Text/JSON string
+
+            await client.from('product_translations').upsert(payload, { onConflict: 'product_id,locale' });
         }
-        if (title_vi || desc_vi) {
-            await client.from('product_translations').upsert({
-                product_id: id, locale: 'vi',
-                title: title_vi, description: desc_vi
-            }, { onConflict: 'product_id,locale' });
+
+        if (title_vi !== undefined || desc_vi !== undefined || specifications_vi !== undefined) {
+            const payload: any = { product_id: id, locale: 'vi' };
+            if (title_vi !== undefined) payload.title = title_vi;
+            if (desc_vi !== undefined) payload.description = desc_vi;
+            if (specifications_vi !== undefined) payload.specifications = specifications_vi;
+
+            await client.from('product_translations').upsert(payload, { onConflict: 'product_id,locale' });
         }
 
         return { success: true };

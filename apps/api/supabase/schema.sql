@@ -1,3 +1,24 @@
+-- Create Categories Table
+create table if not exists categories (
+  id uuid default gen_random_uuid() primary key,
+  slug text unique not null,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create Category Translations Table
+create table if not exists category_translations (
+  id uuid default gen_random_uuid() primary key,
+  category_id uuid references categories(id) on delete cascade not null,
+  locale text not null check (locale in ('en', 'vi')),
+  name text not null,
+  description text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(category_id, locale)
+);
+
 -- Create Products Table
 create table if not exists products (
   id uuid default gen_random_uuid() primary key,
@@ -6,7 +27,8 @@ create table if not exists products (
   price numeric not null,
   images text[] not null default '{}',
   style_affinity text check (style_affinity in ('zen', 'traditional', 'both')) not null default 'both',
-  is_active boolean default true
+  is_active boolean default true,
+  category_id uuid references categories(id)
 );
 
 -- Create Product Translations Table

@@ -39,10 +39,7 @@ export class OrdersController {
 
         const expectedKey = process.env.SEPAY_API_KEY;
 
-        console.log('--- Webhook Debug ---');
-        console.log('Received Header:', rawHeader);
-        console.log('Cleaned Key:', apiKey);
-        console.log('Expected Key:', expectedKey);
+
 
 
 
@@ -58,7 +55,7 @@ export class OrdersController {
         const result = await this.ordersService.verifyPayment(content, Number(transferAmount), String(id));
 
         if (!result.success) {
-            console.log('Webhook Failed:', result);
+
             throw new BadRequestException(result.reason || 'Payment verification failed');
         }
 

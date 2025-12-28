@@ -21,23 +21,23 @@ export class CartController {
 
     @Post('items')
     @UseGuards(AuthGuard)
-    async addItem(@Req() req: any, @Body() body: { productId: string, quantity: number }) {
-        return this.cartService.addItem(req.user.id, body.productId, body.quantity || 1);
+    async addItem(@Req() req: any, @Body() body: { productId: string, quantity: number, variantId?: string, variantName?: string }) {
+        return this.cartService.addItem(req.user.id, body.productId, body.quantity || 1, body.variantId, body.variantName);
     }
 
-    @Patch('items/:productId')
+    @Patch('items/:id')
     @UseGuards(AuthGuard)
     async updateQuantity(
         @Req() req: any,
-        @Param('productId') productId: string,
+        @Param('id') itemId: string,
         @Body() body: { quantity: number }
     ) {
-        return this.cartService.updateQuantity(req.user.id, productId, body.quantity);
+        return this.cartService.updateQuantity(req.user.id, itemId, body.quantity);
     }
 
-    @Delete('items/:productId')
+    @Delete('items/:id')
     @UseGuards(AuthGuard)
-    async removeItem(@Req() req: any, @Param('productId') productId: string) {
-        return this.cartService.removeItem(req.user.id, productId);
+    async removeItem(@Req() req: any, @Param('id') itemId: string) {
+        return this.cartService.removeItem(req.user.id, itemId);
     }
 }

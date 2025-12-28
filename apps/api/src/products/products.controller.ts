@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseGuards, UseInterceptors, UploadedFiles, BadRequestException } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -20,6 +20,8 @@ export class ProductsController {
         @Query('page') page?: string,
         @Query('limit') limit?: string,
         @Query('stock_status') stock_status?: string,
+        @Query('min_price') min_price?: string,
+        @Query('max_price') max_price?: string,
     ) {
         const validLocale = locale === 'vi' ? 'vi' : 'en';
         return this.productsService.findAll(validLocale, {
@@ -29,7 +31,9 @@ export class ProductsController {
             sort,
             page: page ? parseInt(page) : 1,
             limit: limit ? parseInt(limit) : 20,
-            stock_status
+            stock_status,
+            min_price: min_price ? Number(min_price) : undefined,
+            max_price: max_price ? Number(max_price) : undefined,
         });
     }
 
@@ -49,25 +53,25 @@ export class ProductsController {
     @Post()
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.ADMIN, Role.STAFF)
-    @UseInterceptors(FileInterceptor('image'))
+    @UseInterceptors(FilesInterceptor('files'))
     async create(
         @Body() body: any,
-        @UploadedFile() file: Express.Multer.File
+        @UploadedFiles() files: Array<Express.Multer.File>
     ) {
-        if (!file) throw new BadRequestException('Image is required');
-        return this.productsService.create(body, file);
+        // if (!files || files.length === 0) throw new BadRequestException('At least one image is required');
+        return this.productsService.create(body, files);
     }
 
     @Patch(':id')
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.ADMIN, Role.STAFF)
-    @UseInterceptors(FileInterceptor('image'))
+    @UseInterceptors(FilesInterceptor('files'))
     async update(
         @Param('id') id: string,
         @Body() body: any,
-        @UploadedFile() file?: Express.Multer.File
+        @UploadedFiles() files?: Array<Express.Multer.File>
     ) {
-        return this.productsService.update(id, body, file);
+        return this.productsService.update(id, body, files);
     }
 
     @Delete(':id')
