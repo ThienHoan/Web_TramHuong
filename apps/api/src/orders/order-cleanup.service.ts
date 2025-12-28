@@ -31,6 +31,11 @@ export class OrderCleanupService {
             .is('expired_at', null); // Only process orders not yet expired
 
         if (error) {
+            // Handle specific network errors gracefully
+            if (JSON.stringify(error).includes('EAI_AGAIN') || JSON.stringify(error).includes('fetch failed')) {
+                this.logger.warn('[OrderCleanup] Network connectivity issue (DNS/Timeout). Will retry next cycle.');
+                return;
+            }
             this.logger.error('[OrderCleanup] Error fetching expired orders:', error);
             return;
         }

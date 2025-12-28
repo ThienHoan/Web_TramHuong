@@ -246,7 +246,7 @@ export class ProductsService {
         const imageUrls = files && files.length > 0
             ? await Promise.all(files.map(file => this.uploadImage(file)))
             : [];
-        const { title_en, title_vi, desc_en, desc_vi, price, original_price, slug, category, quantity, variants, specifications_en, specifications_vi } = body;
+        const { title_en, title_vi, desc_en, desc_vi, price, original_price, slug, category, quantity, variants, specifications_en, specifications_vi, seo_title_en, seo_title_vi, seo_desc_en, seo_desc_vi } = body;
 
         const client = this.supabase.getClient();
 
@@ -294,14 +294,18 @@ export class ProductsService {
                 locale: 'en',
                 title: title_en,
                 description: desc_en,
-                specifications: specifications_en
+                specifications: specifications_en,
+                seo_title: seo_title_en,
+                seo_description: seo_desc_en
             },
             {
                 product_id: product.id,
                 locale: 'vi',
                 title: title_vi,
                 description: desc_vi,
-                specifications: specifications_vi
+                specifications: specifications_vi,
+                seo_title: seo_title_vi,
+                seo_description: seo_desc_vi
             }
         ];
 
@@ -384,23 +388,27 @@ export class ProductsService {
         }
 
         // Update Translations (Upsert)
-        const { title_en, title_vi, desc_en, desc_vi, specifications_en, specifications_vi } = body;
+        const { title_en, title_vi, desc_en, desc_vi, specifications_en, specifications_vi, seo_title_en, seo_title_vi, seo_desc_en, seo_desc_vi } = body;
 
         // Prepare translation upserts
-        if (title_en !== undefined || desc_en !== undefined || specifications_en !== undefined) {
+        if (title_en !== undefined || desc_en !== undefined || specifications_en !== undefined || seo_title_en !== undefined || seo_desc_en !== undefined) {
             const payload: any = { product_id: id, locale: 'en' };
             if (title_en !== undefined) payload.title = title_en;
             if (desc_en !== undefined) payload.description = desc_en;
-            if (specifications_en !== undefined) payload.specifications = specifications_en; // Text/JSON string
+            if (specifications_en !== undefined) payload.specifications = specifications_en;
+            if (seo_title_en !== undefined) payload.seo_title = seo_title_en;
+            if (seo_desc_en !== undefined) payload.seo_description = seo_desc_en;
 
             await client.from('product_translations').upsert(payload, { onConflict: 'product_id,locale' });
         }
 
-        if (title_vi !== undefined || desc_vi !== undefined || specifications_vi !== undefined) {
+        if (title_vi !== undefined || desc_vi !== undefined || specifications_vi !== undefined || seo_title_vi !== undefined || seo_desc_vi !== undefined) {
             const payload: any = { product_id: id, locale: 'vi' };
             if (title_vi !== undefined) payload.title = title_vi;
             if (desc_vi !== undefined) payload.description = desc_vi;
             if (specifications_vi !== undefined) payload.specifications = specifications_vi;
+            if (seo_title_vi !== undefined) payload.seo_title = seo_title_vi;
+            if (seo_desc_vi !== undefined) payload.seo_description = seo_desc_vi;
 
             await client.from('product_translations').upsert(payload, { onConflict: 'product_id,locale' });
         }

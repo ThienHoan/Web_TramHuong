@@ -33,6 +33,19 @@ export class AnalyticsService {
 
         if (error) throw new BadRequestException(error.message);
 
+        // 2. Fetch Wishlist Stats (Top Wishlisted)
+        // Note: Simple count aggregation
+        const { data: wishlistData } = await this.client
+            .from('wishlists')
+            .select('product_id');
+
+        const wishlistCounts: Record<string, number> = {};
+        if (wishlistData) {
+            wishlistData.forEach((w: any) => {
+                wishlistCounts[w.product_id] = (wishlistCounts[w.product_id] || 0) + 1;
+            });
+        }
+
         // Aggregate Data
         const revenueMap: Record<string, number> = {};
         const statusCounts: Record<string, number> = {
@@ -43,9 +56,29 @@ export class AnalyticsService {
             CANCELED: 0
         };
         const productSales: Record<string, { name: string, quantity: number, revenue: number }> = {};
+        const categorySales: Record<string, number> = {}; // New: Category Sales
+
         let totalRevenue = 0;
         let totalOrders = rawOrders.length;
         let pendingOrders = 0;
+
+        // Fetch Product Info for Mapping (to get Names and Categories)
+        // For accurate names/categories, we should ideally join products.
+        // For MVP, we rely on info stored in OrderItem or fetch products separately if needed.
+        // Assuming OrderItem has snapshot, but might lack Category.
+        // If snapshot lacks category, we can't do Category Sales accurately without fetching products.
+        // Let's assume Order Items *might* have category or we skip Category Sales if missing.
+        // Actually, let's fetch all products to build a dictionary map for Category Lookup.
+
+        const { data: allProducts } = await this.client.from('products').select('id, category:categories(slug), translations:product_translations(title)');
+        const productMap: Record<string, { name: string, category: string }> = {};
+        if (allProducts) {
+            allProducts.forEach((p: any) => {
+                const name = p.translations?.[0]?.title || 'Unknown Product';
+                const cat = p.category?.slug || 'Uncategorized';
+                productMap[p.id] = { name, category: cat };
+            });
+        }
 
         rawOrders.forEach(order => {
             const date = new Date(order.created_at).toLocaleDateString('vi-VN'); // DD/MM/YYYY
@@ -66,16 +99,26 @@ export class AnalyticsService {
                 // Top Products Logic (Only from confirmed orders)
                 if (Array.isArray(order.items)) {
                     order.items.forEach((item: any) => {
-                        const key = item.productId;
+                        const key = item.productId || item.product_id; // Handle case sensitivity
+                        const pInfo = productMap[key] || { name: item.title || item.slug, category: 'Uncategorized' };
+
+                        // Product Sales
                         if (!productSales[key]) {
                             productSales[key] = {
-                                name: item.title || item.slug,
+                                name: pInfo.name,
                                 quantity: 0,
                                 revenue: 0
                             };
                         }
-                        productSales[key].quantity += item.quantity;
-                        productSales[key].revenue += item.price * item.quantity;
+                        const qty = item.quantity || 0;
+                        const rev = (item.price || 0) * qty;
+
+                        productSales[key].quantity += qty;
+                        productSales[key].revenue += rev;
+
+                        // Category Sales
+                        const cat = pInfo.category;
+                        categorySales[cat] = (categorySales[cat] || 0) + rev;
                     });
                 }
             }
@@ -96,6 +139,23 @@ export class AnalyticsService {
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 5); // Top 5
 
+        const topWishlist = Object.entries(wishlistCounts)
+            .map(([pid, count]) => {
+                const pInfo = productMap[pid];
+                return {
+                    id: pid,
+                    name: pInfo ? pInfo.name : 'Unknown',
+                    count
+                };
+            })
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
+        const categoryStats = Object.keys(categorySales).map(cat => ({
+            name: cat,
+            value: categorySales[cat]
+        }));
+
         return {
             summary: {
                 totalRevenue,
@@ -104,7 +164,9 @@ export class AnalyticsService {
             },
             revenueChart,
             statusChart,
-            topProducts
+            topProducts,
+            topWishlist,
+            categoryStats
         };
     }
 }
