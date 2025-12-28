@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Link } from '@/i18n/routing';
+import { Link, usePathname } from '@/i18n/routing';
 import { useAuth } from '../providers/AuthProvider';
 import { useCart } from '../providers/CartProvider';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 export default function Header({ locale }: { locale: string }) {
     const { user, role, profile, signOut } = useAuth();
     const { count } = useCart();
+    const pathname = usePathname();
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
@@ -21,9 +22,8 @@ export default function Header({ locale }: { locale: string }) {
 
                 {/* Navigation */}
                 <nav className="hidden md:flex gap-8 text-sm font-light">
-                    <Link href="/zen" className="hover:text-amber-400 transition-colors">Zen</Link>
-                    <Link href="/traditional" className="hover:text-amber-400 transition-colors">Traditional</Link>
                     <Link href="/products" className="hover:text-amber-400 transition-colors">Products</Link>
+                    <Link href="/contact" className="hover:text-amber-400 transition-colors">Contact</Link>
                 </nav>
 
                 {/* Right Actions */}
@@ -72,9 +72,9 @@ export default function Header({ locale }: { locale: string }) {
                         </Link>
                     )}
 
-                    {/* Lang Switcher (Basic) */}
-                    <Link href="/" locale={locale === 'en' ? 'vi' : 'en'} className="text-xs opacity-50 hover:opacity-100 uppercase">
-                        {locale === 'en' ? 'VI' : 'EN'}
+                    {/* Lang Switcher (Strict Theme Coupling) */}
+                    <Link href={pathname} locale="vi" className="text-xs opacity-50 hover:opacity-100 uppercase font-bold border border-white/30 px-2 py-1 rounded">
+                        VI
                     </Link>
                 </div>
             </div>

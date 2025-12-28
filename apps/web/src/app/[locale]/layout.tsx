@@ -7,6 +7,8 @@ import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import Header from '@/components/layout/Header';
 import { Metadata } from 'next';
+import SmoothScroll from '@/components/ui/SmoothScroll';
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,7 +90,9 @@ export default async function RootLayout({
             <CartProvider>
               <WishlistProvider>
                 {locale !== 'vi' && <Header locale={locale} />}
+                <SmoothScroll />
                 {children}
+                <Toaster position="top-right" />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

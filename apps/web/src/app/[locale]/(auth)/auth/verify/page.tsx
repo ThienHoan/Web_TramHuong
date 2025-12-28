@@ -23,7 +23,7 @@ export default function VerifyPage() {
         // Check if user clicked magic link and has valid session
         const checkVerification = async () => {
             try {
-                console.log('[Verify] Checking verification...');
+
 
                 // First, check if there's a token_hash in the URL
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -34,14 +34,14 @@ export default function VerifyPage() {
                 const code = urlParams.get('code');
 
                 if (code) {
-                    console.log('[Verify] Found OTP code, verifying...');
+
                     try {
                         // Verify OTP
                         const { data, error } = await supabase.auth.verifyOtp({
                             token_hash: code,
                             type: 'email'
                         });
-                        console.log('[Verify] Verify OTP result:', { data, error });
+
 
                         if (error) {
                             console.error('[Verify] OTP verification failed:', error);
@@ -49,7 +49,7 @@ export default function VerifyPage() {
                         }
 
                         if (data.session) {
-                            console.log('[Verify] Session established from OTP');
+
                             setVerified(true);
                             setLoading(false);
                             return;
@@ -62,7 +62,7 @@ export default function VerifyPage() {
 
                 // Check for access token in hash (alternative flow)
                 if (accessToken) {
-                    console.log('[Verify] Found access token in URL hash');
+
                     setVerified(true);
                     setLoading(false);
                     return;
@@ -70,16 +70,16 @@ export default function VerifyPage() {
 
                 // Fallback: check existing session
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                console.log('[Verify] Session check:', { session, sessionError });
+
 
                 if (sessionError) throw sessionError;
 
                 if (session) {
-                    console.log('[Verify] Session found, user verified');
+
                     setVerified(true);
                     setLoading(false);
                 } else {
-                    console.log('[Verify] No session found');
+
                     setError('Invalid or expired verification link');
                     setLoading(false);
                 }
@@ -123,24 +123,24 @@ export default function VerifyPage() {
         }
 
         setSubmitting(true);
-        console.log('[Verify] Starting password creation...');
+
 
         try {
             // Check if we still have a valid session
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            console.log('[Verify] Current session:', session);
+
 
             if (sessionError || !session) {
                 throw new Error('Session expired. Please request a new verification link.');
             }
 
             // Update user with new password
-            console.log('[Verify] Updating password...');
+
             const { data, error } = await supabase.auth.updateUser({
                 password: password
             });
 
-            console.log('[Verify] Update result:', { data, error });
+
 
             if (error) throw error;
 
@@ -149,7 +149,7 @@ export default function VerifyPage() {
             }
 
             // Success! Redirect to home
-            console.log('[Verify] Password created successfully, redirecting...');
+
             router.push('/');
         } catch (err: any) {
             console.error('[Verify] Error:', err);

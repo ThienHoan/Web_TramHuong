@@ -40,20 +40,23 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
             .then(data => {
                 setProvinces(data);
                 setLoadingP(false);
-
-                if (initialProvince) {
-                    const foundP = data.find((p: Division) => p.name === initialProvince);
-                    if (foundP) {
-                        setSelectedProvince(foundP);
-                        fetchDistricts(foundP.code, initialDistrict, initialWard);
-                    }
-                }
             })
             .catch(err => {
                 console.error(err);
                 setLoadingP(false);
             });
     }, []);
+
+    // Sync initial state when provinces are loaded or initial props change
+    useEffect(() => {
+        if (provinces.length > 0 && initialProvince && !selectedProvince) {
+            const foundP = provinces.find((p: Division) => p.name === initialProvince);
+            if (foundP) {
+                setSelectedProvince(foundP);
+                fetchDistricts(foundP.code, initialDistrict, initialWard);
+            }
+        }
+    }, [provinces, initialProvince, initialDistrict, initialWard]);
 
     const fetchDistricts = (provinceCode: number, initDistrict?: string, initWard?: string) => {
         setLoadingD(true);

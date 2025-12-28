@@ -47,6 +47,16 @@ export default function OrderDetailPage() {
     if (loading) return <div className="p-10 text-center">Loading Order Details...</div>;
     if (!order) return null;
 
+    const subtotal = order.items?.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * Number(item.quantity || 0)), 0) || 0;
+    const total = Number(order.total || order.total_amount || 0);
+
+    let shippingFee = 0;
+    if (order.shipping_info?.shipping_fee !== undefined) {
+        shippingFee = Number(order.shipping_info.shipping_fee);
+    } else {
+        shippingFee = Math.max(0, total - subtotal);
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 pt-24 text-black">
             <div className="max-w-4xl mx-auto">
@@ -129,11 +139,23 @@ export default function OrderDetailPage() {
                                 </tr>
                             ))}
                         </tbody>
-                        <tfoot className="bg-gray-50">
+                        <tfoot className="bg-gray-50 border-t-2 border-gray-100">
                             <tr>
+                                <td colSpan={3} className="p-3 text-right text-gray-600">Subtotal</td>
+                                <td className="p-3 text-right font-medium">
+                                    {formatPrice(subtotal)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan={3} className="p-3 text-right text-gray-600">Shipping Fee</td>
+                                <td className="p-3 text-right font-medium text-green-600">
+                                    {shippingFee === 0 ? 'Free' : formatPrice(shippingFee)}
+                                </td>
+                            </tr>
+                            <tr className="text-lg bg-gray-100">
                                 <td colSpan={3} className="p-4 text-right font-bold">Total Amount</td>
-                                <td className="p-4 text-right font-bold text-lg">
-                                    {formatPrice(Number(order.total || order.total_amount || 0))}
+                                <td className="p-4 text-right font-bold text-green-700">
+                                    {formatPrice(total)}
                                 </td>
                             </tr>
                         </tfoot>

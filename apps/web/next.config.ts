@@ -7,6 +7,14 @@ const nextConfig: import('next').NextConfig = {
         remotePatterns: [
             {
                 protocol: 'https' as const,
+                hostname: 'ui-avatars.com',
+            },
+            {
+                protocol: 'https' as const,
+                hostname: 'lh3.googleusercontent.com',
+            },
+            {
+                protocol: 'https' as const,
                 hostname: 'images.unsplash.com',
             },
             {
@@ -14,6 +22,30 @@ const nextConfig: import('next').NextConfig = {
                 hostname: 'rzbcqbbkjbylvdpoixhp.supabase.co',
             },
         ],
+    },
+    async redirects() {
+        return [
+            {
+                source: '/:locale(vi|en)/traditional',
+                destination: '/:locale',
+                permanent: true,
+            },
+            {
+                source: '/:locale(vi|en)/zen',
+                destination: '/:locale',
+                permanent: true,
+            },
+            {
+                source: '/traditional',
+                destination: '/vi',
+                permanent: true,
+            },
+            {
+                source: '/zen',
+                destination: '/en',
+                permanent: true,
+            }
+        ];
     },
 };
 

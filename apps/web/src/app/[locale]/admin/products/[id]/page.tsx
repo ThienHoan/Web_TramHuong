@@ -11,6 +11,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
+    // Force refresh
     const { session, role } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -20,6 +21,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     // Form State
     const [slug, setSlug] = useState('');
     const [price, setPrice] = useState('');
+    const [originalPrice, setOriginalPrice] = useState('');
     const [category, setCategory] = useState('');
     const [style, setStyle] = useState('both');
     const [quantity, setQuantity] = useState('0');
@@ -27,8 +29,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [descEn, setDescEn] = useState('');
     const [titleVi, setTitleVi] = useState('');
     const [descVi, setDescVi] = useState('');
-    const [currentImage, setCurrentImage] = useState('');
-    const [newImage, setNewImage] = useState<File | null>(null);
+    const [currentImages, setCurrentImages] = useState<string[]>([]);
+    const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [variants, setVariants] = useState<{ name: string; price: number | null; original_price?: number | null; description: string }[]>([]);
+    const [specsEn, setSpecsEn] = useState<{ key: string; value: string }[]>([]);
+    const [specsVi, setSpecsVi] = useState<{ key: string; value: string }[]>([]);
 
     useEffect(() => {
         if (!session) return;
@@ -49,12 +54,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             .then(data => {
                 setSlug(data.slug);
                 setPrice(data.price.toString());
+                setOriginalPrice(data.original_price?.toString() || '');
                 setQuantity(data.quantity?.toString() || '0');
-                setCategory(data.category || (categories.length > 0 ? categories[0].slug : ''));
+                const catSlug = (data.category && typeof data.category === 'object') ? data.category.slug : data.category;
+                setCategory(catSlug || (categories.length > 0 ? categories[0].slug : ''));
                 setStyle(data.style_affinity || 'both');
                 // Support images array primarily
-                const img = data.images && data.images.length > 0 ? data.images[0] : data.image;
-                setCurrentImage(img || '');
+                const imgs = data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []);
+                setCurrentImages(imgs);
 
                 const tEn = data.translations?.find((t: any) => t.locale === 'en');
                 const tVi = data.translations?.find((t: any) => t.locale === 'vi');
@@ -63,6 +70,22 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setDescEn(tEn?.description || '');
                 setTitleVi(tVi?.title || '');
                 setDescVi(tVi?.description || '');
+
+                const parseSpecs = (raw: any) => {
+                    if (!raw) return [];
+                    if (typeof raw === 'object') return Object.entries(raw).map(([key, value]) => ({ key, value: String(value) }));
+                    if (typeof raw === 'string') {
+                        try { return Object.entries(JSON.parse(raw)).map(([key, value]) => ({ key, value: String(value) })); } catch { }
+                        return raw.split('. ').map((s: string) => {
+                            const [k, v] = s.split(':');
+                            return { key: k?.trim() || '', value: v?.trim() || '' };
+                        }).filter((x: any) => x.key);
+                    }
+                    return [];
+                };
+                setSpecsEn(parseSpecs(tEn?.specifications));
+                setSpecsVi(parseSpecs(tVi?.specifications));
+                setVariants(Array.isArray(data.variants) ? data.variants : []);
 
                 setLoading(false);
             })
@@ -83,6 +106,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             const formData = new FormData();
             formData.append('slug', slug);
             formData.append('price', price);
+            formData.append('original_price', originalPrice);
             formData.append('quantity', quantity);
             formData.append('category', category);
             formData.append('style', style);
@@ -91,9 +115,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             formData.append('title_vi', titleVi);
             formData.append('desc_vi', descVi);
 
-            if (newImage) {
-                formData.append('image', newImage);
-            }
+            formData.append('variants', JSON.stringify(variants));
+
+            const specsEnObj = specsEn.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+            const specsViObj = specsVi.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+            formData.append('specifications_en', JSON.stringify(specsEnObj));
+            formData.append('specifications_vi', JSON.stringify(specsViObj));
+
+            formData.append('keep_images', JSON.stringify(currentImages));
+            newFiles.forEach(f => formData.append('files', f));
 
             // Note: Patch request in NestJS with FileInterceptor requires Multipart
             const res = await fetch(`${API_URL}/products/${id}`, {
@@ -136,8 +166,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Price ($)</label>
-                        <input required type="number" step="0.01" className="w-full border p-2 rounded"
-                            value={price} onChange={e => setPrice(e.target.value)} />
+                        <div className="flex gap-2">
+                            <input required type="number" step="0.01" className="w-1/2 border p-2 rounded" placeholder="Sale Price"
+                                value={price} onChange={e => setPrice(e.target.value)} />
+                            <input type="number" step="0.01" className="w-1/2 border p-2 rounded" placeholder="Orig. Price (Optional)"
+                                value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} />
+                        </div>
                     </div>
                 </div>
 
@@ -219,20 +253,148 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Image */}
+                {/* Images */}
                 <div className="border-t pt-4">
-                    <label className="block text-sm font-medium mb-1">Product Image</label>
-                    <div className="flex items-center gap-4 mb-2">
-                        {currentImage && (
-                            <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
-                                <ProductImage src={currentImage} alt="Current" />
+                    <label className="block text-sm font-medium mb-3">Product Images</label>
+
+                    {/* Current Images */}
+                    {currentImages.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs text-gray-500 mb-2">Current Images (First is Main)</p>
+                            <div className="flex flex-wrap gap-4">
+                                {currentImages.map((img, idx) => (
+                                    <div key={img} className="relative group w-24 h-24 border rounded overflow-hidden">
+                                        <ProductImage src={img} alt={`Img ${idx}`} />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                            {/* Set Main */}
+                                            {idx !== 0 && (
+                                                <button type="button" onClick={() => {
+                                                    const newOrder = [img, ...currentImages.filter(i => i !== img)];
+                                                    setCurrentImages(newOrder);
+                                                }} className="text-white hover:text-yellow-400" title="Set as Main">
+                                                    <span className="material-symbols-outlined">star</span>
+                                                </button>
+                                            )}
+                                            {idx === 0 && <span className="material-symbols-outlined text-yellow-400">star</span>}
+                                            {/* Delete */}
+                                            <button type="button" onClick={() => setCurrentImages(currentImages.filter(i => i !== img))}
+                                                className="text-white hover:text-red-400" title="Remove">
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        )}
-                        <div className="text-xs text-gray-500">Current Image</div>
+                        </div>
+                    )}
+
+                    {/* New Files */}
+                    <div className="mb-2">
+                        <input type="file" accept="image/*" multiple
+                            onChange={e => {
+                                if (e.target.files) {
+                                    setNewFiles([...newFiles, ...Array.from(e.target.files)]);
+                                }
+                            }}
+                            className="w-full border p-2 rounded bg-gray-50" />
                     </div>
-                    <input type="file" accept="image/*"
-                        onChange={e => setNewImage(e.target.files?.[0] || null)}
-                        className="w-full border p-2 rounded bg-gray-50" />
-                    <p className="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                    {newFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-4">
+                            {newFiles.map((file, idx) => (
+                                <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+                                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                    <button type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
+                                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl">
+                                        <span className="material-symbols-outlined text-xs">close</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* VARIANTS EDITOR */}
+                <div className="border-t pt-4">
+                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
+                        Variants & Options
+                        <button type="button" onClick={() => setVariants([...variants, { name: '', price: 0, description: '' }])}
+                            className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add Variant</button>
+                    </h3>
+                    <div className="space-y-2">
+                        {variants.map((v, idx) => (
+                            <div key={idx} className="flex gap-2 items-start">
+                                <input type="text" placeholder="Name (e.g. 30cm)" className="flex-1 border p-2 rounded text-sm"
+                                    value={v.name} onChange={e => {
+                                        const newV = [...variants]; newV[idx].name = e.target.value; setVariants(newV);
+                                    }} />
+                                <input type="number" placeholder="Price (Empty = Base)" className="w-24 border p-2 rounded text-sm"
+                                    value={v.price ?? ''} onChange={e => {
+                                        const val = e.target.value;
+                                        const newV = [...variants];
+                                        newV[idx].price = val === '' ? null : Number(val);
+                                        setVariants(newV);
+                                    }} />
+                                <input type="number" placeholder="Orig. Price" className="w-24 border p-2 rounded text-sm"
+                                    value={v.original_price ?? ''} onChange={e => {
+                                        const val = e.target.value;
+                                        const newV = [...variants];
+                                        newV[idx].original_price = val === '' ? null : Number(val);
+                                        setVariants(newV);
+                                    }} />
+                                <input type="text" placeholder="Desc/Short" className="flex-1 border p-2 rounded text-sm"
+                                    value={v.description} onChange={e => {
+                                        const newV = [...variants]; newV[idx].description = e.target.value; setVariants(newV);
+                                    }} />
+                                <button type="button" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded">
+                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </div>
+                        ))}
+                        {variants.length === 0 && <p className="text-sm text-gray-400 italic">No variants defined.</p>}
+                    </div>
+                </div>
+
+                {/* SPECIFICATIONS EDITOR */}
+                <div className="border-t pt-4 grid grid-cols-2 gap-8">
+                    {/* Specs EN */}
+                    <div>
+                        <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
+                            Specs (English)
+                            <button type="button" onClick={() => setSpecsEn([...specsEn, { key: '', value: '' }])}
+                                className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add</button>
+                        </h3>
+                        <div className="space-y-2">
+                            {specsEn.map((s, idx) => (
+                                <div key={idx} className="flex gap-2">
+                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded text-sm"
+                                        value={s.key} onChange={e => { const n = [...specsEn]; n[idx].key = e.target.value; setSpecsEn(n); }} />
+                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded text-sm"
+                                        value={s.value} onChange={e => { const n = [...specsEn]; n[idx].value = e.target.value; setSpecsEn(n); }} />
+                                    <button type="button" onClick={() => setSpecsEn(specsEn.filter((_, i) => i !== idx))} className="text-red-500">×</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Specs VI */}
+                    <div>
+                        <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
+                            Specs (Vietnamese)
+                            <button type="button" onClick={() => setSpecsVi([...specsVi, { key: '', value: '' }])}
+                                className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add</button>
+                        </h3>
+                        <div className="space-y-2">
+                            {specsVi.map((s, idx) => (
+                                <div key={idx} className="flex gap-2">
+                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded text-sm"
+                                        value={s.key} onChange={e => { const n = [...specsVi]; n[idx].key = e.target.value; setSpecsVi(n); }} />
+                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded text-sm"
+                                        value={s.value} onChange={e => { const n = [...specsVi]; n[idx].value = e.target.value; setSpecsVi(n); }} />
+                                    <button type="button" onClick={() => setSpecsVi(specsVi.filter((_, i) => i !== idx))} className="text-red-500">×</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="pt-4 flex gap-4">

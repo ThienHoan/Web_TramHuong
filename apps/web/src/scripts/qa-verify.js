@@ -25,13 +25,13 @@ async function fetchHtml(path) {
 }
 
 async function runQA() {
-    console.log('Starting QA Verification on ' + BASE_URL);
+
     let passed = 0;
     let failed = 0;
 
     for (const route of ROUTES) {
         try {
-            console.log(`\nChecking ${route.path}...`);
+
             const html = await fetchHtml(route.path);
 
             // Check Title
@@ -40,7 +40,7 @@ async function runQA() {
             const title = titleMatch ? titleMatch[1] : 'NO TITLE FOUND';
 
             if (title.includes(route.expectedTitle)) {
-                console.log(`✅ Title OK: "${title}"`);
+
                 passed++;
             } else {
                 console.error(`❌ Title MISMATCH: Expected "${route.expectedTitle}", Found "${title}"`);
@@ -55,7 +55,7 @@ async function runQA() {
             // Let's just check if it contains the path.
 
             if (canonical.endsWith(route.expectedCanonical)) {
-                console.log(`✅ Canonical OK: ...${route.expectedCanonical}`);
+
                 passed++;
             } else {
                 console.error(`❌ Canonical MISMATCH: Expected suffix "${route.expectedCanonical}", Found "${canonical}"`);
@@ -68,9 +68,7 @@ async function runQA() {
         }
     }
 
-    console.log(`\n--- QA SUMMARY ---`);
-    console.log(`PASSED: ${passed}`);
-    console.log(`FAILED: ${failed}`);
+
 
     if (failed > 0) process.exit(1);
 }

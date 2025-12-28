@@ -6,6 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 
+import TraditionalHeader from '@/components/traditional/TraditionalHeader';
+import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -90,41 +93,7 @@ export default function LoginPage() {
                 }
             `}</style>
 
-            {/* Header - Only render if needed or intended to override layout header */}
-            <div className="relative w-full bg-[#f8f7f5] dark:bg-[#221910] border-b border-[#f4ede7] dark:border-[#3e2b1e] z-50">
-                <div className="layout-container flex justify-center w-full">
-                    <div className="flex max-w-[1200px] flex-1 flex-col">
-                        <header className="flex flex-wrap items-center justify-between whitespace-nowrap px-6 py-3 lg:px-10">
-                            <div className="flex items-center gap-4 text-[#d56d0b]">
-                                <div className="size-8 flex items-center justify-center rounded-full bg-[#d56d0b]/10">
-                                    <span className="material-symbols-outlined text-2xl">spa</span>
-                                </div>
-                                <h2 className="text-[#1c140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Trầm Hương Thiên Phúc</h2>
-                            </div>
-                            <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
-                                <div className="flex items-center gap-6">
-                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/">Trang chủ</a>
-                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/products">Sản phẩm</a>
-                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/story">Câu chuyện</a>
-                                    <a className="text-[#1c140d] dark:text-gray-200 text-sm font-medium hover:text-[#d56d0b] transition-colors" href="/contact">Liên hệ</a>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="flex h-9 items-center justify-center rounded-full px-4 bg-[#d56d0b] hover:bg-[#b05705] transition-colors text-white text-sm font-bold shadow-sm">
-                                        <span className="truncate">Đăng nhập</span>
-                                    </button>
-                                    <button className="flex h-9 items-center justify-center rounded-full px-4 bg-[#f4ede7] dark:bg-zinc-800 hover:bg-[#e8dbce] dark:hover:bg-zinc-700 transition-colors text-[#1c140d] dark:text-white text-sm font-bold">
-                                        <span className="material-symbols-outlined mr-2 text-lg">shopping_bag</span>
-                                        <span className="truncate">Giỏ hàng</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="md:hidden flex items-center">
-                                <span className="material-symbols-outlined text-[#1c140d] dark:text-white cursor-pointer">menu</span>
-                            </div>
-                        </header>
-                    </div>
-                </div>
-            </div>
+            <TraditionalHeader />
 
             <main className="relative flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="absolute inset-0 lattice-pattern pointer-events-none"></div>
@@ -264,7 +233,7 @@ export default function LoginPage() {
                                             >
                                                 <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
                                                     <path d="M12.0003 20.45c4.6461 0 8.0848-3.2306 8.0848-8.2045 0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.2863 1.2917-1.0022 2.1932-2.1954 2.8727l-.0232.1545 3.1894 2.4705.2211.0221c2.044-1.8841 3.2205-4.6614 3.2205-7.8546 0-.7704-.0841-1.4682-.2391-2.1409H20.45v2.1409h-3.4477v-3.4886h8.0848c.1527.6727.2368 1.3705.2368 2.1409 0 3.1932-1.1765 5.9705-3.2205 7.8546l-3.4338-2.6471z" fill="currentColor" fillOpacity="0" style={{ display: 'none' }}></path>
-                                                    <path d="M12.0003 20.45c4.6461 0 8.0848-3.2306 8.0848-8.2045 0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.1996.9014-.775 1.8352-1.6356 2.4114l2.6447 2.0522c1.5492-1.4284 2.4431-3.534 2.4431-6.1386 0-.5852-.0614-1.1523-.1731-1.6991H12.0003v3.2386h4.5511c-.1318.8477-.6398 1.8159-1.6841 2.5159l2.7106 2.1032c1.5796-1.4557 2.4925-3.5932 2.4925-6.2307 0-.5511-.058-1.0886-.1648-1.6068H12.0003v3.2386h4.5511c-.1318.8477-.6398 1.8159-1.6841 2.5159l2.7106 2.1032c1.5796-1.4557 2.4925-3.5932 2.4925-6.2307 0-.5511-.058-1.0886-.1648-1.6068H12.0003v3.2386h4.5511z" fill="currentColor" style={{ display: 'none' }}></path>
+                                                    <path d="M12.0003 20.45c4.6461 0 8.0848-3.2306 8.0848-8.2045 0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.1996.9014-.775 1.8352-1.6356 2.4114l2.6447 2.0522c1.5492-1.4284 2.4431-3.534 2.4431-6.1386 0-.5852-.0614-1.1523-.1731-1.6991H12.0003v3.2386h4.5511c-.1318.8477-.6398 1.8159-1.6841 2.5159l2.7106 2.1032c1.5796-1.4557 2.4925-3.5932 2.4925-6.2307 0-.5511-.058-1.0886-.1648-1.6068H12.0003v3.2386h4.5511z" fill="currentColor" style={{ display: 'none' }}></path>
                                                     <path d="M20.0848 12.2455c0-.7439-.0667-1.3091-.2197-1.8409H12.0003v3.4886h4.6348c-.2863 1.2917-1.0022 2.1932-2.1954 2.8727l2.6447 2.0522c1.5492-1.4284 2.4431-3.534 2.4431-6.1386 0-.1455-.0045-.2909-.0125-.4341z" fill="#4285F4"></path>
                                                     <path d="M12.0003 20.45c2.1955 0 4.0409-.7273 5.4394-1.9841l-2.6447-2.0522c-.7295.4909-1.6636.7841-2.7947.7841-2.1557 0-3.9818-1.4568-4.6364-3.4136H4.632l-2.7152 2.0955C3.3003 18.5977 7.348 20.45 12.0003 20.45z" fill="#34A853"></path>
                                                     <path d="M7.3639 13.7841c-.1682-.5045-.2636-1.0432-.2636-1.6023s.0955-1.0977.2636-1.6023V7.2273H4.632C3.5275 9.4295 3.5275 11.9523 4.632 14.1545l2.7319-2.1386z" fill="#FBBC05"></path>
@@ -305,17 +274,10 @@ export default function LoginPage() {
                         </div>
                         <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#d56d0b] to-transparent opacity-50"></div>
                     </div>
-                    <div className="mt-8 text-center space-y-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-500 flex items-center justify-center gap-1">
-                            <span className="material-symbols-outlined text-sm">verified_user</span>
-                            Bảo mật tuyệt đối • Sản phẩm chính hãng
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-600">
-                            © 2024 Trầm Hương Thiên Phúc. Mọi quyền được bảo lưu.
-                        </p>
-                    </div>
                 </div>
             </main>
+
+            <TraditionalFooter />
         </div>
     );
 }

@@ -41,23 +41,45 @@ export default function TraditionalHeader() {
     };
 
     return (
-        <header className={`sticky top-0 z-50 w-full transition-all duration-300 border-b border-trad-border-warm ${scrolled ? 'bg-trad-bg-light/95 backdrop-blur-md shadow-sm' : 'bg-trad-bg-light/95'}`}>
+        <header className={`sticky top-0 z-50 w-full transition-all duration-300 border-b border-trad-border-warm font-display ${scrolled ? 'bg-trad-bg-light/95 backdrop-blur-md shadow-sm' : 'bg-trad-bg-light/95'}`}>
             <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3">
-                        <div className="text-trad-primary h-10 w-10 flex items-center justify-center bg-trad-primary/10 rounded-full">
-                            <span className="material-symbols-outlined !text-[28px]">spa</span>
+                        <div className="flex items-center gap-3 shrink-0 group cursor-pointer">
+                            <div className="size-12 text-primary flex items-center justify-center bg-surface-accent rounded-full border border-accent-gold/30 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                <span className="material-symbols-outlined text-3xl">spa</span>
+                            </div>
+                            <div>
+                                <h1 className="font-display text-2xl font-bold leading-none tracking-tight text-primary-dark">Thiên Phúc</h1>
+                                <p className="text-[0.65rem] uppercase tracking-[0.2em] text-text-main font-bold mt-0.5">Trầm Hương Việt</p>
+                            </div>
                         </div>
-                        <h1 className="text-trad-text-main text-2xl font-bold tracking-tight">Trầm Hương Việt</h1>
                     </Link>
 
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-10">
-                        <Link className="text-trad-text-main hover:text-trad-primary text-base font-medium transition-colors" href="/">Trang chủ</Link>
-                        <Link className="text-trad-text-main hover:text-trad-primary text-base font-medium transition-colors" href="/products">Sản phẩm</Link>
-                        <Link className="text-trad-text-main hover:text-trad-primary text-base font-medium transition-colors" href="/story">Câu chuyện</Link>
-                        <Link className="text-trad-text-main hover:text-trad-primary text-base font-medium transition-colors" href="/contact">Liên hệ</Link>
+                        {[
+                            { href: '/', label: 'Trang chủ' },
+                            { href: '/products', label: 'Sản phẩm' },
+                            { href: '/story', label: 'Câu chuyện' },
+                            { href: '/contact', label: 'Liên hệ' },
+                        ].map(({ href, label }) => {
+                            const isActive = href === '/' ? pathname === href : pathname.startsWith(href);
+                            return (
+                                <Link
+                                    key={href}
+                                    className={`relative text-base font-medium transition-colors hover:text-trad-primary ${isActive ? 'text-trad-primary font-bold' : 'text-trad-text-main'
+                                        }`}
+                                    href={href}
+                                >
+                                    {label}
+                                    {isActive && (
+                                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-trad-primary rounded-full animate-fade-in"></span>
+                                    )}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* Actions */}
@@ -73,9 +95,9 @@ export default function TraditionalHeader() {
                         </Link>
 
                         {/* Cart */}
-                        <Link href="/cart" className="relative p-2 text-trad-text-main hover:text-trad-primary transition-colors hover:bg-trad-bg-warm rounded-full">
+                        <Link href="/checkout" className="relative p-2 text-trad-text-main hover:text-trad-primary transition-colors hover:bg-trad-bg-warm rounded-full">
                             <span className="material-symbols-outlined">shopping_cart</span>
-                            <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-trad-primary rounded-full border border-white flex items-center justify-center text-[8px] text-white font-bold">{items.length > 0 && items.length}</span>
+                            <span className="absolute top-1 right-0.5 h-3 w-3 bg-trad-primary rounded-full border border-white flex items-center justify-center text-[8px] text-white font-bold">{items.length > 0 && items.length}</span>
                         </Link>
 
                         {/* User Menu / Login */}

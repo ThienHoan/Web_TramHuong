@@ -1,46 +1,132 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
+import { useWishlist } from '../providers/WishlistProvider';
 import { useCurrency } from '@/hooks/useCurrency';
 import Image from 'next/image';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import { Link } from '@/i18n/routing';
 
+import { Alert } from '@/components/ui/alert';
+import { toast } from 'sonner';
+import { CheckCircle2 } from 'lucide-react';
+import TraditionalProductReviews from './TraditionalProductReviews';
+import TraditionalProductDescription from './tabs/TraditionalProductDescription';
+import TraditionalProductSpecs from './tabs/TraditionalProductSpecs';
+import TraditionalProductStory from './tabs/TraditionalProductStory';
+import TraditionalProductCard from './TraditionalProductCard';
+import { getProducts, getReviews } from '@/lib/api-client';
+import { useLocale } from 'next-intl';
+
 export default function TraditionalProductDetail({ product }: { product: any }) {
     const { addItem } = useCart();
+    const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
     const { formatPrice } = useCurrency();
     const [selectedImage, setSelectedImage] = useState(product.images[0]);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
+    const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+    const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
+    const [selectedVariant, setSelectedVariant] = useState<any>(null);
+    const locale = useLocale();
+
+    // Initialize variant
+    useEffect(() => {
+        if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+            setSelectedVariant(product.variants[0]);
+        }
+    }, [product.variants]);
+
+    // Parse Specs for Sidebar
+    const specsList = (() => {
+        const raw = product.translation.specifications;
+        if (!raw) return [];
+        if (typeof raw === 'object') return Object.entries(raw).map(([key, value]) => ({ key, value: String(value) }));
+        if (typeof raw === 'string') {
+            try { return Object.entries(JSON.parse(raw)).map(([key, value]) => ({ key, value: String(value) })); } catch { }
+            return raw.split('. ').map((s: string) => {
+                const [k, v] = s.split(':');
+                return { key: k?.trim() || '', value: v?.trim() || '' };
+            }).filter((x: any) => x.key);
+        }
+        return [];
+    })();
+
+    useEffect(() => {
+        const loadData = async () => {
+            // 1. Fetch Related Products
+            // Safe category slug retrieval
+            const catSlug = product.category?.slug || (typeof product.category === 'string' ? product.category : null);
+            const related = await getProducts(locale, {
+                category: catSlug,
+                limit: 4
+            });
+            // Filter out current product
+            setRelatedProducts(related.filter((p: any) => p.id !== product.id));
+
+            // 2. Fetch Review Stats
+            const { meta } = await getReviews(product.id);
+            if (meta) {
+                setReviewStats({ average: meta.average || 0, total: meta.total || 0 });
+            }
+        };
+        loadData();
+    }, [product.id, locale, product.category]);
 
     const handleAddToCart = () => {
         addItem({
             id: product.id,
             slug: product.slug,
             title: product.translation.title,
-            price: Number(product.price),
+            price: selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price),
             image: product.images[0],
-            quantity: quantity
+            quantity: quantity,
+            variantId: selectedVariant?.name || null,
+            variantName: selectedVariant?.name || null
         });
-        alert('Đã thêm sản phẩm vào giỏ hàng!');
+
+        toast.custom((t) => (
+            <Alert variant="success" size="sm" title="Thành Công" className="w-[300px] bg-white border-none shadow-xl">
+                Đã thêm sản phẩm vào giỏ hàng!
+            </Alert>
+        ));
+    };
+
+    const handleWishlist = async () => {
+        const isAdding = !wishlistItems.has(product.id);
+        await toggleWishlist(product.id);
+        if (isAdding) {
+            toast.custom((t) => (
+                <Alert variant="success" size="sm" title="Yêu Thích" className="w-[300px] bg-white border-none shadow-xl">
+                    Đã thêm vào danh sách yêu thích!
+                </Alert>
+            ));
+        } else {
+            toast.info("Đã xóa khỏi danh sách yêu thích");
+        }
     };
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
     };
 
-    // Mock data for reviews/related (to match UI design as requested)
-    const renderStars = (count: number) => (
-        <div className="flex text-trad-primary">
-            {[...Array(5)].map((_, i) => (
-                <span key={i} className={`material-symbols-outlined !text-[20px] ${i < count ? 'filled' : ''}`}>
-                    {i < count ? 'star' : 'star_border'}
-                </span>
-            ))}
-        </div>
-    );
+    // Render stars helper using dynamic count
+    const renderStars = (rating: number) => {
+        const fullStars = Math.floor(rating);
+        const hasHalf = rating % 1 >= 0.5;
+        // Simple star logic (just 5 stars)
+        return (
+            <div className="flex text-trad-primary">
+                {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`material-symbols-outlined !text-[20px] ${i < Math.round(rating) ? 'filled' : ''}`}>
+                        {i < Math.round(rating) ? 'star' : 'star_border'}
+                    </span>
+                ))}
+            </div>
+        );
+    };
 
     return (
         <div className="bg-trad-bg-light min-h-screen font-display">
@@ -56,7 +142,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             </li>
                             <li className="text-trad-text-muted">/</li>
                             <li className="inline-flex items-center">
-                                <Link className="text-trad-text-muted hover:text-trad-primary font-medium transition-colors" href="/products">Nhang trầm</Link>
+                                <Link className="text-trad-text-muted hover:text-trad-primary font-medium transition-colors" href="/products/catalog">Sản Phẩm</Link>
                             </li>
                             <li className="text-trad-text-muted">/</li>
                             <li aria-current="page">
@@ -64,6 +150,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             </li>
                         </ol>
                     </nav>
+
 
                     {/* Product Details Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -108,18 +195,35 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
                                 {/* Ratings */}
                                 <div className="flex items-center gap-4 mb-6">
-                                    {renderStars(5)}
-                                    <span className="text-trad-text-main text-sm font-medium border-l border-trad-border-warm pl-4 underline decoration-trad-text-muted/50 cursor-pointer">128 Đánh giá</span>
-                                    <span className="text-trad-text-muted text-sm border-l border-trad-border-warm pl-4">Đã bán 1.2k</span>
+                                    {renderStars(reviewStats.average)}
+                                    <span className="text-trad-text-main text-sm font-medium border-l border-trad-border-warm pl-4 underline decoration-trad-text-muted/50 cursor-pointer">
+                                        {reviewStats.total} Đánh giá
+                                    </span>
+                                    {/* <span className="text-trad-text-muted text-sm border-l border-trad-border-warm pl-4">Đã bán 1.2k</span> */}
                                 </div>
 
                                 {/* Price */}
                                 <div className="flex items-end gap-3 mb-6 bg-trad-bg-warm p-4 rounded-lg border border-trad-border-warm/50">
-                                    <span className="text-3xl font-bold text-trad-primary">{formatPrice(Number(product.price))}</span>
-                                    <span className="text-lg text-trad-text-muted line-through mb-1 opacity-60">
-                                        {formatPrice(Number(product.price) * 1.2)}
+                                    <span className="text-3xl font-bold text-trad-primary">
+                                        {formatPrice(selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price))}
                                     </span>
-                                    <span className="ml-auto bg-trad-red-900/10 text-trad-red-900 px-2 py-1 rounded text-xs font-bold">-20%</span>
+                                    {(() => {
+                                        const currentPrice = selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price);
+                                        const originalPrice = selectedVariant?.original_price != null ? Number(selectedVariant.original_price) : (product.original_price ? Number(product.original_price) : 0);
+                                        if (originalPrice > currentPrice) {
+                                            return (
+                                                <>
+                                                    <span className="text-lg text-trad-text-muted line-through mb-1 opacity-60">
+                                                        {formatPrice(originalPrice)}
+                                                    </span>
+                                                    <span className="ml-auto bg-trad-red-900/10 text-trad-red-900 px-2 py-1 rounded text-xs font-bold">
+                                                        -{Math.round((1 - currentPrice / originalPrice) * 100)}%
+                                                    </span>
+                                                </>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
 
                                 <p className="text-trad-text-main/80 leading-relaxed mb-8">
@@ -129,24 +233,28 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
                                 {/* Options */}
                                 <div className="flex flex-col gap-6">
-                                    {/* Size Selector - Mock for Demo */}
-                                    <div>
-                                        <h3 className="text-sm font-bold text-trad-text-main mb-3">Kích thước</h3>
-                                        <div className="flex flex-wrap gap-3">
-                                            <label className="cursor-pointer">
-                                                <input defaultChecked className="peer sr-only" name="size" type="radio" />
-                                                <div className="px-4 py-2 rounded border border-trad-border-warm bg-white text-trad-text-main peer-checked:bg-trad-primary peer-checked:text-white peer-checked:border-trad-primary hover:border-trad-primary transition-all text-sm font-medium">
-                                                    30cm (Ngắn)
-                                                </div>
-                                            </label>
-                                            <label className="cursor-pointer">
-                                                <input className="peer sr-only" name="size" type="radio" />
-                                                <div className="px-4 py-2 rounded border border-trad-border-warm bg-white text-trad-text-main peer-checked:bg-trad-primary peer-checked:text-white peer-checked:border-trad-primary hover:border-trad-primary transition-all text-sm font-medium">
-                                                    40cm (Tiêu chuẩn)
-                                                </div>
-                                            </label>
+                                    {/* Size Selector - Dynamic */}
+                                    {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
+                                        <div>
+                                            <h3 className="text-sm font-bold text-trad-text-main mb-3">Tùy chọn</h3>
+                                            <div className="flex flex-wrap gap-3">
+                                                {product.variants.map((v: any, idx: number) => (
+                                                    <label key={idx} className="cursor-pointer">
+                                                        <input
+                                                            className="peer sr-only"
+                                                            name="variant"
+                                                            type="radio"
+                                                            checked={selectedVariant === v}
+                                                            onChange={() => setSelectedVariant(v)}
+                                                        />
+                                                        <div className={`px-4 py-2 rounded border transition-all text-sm font-medium ${selectedVariant === v ? 'bg-trad-primary text-white border-trad-primary' : 'bg-white text-trad-text-main border-trad-border-warm hover:border-trad-primary'}`}>
+                                                            {v.name} {v.description && `(${v.description})`}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Quantity & Add to Cart */}
                                     <div className="flex flex-wrap gap-4 items-stretch pt-4">
@@ -171,8 +279,14 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                             <span className="material-symbols-outlined">shopping_bag</span>
                                             Thêm vào giỏ hàng
                                         </button>
-                                        <button className="h-12 w-12 rounded-lg border border-trad-border-warm flex items-center justify-center bg-white text-trad-text-muted hover:text-trad-red-900 hover:border-trad-red-900 transition-all">
-                                            <span className="material-symbols-outlined filled">favorite</span>
+                                        <button
+                                            onClick={handleWishlist}
+                                            className={`h-12 w-12 rounded-lg border flex items-center justify-center transition-all ${wishlistItems.has(product.id)
+                                                ? 'border-trad-red-900 bg-red-50 text-trad-red-900'
+                                                : 'border-trad-border-warm bg-white text-trad-text-muted hover:text-trad-red-900 hover:border-trad-red-900'
+                                                }`}
+                                        >
+                                            <span className={`material-symbols-outlined ${wishlistItems.has(product.id) ? 'filled' : ''}`}>favorite</span>
                                         </button>
                                     </div>
                                 </div>
@@ -212,7 +326,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         {tab === 'description' && 'Mô tả chi tiết'}
                                         {tab === 'specs' && 'Thông số kỹ thuật'}
                                         {tab === 'story' && 'Câu chuyện sản phẩm'}
-                                        {tab === 'reviews' && 'Đánh giá (128)'}
+                                        {tab === 'reviews' && `Đánh giá (${reviewStats.total})`}
                                     </button>
                                 ))}
                             </div>
@@ -222,42 +336,22 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             {/* Left: Content Area */}
                             <div className="lg:col-span-2 text-trad-text-main/90 leading-loose space-y-6">
                                 {activeTab === 'description' && (
-                                    <div className="animation-fade-in">
-                                        <p className="text-lg font-medium">{product.translation.description}</p>
-                                        <p className="mt-4">{product.translation.story}</p>
-                                        <h3 className="text-2xl font-bold text-trad-text-main mt-8 mb-4">Lợi ích khi sử dụng</h3>
-                                        <ul className="list-none space-y-3">
-                                            <li className="flex gap-3">
-                                                <span className="material-symbols-outlined text-trad-primary mt-1">check_circle</span>
-                                                <span>Thanh lọc không khí, tẩy uế, mang lại vượng khí cho gia chủ.</span>
-                                            </li>
-                                            <li className="flex gap-3">
-                                                <span className="material-symbols-outlined text-trad-primary mt-1">check_circle</span>
-                                                <span>Hương thơm dịu nhẹ giúp thư giãn tinh thần, giảm căng thẳng, mệt mỏi.</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    <TraditionalProductDescription product={product} />
                                 )}
 
                                 {activeTab === 'specs' && (
-                                    <div className="space-y-4">
-                                        {typeof product.translation.specifications === 'string'
-                                            ? product.translation.specifications.split('. ').map((spec: string, i: number) => (
-                                                <div key={i} className="flex justify-between py-3 border-b border-trad-border-subtle hover:bg-gray-50 px-2 rounded">
-                                                    <span>{spec}</span>
-                                                </div>
-                                            ))
-                                            : Object.entries(product.translation.specifications || {}).map(([key, value], i: number) => (
-                                                <div key={i} className="flex justify-between py-3 border-b border-trad-border-subtle hover:bg-gray-50 px-2 rounded">
-                                                    <span className="text-trad-text-muted font-medium">{key}</span>
-                                                    <span className="text-trad-text-main">{String(value)}</span>
-                                                </div>
-                                            ))
-                                        }
-                                    </div>
+                                    <TraditionalProductSpecs product={product} />
                                 )}
 
-                                {/* Other tabs can be implemented similarly */}
+                                {activeTab === 'story' && (
+                                    <TraditionalProductStory product={product} />
+                                )}
+
+                                {activeTab === 'reviews' && (
+                                    <div className="animation-fade-in">
+                                        <TraditionalProductReviews productId={product.id} />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Right: Specs Table (Always visible or contextual) */}
@@ -268,14 +362,25 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         Thông số kỹ thuật
                                     </h3>
                                     <div className="space-y-4">
-                                        <div className="flex justify-between py-3 border-b border-trad-border-subtle">
-                                            <span className="text-trad-text-muted">Xuất xứ</span>
-                                            <span className="font-medium text-trad-text-main">Việt Nam</span>
-                                        </div>
-                                        <div className="flex justify-between py-3 border-b border-trad-border-subtle">
-                                            <span className="text-trad-text-muted">Thương hiệu</span>
-                                            <span className="font-medium text-trad-text-main">Thiên Phúc</span>
-                                        </div>
+                                        {specsList.length > 0 ? (
+                                            specsList.slice(0, 6).map((item: any, idx: number) => (
+                                                <div key={idx} className="flex justify-between py-3 border-b border-trad-border-subtle last:border-0 text-sm">
+                                                    <span className="text-trad-text-muted">{item.key}</span>
+                                                    <span className="font-medium text-trad-text-main text-right break-words max-w-[50%]">{item.value}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <>
+                                                <div className="flex justify-between py-3 border-b border-trad-border-subtle">
+                                                    <span className="text-trad-text-muted">Xuất xứ</span>
+                                                    <span className="font-medium text-trad-text-main">Việt Nam</span>
+                                                </div>
+                                                <div className="flex justify-between py-3 border-b border-trad-border-subtle">
+                                                    <span className="text-trad-text-muted">Thương hiệu</span>
+                                                    <span className="font-medium text-trad-text-main">Thiên Phúc</span>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     <div className="mt-8 bg-trad-bg-warm p-4 rounded-lg border border-trad-primary/20">
                                         <p className="text-sm text-trad-text-muted italic text-center">
@@ -283,55 +388,6 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Reviews Section Summary (Static from HTML for now to match UI) */}
-                    <div className="mt-20 pt-10 border-t border-trad-border-warm">
-                        <h2 className="text-3xl font-bold text-trad-text-main mb-10 text-center">Đánh giá từ khách hàng</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                            {/* Review Card 1 */}
-                            <div className="bg-white p-6 rounded-xl border border-trad-border-warm shadow-sm">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-10 w-10 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-primary font-bold">NH</div>
-                                    <div>
-                                        <h4 className="font-bold text-trad-text-main">Nguyễn Hùng</h4>
-                                        {renderStars(5)}
-                                    </div>
-                                    <span className="ml-auto text-xs text-trad-text-muted">2 ngày trước</span>
-                                </div>
-                                <p className="text-trad-text-main/80 text-sm leading-relaxed">
-                                    "Mùi hương rất thơm và dễ chịu, không bị gắt như các loại nhang hóa học ngoài chợ. Đóng gói cẩn thận, hộp đẹp."
-                                </p>
-                            </div>
-                            {/* Review Card 2 */}
-                            <div className="bg-white p-6 rounded-xl border border-trad-border-warm shadow-sm">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-10 w-10 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-primary font-bold">TL</div>
-                                    <div>
-                                        <h4 className="font-bold text-trad-text-main">Trần Lan</h4>
-                                        {renderStars(5)}
-                                    </div>
-                                    <span className="ml-auto text-xs text-trad-text-muted">1 tuần trước</span>
-                                </div>
-                                <p className="text-trad-text-main/80 text-sm leading-relaxed">
-                                    "Shop tư vấn nhiệt tình. Nhang cháy đều, ít khói, rất phù hợp cho căn hộ chung cư. Sẽ ủng hộ dài dài."
-                                </p>
-                            </div>
-                            {/* Review Card 3 */}
-                            <div className="bg-white p-6 rounded-xl border border-trad-border-warm shadow-sm">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-10 w-10 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-primary font-bold">MV</div>
-                                    <div>
-                                        <h4 className="font-bold text-trad-text-main">Minh Vương</h4>
-                                        {renderStars(4)}
-                                    </div>
-                                    <span className="ml-auto text-xs text-trad-text-muted">2 tuần trước</span>
-                                </div>
-                                <p className="text-trad-text-main/80 text-sm leading-relaxed">
-                                    "Sản phẩm tốt trong tầm giá. Giao hàng hơi chậm một chút nhưng bù lại chất lượng sản phẩm rất tuyệt vời."
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -344,25 +400,17 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                 Xem tất cả <span className="material-symbols-outlined">arrow_forward</span>
                             </Link>
                         </div>
-                        {/* Placeholder Grid */}
+                        {/* Related Products Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            {[1, 2, 3, 4].map((item) => (
-                                <div key={item} className="group bg-white border border-trad-border-warm rounded-lg overflow-hidden hover:shadow-md transition-all">
-                                    <div className="aspect-[3/4] overflow-hidden relative bg-trad-bg-warm">
-                                        {/* Placeholder Image */}
-                                        <div className="absolute inset-0 flex items-center justify-center text-trad-text-muted/20">
-                                            <span className="material-symbols-outlined text-4xl">spa</span>
-                                        </div>
-                                        <button className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity text-trad-primary">
-                                            <span className="material-symbols-outlined !text-[20px]">shopping_cart</span>
-                                        </button>
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-trad-text-main mb-1 line-clamp-1">Sản phẩm tham khảo {item}</h3>
-                                        <p className="text-trad-primary font-bold">450.000₫</p>
-                                    </div>
+                            {relatedProducts.length > 0 ? (
+                                relatedProducts.map((item) => (
+                                    <TraditionalProductCard key={item.id} product={item} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-10 text-trad-text-muted italic">
+                                    Đang cập nhật sản phẩm liên quan...
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
 

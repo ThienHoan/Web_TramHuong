@@ -24,6 +24,10 @@
   --color-trad-amber-700: #b45309;
 
   /* New Traditional Design Colors */
+  --color-trad-red: #541e1b;
+  /* Deep traditional red from Success Page */
+  --color-trad-gold: #f4c025;
+  --color-trad-cream: #f4f0e7;
   --color-trad-primary: #b35309;
   --color-trad-primary-dark: #8a3e05;
   --color-trad-bg-light: #fcfaf8;
@@ -224,4 +228,62 @@
 
 .text-shadow-glow {
   text-shadow: 0 0 20px rgba(255, 243, 217, 0.9);
+}
+
+.filter-expired {
+  filter: grayscale(100%) sepia(20%) brightness(95%);
+  transition: all 0.5s ease;
+}
+
+@layer utilities {
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }

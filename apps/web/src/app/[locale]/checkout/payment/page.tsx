@@ -46,11 +46,10 @@ export default function CheckoutPaymentPage() {
 
     // Countdown timer for payment deadline
     useEffect(() => {
-        console.log('[Payment] Order data:', order);
-        console.log('[Payment] payment_deadline:', order?.payment_deadline);
+
 
         if (!order?.payment_deadline) {
-            console.log('[Payment] No payment_deadline found');
+
             return;
         }
 

@@ -45,11 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
         if (data) {
-            console.log('AuthProvider: Fetched profile', data);
+
             setProfile(data as UserProfile);
             setRole(data.role as Role);
         } else {
-            console.log('AuthProvider: No profile found for user', userId, error);
+
         }
     };
 

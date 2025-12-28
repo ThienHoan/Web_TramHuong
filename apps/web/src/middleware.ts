@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
     const isAdminRoute = pathname.includes('/admin');
 
     // Debug Log
-    console.log(`[Middleware] Path: ${pathname}, User: ${user?.email || 'None'}`);
+
 
     if (isAdminRoute) {
         let hasAccess = false;
@@ -54,17 +54,17 @@ export async function middleware(request: NextRequest) {
                 .single();
 
             const role = userData?.role;
-            console.log(`[Middleware] Role Check: ${role} | Error: ${roleError?.message}`);
+
 
             if (role === 'ADMIN' || role === 'STAFF') {
                 hasAccess = true;
             }
         } else {
-            console.log('[Middleware] No user found for Admin route');
+
         }
 
         if (!hasAccess) {
-            console.log('[Middleware] Unauthorized Admin Access -> Hiding with 404');
+
             const locale = pathname.match(/^\/(vi|en)/)?.[1] || 'en';
             // Rewrite to a non-existent path to trigger 404
             const url = request.nextUrl.clone();

@@ -4,20 +4,24 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
 
-interface CartItem {
-    id: string; // Product ID
+export interface CartItem {
+    key: string;        // Unique ID (Server ID or Composite for local)
+    productId: string;  // Product ID 
+    id: string;         // Alias for Product ID (Legacy compatibility)
     slug: string;
     title: string;
     price: number;
     image: string;
     quantity: number;
+    variantId?: string | null;
+    variantName?: string | null;
 }
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-    removeItem: (id: string) => void;
-    updateQuantity: (id: string, delta: number) => void;
+    addItem: (item: Omit<CartItem, 'quantity' | 'key' | 'productId' | 'id'> & { id: string, quantity?: number, variantId?: string, variantName?: string }) => void;
+    removeItem: (key: string) => void;
+    updateQuantity: (key: string, delta: number) => void;
     clearCart: () => void;
     total: number;
     count: number;
@@ -47,7 +51,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${session.access_token}`
                             },
-                            body: JSON.stringify({ items: localCart })
+                            body: JSON.stringify({ items: localCart.map((i: any) => ({ ...i, id: i.productId })) })
                         });
                         localStorage.removeItem('cart'); // Clear local after merge
                     } catch (e) {
@@ -62,15 +66,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        setItems(data);
+                        // Map backend format to frontend CartItem
+                        const mapped = data.map((i: any) => ({
+                            key: i.cartItemId,
+                            productId: i.id,
+                            id: i.id,
+                            slug: i.slug,
+                            title: i.title,
+                            price: i.price,
+                            image: i.image,
+                            quantity: i.quantity,
+                            variantId: i.variantId,
+                            variantName: i.variantName
+                        }));
+                        setItems(mapped);
                     }
                 } catch (e) {
                     console.error('Failed to fetch cart', e);
                 }
             } else {
                 // GUEST MODE
-                // Only load from local if not already loaded to avoid overwriting if we just logged out
-                // Actually, for guest, we just trust local storage
                 const saved = localStorage.getItem('cart');
                 if (saved) {
                     setItems(JSON.parse(saved));
@@ -82,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
 
         loadCart();
-    }, [user, session]); // Re-run when user/session changes
+    }, [user, session]);
 
     // 2. Persist to Local Storage (Only for guests)
     useEffect(() => {
@@ -91,29 +106,80 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, user, initialized]);
 
-    const addItem = async (newItem: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    const addItem = async (newItem: Omit<CartItem, 'quantity' | 'key' | 'productId'> & { quantity?: number, id: string }) => {
         const qtyToAdd = newItem.quantity || 1;
+        const variantId = newItem.variantId || null;
 
-        // Optimistic Update
+        // Optimistic Unique Key Generation for new items (Guest or Optimistic UI)
+        // For Guest: Composite Key. For User: Temporary until re-fetch, but we reuse composite for matching.
+        const compositeKey = `${newItem.id}-${variantId || 'default'}`;
+
         const oldItems = [...items];
+
         setItems(prev => {
-            const existing = prev.find(i => i.id === newItem.id);
-            if (existing) {
-                return prev.map(i => i.id === newItem.id ? { ...i, quantity: i.quantity + qtyToAdd } : i);
+            // Check existence by Product + Variant
+            const existingIndex = prev.findIndex(i => i.productId === newItem.id && (i.variantId || null) === variantId);
+
+            if (existingIndex > -1) {
+                const updated = [...prev];
+                updated[existingIndex].quantity += qtyToAdd;
+                return updated;
             }
-            return [...prev, { ...newItem, quantity: qtyToAdd }];
+
+            // New Item
+            return [...prev, {
+                key: user ? `temp-${Date.now()}` : compositeKey, // Temp key for User, stable for guest
+                productId: newItem.id,
+                id: newItem.id,
+                slug: newItem.slug,
+                title: newItem.title,
+                price: newItem.price,
+                image: newItem.image,
+                quantity: qtyToAdd,
+                variantId: variantId,
+                variantName: newItem.variantName || null
+            }];
         });
 
         if (user && session) {
             try {
+                // We don't rely only on optimistic key here, we call API
                 await fetch(`${API_URL}/cart/items`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session.access_token}`
                     },
-                    body: JSON.stringify({ productId: newItem.id, quantity: qtyToAdd })
+                    body: JSON.stringify({
+                        productId: newItem.id,
+                        quantity: qtyToAdd,
+                        variantId: variantId,
+                        variantName: newItem.variantName
+                    })
                 });
+
+                // Re-fetch to get real server IDs (Keys)
+                // This replaces the optimistic item with the real one (Cleanest way)
+                const res = await fetch(`${API_URL}/cart`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const mapped = data.map((i: any) => ({
+                        key: i.cartItemId,
+                        productId: i.id,
+                        id: i.id,
+                        slug: i.slug,
+                        title: i.title,
+                        price: i.price,
+                        image: i.image,
+                        quantity: i.quantity,
+                        variantId: i.variantId,
+                        variantName: i.variantName
+                    }));
+                    setItems(mapped);
+                }
+
             } catch (e) {
                 console.error('Failed to add item', e);
                 setItems(oldItems); // Rollback
@@ -121,16 +187,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const removeItem = async (id: string) => {
+    const removeItem = async (key: string) => {
         const oldItems = [...items];
-        setItems(prev => prev.filter(i => i.id !== id));
+        setItems(prev => prev.filter(i => i.key !== key));
 
         if (user && session) {
             try {
-                await fetch(`${API_URL}/cart/items/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
-                });
+                // API expects Cart Item ID (which is 'key' in User mode)
+                // If the key is temporary (starts with temp-), we should theoretically block or wait, 
+                // but usually Remove only happens on loaded items.
+                if (!key.startsWith('temp-')) {
+                    await fetch(`${API_URL}/cart/items/${key}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                }
             } catch (e) {
                 console.error('Failed to remove item', e);
                 setItems(oldItems);
@@ -138,12 +209,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const updateQuantity = async (id: string, delta: number) => {
+    const updateQuantity = async (key: string, delta: number) => {
         const oldItems = [...items];
         let newQty = 0;
 
         setItems(prev => prev.map(i => {
-            if (i.id === id) {
+            if (i.key === key) {
                 newQty = Math.max(1, i.quantity + delta);
                 return { ...i, quantity: newQty };
             }
@@ -152,14 +223,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (user && session) {
             try {
-                await fetch(`${API_URL}/cart/items/${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                    },
-                    body: JSON.stringify({ quantity: newQty })
-                });
+                if (!key.startsWith('temp-')) {
+                    await fetch(`${API_URL}/cart/items/${key}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({ quantity: newQty })
+                    });
+                }
             } catch (e) {
                 console.error('Failed to update quantity', e);
                 setItems(oldItems);
