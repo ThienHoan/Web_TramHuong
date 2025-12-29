@@ -15,6 +15,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PostsModule } from './posts/posts.module';
+import { ContactsModule } from './contacts/contacts.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { PostsModule } from './posts/posts.module';
     WishlistModule,
     AnalyticsModule,
     PostsModule,
+    ContactsModule,
   ],
   controllers: [AppController],
   providers: [

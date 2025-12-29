@@ -5,16 +5,27 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { Public } from '../auth/public.decorator';
+import { LookupOrderDto } from './dto/lookup-order.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('orders')
 @UseGuards(AuthGuard, RolesGuard)
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
+    @Post('lookup')
+    @Public()
+    @UseGuards(ThrottlerGuard)
+    async lookup(@Body() body: LookupOrderDto) {
+        return this.ordersService.lookupOrder(body);
+    }
+
     @Post()
-    @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
-    async create(@Request() req: any, @Body() body: any) {
-        const userId = req.user.id;
+    @Public()
+    @UseGuards(ThrottlerGuard)
+    async create(@Request() req: any, @Body() body: CreateOrderDto) {
+        const userId = req.user?.id || null;
         const { items, shipping_info, paymentMethod } = body;
         return this.ordersService.create(userId, items, shipping_info, paymentMethod);
     }

@@ -1,8 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
-
 import { MailService } from '../mail/mail.service';
+import { LookupOrderDto } from './dto/lookup-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -14,6 +14,72 @@ export class OrdersService {
 
     private get client() {
         return this.supabaseService.getClient();
+    }
+
+    async lookupOrder(dto: LookupOrderDto) {
+        const { orderCode, emailOrPhone } = dto;
+
+        // Clean input
+        const cleanEmailOrPhone = emailOrPhone.trim().toLowerCase();
+
+        // 1. Find Order by ID (UUID usually)
+        // Note: Using 'id' for orderCode. If strict UUID validation fails on DB side, it handles it.
+        const { data: order, error } = await this.client
+            .from('orders')
+            .select('*')
+            .eq('id', orderCode)
+            .single();
+
+        if (error || !order) {
+            // Generic error for security
+            throw new NotFoundException('Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn và thông tin xác thực.');
+        }
+
+        // 2. Verify Email OR Phone from shipping_info
+        const shippingInfo = order.shipping_info || {};
+        const orderEmail = (shippingInfo.email || '').trim().toLowerCase();
+        const orderPhone = (shippingInfo.phone || '').trim().replace(/\s+/g, ''); // Normalize phone
+
+        const inputIsPhone = /^\d+$/.test(cleanEmailOrPhone.replace(/[^\d]/g, ''));
+        const cleanInputPhone = cleanEmailOrPhone.replace(/[^\d]/g, '');
+
+        let isMatch = false;
+
+        if (orderEmail && orderEmail === cleanEmailOrPhone) {
+            isMatch = true;
+        } else if (orderPhone && cleanInputPhone && orderPhone.includes(cleanInputPhone)) {
+            // Simple contains check for phone to be lenient with formats, or strict?
+            // Let's use flexible match: last 9 digits match
+            if (orderPhone.endsWith(cleanInputPhone) || cleanInputPhone.endsWith(orderPhone)) {
+                isMatch = true;
+            }
+        }
+
+        if (!isMatch) {
+            throw new NotFoundException('Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn và thông tin xác thực.');
+        }
+
+        // 3. Return Safe Data
+        return {
+            id: order.id,
+            status: order.status,
+            created_at: order.created_at,
+            total: order.total,
+            items: order.items,
+            shipping_info: {
+                full_name: shippingInfo.full_name,
+                // Hide sensitive info
+                email: shippingInfo.email,
+                phone: shippingInfo.phone ? '******' + shippingInfo.phone.slice(-3) : null,
+                address: shippingInfo.address ? '******' : null,
+                province: shippingInfo.province,
+                district: shippingInfo.district,
+                ward: shippingInfo.ward
+            },
+            payment_status: order.payment_status,
+            payment_method: order.payment_method,
+            tracking_code: order.tracking_code || null
+        };
     }
 
     async findAll(options?: { page?: number; limit?: number }) {
@@ -43,10 +109,26 @@ export class OrdersService {
         const page = options?.page || 1;
         const limit = options?.limit || 20;
 
-        const { data, count, error } = await this.client
+        // Fetch user email to link guest orders
+        const { data: user } = await this.client
+            .from('users')
+            .select('email')
+            .eq('id', userId)
+            .single();
+
+        let query = this.client
             .from('orders')
-            .select('*', { count: 'exact' })
-            .eq('user_id', userId)
+            .select('*', { count: 'exact' });
+
+        if (user?.email) {
+            // Match user_id OR guest orders with same email
+            // Note: Postgres syntax for JSON text extraction in OR filter
+            query = query.or(`user_id.eq.${userId},shipping_info->>email.eq.${user.email}`);
+        } else {
+            query = query.eq('user_id', userId);
+        }
+
+        const { data, count, error } = await query
             .order('created_at', { ascending: false })
             .range((page - 1) * limit, page * limit - 1);
 
@@ -74,7 +156,7 @@ export class OrdersService {
         return data;
     }
 
-    async create(userId: string, items: any[], shippingInfo: any, paymentMethod: string = 'cod') {
+    async create(userId: string | null, items: any[], shippingInfo: any, paymentMethod: string = 'cod') {
         if (!items || items.length === 0) {
             throw new BadRequestException('Items are required');
         }
@@ -181,7 +263,7 @@ export class OrdersService {
         const { data: orderData, error: orderError } = await this.client
             .from('orders')
             .insert({
-                user_id: userId,
+                user_id: userId, // Can be null
                 status: orderStatus,
                 payment_deadline: paymentDeadline,
                 total,
@@ -207,8 +289,10 @@ export class OrdersService {
             }
         }
 
-        // 4. Clear Cart
-        await this.cartService.clearCart(userId);
+        // 4. Clear Cart (Only if user logged in)
+        if (userId) {
+            await this.cartService.clearCart(userId);
+        }
 
         // 5. Emails are now triggered in verifyPayment (Webhook)
 

@@ -9,6 +9,7 @@ export class ProductsService {
         include_inactive?: boolean;
         search?: string;
         category?: string;
+        category_id?: string | number;
         sort?: string;
         page?: number;
         limit?: number;
@@ -41,11 +42,14 @@ export class ProductsService {
             query = query.eq('is_active', true);
         }
 
-        // Filter: Category
+        // Filter: Category Slug
         if (options?.category) {
-            // Filter by related category slug
-            // Note: This effectively enforces an Inner Join on 'category' when this filter is active
             query = query.eq('category.slug', options.category);
+        }
+
+        // Filter: Category ID (More robust)
+        if (options?.category_id) {
+            query = query.eq('category_id', options.category_id);
         }
 
         // Filter: Price Range
