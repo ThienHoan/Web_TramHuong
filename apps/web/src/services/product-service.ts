@@ -4,16 +4,19 @@ import { Product, Category } from '../types/product';
 export const productService = {
     async getProducts(locale: string, options?: {
         category?: string;
+        categoryId?: string | number;
         search?: string;
         sort?: string;
         limit?: number;
         include_inactive?: boolean;
         min_price?: number;
-        max_price?: number
+        max_price?: number;
+        stock_status?: string;
     }): Promise<Product[]> {
         try {
             const params: Record<string, any> = { locale, ...options };
             if (options?.include_inactive) params.include_inactive = 'true';
+            if (options?.categoryId) params.category_id = options.categoryId; // Map camelCase to snake_case for API
 
             const url = buildUrl('/products', params);
 

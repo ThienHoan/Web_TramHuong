@@ -9,8 +9,8 @@ import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import { Link } from '@/i18n/routing';
 
-import { Alert } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { Alert } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 import TraditionalProductReviews from './TraditionalProductReviews';
 import TraditionalProductDescription from './tabs/TraditionalProductDescription';
@@ -30,6 +30,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
     const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
     const [selectedVariant, setSelectedVariant] = useState<any>(null);
+    const [isAdding, setIsAdding] = useState(false);
     const locale = useLocale();
 
     // Initialize variant
@@ -75,23 +76,35 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
         loadData();
     }, [product.id, locale, product.category]);
 
-    const handleAddToCart = () => {
-        addItem({
-            id: product.id,
-            slug: product.slug,
-            title: product.translation.title,
-            price: selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price),
-            image: product.images[0],
-            quantity: quantity,
-            variantId: selectedVariant?.name || null,
-            variantName: selectedVariant?.name || null
-        });
+    const handleAddToCart = async () => {
+        if (isAdding) return;
+        setIsAdding(true);
+        try {
+            await addItem({
+                id: product.id,
+                slug: product.slug,
+                title: product.translation.title,
+                price: selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price),
+                image: product.images[0],
+                quantity: quantity,
+                variantId: selectedVariant?.name || null,
+                variantName: selectedVariant?.name || null
+            });
 
-        toast.custom((t) => (
-            <Alert variant="success" size="sm" title="Thành Công" className="w-[300px] bg-white border-none shadow-xl">
-                Đã thêm sản phẩm vào giỏ hàng!
-            </Alert>
-        ));
+            toast.custom((t) => (
+                <Alert
+                    variant="success"
+                    size="sm"
+                    title="Thành Công"
+                    className="w-[300px] bg-white border-none shadow-xl"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    Đã thêm sản phẩm vào giỏ hàng!
+                </Alert>
+            ));
+        } finally {
+            setIsAdding(false);
+        }
     };
 
     const handleWishlist = async () => {
@@ -99,7 +112,13 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
         await toggleWishlist(product.id);
         if (isAdding) {
             toast.custom((t) => (
-                <Alert variant="success" size="sm" title="Yêu Thích" className="w-[300px] bg-white border-none shadow-xl">
+                <Alert
+                    variant="success"
+                    size="sm"
+                    title="Yêu Thích"
+                    className="w-[300px] bg-white border-none shadow-xl"
+                    onClose={() => toast.dismiss(t)}
+                >
                     Đã thêm vào danh sách yêu thích!
                 </Alert>
             ));
@@ -136,7 +155,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
                     {/* Breadcrumbs */}
                     <nav aria-label="Breadcrumb" className="flex mb-8 text-sm">
-                        <ol className="inline-flex items-center space-x-2">
+                        <ol className="inline-flex flex-wrap items-center gap-2">
                             <li className="inline-flex items-center">
                                 <Link className="text-trad-text-muted hover:text-trad-primary font-medium transition-colors" href="/">Trang chủ</Link>
                             </li>
@@ -146,7 +165,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             </li>
                             <li className="text-trad-text-muted">/</li>
                             <li aria-current="page">
-                                <span className="text-trad-text-main font-semibold truncate max-w-[200px] md:max-w-none">{product.translation.title}</span>
+                                <span className="text-trad-text-main font-semibold truncate max-w-[200px] md:max-w-none text-ellipsis block">{product.translation.title}</span>
                             </li>
                         </ol>
                     </nav>
@@ -259,7 +278,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                     {/* Quantity & Add to Cart */}
                                     <div className="flex flex-wrap gap-4 items-stretch pt-4">
                                         <div className="flex items-center border border-trad-border-warm rounded-lg bg-white h-12">
-                                            <button onClick={() => handleQuantityChange(-1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-10">
+                                            <button onClick={() => handleQuantityChange(-1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
                                                 <span className="material-symbols-outlined !text-[18px]">remove</span>
                                             </button>
                                             <input
@@ -268,16 +287,17 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                                 value={quantity}
                                                 readOnly
                                             />
-                                            <button onClick={() => handleQuantityChange(1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-10">
+                                            <button onClick={() => handleQuantityChange(1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
                                                 <span className="material-symbols-outlined !text-[18px]">add</span>
                                             </button>
                                         </div>
                                         <button
                                             onClick={handleAddToCart}
-                                            className="flex-1 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold rounded-lg px-8 h-12 flex items-center justify-center gap-2 transition-colors shadow-md shadow-trad-primary/20"
+                                            disabled={isAdding}
+                                            className={`flex-1 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold rounded-lg px-4 md:px-8 h-12 flex items-center justify-center gap-2 transition-colors shadow-md shadow-trad-primary/20 text-sm md:text-base ${isAdding ? 'opacity-75 cursor-wait' : ''}`}
                                         >
-                                            <span className="material-symbols-outlined">shopping_bag</span>
-                                            Thêm vào giỏ hàng
+                                            <span className="material-symbols-outlined !text-[20px]">shopping_bag</span>
+                                            {isAdding ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}
                                         </button>
                                         <button
                                             onClick={handleWishlist}

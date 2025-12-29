@@ -1,7 +1,7 @@
 import { getProduct } from '@/lib/api-client';
 import ZenProductDetail from '@/components/zen/ZenProductDetail';
 import TraditionalProductDetail from '@/components/traditional/TraditionalProductDetail';
-import ProductReviews from '@/components/reviews/ProductReviews';
+import ReviewsSection from '@/components/reviews/ReviewsSection';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -15,9 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         };
     }
 
-    const title = product.translation.title;
-    const description = product.translation.description;
-    const imageUrl = product.images[0] || '/placeholder.jpg';
+    const title = product.translation?.title || 'Trầm Hương';
+    const description = product.translation?.description || '';
+    const imageUrl = product.images?.[0] || '/placeholder.jpg';
 
     return {
         title,
@@ -49,7 +49,7 @@ export default async function ProductPage({
         return (
             <>
                 <TraditionalProductDetail product={product} />
-                {/* <ProductReviews productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
+                {/* <ReviewsSection productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
             </>
         );
     }
@@ -57,7 +57,7 @@ export default async function ProductPage({
     return (
         <>
             <ZenProductDetail product={product} />
-            <ProductReviews productId={product.id} />
+            <ReviewsSection productId={product.id} />
         </>
     );
 }

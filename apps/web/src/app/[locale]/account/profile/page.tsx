@@ -12,16 +12,14 @@ interface Division {
     name: string;
 }
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
-    const { session, refreshProfile } = useAuth();
+    const { session, refreshProfile, loading: authLoading } = useAuth();
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [alertState, setAlertState] = useState<{ type: 'success' | 'destructive'; title: string; message: string } | null>(null);
 
     // Location State
     const [provinces, setProvinces] = useState<Division[]>([]);
@@ -39,6 +37,8 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
+        if (authLoading) return;
+
         if (!session) {
             router.push('/login');
             return;
@@ -85,13 +85,13 @@ export default function ProfilePage() {
                         }
                     }
                 }
-                setLoading(false);
+                setDataLoading(false);
             })
             .catch(err => {
                 console.error(err);
-                setLoading(false);
+                setDataLoading(false);
             });
-    }, [session, router]);
+    }, [session, router, authLoading]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -144,30 +144,41 @@ export default function ProfilePage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        setAlertState(null);
         try {
             await updateProfile(formData);
             await refreshProfile();
-            setAlertState({
-                type: 'success',
-                title: 'Thành công',
-                message: 'Cập nhật hồ sơ thành công!'
-            });
+            toast.custom((t) => (
+                <Alert
+                    variant="success"
+                    size="sm"
+                    title="Thành công"
+                    className="w-[300px] bg-white border-none shadow-xl"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    Cập nhật hồ sơ thành công!
+                </Alert>
+            ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            router.refresh();
+            // router.refresh(); // Removed to prevent session kick and delay
         } catch (error: any) {
-            setAlertState({
-                type: 'destructive',
-                title: 'Lỗi',
-                message: error.message || 'Cập nhật thất bại'
-            });
+            toast.custom((t) => (
+                <Alert
+                    variant="destructive"
+                    size="sm"
+                    title="Lỗi"
+                    className="w-[300px] bg-white border-none shadow-xl"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    {error.message || 'Cập nhật thất bại'}
+                </Alert>
+            ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) return (
+    if (authLoading || dataLoading) return (
         <div className="bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
             <TraditionalHeader />
             <main className="flex-grow flex items-center justify-center">
@@ -189,26 +200,6 @@ export default function ProfilePage() {
                     <h1 className="font-display text-4xl md:text-5xl font-bold text-trad-red-900 mb-3">Hồ Sơ Của Tôi</h1>
                     <p className="text-trad-text-muted italic font-serif text-lg">"Hành trình của hương thơm, lưu giữ từng khoảnh khắc"</p>
                 </header>
-
-
-
-                <AnimatePresence>
-                    {alertState && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.4, ease: "easeInOut" }}
-                            className="mb-8"
-                        >
-                            <Alert variant={alertState.type}>
-                                <AlertDescription>
-                                    {alertState.message}
-                                </AlertDescription>
-                            </Alert>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Sidebar / Left Column */}

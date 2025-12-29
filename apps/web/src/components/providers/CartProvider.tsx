@@ -35,6 +35,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [initialized, setInitialized] = useState(false);
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+    const fetchCart = async () => {
+        if (!user || !session) return;
+        try {
+            const res = await fetch(`${API_URL}/cart`, {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                // Map backend format to frontend CartItem
+                const mapped = data.map((i: any) => ({
+                    key: i.cartItemId,
+                    productId: i.id,
+                    id: i.id,
+                    slug: i.slug,
+                    title: i.title,
+                    price: i.price,
+                    image: i.image,
+                    quantity: i.quantity,
+                    variantId: i.variantId,
+                    variantName: i.variantName
+                }));
+                setItems(mapped);
+            }
+        } catch (e) {
+            console.error('Failed to fetch cart', e);
+        }
+    };
+
     // 1. Initial Load (Guest) or Sync (User)
     useEffect(() => {
         const loadCart = async () => {
@@ -60,30 +88,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 }
 
                 // Fetch latest cart from server
-                try {
-                    const res = await fetch(`${API_URL}/cart`, {
-                        headers: { 'Authorization': `Bearer ${session.access_token}` }
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        // Map backend format to frontend CartItem
-                        const mapped = data.map((i: any) => ({
-                            key: i.cartItemId,
-                            productId: i.id,
-                            id: i.id,
-                            slug: i.slug,
-                            title: i.title,
-                            price: i.price,
-                            image: i.image,
-                            quantity: i.quantity,
-                            variantId: i.variantId,
-                            variantName: i.variantName
-                        }));
-                        setItems(mapped);
-                    }
-                } catch (e) {
-                    console.error('Failed to fetch cart', e);
-                }
+                await fetchCart();
             } else {
                 // GUEST MODE
                 const saved = localStorage.getItem('cart');
@@ -160,29 +165,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
                 // Re-fetch to get real server IDs (Keys)
                 // This replaces the optimistic item with the real one (Cleanest way)
-                const res = await fetch(`${API_URL}/cart`, {
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    const mapped = data.map((i: any) => ({
-                        key: i.cartItemId,
-                        productId: i.id,
-                        id: i.id,
-                        slug: i.slug,
-                        title: i.title,
-                        price: i.price,
-                        image: i.image,
-                        quantity: i.quantity,
-                        variantId: i.variantId,
-                        variantName: i.variantName
-                    }));
-                    setItems(mapped);
-                }
+                await fetchCart();
 
             } catch (e) {
                 console.error('Failed to add item', e);
-                setItems(oldItems); // Rollback
+                // Instead of strict rollback, try to fetch current state. 
+                // If the error was duplicate key or race condition, fetchCart will return the success state.
+                await fetchCart();
             }
         }
     };

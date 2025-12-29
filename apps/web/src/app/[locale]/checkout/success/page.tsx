@@ -10,6 +10,7 @@ import { getOrder, setAccessToken } from '@/lib/api-client';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function CheckoutSuccessPage() {
     const searchParams = useSearchParams();
@@ -19,6 +20,7 @@ export default function CheckoutSuccessPage() {
     const { session } = useAuth();
     const [order, setOrder] = useState<any>(null);
     const { formatPrice } = useCurrency();
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (!orderId) {
@@ -33,10 +35,18 @@ export default function CheckoutSuccessPage() {
         }
     }, [orderId, router, session]);
 
+    const handleCopyId = () => {
+        if (!orderId) return;
+        navigator.clipboard.writeText(orderId);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        toast.success("Đã sao chép mã đơn hàng!");
+    };
+
     if (!orderId) return null;
 
     return (
-        <div className="bg-trad-bg-light font-serif antialiased min-h-screen flex flex-col" style={{
+        <div className="bg-trad-bg-light font-display antialiased min-h-screen flex flex-col" style={{
             backgroundImage: 'radial-gradient(var(--color-trad-border-warm) 1px, transparent 1px)',
             backgroundSize: '24px 24px'
         }}>
@@ -49,7 +59,7 @@ export default function CheckoutSuccessPage() {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.5, ease: "backOut" }}
-                        className="relative overflow-hidden rounded-2xl bg-trad-red shadow-xl border border-[#7a3e3b]"
+                        className="relative overflow-hidden rounded-2xl bg-[#421614] shadow-xl border border-[#7a3e3b]"
                     >
                         {/* Decorative corner accents */}
                         <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-trad-gold/20 to-transparent rounded-tl-2xl"></div>
@@ -69,29 +79,59 @@ export default function CheckoutSuccessPage() {
                             </motion.div>
 
                             {/* Main Headlines */}
-                            <h1 className="text-3xl md:text-4xl font-bold text-[#fef3c7] mb-3">Đặt hàng thành công!</h1>
+                            <h1 className="text-3xl md:text-4xl font-bold text-[#fef3c7] mb-3 font-serif">Đặt hàng thành công!</h1>
                             <p className="text-[#e8e2ce] text-base md:text-lg max-w-[600px] font-normal leading-relaxed">
                                 Cảm ơn quý khách! Đơn hàng của bạn đã được hệ thống tiếp nhận và đang trong quá trình xử lý.
                             </p>
 
+                            {/* Guest Warning / Important Note */}
+                            {!session && (
+                                <div className="mt-8 w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-500">
+                                    <div className="flex items-center gap-2 text-amber-500 font-bold uppercase tracking-wider text-sm">
+                                        <span className="material-symbols-outlined">warning</span>
+                                        Lưu ý quan trọng
+                                    </div>
+                                    <p className="text-[#e8e2ce] text-sm md:text-base max-w-lg">
+                                        Bạn đang đặt hàng với tư cách <strong>Khách (Chưa đăng nhập)</strong>.
+                                        Vui lòng <span className="text-amber-400 font-bold underline">lưu lại Mã Đơn Hàng</span> bên dưới để tra cứu tình trạng đơn hàng sau này.
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Divider */}
                             <div className="w-full h-px bg-[#7a3e3b] my-8 relative">
-                                <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-trad-red px-2">
+                                <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#421614] px-2">
                                     <span className="material-symbols-outlined text-[#f4c025] text-xl">local_shipping</span>
                                 </div>
                             </div>
 
                             {/* Order Details Grid */}
                             <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="flex flex-col gap-1 p-3 rounded-lg border border-[#7a3e3b] bg-[#421614]">
+                                <div className="flex flex-col gap-2 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e] relative group">
                                     <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Mã đơn hàng</span>
-                                    <span className="text-[#fef3c7] text-lg font-bold break-all">{orderId}</span>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <span className="text-[#fef3c7] text-xl font-bold font-mono tracking-wider">{orderId}</span>
+                                        <button
+                                            onClick={handleCopyId}
+                                            className="p-1.5 rounded-full hover:bg-white/10 text-trad-gold/70 hover:text-trad-gold transition-colors"
+                                            title="Sao chép mã đơn hàng"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">
+                                                {copied ? 'check' : 'content_copy'}
+                                            </span>
+                                        </button>
+                                    </div>
+                                    {copied && (
+                                        <span className="absolute -top-2 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-out fade-out duration-1000">
+                                            Đã chép!
+                                        </span>
+                                    )}
                                 </div>
-                                <div className="flex flex-col gap-1 p-3 rounded-lg border border-[#7a3e3b] bg-[#421614]">
+                                <div className="flex flex-col gap-1 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e]">
                                     <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Ngày đặt hàng</span>
                                     <span className="text-[#fef3c7] text-lg font-bold">{date}</span>
                                 </div>
-                                <div className="flex flex-col gap-1 p-3 rounded-lg border border-[#7a3e3b] bg-[#421614]">
+                                <div className="flex flex-col gap-1 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e]">
                                     <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Dự kiến giao</span>
                                     <span className="text-[#fef3c7] text-lg font-bold">3 - 5 Ngày</span>
                                 </div>
@@ -100,9 +140,9 @@ export default function CheckoutSuccessPage() {
                             {/* Ordered Items List */}
                             {order && order.items && order.items.length > 0 && (
                                 <div className="w-full flex flex-col gap-4 mb-8">
-                                    <h3 className="text-[#fef3c7] font-bold text-lg text-left border-b border-[#7a3e3b] pb-2">Sản phẩm đã đặt</h3>
+                                    <h3 className="text-[#fef3c7] font-bold text-lg text-left border-b border-[#7a3e3b] pb-2 font-serif">Sản phẩm đã đặt</h3>
                                     {order.items.map((item: any, idx: number) => (
-                                        <div key={idx} className="w-full bg-[#421614] p-4 rounded-xl border border-[#7a3e3b] flex items-center gap-4 text-left shadow-sm">
+                                        <div key={idx} className="w-full bg-[#2a0f0e] p-4 rounded-xl border border-[#7a3e3b] flex items-center gap-4 text-left shadow-sm">
                                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-[#7a3e3b] bg-[#2a0f0e]">
                                                 <ProductImage src={item.image} alt={item.title} className="h-full w-full object-cover" />
                                             </div>
@@ -127,15 +167,46 @@ export default function CheckoutSuccessPage() {
                                     <span className="material-symbols-outlined mr-2 text-[20px]">storefront</span>
                                     Tiếp tục mua sắm
                                 </Link>
-                                <Link href={`/account/orders/${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
-                                    <span className="material-symbols-outlined mr-2 text-[20px]">receipt_long</span>
-                                    Xem đơn hàng
-                                </Link>
+
+                                {session ? (
+                                    <Link href={`/account/orders/${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
+                                        <span className="material-symbols-outlined mr-2 text-[20px]">receipt_long</span>
+                                        Xem đơn hàng
+                                    </Link>
+                                ) : (
+                                    <Link href={`/order-lookup?code=${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
+                                        <span className="material-symbols-outlined mr-2 text-[20px]">search</span>
+                                        Thử tra cứu ngay
+                                    </Link>
+                                )}
                             </div>
 
+                            {/* Guest Upsell - Create Account */}
+                            {!session && (
+                                <div className="mt-8 pt-8 border-t border-[#7a3e3b] w-full animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="bg-[#2a0f0e]/50 rounded-xl p-6 border border-[#7a3e3b] flex flex-col md:flex-row items-center gap-6 text-left">
+                                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-trad-gold/20 flex items-center justify-center text-trad-gold animate-pulse">
+                                            <span className="material-symbols-outlined text-2xl">person_add</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-[#fef3c7] font-bold text-lg font-serif">Tạo tài khoản ngay</h4>
+                                            <p className="text-[#9c8749] text-sm mt-1">
+                                                Theo dõi đơn hàng dễ dàng, lưu địa chỉ cho lần sau và nhận ưu đãi độc quyền.
+                                            </p>
+                                        </div>
+                                        <Link
+                                            href={`/register?redirect=/account/orders/${orderId}`} // Redirect to their new order after reg? Maybe. Or just home.
+                                            className="flex-shrink-0 whitespace-nowrap px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-[#fef3c7] font-bold rounded-lg transition-colors"
+                                        >
+                                            Đăng ký thành viên
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+
                             <p className="mt-8 text-[#9c8749] text-sm">
-                                Một email xác nhận đã được gửi đến hộp thư của bạn. <br className="hidden sm:block" />
-                                Nếu cần hỗ trợ, vui lòng liên hệ Hotline: <span className="text-[#fef3c7]">1900 1234</span>
+                                Một email xác nhận đã được gửi đến bạn. <br className="hidden sm:block" />
+                                Nếu cần hỗ trợ, vui lòng liên hệ Hotline: <span className="text-[#fef3c7]">035.617.6878</span>
                             </p>
                         </div>
                     </motion.div>

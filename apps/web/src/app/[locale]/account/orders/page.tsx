@@ -214,9 +214,9 @@ export default function MyOrdersPage() {
                                                     <span className="text-xs text-stone-400 font-serif italic">
                                                         {status === 'SHIPPING' ? 'Đang vận chuyển...' : status}
                                                     </span>
-                                                    <Link href={['AWAITING_PAYMENT', 'PENDING'].includes(status) ? `/checkout/payment?id=${order.id}` : `/account/orders/${order.id}`}>
+                                                    <Link href={status === 'AWAITING_PAYMENT' ? `/checkout/payment?id=${order.id}` : `/account/orders/${order.id}`}>
                                                         <button className="flex items-center gap-1 text-[#9A3412] hover:text-[#7C2D12] transition-colors text-sm font-medium group/btn">
-                                                            <span className="font-serif">{['COMPLETED', 'PAID'].includes(status) ? 'Xem lại đơn' : 'Chi tiết / Thanh toán'}</span>
+                                                            <span className="font-serif">{['COMPLETED', 'PAID', 'SHIPPED', 'DELIVERED'].includes(status) ? 'Xem lại đơn' : (status === 'AWAITING_PAYMENT' ? 'Thanh toán ngay' : 'Xem chi tiết')}</span>
                                                             <span className="material-symbols-outlined text-base transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                                                         </button>
                                                     </Link>

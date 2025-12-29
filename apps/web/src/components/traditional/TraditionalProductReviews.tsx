@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 interface Review {
     id: string;
     rating: number;
-    comment: string;
+    comment?: string;
     created_at: string;
     user?: {
         full_name?: string;

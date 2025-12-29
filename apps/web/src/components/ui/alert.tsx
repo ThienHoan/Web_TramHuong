@@ -27,6 +27,7 @@ const alertVariants = cva(
 
 interface AlertProps extends React.ComponentProps<"div">, VariantProps<typeof alertVariants> {
   title?: string;
+  onClose?: () => void;
 }
 
 function Alert({
@@ -35,6 +36,7 @@ function Alert({
   size = "default",
   title,
   children,
+  onClose,
   ...props
 }: AlertProps) {
 
@@ -111,6 +113,25 @@ function Alert({
 
       {/* Content Wrapper */}
       <div className={cn("alert-content relative w-full z-10 grid gap-x-5 items-center", isSmall ? "gap-x-3 grid-cols-[auto_1fr]" : "grid-cols-[auto_1fr] items-start")}>
+
+        {/* Close Button */}
+        {onClose && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className={cn(
+              "absolute text-trad-text-muted/60 hover:text-trad-text-main transition-colors p-1.5 rounded-full hover:bg-black/5 z-20",
+              "hidden sm:block",
+              isSmall ? "right-1 top-1" : "right-2 top-2"
+            )}
+            type="button"
+            title="Đóng"
+          >
+            <span className="material-symbols-outlined text-[16px] font-bold leading-none block">close</span>
+          </button>
+        )}
 
         {/* Icon Section (Row 1, Col 1) */}
         <div className="flex-shrink-0 relative row-start-1 col-start-1 h-full flex items-center">

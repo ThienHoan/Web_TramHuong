@@ -28,7 +28,7 @@ export default function DashboardCharts({ data }: { data: any }) {
                                 tickFormatter={(val) => new Intl.NumberFormat('en', { notation: 'compact' }).format(val)}
                             />
                             <Tooltip
-                                formatter={(value: number) => formatPrice(value)}
+                                formatter={(value: unknown) => formatPrice(Number(value))}
                                 labelStyle={{ color: '#333' }}
                             />
                             <Line

@@ -2,8 +2,50 @@
 
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { submitContact } from '@/lib/api-client';
+import { toast } from 'sonner';
+import { useState } from 'react';
+
+const contactSchema = z.object({
+    full_name: z.string().min(2, 'Vui lòng nhập tên của bạn'),
+    email: z.string().email('Email không hợp lệ'),
+    topic: z.string().optional(),
+    message: z.string().min(10, 'Lời nhắn quá ngắn, hãy viết thêm vài dòng nhé')
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormValues>({
+        resolver: zodResolver(contactSchema as any),
+        defaultValues: {
+            topic: 'Tư vấn sản phẩm trầm hương'
+        }
+    });
+
+    const onSubmit = async (data: ContactFormValues) => {
+        setIsSubmitting(true);
+        try {
+            await submitContact(data);
+            toast.success('Đã gửi lời nhắn thành công!', {
+                description: 'Cảm ơn bạn đã chia sẻ câu chuyện. Chúng tôi sẽ phản hồi sớm nhất.',
+            });
+            reset();
+        } catch (error) {
+            console.error(error);
+            toast.error('Gửi thất bại', {
+                description: 'Có lỗi xảy ra, vui lòng thử lại sau ít phút.',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary/20 selection:text-trad-primary">
             <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-pattern">
@@ -90,31 +132,49 @@ export default function ContactPage() {
                                             <span className="material-symbols-outlined text-4xl text-trad-primary/40">stylus</span>
                                         </div>
                                         <h2 className="mb-6 text-center text-2xl font-bold text-trad-text-main">Chia sẻ câu chuyện</h2>
-                                        <form className="flex flex-col gap-5">
+                                        <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
                                             {/* Name Field */}
                                             <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="name">Quý danh của bạn</label>
+                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="full_name">Quý danh của bạn</label>
                                                 <div className="relative">
-                                                    <input className="w-full rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all" id="name" placeholder="Để chúng tôi tiện xưng hô" type="text" />
+                                                    <input
+                                                        {...register('full_name')}
+                                                        className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.full_name ? 'border-red-500' : 'border-trad-border-warm'}`}
+                                                        id="full_name"
+                                                        placeholder="Để chúng tôi tiện xưng hô"
+                                                        type="text"
+                                                    />
                                                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary">person</span>
                                                 </div>
+                                                {errors.full_name && <p className="text-red-500 text-xs mt-1 ml-1">{errors.full_name.message}</p>}
                                             </div>
                                             {/* Email Field */}
                                             <div className="group">
                                                 <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="email">Nơi chúng tôi phản hồi</label>
                                                 <div className="relative">
-                                                    <input className="w-full rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all" id="email" placeholder="Địa chỉ thư điện tử" type="email" />
+                                                    <input
+                                                        {...register('email')}
+                                                        className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.email ? 'border-red-500' : 'border-trad-border-warm'}`}
+                                                        id="email"
+                                                        placeholder="Địa chỉ thư điện tử"
+                                                        type="email"
+                                                    />
                                                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary">alternate_email</span>
                                                 </div>
+                                                {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
                                             </div>
                                             {/* Topic Field */}
                                             <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="subject">Chủ đề quan tâm</label>
+                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="topic">Chủ đề quan tâm</label>
                                                 <div className="relative">
                                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
                                                         <span className="material-symbols-outlined">expand_more</span>
                                                     </div>
-                                                    <select className="w-full appearance-none rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all" id="subject">
+                                                    <select
+                                                        {...register('topic')}
+                                                        className="w-full appearance-none rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all"
+                                                        id="topic"
+                                                    >
                                                         <option>Tư vấn sản phẩm trầm hương</option>
                                                         <option>Hợp tác kinh doanh</option>
                                                         <option>Phản hồi dịch vụ</option>
@@ -127,14 +187,34 @@ export default function ContactPage() {
                                             <div className="group">
                                                 <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="message">Lời nhắn gửi</label>
                                                 <div className="relative">
-                                                    <textarea className="w-full resize-none rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all" id="message" placeholder="Hãy kể cho chúng tôi nghe..." rows={5}></textarea>
+                                                    <textarea
+                                                        {...register('message')}
+                                                        className={`w-full resize-none rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.message ? 'border-red-500' : 'border-trad-border-warm'}`}
+                                                        id="message"
+                                                        placeholder="Hãy kể cho chúng tôi nghe..."
+                                                        rows={5}
+                                                    ></textarea>
                                                     <span className="material-symbols-outlined absolute left-3 top-4 text-stone-400 group-focus-within:text-trad-primary">edit_note</span>
                                                 </div>
+                                                {errors.message && <p className="text-red-500 text-xs mt-1 ml-1">{errors.message.message}</p>}
                                             </div>
                                             {/* Submit Button */}
-                                            <button className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-trad-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-trad-primary/25 transition-all hover:bg-trad-primary-dark hover:shadow-trad-primary/40 active:scale-[0.98]">
-                                                <span>Gửi câu chuyện của bạn</span>
-                                                <span className="material-symbols-outlined text-sm">send</span>
+                                            <button
+                                                disabled={isSubmitting}
+                                                type="submit"
+                                                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-trad-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-trad-primary/25 transition-all hover:bg-trad-primary-dark hover:shadow-trad-primary/40 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                        <span>Đang gửi...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span>Gửi câu chuyện của bạn</span>
+                                                        <span className="material-symbols-outlined text-sm">send</span>
+                                                    </>
+                                                )}
                                             </button>
                                             <p className="text-center text-xs text-stone-500 italic mt-2">
                                                 Mọi thông tin của bạn đều được bảo mật tuyệt đối.

@@ -37,10 +37,6 @@ export default function PaymentSelectPage() {
 
     const handlePlaceOrder = async () => {
         setError(null);
-        if (!user || !session) {
-            router.push('/login?redirect=/checkout/payment_select');
-            return;
-        }
         if (!shippingInfo) {
             router.push('/checkout');
             return;
@@ -51,7 +47,10 @@ export default function PaymentSelectPage() {
         await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
-            setAccessToken(session.access_token);
+            if (session?.access_token) {
+                setAccessToken(session.access_token);
+            }
+
             const orderItems = items.map(i => ({
                 productId: i.id,
                 quantity: i.quantity,
@@ -63,7 +62,8 @@ export default function PaymentSelectPage() {
                 name: shippingInfo.name,
                 phone: shippingInfo.phone,
                 city: shippingInfo.city, // The province name
-                address: shippingInfo.full_address
+                address: shippingInfo.full_address,
+                email: shippingInfo.email || '' // Pass email if captured (guest form currently doesn't capture email but let's be safe)
             };
 
             const order = await createOrder({
@@ -73,7 +73,11 @@ export default function PaymentSelectPage() {
             });
 
             clearCart();
+
+            // Only remove local storage info if strictly one-time, but user might want to re-order? 
+            // Better to clear it to avoid stale data on next visit
             localStorage.removeItem('checkout_shipping_info');
+            localStorage.removeItem('is_guest_checkout');
 
             if (paymentMethod === 'cod') {
                 router.push(`/checkout/success?id=${order.id}`);
@@ -81,6 +85,7 @@ export default function PaymentSelectPage() {
                 router.push(`/checkout/payment?id=${order.id}`);
             }
         } catch (e: any) {
+            console.error(e);
             setError(e.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
             setLoading(false); // Only stop loading on error
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -93,7 +98,7 @@ export default function PaymentSelectPage() {
             <TraditionalHeader />
 
             {/* Main Content */}
-            <main className="flex-grow w-full max-w-7xl mx-auto px-4 md:px-6 py-8">
+            <main className="flex-grow w-full max-w-7xl mx-auto px-4 md:px-6 py-8 pb-32 lg:pb-8">
                 {/* Breadcrumbs */}
                 <nav className="mb-8 flex items-center gap-2 text-sm md:text-base">
                     <Link className="text-trad-red-800 hover:text-trad-primary transition-colors font-medium" href="/cart">Giỏ hàng</Link>
@@ -145,7 +150,7 @@ export default function PaymentSelectPage() {
 
                             {/* Option 2: Bank Transfer (Recommended) */}
                             <label className={`group relative flex items-start md:items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all shadow-md ${paymentMethod === 'sepay' ? 'border-trad-primary bg-trad-bg-warm/10' : 'border-trad-border-warm bg-white hover:border-trad-primary'}`}>
-                                <div className="absolute -top-3 -right-3 md:top-4 md:right-4 md:left-auto md:translate-x-0">
+                                <div className="absolute top-2 right-2 md:top-4 md:right-4">
                                     <span className="inline-flex items-center rounded-full bg-trad-primary/10 px-2.5 py-0.5 text-xs font-bold text-trad-primary border border-trad-primary/20">
                                         Khuyên dùng
                                     </span>
@@ -260,6 +265,26 @@ export default function PaymentSelectPage() {
                         </div>
                     </div>
                 </div>
+                {/* Mobile Sticky Footer */}
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-trad-border-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden z-40 animate-slide-up">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-col">
+                            <span className="text-xs text-trad-text-muted">Tổng thành tiền</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-trad-red-900">{formatPrice(finalTotal)}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handlePlaceOrder}
+                            disabled={loading}
+                            className="bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
+                        >
+                            {loading ? 'Xử lý...' : 'Đặt hàng'}
+                            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                        </button>
+                    </div>
+                </div>
+
             </main>
             <TraditionalFooter />
         </div>

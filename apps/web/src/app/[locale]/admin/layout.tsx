@@ -21,6 +21,7 @@ export default function AdminLayout({
         { name: 'Categories', href: '/admin/categories' },
         { name: 'Users', href: '/admin/users' },
         { name: 'Blog', href: '/admin/blog' },
+        { name: 'Contacts', href: '/admin/contacts' },
     ];
 
     return (

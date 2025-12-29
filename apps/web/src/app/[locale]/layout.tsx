@@ -96,7 +96,10 @@ export default async function RootLayout({
                 {locale !== 'vi' && <Header locale={locale} />}
                 <SmoothScroll />
                 {children}
-                <Toaster position="top-right" />
+                <Toaster position="top-center" toastOptions={{
+                  className: 'md:right-4', // Custom class if needed for desktop offset
+                  style: { margin: '0 auto' } // Ensure clear centering
+                }} closeButton />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

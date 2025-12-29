@@ -5,6 +5,7 @@ import { getPostBySlug, getPosts } from '@/lib/api-client';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { BlogPost } from '@/types/blog';
 
 interface PageProps {
     params: Promise<{
@@ -41,8 +42,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function BlogDetailPage({ params }: PageProps) {
     const { slug } = await params;
 
-    let post;
-    let relatedPosts = [];
+    let post: BlogPost | null;
+    let relatedPosts: BlogPost[] = [];
 
     try {
         post = await getPostBySlug(slug);
@@ -50,11 +51,12 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
         // Fetch related posts (parallel)
         if (post.category) {
+            const currentPostId = post.id;
             const related = await getPosts({
                 limit: 3,
                 category: post.category
             });
-            relatedPosts = related.data?.filter(i => i.id !== post.id).slice(0, 3) || [];
+            relatedPosts = related.data?.filter(i => i.id !== currentPostId).slice(0, 3) || [];
         }
     } catch (error) {
         console.error('Failed to fetch post', error);
@@ -121,9 +123,9 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Narrative Content */}
-                <article className="container mx-auto px-4 max-w-3xl prose prose-lg prose-headings:text-trad-red-900 prose-headings:font-display prose-headings:font-bold prose-a:text-trad-primary hover:prose-a:text-trad-primary-dark prose-img:shadow-lg prose-img:rounded-xl">
+                <article className="container mx-auto px-4 max-w-3xl prose prose-base md:prose-lg prose-headings:text-trad-red-900 prose-headings:font-display prose-headings:font-bold prose-a:text-trad-primary hover:prose-a:text-trad-primary-dark prose-img:shadow-lg prose-img:rounded-xl">
                     {post.excerpt && (
-                        <p className="lead text-xl md:text-2xl text-trad-gray italic font-light leading-relaxed mb-8 border-l-4 border-trad-primary pl-6">
+                        <p className="lead text-lg md:text-2xl text-trad-gray italic font-light leading-relaxed mb-8 border-l-4 border-trad-primary pl-4 md:pl-6">
                             "{post.excerpt}"
                         </p>
                     )}

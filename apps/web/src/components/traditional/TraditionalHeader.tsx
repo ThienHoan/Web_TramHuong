@@ -60,10 +60,13 @@ export default function TraditionalHeader() {
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-10">
                         {[
-                            { href: '/', label: 'Trang chủ' },
-                            { href: '/products', label: 'Sản phẩm' },
-                            { href: '/story', label: 'Câu chuyện' },
-                            { href: '/contact', label: 'Liên hệ' },
+                            { href: '/', label: 'Trang Chủ' },
+                            { href: '/products', label: 'Sản Phẩm' },
+
+                            { href: '/blog', label: 'Thư Viện Hương Trầm' },
+                            { href: '/partnership', label: 'Hợp Tác' },
+                            { href: '/contact', label: 'Liên Hệ' },
+                            { href: '/order-lookup', label: 'Tra Cứu Đơn' },
                         ].map(({ href, label }) => {
                             const isActive = href === '/' ? pathname === href : pathname.startsWith(href);
                             return (
@@ -152,7 +155,12 @@ export default function TraditionalHeader() {
                             {locale}
                         </button>
 
-                        <button className="md:hidden p-2 text-trad-text-main hover:bg-trad-bg-warm rounded-full transition-colors" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                        {/* Mobile Menu Button - Optimized Hit Area */}
+                        <button
+                            className="md:hidden p-3 -mr-2 text-trad-text-main hover:bg-trad-bg-warm rounded-full transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-label="Menu"
+                        >
                             <span className="material-symbols-outlined">menu</span>
                         </button>
                     </div>
@@ -163,9 +171,17 @@ export default function TraditionalHeader() {
             {isMenuOpen && (
                 <div className="absolute top-20 left-0 w-full bg-trad-bg-light border-b border-trad-border-warm p-4 md:hidden shadow-lg animate-fade-in-down h-[calc(100vh-80px)] overflow-y-auto">
                     <nav className="flex flex-col gap-4">
+                        {/* Mobile Search */}
+                        <form onSubmit={handleSearch} className="relative w-full mb-2">
+                            <input name="search" className="w-full pl-10 pr-4 py-3 bg-trad-bg-warm border border-trad-border-warm rounded-lg text-base focus:outline-none focus:ring-1 focus:ring-trad-primary focus:border-trad-primary placeholder:text-trad-text-muted/70 text-trad-text-main" placeholder="Tìm kiếm sản phẩm..." type="text" />
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-trad-text-muted !text-[20px]">search</span>
+                        </form>
+
                         <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/" onClick={() => setIsMenuOpen(false)}>Trang chủ</Link>
                         <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/products" onClick={() => setIsMenuOpen(false)}>Sản phẩm</Link>
-                        <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/story" onClick={() => setIsMenuOpen(false)}>Câu chuyện</Link>
+                        <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/order-lookup" onClick={() => setIsMenuOpen(false)}>Tra Cứu Đơn</Link>
+                        <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/blog" onClick={() => setIsMenuOpen(false)}>Thư Viện Hương Trầm</Link>
+                        <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/partnership" onClick={() => setIsMenuOpen(false)}>Hợp Tác</Link>
                         <Link className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50" href="/contact" onClick={() => setIsMenuOpen(false)}>Liên hệ</Link>
 
                         {/* Mobile Actions */}

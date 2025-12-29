@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_URL = typeof window !== 'undefined' ? '/api' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000');
 
 let accessToken = '';
 
@@ -10,7 +10,7 @@ export const getHeaders = () => {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
     };
-    if (accessToken) {
+    if (accessToken && accessToken.trim() !== '') {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
     return headers;
@@ -36,7 +36,13 @@ export async function fetchWithAuth<T = any>(url: string, options: RequestInit =
 }
 
 export function buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-    const url = new URL(`${API_URL}${path}`);
+    // Determine base for URL construction. 
+    // If API_URL is relative (starts with /), we need a dummy base or window.location.origin to use URL constructor safely.
+    // However, checking for http protocol is safer.
+    const isAbsolute = API_URL.startsWith('http');
+    const base = isAbsolute ? API_URL : 'http://dummy-base.com' + API_URL;
+
+    const url = new URL(`${base}${path}`);
     if (params) {
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
@@ -44,7 +50,13 @@ export function buildUrl(path: string, params?: Record<string, string | number |
             }
         });
     }
-    return url.toString();
+
+    if (isAbsolute) {
+        return url.toString();
+    } else {
+        // Return relative path (e.g., /api/products?foo=bar)
+        return url.pathname + url.search;
+    }
 }
 
 export { API_URL };

@@ -7,12 +7,14 @@ export const blogService = {
         limit?: number;
         category?: string;
         search?: string;
+        status?: string;
     }) => {
         const queryParams: Record<string, any> = {};
         if (options?.page) queryParams.page = options.page;
         if (options?.limit) queryParams.limit = options.limit;
         if (options?.category) queryParams.category = options.category;
         if (options?.search) queryParams.search = options.search;
+        if (options?.status) queryParams.status = options.status;
 
         const url = buildUrl('/posts', queryParams);
         return fetchWithAuth<{ data: BlogPost[], meta: any }>(url);

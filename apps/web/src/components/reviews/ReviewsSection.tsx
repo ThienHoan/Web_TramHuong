@@ -7,7 +7,7 @@ import ReviewList from './ReviewList';
 import ReviewForm from './ReviewForm';
 import { useAuth } from '@/components/providers/AuthProvider';
 
-export default function ProductReviews({ productId }: { productId: string }) {
+export default function ReviewsSection({ productId }: { productId: string }) {
     const [reviews, setReviews] = useState<any[]>([]);
     const [meta, setMeta] = useState<any>({ total: 0, average: 0, distribution: {} });
     const [loading, setLoading] = useState(true);
@@ -20,10 +20,18 @@ export default function ProductReviews({ productId }: { productId: string }) {
     }, [session]);
 
     const fetchReviews = async () => {
-        const res = await getReviews(productId);
-        setReviews(res.data || []);
-        setMeta(res.meta || { total: 0, average: 0, distribution: {} });
-        setLoading(false);
+        try {
+            const res = await getReviews(productId);
+            // Ensure data is array and cast to any to satisfy the state type
+            const safeData = Array.isArray(res.data) ? res.data : [];
+            setReviews(safeData);
+            setMeta(res.meta || { total: 0, average: 0, distribution: {} });
+        } catch (error) {
+            console.error('Failed to fetch reviews:', error);
+            setReviews([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {

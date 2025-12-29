@@ -116,6 +116,25 @@ export default function CheckoutPaymentPage() {
         ? `https://qr.sepay.vn/img?bank=${BANK_CODE}&acc=${BANK_ACC}&template=compact&amount=${amountInVND}&des=${order.id}`
         : '';
 
+    const downloadQR = async () => {
+        if (!qrUrl) return;
+        try {
+            const response = await fetch(qrUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vietqr-${order.id}.png`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Download failed:', error);
+            window.open(qrUrl, '_blank');
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0]">
             <div className="flex flex-col items-center gap-4">
@@ -203,6 +222,13 @@ export default function CheckoutPaymentPage() {
                                             <span className="material-symbols-outlined text-accent-gold text-2xl">spa</span>
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={downloadQR}
+                                        className="mt-3 w-full flex items-center justify-center gap-2 bg-white hover:bg-surface-accent text-primary font-bold py-2 rounded-lg border border-primary/20 transition-colors text-sm"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">download</span>
+                                        Tải ảnh QR
+                                    </button>
                                     <div className="mt-3 flex justify-between items-center text-[10px] text-gray-500 font-medium">
                                         <span>Hỗ trợ 50+ Ngân hàng</span>
                                         <div className="flex gap-1 items-center">
@@ -243,8 +269,17 @@ export default function CheckoutPaymentPage() {
                                     <label className="text-xs font-bold text-text-sub uppercase tracking-wider mb-2 flex items-center gap-1">
                                         <span className="material-symbols-outlined text-sm">attach_money</span> Số tiền cần thanh toán
                                     </label>
-                                    <div className="flex items-baseline gap-1 text-4xl font-bold text-primary-dark font-serif">
-                                        {formatPrice(amountInVND).replace('₫', '')} <span className="text-xl text-text-main font-sans">VNĐ</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-baseline gap-1 text-4xl font-bold text-primary-dark font-serif">
+                                            {formatPrice(amountInVND).replace('₫', '')} <span className="text-xl text-text-main font-sans">VNĐ</span>
+                                        </div>
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(amountInVND.toString())}
+                                            className="p-2 hover:bg-black/5 rounded-full text-text-sub/50 hover:text-primary transition-colors"
+                                            title="Sao chép số tiền"
+                                        >
+                                            <span className="material-symbols-outlined text-xl">content_copy</span>
+                                        </button>
                                     </div>
                                     <p className="text-xs text-text-sub/70 mt-1 italic">
                                         (Bằng chữ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND)})
@@ -276,12 +311,12 @@ export default function CheckoutPaymentPage() {
                                     <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Số tài khoản</label>
                                     <div className="flex shadow-sm rounded-lg overflow-hidden group">
                                         <input
-                                            className="flex-1 bg-gray-50 border-gray-200 border-r-0 rounded-l-lg py-3 px-4 font-mono text-lg font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default tracking-wider"
+                                            className="flex-1 min-w-0 bg-gray-50 border-gray-200 border-r-0 rounded-l-lg py-3 px-3 md:px-4 font-mono text-lg font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default tracking-wider truncate"
                                             readOnly type="text" value={BANK_ACC}
                                         />
                                         <button
                                             onClick={() => navigator.clipboard.writeText(BANK_ACC)}
-                                            className="bg-surface-accent hover:bg-accent-gold border border-l-0 border-accent-gold/30 text-text-sub hover:text-white font-bold px-5 py-2 transition-all duration-300 flex items-center gap-2"
+                                            className="bg-surface-accent hover:bg-accent-gold border border-l-0 border-accent-gold/30 text-text-sub hover:text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 whitespace-nowrap shrink-0"
                                         >
                                             <span className="material-symbols-outlined text-lg">content_copy</span>
                                             <span>Sao chép</span>
@@ -292,12 +327,12 @@ export default function CheckoutPaymentPage() {
                                     <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Nội dung chuyển khoản</label>
                                     <div className="flex shadow-sm rounded-lg overflow-hidden mb-3">
                                         <input
-                                            className="flex-1 bg-amber-50 border-amber-200 border-r-0 rounded-l-lg py-3 px-4 font-mono font-bold text-text-main focus:ring-0 focus:border-accent-gold cursor-default truncate text-sm"
+                                            className="flex-1 min-w-0 bg-amber-50 border-amber-200 border-r-0 rounded-l-lg py-3 px-3 md:px-4 font-mono font-bold text-text-main focus:ring-0 focus:border-accent-gold cursor-default truncate text-sm"
                                             readOnly type="text" value={order?.id}
                                         />
                                         <button
                                             onClick={() => navigator.clipboard.writeText(order?.id)}
-                                            className="bg-primary hover:bg-primary-dark border border-l-0 border-primary text-white font-bold px-5 py-2 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
+                                            className="bg-primary hover:bg-primary-dark border border-l-0 border-primary text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg whitespace-nowrap shrink-0"
                                         >
                                             <span className="material-symbols-outlined text-lg">content_copy</span>
                                             <span>Sao chép</span>

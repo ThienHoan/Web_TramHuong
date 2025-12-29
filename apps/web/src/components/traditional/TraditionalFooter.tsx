@@ -20,29 +20,30 @@ export default function TraditionalFooter() {
                             Mang tinh hoa trầm hương Việt đến mọi gia đình. Sản phẩm thiên nhiên, an toàn và đậm đà bản sắc dân tộc.
                         </p>
                         <div className="flex gap-4">
-                            <a className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[18px]">public</span></a>
-                            <a className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[18px]">mail</span></a>
-                            <a className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[18px]">call</span></a>
+                            <a className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[20px]">public</span></a>
+                            <a className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[20px]">mail</span></a>
+                            <a className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[20px]">call</span></a>
                         </div>
                     </div>
                     {/* Links 1 */}
                     <div>
                         <h3 className="font-bold text-lg mb-4">Về chúng tôi</h3>
-                        <ul className="space-y-3 text-sm text-white/70">
-                            <li><Link className="hover:text-white transition-colors" href="#">Câu chuyện thương hiệu</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Chứng nhận chất lượng</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Vùng nguyên liệu</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Tin tức &amp; Sự kiện</Link></li>
+                        <ul className="space-y-4 md:space-y-3 text-sm text-white/70">
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Câu chuyện thương hiệu</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Chứng nhận chất lượng</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Vùng nguyên liệu</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Tin tức &amp; Sự kiện</Link></li>
                         </ul>
                     </div>
                     {/* Links 2 */}
                     <div>
                         <h3 className="font-bold text-lg mb-4">Hỗ trợ khách hàng</h3>
-                        <ul className="space-y-3 text-sm text-white/70">
-                            <li><Link className="hover:text-white transition-colors" href="#">Hướng dẫn mua hàng</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Chính sách đổi trả</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Chính sách bảo mật</Link></li>
-                            <li><Link className="hover:text-white transition-colors" href="#">Liên hệ</Link></li>
+                        <ul className="space-y-4 md:space-y-3 text-sm text-white/70">
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Hướng dẫn mua hàng</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="/order-lookup">Tra cứu đơn hàng</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Chính sách đổi trả</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Chính sách bảo mật</Link></li>
+                            <li><Link className="hover:text-white transition-colors py-1 block" href="#">Liên hệ</Link></li>
                         </ul>
                     </div>
                     {/* Newsletter */}

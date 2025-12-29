@@ -312,29 +312,29 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                             </div>
                         </ScrollReveal>
                         <ScrollReveal animation="fade-up" delay={200}>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                 {flashSaleProducts.length > 0 ? flashSaleProducts.map((product) => (
                                     <Link href={`/products/${product.slug}`} key={product.id}>
-                                        <div className="group bg-white rounded-2xl p-4 border border-gray-200 hover:border-accent-gold shadow-sm hover:shadow-xl transition-all duration-300">
-                                            <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-4 bg-surface-accent">
-                                                <div className="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2 py-1 rounded shadow-md">-30%</div>
+                                        <div className="group bg-white rounded-2xl p-3 md:p-4 border border-gray-200 hover:border-accent-gold shadow-sm hover:shadow-xl transition-all duration-300">
+                                            <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-3 md:mb-4 bg-surface-accent">
+                                                <div className="absolute top-3 left-3 bg-primary text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-md">-30%</div>
                                                 <ProductImage
                                                     src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N'}
                                                     alt={product.translation?.title}
                                                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
-                                                <button className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-lg text-text-main hover:text-primary transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 hover:scale-110">
+                                                <button className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-lg text-text-main hover:text-primary transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 hover:scale-110 hidden md:block">
                                                     <span className="material-symbols-outlined text-xl font-bold">shopping_cart</span>
                                                 </button>
                                             </div>
-                                            <h3 className="font-bold text-text-main mb-1 truncate group-hover:text-primary transition-colors text-lg">{product.translation?.title}</h3>
-                                            <div className="flex items-end justify-between">
+                                            <h3 className="font-bold text-text-main mb-1 truncate group-hover:text-primary transition-colors text-sm md:text-lg">{product.translation?.title}</h3>
+                                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-1">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs text-gray-500 line-through font-medium">{(Number(product.price) * 1.3).toLocaleString()}₫</span>
-                                                    <span className="text-lg font-bold text-primary">{formatPrice(Number(product.price || 0))}</span>
+                                                    <span className="text-[10px] md:text-xs text-gray-500 line-through font-medium">{formatPrice(Number(product.price) * 1.3)}</span>
+                                                    <span className="text-sm md:text-lg font-bold text-primary">{formatPrice(Number(product.price || 0))}</span>
                                                 </div>
                                                 <div className="flex text-accent-gold-dark text-xs">
-                                                    <span className="material-symbols-outlined text-[16px] fill-current">star</span>
+                                                    <span className="material-symbols-outlined text-[14px] md:text-[16px] fill-current">star</span>
                                                     <span className="text-gray-500 ml-1 font-bold">5.0</span>
                                                 </div>
                                             </div>
@@ -403,10 +403,10 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                             </div>
                                             <div className="flex gap-3">
                                                 <Link href={`/products/${product.slug}`} className="flex-1">
-                                                    <button className="w-full px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-dark transition-colors uppercase tracking-wide shadow-md">Thêm vào giỏ</button>
+                                                    <button className="w-full px-6 py-3 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-dark transition-colors uppercase tracking-wide shadow-md">Thêm vào giỏ</button>
                                                 </Link>
                                                 <Link href={`/products/${product.slug}`}>
-                                                    <button className="px-4 py-2.5 border border-gray-300 rounded-lg text-text-main hover:bg-gray-50 transition-colors font-bold text-sm">Xem chi tiết</button>
+                                                    <button className="px-4 py-3 border border-gray-300 rounded-lg text-text-main hover:bg-gray-50 transition-colors font-bold text-sm">Xem chi tiết</button>
                                                 </Link>
                                             </div>
                                         </div>

@@ -1,6 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { getOrder, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
@@ -45,8 +53,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     const status = order.status;
     const isExpiredOrCanceled = ['CANCELED', 'EXPIRED'].includes(status);
-    const isCompleted = ['COMPLETED', 'PAID', 'DELIVERED'].includes(status);
-    const isPending = ['AWAITING_PAYMENT', 'PENDING'].includes(status);
+    const isCompleted = ['COMPLETED', 'PAID', 'DELIVERED', 'SHIPPED'].includes(status);
+    const isAwaitingPayment = status === 'AWAITING_PAYMENT';
+    const isPending = status === 'PENDING'; // COD mostly
 
     // Status Config
     let statusConfig = {
@@ -71,7 +80,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             headerIcon: 'verified',
             pulse: true
         };
-    } else if (isPending) {
+    } else if (isAwaitingPayment) {
         statusConfig = {
             label: 'Chờ thanh toán',
             icon: 'hourglass_top',
@@ -81,6 +90,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             mainColor: 'text-primary',
             headerIcon: 'pending',
             pulse: true
+        };
+    } else if (isPending) {
+        statusConfig = {
+            label: 'Đang xử lý',
+            icon: 'inventory',
+            textColor: 'text-blue-700',
+            borderColor: 'border-blue-200',
+            bgColor: 'bg-blue-50',
+            mainColor: 'text-blue-700',
+            headerIcon: 'inventory_2',
+            pulse: false
         };
     } else if (isExpiredOrCanceled) {
         statusConfig = {
@@ -401,16 +421,56 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                         <span className="material-symbols-outlined text-red-300">highlight_off</span>
                                                         <span className="text-sm font-bold text-red-100 uppercase tracking-wider">Chưa Thanh Toán</span>
                                                     </div>
-                                                ) : isPending ? (
+                                                ) : isAwaitingPayment ? (
                                                     <div className="mt-6">
                                                         <Link href={`/checkout/payment?id=${order.id}`} className="block w-full text-center bg-accent-gold hover:bg-accent-gold-dark text-white p-3 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-lg">
                                                             Thanh toán ngay
                                                         </Link>
                                                     </div>
+                                                ) : isPending ? (
+                                                    <div className="mt-6 bg-[#0068FF]/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-blue-200/30">
+                                                        <span className="material-symbols-outlined text-blue-300">inventory_2</span>
+                                                        <span className="text-sm font-bold text-blue-100 uppercase tracking-wider">Đang Chuẩn Bị Hàng</span>
+                                                    </div>
                                                 ) : (
                                                     <div className="mt-6 bg-white/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
                                                         <span className="material-symbols-outlined text-green-400">check_circle</span>
                                                         <span className="text-sm font-bold text-white uppercase tracking-wider">Đã Thanh Toán</span>
+                                                    </div>
+                                                )}
+
+                                                {['PENDING', 'AWAITING_PAYMENT'].includes(status) && (
+                                                    <div className="mt-4 flex justify-center">
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                <button className="text-xs text-white/50 hover:text-white/80 underline decoration-indigo-500/30 hover:decoration-indigo-500 transition-all">
+                                                                    Bạn muốn hủy đơn hàng?
+                                                                </button>
+                                                            </DialogTrigger>
+                                                            <DialogContent className="sm:max-w-md bg-white">
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Hỗ trợ đơn hàng</DialogTitle>
+                                                                    <DialogDescription>
+                                                                        Kết nối với chúng mình để được hỗ trợ nhanh nhất.
+                                                                    </DialogDescription>
+                                                                </DialogHeader>
+                                                                <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-accent-gold/10 flex items-center justify-center mb-2">
+                                                                        <span className="material-symbols-outlined text-accent-gold text-2xl">support_agent</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-gray-600 leading-relaxed max-w-[90%]">
+                                                                        Nếu bạn muốn thay đổi hoặc hủy đơn hàng, đừng ngần ngại gọi cho chúng mình qua số hotline để được hỗ trợ nhanh nhất.
+                                                                    </p>
+                                                                    <p className="font-serif text-lg font-bold text-primary flex items-center gap-2">
+                                                                        <span className="material-symbols-outlined">call</span>
+                                                                        035.617.68.78
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-400 italic">
+                                                                        "Thiên Phúc luôn sẵn sàng lắng nghe và hỗ trợ bạn!"
+                                                                    </p>
+                                                                </div>
+                                                            </DialogContent>
+                                                        </Dialog>
                                                     </div>
                                                 )}
                                             </div>

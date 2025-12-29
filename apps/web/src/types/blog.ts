@@ -14,4 +14,8 @@ export interface BlogPost {
     seo_title?: string;
     seo_description?: string;
     status: 'draft' | 'published';
+    author?: {
+        full_name?: string;
+        avatar_url?: string;
+    };
 }
