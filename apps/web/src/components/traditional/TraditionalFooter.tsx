@@ -14,10 +14,10 @@ export default function TraditionalFooter() {
                             <div className="text-[#fcfaf8] h-10 w-10 flex items-center justify-center bg-white/10 rounded-full">
                                 <span className="material-symbols-outlined !text-[28px]">spa</span>
                             </div>
-                            <h2 className="text-2xl font-bold">Trầm Hương Việt</h2>
+                            <h2 className="text-2xl font-bold">Trầm Hương<br /> Thiên Phúc</h2>
                         </div>
                         <p className="text-white/70 text-sm leading-relaxed mb-6">
-                            Mang tinh hoa trầm hương Việt đến mọi gia đình. Sản phẩm thiên nhiên, an toàn và đậm đà bản sắc dân tộc.
+                            Mang tinh hoa trầm hương Việt Nam đến mọi gia đình. Sản phẩm thiên nhiên, an toàn và đậm đà bản sắc dân tộc.
                         </p>
                         <div className="flex gap-4">
                             <a className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors" href="#"><span className="material-symbols-outlined !text-[20px]">public</span></a>

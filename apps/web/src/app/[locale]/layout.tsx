@@ -1,17 +1,16 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat, Manrope } from "next/font/google";
 import "./../globals.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import Header from '@/components/layout/Header';
+import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
-
-// ... (existing font definitions)
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +31,27 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
+  subsets: ["latin", "vietnamese"],
+  display: 'swap',
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  weight: ['300', '400', '500', '600', '700'],
+  variable: "--font-zen-display",
+  subsets: ["latin", "vietnamese"],
+  display: 'swap',
+});
+
+const montserrat = Montserrat({
+  weight: ['100', '200', '300', '400', '500'],
+  variable: "--font-zen-sans",
+  subsets: ["latin", "vietnamese"],
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  weight: ['200', '300', '400', '500', '600', '700', '800'],
+  variable: "--font-manrope",
   subsets: ["latin", "vietnamese"],
   display: 'swap',
 });
@@ -86,14 +106,14 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${playfairDisplay.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${manrope.variable} antialiased`}
       >
         <NextTopLoader color="var(--color-trad-primary)" showSpinner={false} />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                {locale !== 'vi' && <Header locale={locale} />}
+                {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
                 <SmoothScroll />
                 {children}
                 <Toaster position="top-center" toastOptions={{

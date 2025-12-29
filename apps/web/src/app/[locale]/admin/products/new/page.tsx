@@ -25,6 +25,8 @@ export default function NewProductPage() {
     const [titleVi, setTitleVi] = useState('');
     const [descVi, setDescVi] = useState('');
     const [image, setImage] = useState<File | null>(null);
+    // const [isFeatured, setIsFeatured] = useState(false); // Legacy replacement
+    const [featuredSection, setFeaturedSection] = useState<string>(''); // section enum
 
     // Fetch Categories
     useEffect(() => {
@@ -55,6 +57,9 @@ export default function NewProductPage() {
             formData.append('desc_en', descEn);
             formData.append('title_vi', titleVi);
             formData.append('desc_vi', descVi);
+            // formData.append('is_featured', String(isFeatured)); 
+            if (featuredSection) formData.append('featured_section', featuredSection);
+
             if (image) {
                 formData.append('image', image);
             }
@@ -113,6 +118,23 @@ export default function NewProductPage() {
                             required
                             min="0"
                         />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Display Section (Home Page)</label>
+                        <select
+                            className="w-full border p-2 rounded"
+                            value={featuredSection}
+                            onChange={e => setFeaturedSection(e.target.value)}
+                        >
+                            <option value="">Standard (Default)</option>
+                            <option value="chapter_1">⭐️ Chapter I: Featured / High End</option>
+                            <option value="chapter_2">🌿 Chapter II: Daily Ritual</option>
+                            <option value="chapter_3">🎁 Chapter III: Gift Sets</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Select where this product should appear on the homepage.</p>
                     </div>
                 </div>
 

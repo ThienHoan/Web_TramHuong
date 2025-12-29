@@ -368,7 +368,17 @@ export default function AdminProductsPage() {
                                                             />
                                                         </div>
                                                         <div>
-                                                            <div className="font-medium text-gray-900">{product.translation?.title || product.slug}</div>
+                                                            <div className="font-medium text-gray-900 flex items-center gap-1">
+                                                                {product.translation?.title || product.slug}
+                                                                {/* Featured Icons */}
+                                                                {product.featured_section === 'chapter_1' && <span className="material-symbols-outlined text-amber-500 text-[18px] filled-icon" title="Chapter I: Featured">star</span>}
+                                                                {product.featured_section === 'chapter_2' && <span className="material-symbols-outlined text-green-600 text-[18px] filled-icon" title="Chapter II: Ritual">spa</span>}
+                                                                {product.featured_section === 'chapter_3' && <span className="material-symbols-outlined text-red-500 text-[18px] filled-icon" title="Chapter III: Gift">redeem</span>}
+                                                                {/* Fallback Legacy */}
+                                                                {product.is_featured && !product.featured_section && (
+                                                                    <span className="material-symbols-outlined text-gray-400 text-[16px] filled-icon" title="Legacy Featured">star_half</span>
+                                                                )}
+                                                            </div>
                                                             <div className="text-xs text-gray-500 font-mono">{product.slug}</div>
                                                         </div>
                                                     </div>

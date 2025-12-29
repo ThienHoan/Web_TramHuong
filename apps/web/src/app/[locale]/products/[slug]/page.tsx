@@ -1,4 +1,4 @@
-import { getProduct } from '@/lib/api-client';
+import { getProduct, getProducts } from '@/lib/api-client';
 import ZenProductDetail from '@/components/zen/ZenProductDetail';
 import TraditionalProductDetail from '@/components/traditional/TraditionalProductDetail';
 import ReviewsSection from '@/components/reviews/ReviewsSection';
@@ -45,6 +45,30 @@ export default async function ProductPage({
         notFound();
     }
 
+    // Fetch related products for Zen layout (Other Treasures)
+    let relatedProducts: any[] = [];
+
+    // Try fetching by category first
+    if (product.category_id) {
+        const allRelated = await getProducts(locale, { categoryId: product.category_id, limit: 6 });
+        // Filter out current product
+        relatedProducts = allRelated.filter(p => p.id !== product.id);
+    }
+
+    // If we don't have enough related products, fetch more general products
+    if (relatedProducts.length < 4) {
+        const moreProducts = await getProducts(locale, { limit: 8 });
+        // Filter out current product and any we already have
+        const existingIds = new Set(relatedProducts.map(p => p.id));
+        existingIds.add(product.id);
+
+        const additional = moreProducts.filter(p => !existingIds.has(p.id));
+        relatedProducts = [...relatedProducts, ...additional];
+    }
+
+    // Take top 4
+    relatedProducts = relatedProducts.slice(0, 4);
+
     if (locale === 'vi') {
         return (
             <>
@@ -55,9 +79,6 @@ export default async function ProductPage({
     }
 
     return (
-        <>
-            <ZenProductDetail product={product} />
-            <ReviewsSection productId={product.id} />
-        </>
+        <ZenProductDetail product={product} relatedProducts={relatedProducts} />
     );
 }

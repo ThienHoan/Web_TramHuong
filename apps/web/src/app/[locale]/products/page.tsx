@@ -26,7 +26,7 @@ export default async function ProductsPage({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
-    const products = await getProducts(locale);
+    const products = await getProducts(locale, { limit: 100 });
 
     if (locale === 'vi') {
         return <TraditionalProductList products={products} />;

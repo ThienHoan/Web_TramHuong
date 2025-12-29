@@ -34,6 +34,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [variants, setVariants] = useState<{ name: string; price: number | null; original_price?: number | null; description: string }[]>([]);
     const [specsEn, setSpecsEn] = useState<{ key: string; value: string }[]>([]);
     const [specsVi, setSpecsVi] = useState<{ key: string; value: string }[]>([]);
+    // const [isFeatured, setIsFeatured] = useState(false);
+    const [featuredSection, setFeaturedSection] = useState<string>('');
 
     useEffect(() => {
         if (!session) return;
@@ -59,6 +61,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 const catSlug = (data.category && typeof data.category === 'object') ? data.category.slug : data.category;
                 setCategory(catSlug || (categories.length > 0 ? categories[0].slug : ''));
                 setStyle(data.style_affinity || 'both');
+                // setIsFeatured(!!data.is_featured);
+                setFeaturedSection(data.featured_section || (data.is_featured ? 'chapter_1' : ''));
+
                 // Support images array primarily
                 const imgs = data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []);
                 setCurrentImages(imgs);
@@ -114,6 +119,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             formData.append('desc_en', descEn);
             formData.append('title_vi', titleVi);
             formData.append('desc_vi', descVi);
+            // formData.append('is_featured', String(isFeatured));
+            formData.append('featured_section', featuredSection || '');
 
             formData.append('variants', JSON.stringify(variants));
 
@@ -215,6 +222,23 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             required
                             min="0"
                         />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Display Section (Home Page)</label>
+                        <select
+                            className="w-full border p-2 rounded"
+                            value={featuredSection}
+                            onChange={e => setFeaturedSection(e.target.value)}
+                        >
+                            <option value="">Standard (Default)</option>
+                            <option value="chapter_1">⭐️ Chapter I: Featured / High End</option>
+                            <option value="chapter_2">🌿 Chapter II: Daily Ritual</option>
+                            <option value="chapter_3">🎁 Chapter III: Gift Sets</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Select where this product should appear on the homepage.</p>
                     </div>
                 </div>
 
@@ -406,14 +430,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         Cancel
                     </button>
                 </div>
-            </form>
+            </form >
 
             {/* SEED REVIEW SECTION */}
-            <div className="mt-12 border-t pt-8">
+            < div className="mt-12 border-t pt-8" >
                 <h2 className="text-xl font-bold mb-6 text-gray-800">Seed Fake Review (Buffing)</h2>
                 <SeedReviewForm productId={id} />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

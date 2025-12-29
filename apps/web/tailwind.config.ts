@@ -31,11 +31,40 @@ const config: Config = {
                 "text-main": "#2D1810",
                 "trad-gray": "#78716c",
                 "trad-red-bright": "#c62828",
+                "trad-red-bright": "#c62828",
                 "paper": "#fdfbf7",
+
+                // Zen Theme Colors
+                "zen-primary": "#8C7B75",
+                "zen-secondary": "#5C5645",
+                "zen-50": "#F9F8F6",
+                "zen-100": "#F2F0EB",
+                "zen-200": "#E6E2D8",
+                "zen-300": "#CBC5B5", // Added based on inference
+                "zen-400": "#A89F91", // Added based on inference 
+                "zen-800": "#4A4542",
+                "zen-900": "#2D2A28",
+
+                // Zen Green Theme (ZenProductList)
+                "zen-green-primary": "#63cf17",
+                "zen-green-50": "#fafcf8",
+                "zen-green-100": "#ecf3e7",
+                "zen-green-200": "#d9e7d0",
+                "zen-green-text": "#131b0e",
+                "zen-green-900": "#0a0f07",
+                "zen-green-accent": "#6d974e",
             },
             fontFamily: {
                 "display": ["Noto Serif", "serif"],
                 "sans": ["Noto Sans", "sans-serif"],
+                "zen-display": ["var(--font-zen-display)", "serif"],
+                "zen-sans": ["var(--font-zen-sans)", "sans-serif"],
+                "manrope": ["var(--font-manrope)", "sans-serif"],
+            },
+            letterSpacing: {
+                widest: '0.2em',
+                superwide: '0.3em',
+                "zen-wide": "0.2em",
             },
             borderRadius: {
                 "lg": "0.5rem",

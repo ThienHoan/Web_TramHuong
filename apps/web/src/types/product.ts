@@ -27,6 +27,9 @@ export interface Product {
     is_active: boolean;
     style_affinity?: 'zen' | 'traditional' | 'both';
 
+    is_featured?: boolean;
+    featured_section?: string | null;
+
     category_id?: string;
     category?: Category;
 
