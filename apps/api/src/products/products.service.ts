@@ -16,6 +16,8 @@ export class ProductsService {
         stock_status?: string; // 'in_stock' | 'out_of_stock' | 'low_stock'
         min_price?: number;
         max_price?: number;
+        is_featured?: boolean;
+        featured_section?: string;
     }) {
         const client = this.supabase.getClient();
         let query = client
@@ -40,6 +42,16 @@ export class ProductsService {
         // Filter: Active Status
         if (!options?.include_inactive) {
             query = query.eq('is_active', true);
+        }
+
+        // Filter: Featured Section
+        if (options?.featured_section) {
+            query = query.eq('featured_section', options.featured_section);
+        }
+
+        // Filter: Featured Legacy (Optional, can rely on section)
+        if (options?.is_featured !== undefined) {
+            query = query.eq('is_featured', options.is_featured);
         }
 
         // Filter: Category Slug
@@ -284,6 +296,8 @@ export class ProductsService {
                 quantity: quantity ? parseInt(quantity) : 0,
                 style: body.style || 'both',
                 is_active: true,
+                is_featured: body.is_featured === 'true' || body.is_featured === true,
+                featured_section: body.featured_section || null,
                 variants: parsedVariants
             })
             .select()
@@ -323,6 +337,9 @@ export class ProductsService {
     }
 
     async update(id: string, body: any, files?: Array<Express.Multer.File>) {
+        console.log('Update Product ID:', id);
+        console.log('Update Body:', JSON.stringify(body));
+
         const client = this.supabase.getClient();
         let updateData: any = {};
 
@@ -367,6 +384,13 @@ export class ProductsService {
         }
         if (body.quantity !== undefined && body.quantity !== null) updateData.quantity = parseInt(body.quantity);
         if (body.is_active !== undefined) updateData.is_active = body.is_active === 'true' || body.is_active === true;
+        if (body.is_featured !== undefined) updateData.is_featured = body.is_featured === 'true' || body.is_featured === true;
+
+        if (body.featured_section !== undefined) {
+            updateData.featured_section = body.featured_section === '' ? null : body.featured_section;
+        }
+
+        console.log('Final Update Data:', JSON.stringify(updateData));
 
         // Variants
         if (body.variants) {
