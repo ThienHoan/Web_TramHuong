@@ -1,17 +1,16 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter, usePathname } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import ProductImage from '../ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useCart } from '@/components/providers/CartProvider';
 import { useWishlist } from '@/components/providers/WishlistProvider';
 import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
-import TraditionalProductCard from './TraditionalProductCard';
-import { getCategories, getProducts } from '@/lib/api-client';
+import { getCategories } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
 import {
@@ -27,24 +26,30 @@ interface TraditionalProductCatalogProps {
     products: any[];
 }
 
-export default function TraditionalProductCatalog({ products: initialProducts }: TraditionalProductCatalogProps) {
-    const t = useTranslations('HomePage');
+export default function TraditionalProductCatalog({ products }: TraditionalProductCatalogProps) {
     const locale = useLocale();
     const { formatPrice } = useCurrency();
     const { addItem } = useCart();
     const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-    // State
-    const [products, setProducts] = useState(initialProducts);
+    // URL State
+    const selectedCategory = searchParams.get('category') || null;
+    const sortOption = searchParams.get('sort') || 'newest';
+    const minPriceParam = searchParams.get('min_price') || '';
+    const maxPriceParam = searchParams.get('max_price') || '';
+
+    // Local State for UI
     const [categories, setCategories] = useState<any[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [sortOption, setSortOption] = useState('newest');
-    const [loading, setLoading] = useState(false);
-
-    // Price Filter State
-    const [priceInputs, setPriceInputs] = useState({ min: '', max: '' });
-    const [activePriceRange, setActivePriceRange] = useState<{ min: number | null, max: number | null }>({ min: null, max: null });
+    const [priceInputs, setPriceInputs] = useState({ min: minPriceParam, max: maxPriceParam });
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    // Sync local input with URL param if it changes externally
+    useEffect(() => {
+        setPriceInputs({ min: minPriceParam, max: maxPriceParam });
+    }, [minPriceParam, maxPriceParam]);
 
     const handleAddToCart = (product: any, currentPrice: number) => {
         addItem({
@@ -68,11 +73,32 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
         ));
     };
 
+    const updateFilters = (newParams: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value === null) {
+                params.delete(key);
+            } else {
+                params.set(key, value);
+            }
+        });
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleCategoryChange = (categoryId: string | null) => {
+        updateFilters({ category: categoryId });
+    };
+
+    const handleSortChange = (sort: string) => {
+        updateFilters({ sort });
+    };
+
     const handleApplyPriceFilter = () => {
-        const min = priceInputs.min ? parseFloat(priceInputs.min.replace(/\./g, '')) : null;
-        const max = priceInputs.max ? parseFloat(priceInputs.max.replace(/\./g, '')) : null;
-        setActivePriceRange({ min, max });
-        setIsFilterOpen(false); // Close mobile filter on apply
+        updateFilters({
+            min_price: priceInputs.min || null,
+            max_price: priceInputs.max || null
+        });
+        setIsFilterOpen(false);
     };
 
     // Fetch Categories
@@ -88,36 +114,6 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
         fetchCats();
     }, [locale]);
 
-    // Fetch Products (API)
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            try {
-                // Map Sort
-                let apiSort = 'created_at:desc';
-                if (sortOption === 'price-asc') apiSort = 'price:asc';
-                else if (sortOption === 'price-desc') apiSort = 'price:desc';
-                else if (sortOption === 'name-asc') apiSort = 'slug:asc';
-
-                const data = await getProducts(locale, {
-                    categoryId: selectedCategory || undefined,
-                    sort: apiSort,
-                    min_price: activePriceRange.min ?? undefined,
-                    max_price: activePriceRange.max ?? undefined,
-                    limit: 50 // Retrieve more items since we don't have pagination UI yet
-                });
-                setProducts(data);
-            } catch (error) {
-                console.error("Failed to fetch products", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-
-    }, [locale, selectedCategory, sortOption, activePriceRange, categories]);
-
     // Reusable Filter Content
     const FilterContent = ({ prefix, isMobile = false }: { prefix: string, isMobile?: boolean }) => (
         <div className={`space-y-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -125,16 +121,16 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
             <div className="space-y-4">
                 <h3 className="text-lg font-bold text-trad-text-main font-display border-b border-trad-border-warm pb-2">Danh mục</h3>
                 <div className="space-y-3">
-                    <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => setSelectedCategory(null)}>
+                    <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(null)}>
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === null ? 'border-trad-primary bg-trad-primary' : 'border-trad-text-muted group-hover:border-trad-primary'}`}>
                             {selectedCategory === null && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                         </div>
                         <label className="text-sm font-medium leading-none cursor-pointer text-trad-text-main group-hover:text-trad-primary transition-colors">Tất cả</label>
                     </div>
                     {categories.map((cat) => (
-                        <div key={cat.id} className="flex items-center space-x-3 group cursor-pointer" onClick={() => setSelectedCategory(cat.id)}>
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === cat.id ? 'border-trad-primary bg-trad-primary' : 'border-trad-text-muted group-hover:border-trad-primary'}`}>
-                                {selectedCategory === cat.id && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                        <div key={cat.id} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(String(cat.id))}>
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === String(cat.id) ? 'border-trad-primary bg-trad-primary' : 'border-trad-text-muted group-hover:border-trad-primary'}`}>
+                                {selectedCategory === String(cat.id) && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                             </div>
                             <label className="text-sm font-medium leading-none cursor-pointer text-trad-text-main group-hover:text-trad-primary transition-colors">
                                 {cat.translation?.name || cat.name}
@@ -155,6 +151,7 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                                 id={`${prefix}-min-price`}
                                 className="flex h-10 w-full rounded-lg border border-trad-border-warm bg-white px-3 py-2 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:border-trad-primary focus-visible:ring-1 focus-visible:ring-trad-primary"
                                 placeholder="0"
+                                type="number"
                                 value={priceInputs.min}
                                 onChange={(e) => setPriceInputs(prev => ({ ...prev, min: e.target.value }))}
                             />
@@ -165,6 +162,7 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                                 id={`${prefix}-max-price`}
                                 className="flex h-10 w-full rounded-lg border border-trad-border-warm bg-white px-3 py-2 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:border-trad-primary focus-visible:ring-1 focus-visible:ring-trad-primary"
                                 placeholder="Tối đa"
+                                type="number"
                                 value={priceInputs.max}
                                 onChange={(e) => setPriceInputs(prev => ({ ...prev, max: e.target.value }))}
                             />
@@ -173,27 +171,15 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                 </div>
             </div>
 
-            {/* Mobile Apply Button (Sticky) */}
-            {isMobile && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-trad-border-warm">
-                    <button
-                        onClick={handleApplyPriceFilter}
-                        className="w-full inline-flex items-center justify-center rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 bg-trad-primary text-white shadow-lg hover:bg-trad-primary-dark active:scale-[0.98] h-12 px-6 uppercase tracking-wider"
-                    >
-                        Áp dụng
-                    </button>
-                </div>
-            )}
-
-            {/* Desktop Apply Button (Normal) */}
-            {!isMobile && (
+            {/* Apply Button */}
+            <div className={isMobile ? "absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-trad-border-warm" : "mt-2"}>
                 <button
                     onClick={handleApplyPriceFilter}
-                    className="w-full inline-flex items-center justify-center rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 bg-trad-primary text-white shadow hover:bg-trad-primary-dark active:scale-[0.98] h-10 px-4 py-2 uppercase tracking-wide mt-2"
+                    className={`w-full inline-flex items-center justify-center rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 bg-trad-primary text-white shadow hover:bg-trad-primary-dark active:scale-[0.98] uppercase tracking-wide ${isMobile ? 'h-12 px-6' : 'h-10 px-4 py-2'}`}
                 >
                     Áp dụng
                 </button>
-            )}
+            </div>
         </div>
     );
 
@@ -239,7 +225,7 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                         {/* Horizontal Category List (Pills) */}
                         <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade">
                             <button
-                                onClick={() => setSelectedCategory(null)}
+                                onClick={() => handleCategoryChange(null)}
                                 className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedCategory === null
                                     ? 'bg-trad-primary text-white border-trad-primary shadow-md'
                                     : 'bg-white text-trad-text-main border-trad-border-warm hover:border-trad-primary'
@@ -250,8 +236,8 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                             {categories.map((cat) => (
                                 <button
                                     key={cat.id}
-                                    onClick={() => setSelectedCategory(cat.id)}
-                                    className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedCategory === cat.id
+                                    onClick={() => handleCategoryChange(String(cat.id))}
+                                    className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedCategory === String(cat.id)
                                         ? 'bg-trad-primary text-white border-trad-primary shadow-md'
                                         : 'bg-white text-trad-text-main border-trad-border-warm hover:border-trad-primary'
                                         }`}
@@ -283,7 +269,7 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                                 <div className="relative">
                                     <select
                                         value={sortOption}
-                                        onChange={(e) => setSortOption(e.target.value)}
+                                        onChange={(e) => handleSortChange(e.target.value)}
                                         className="h-9 rounded-md border border-trad-border-warm bg-white py-1 pl-3 pr-8 text-sm focus:border-trad-primary focus:outline-none focus:ring-1 focus:ring-trad-primary"
                                     >
                                         <option value="newest">Mới nhất</option>
@@ -295,14 +281,6 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                             </div>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6 relative">
-                            {loading && (
-                                <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[2px] flex items-center justify-center min-h-[400px]">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-12 h-12 border-4 border-trad-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                                        <p className="text-trad-primary font-medium">Đang tải...</p>
-                                    </div>
-                                </div>
-                            )}
                             {products.length > 0 ? products.map((product) => {
                                 const currentPrice = Number(product.price);
                                 const originalPrice = Number(product.original_price || 0);
@@ -388,10 +366,18 @@ export default function TraditionalProductCatalog({ products: initialProducts }:
                                     </div>
                                 );
                             }) : (
-                                <div className="rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
-                                    <div className="relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
-                                        <img className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg" alt="Placeholder" />
+                                <div className="col-span-full py-20 text-center bg-white rounded-xl border border-trad-border-warm">
+                                    <div className="mb-4 text-trad-text-muted opacity-50">
+                                        <span className="material-symbols-outlined text-6xl">inventory_2</span>
                                     </div>
+                                    <h3 className="text-lg font-bold text-trad-text-main mb-2">Không tìm thấy sản phẩm</h3>
+                                    <p className="text-trad-text-muted mb-6">Xin lỗi, chúng tôi không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.</p>
+                                    <button
+                                        onClick={() => updateFilters({ category: null, sort: null, min_price: null, max_price: null })}
+                                        className="text-trad-primary font-bold hover:underline"
+                                    >
+                                        Xóa tất cả bộ lọc
+                                    </button>
                                 </div>
                             )}
                         </div>

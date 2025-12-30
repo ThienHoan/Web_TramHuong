@@ -57,7 +57,7 @@ export default function LoginPage() {
                 const { error } = await supabase.auth.signInWithOtp({
                     email: email.trim(),
                     options: {
-                        emailRedirectTo: `${window.location.origin}/${locale}/auth/verify`,
+                        emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/auth/verify`,
                         data: {
                             full_name: email.trim().split('@')[0],
                             avatar_url: '',

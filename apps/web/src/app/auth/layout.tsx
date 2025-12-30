@@ -5,7 +5,7 @@ import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import { Toaster } from "@/components/ui/sonner";
 import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
-import "./../../globals.css";
+import "../globals.css";
 
 export default async function AuthRootLayout({
     children,

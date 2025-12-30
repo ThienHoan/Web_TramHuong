@@ -157,7 +157,14 @@ export default function ZenCheckout() {
                 })),
                 shipping_info: {
                     name: shippingInfo.fullName,
-                    phone: shippingInfo.phone,
+                    phone: (function (p) {
+                        // Normalize phone to +84
+                        p = p.trim().replace(/\s/g, '');
+                        if (p.startsWith('0')) return '+84' + p.slice(1);
+                        if (p.startsWith('84')) return '+' + p;
+                        if (!p.startsWith('+')) return '+84' + p;
+                        return p;
+                    })(shippingInfo.phone),
                     address: shippingInfo.address,
                     city: shippingInfo.province,
                     district: shippingInfo.district,

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { checkSession } from '@/app/actions/auth'; // Import server action
 
 export default function VerifyPage() {
     const [loading, setLoading] = useState(true);
@@ -17,14 +18,43 @@ export default function VerifyPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
+        let mounted = true;
+        let safetyTimer: NodeJS.Timeout;
+
+        const handleSuccess = () => {
+            if (mounted) {
+                console.log('[Verify] Verification successful, clearing timer.');
+                clearTimeout(safetyTimer);
+                setVerified(true);
+                setLoading(false);
+            }
+        };
+
+        const handleFailure = (msg: string) => {
+            if (mounted) {
+                clearTimeout(safetyTimer); // Ensure timer doesn't fire later
+                setError(msg);
+                setLoading(false);
+            }
+        };
+
+        // Safety timeout: If still loading after 12s, likely something is stuck or network is slow/failed
+        safetyTimer = setTimeout(() => {
+            if (mounted) {
+                console.warn('[Verify] Safety timeout triggered');
+                // If this runs, it means success hasn't cancelled it yet
+                setLoading(false);
+                setError('Verification timed out. Please try again.');
+            }
+        }, 12000);
+
         // Check if user clicked magic link and has valid session
         const checkVerification = async () => {
             try {
-
-
                 // First, check if there's a token_hash in the URL
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 const accessToken = hashParams.get('access_token');
@@ -34,63 +64,102 @@ export default function VerifyPage() {
                 const code = urlParams.get('code');
 
                 if (code) {
-
                     try {
-                        // Verify OTP
-                        const { data, error } = await supabase.auth.verifyOtp({
-                            token_hash: code,
-                            type: 'email'
-                        });
+                        console.log('[Verify] Attempting code exchange...');
+                        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
+                        if (!mounted) return;
 
                         if (error) {
-                            console.error('[Verify] OTP verification failed:', error);
+                            console.warn('[Verify] Code exchange failed:', error.message);
+
+                            // Fallback: Poll for session
+                            let sessionFound = false;
+                            for (let i = 0; i < 3; i++) {
+                                if (!mounted) break;
+                                const { data: sessionData } = await supabase.auth.getSession();
+                                if (sessionData.session) {
+                                    sessionFound = true;
+                                    break;
+                                }
+                                await new Promise(r => setTimeout(r, 500));
+                            }
+
+                            if (sessionFound) {
+                                console.log('[Verify] Session found via polling after error.');
+                                handleSuccess();
+                                return;
+                            }
+
                             throw error;
                         }
 
                         if (data.session) {
-
-                            setVerified(true);
-                            setLoading(false);
+                            handleSuccess();
                             return;
                         }
                     } catch (otpError: any) {
-                        console.error('[Verify] OTP error:', otpError);
-                        // Continue to session check
+                        console.error('[Verify] Exchange reported error:', otpError);
+
+                        // Double check session one last time before failing
+                        const { data: sessionData } = await supabase.auth.getSession();
+                        if (sessionData.session) {
+                            console.log('[Verify] Session found in catch block.');
+                            handleSuccess();
+                            return;
+                        }
+
+                        throw otpError;
                     }
                 }
 
-                // Check for access token in hash (alternative flow)
                 if (accessToken) {
-
-                    setVerified(true);
-                    setLoading(false);
+                    handleSuccess();
                     return;
                 }
 
-                // Fallback: check existing session
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                // Fallback: Check BOTH client and server session in parallel
+                console.log('[Verify] Checking sessions...');
+                const [clientResult, serverResult] = await Promise.allSettled([
+                    supabase.auth.getSession(),
+                    checkSession()
+                ]);
 
-
-                if (sessionError) throw sessionError;
-
-                if (session) {
-
-                    setVerified(true);
-                    setLoading(false);
-                } else {
-
-                    setError('Invalid or expired verification link');
-                    setLoading(false);
+                // Check Server Session (Reference Truth)
+                let serverSuccess = false;
+                if (serverResult.status === 'fulfilled' && serverResult.value.success) {
+                    serverSuccess = true;
+                    console.log('[Verify] Server session confirmed!');
                 }
+
+                // Check Client Session
+                let clientSuccess = false;
+                if (clientResult.status === 'fulfilled' && clientResult.value.data.session) {
+                    clientSuccess = true;
+                    console.log('[Verify] Client session confirmed!');
+                }
+
+                if (serverSuccess || clientSuccess) {
+                    handleSuccess();
+                    return;
+                }
+
+                // Both failed
+                console.warn('[Verify] No session found on client or server.');
+                handleFailure('Invalid or expired verification link');
+
             } catch (err: any) {
                 console.error('[Verify] Verification error:', err);
-                setError(err.message || 'Verification failed');
-                setLoading(false);
+                handleFailure(err.message || 'Verification failed');
             }
         };
 
         checkVerification();
+
+        return () => {
+            mounted = false;
+            clearTimeout(safetyTimer);
+        };
     }, []);
 
     const validatePassword = (pwd: string): boolean => {
@@ -124,35 +193,55 @@ export default function VerifyPage() {
 
         setSubmitting(true);
 
-
         try {
+            console.log('[Verify] Starting password creation...');
+
             // Check if we still have a valid session
+            console.log('[Verify] Checking session...');
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
 
+            console.log('[Verify] Session details:', {
+                hasSession: !!session,
+                hasUser: !!user,
+                userId: user?.id,
+                email: user?.email,
+                emailConfirmed: user?.email_confirmed_at,
+                error: sessionError || userError
+            });
 
-            if (sessionError || !session) {
+            if (sessionError || userError || !session || !user) {
                 throw new Error('Session expired. Please request a new verification link.');
             }
 
-            // Update user with new password
-
-            const { data, error } = await supabase.auth.updateUser({
+            // Create timeout wrapper for updateUser
+            console.log('[Verify] Calling updateUser with 10s timeout...');
+            const updatePromise = supabase.auth.updateUser({
                 password: password
             });
 
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Update timed out after 10 seconds')), 10000)
+            );
 
+            const { data, error } = await Promise.race([
+                updatePromise,
+                timeoutPromise
+            ]) as any;
+
+            console.log('[Verify] updateUser completed:', { data: !!data, error });
 
             if (error) throw error;
 
-            if (!data.user) {
+            if (!data?.user) {
                 throw new Error('Failed to update password. Please try again.');
             }
 
             // Success! Redirect to home
-
+            console.log('[Verify] Success! Redirecting...');
             router.push('/');
         } catch (err: any) {
-            console.error('[Verify] Error:', err);
+            console.error('[Verify] Error in handlePasswordCreation:', err);
             setPasswordError(err.message || 'Failed to create password');
             setSubmitting(false);
         }

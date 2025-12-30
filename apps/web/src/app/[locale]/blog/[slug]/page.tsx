@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { BlogPost } from '@/types/blog';
+import ZenBlogDetail from '@/components/zen/ZenBlogDetail';
+import ZenFooter from '@/components/zen/ZenFooter';
 
 interface PageProps {
     params: Promise<{
@@ -40,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function BlogDetailPage({ params }: PageProps) {
-    const { slug } = await params;
+    const { slug, locale } = await params;
 
     let post: BlogPost | null;
     let relatedPosts: BlogPost[] = [];
@@ -61,6 +63,17 @@ export default async function BlogDetailPage({ params }: PageProps) {
     } catch (error) {
         console.error('Failed to fetch post', error);
         notFound();
+    }
+
+    if (!post) return notFound(); // Should be handled by catch/notFound above but typescript might complain
+
+    if (locale !== 'vi') {
+        return (
+            <>
+                <ZenBlogDetail post={post} relatedPosts={relatedPosts} />
+                <ZenFooter />
+            </>
+        );
     }
 
     return (
@@ -202,4 +215,3 @@ export default async function BlogDetailPage({ params }: PageProps) {
         </div>
     );
 }
-

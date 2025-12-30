@@ -5,12 +5,22 @@ import { useSearchParams } from 'next/navigation';
 import ProductImage from '../ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useState, useEffect } from 'react';
+import { getCategories } from '@/lib/api-client';
+import { useLocale } from 'next-intl';
+import ZenFooter from './ZenFooter';
 
 export default function ZenProductList({ products }: { products: any[] }) {
     const { formatPrice } = useCurrency();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const locale = useLocale();
+
+    const [categories, setCategories] = useState<any[]>([]);
+
+    useEffect(() => {
+        getCategories(locale).then(cats => setCategories(cats || []));
+    }, [locale]);
 
     // Get active filters from URL
     const activeCategory = searchParams.get('category') || 'all';
@@ -54,10 +64,10 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                 <div className="flex flex-col gap-1">
                                     {[
                                         { id: 'all', label: 'VIEW ALL' },
-                                        { id: 'incense-sticks', label: 'INCENSE STICKS' },
-                                        { id: 'cones-coils', label: 'CONES & COILS' },
-                                        { id: 'pure-chips', label: 'PURE CHIPS' },
-                                        { id: 'accessories', label: 'ACCESSORIES' }
+                                        ...categories.map(cat => ({
+                                            id: cat.slug, // Use slug for cleaner URLs and API compatibility
+                                            label: (cat.translation?.name || cat.name).toUpperCase()
+                                        }))
                                     ].map((cat) => (
                                         <label key={cat.id} className="group flex items-center justify-between cursor-pointer py-2" onClick={() => handleCategoryChange(cat.id)}>
                                             <span className={`text-sm tracking-widest transition-colors ${activeCategory === cat.id ? 'font-medium text-zen-green-primary' : 'font-light text-zen-green-text/70 group-hover:text-zen-green-text'}`}>
@@ -76,8 +86,8 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                 </div>
                             </div>
 
-                            {/* Filter By Scent (Visual - Desktop only mostly) */}
-                            <div className="hidden lg:block">
+                            {/* Filter By Scent (Hidden until supported by DB) */}
+                            {/* <div className="hidden lg:block">
                                 <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-zen-green-text/40">Scent Profile</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {['Woody', 'Sweet', 'Floral', 'Spicy'].map(scent => (
@@ -86,7 +96,7 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                         </button>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Price Range (Visual Only for now) */}
                             <div className="hidden lg:block">
@@ -113,11 +123,11 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                     <select
                                         value={activeSort}
                                         onChange={(e) => handleSortChange(e.target.value)}
-                                        className="appearance-none bg-transparent text-xs font-bold tracking-[0.1em] uppercase hover:text-zen-green-primary transition-colors cursor-pointer border-none focus:ring-0 pr-8 text-right"
+                                        className="appearance-none bg-transparent text-xs font-bold tracking-[0.1em] uppercase hover:text-zen-green-primary transition-colors cursor-pointer border-none focus:ring-0 pr-8 text-left"
                                     >
                                         <option value="recommended">Sort By: Recommended</option>
-                                        <option value="price_asc">Price: Low to High</option>
-                                        <option value="price_desc">Price: High to Low</option>
+                                        <option value="price-asc">Price: Low to High</option>
+                                        <option value="price-desc">Price: High to Low</option>
                                         <option value="newest">Newest Arrivals</option>
                                     </select>
                                     <span className="material-symbols-outlined text-[16px] absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zen-green-text">expand_more</span>
@@ -195,6 +205,7 @@ export default function ZenProductList({ products }: { products: any[] }) {
                     </div>
                 </div>
             </main>
+            <ZenFooter />
         </div>
     );
 }

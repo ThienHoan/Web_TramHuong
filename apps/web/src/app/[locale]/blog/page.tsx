@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { BlogToolbar } from '@/components/blog/BlogToolbar';
 import { Metadata } from 'next';
+import ZenBlogList from '@/components/zen/ZenBlogList';
+import ZenFooter from '@/components/zen/ZenFooter';
 
 export const metadata: Metadata = {
     title: 'Thư Viện Trầm Hương - Kiến Thức & Văn Hóa',
@@ -12,29 +14,61 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogListPage({
+    params,
     searchParams,
 }: {
+    params: Promise<{ locale: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-    // Await searchParams before accessing properties
-    const params = await searchParams;
-    const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
-    const category = typeof params.category === 'string' ? params.category : undefined;
-    const search = typeof params.search === 'string' ? params.search : undefined;
+    const { locale } = await params;
+    const search = await searchParams;
+
+    const page = typeof search.page === 'string' ? parseInt(search.page) : 1;
+    const categoryQuery = typeof search.category === 'string' ? search.category : undefined;
+    const searchQuery = typeof search.search === 'string' ? search.search : undefined;
 
     // Fetch on Server
     const { data: posts, meta } = await getPosts({
         page,
         limit: 10,
-        category,
-        search,
+        category: categoryQuery,
+        search: searchQuery,
         status: 'published'
     });
 
-    const featuredPost = (posts && posts.length > 0 && !search && !category && page === 1)
+    const featuredPost = (posts && posts.length > 0 && !searchQuery && !categoryQuery && page === 1)
         ? posts.find(p => p.is_featured) || posts[0]
         : null;
 
+    if (locale !== 'vi') {
+        const zenMeta = meta ? {
+            currentPage: meta.currentPage || page,
+            totalPages: meta.totalPages || 1,
+            totalItems: meta.totalItems || 0
+        } : {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: 0
+        };
+
+        return (
+            <>
+                <ZenBlogList
+                    posts={posts || []}
+                    meta={zenMeta}
+                    featuredPost={featuredPost || null}
+                    searchParams={{
+                        page,
+                        category: categoryQuery,
+                        search: searchQuery
+                    }}
+                />
+                <ZenFooter />
+            </>
+        );
+    }
+
+    // Traditional UI (Vietnamese)
     const listPosts = featuredPost
         ? posts.filter(p => p.id !== featuredPost.id)
         : posts;
@@ -123,7 +157,6 @@ export default async function BlogListPage({
                     )}
 
                     {/* Toolbar (Search & Filter) - Client Component */}
-                    {/* The new toolbar is designed to be part of the flow, but it's sticky. Since we use `BlogToolbar` which is a client component, we just render it here. */}
                     <BlogToolbar />
 
                     {/* Blog Grid */}
@@ -171,22 +204,20 @@ export default async function BlogListPage({
                         )}
                     </section>
 
-                    {/* Pagination - Visual Only for now as per design request, but could be functional if linked to meta */}
+                    {/* Pagination */}
                     {meta && meta.totalPages > 1 && (
                         <div className="flex justify-center items-center gap-2 pt-8 pb-4">
                             <Link
-                                href={page > 1 ? `/blog?page=${page - 1}${category ? `&category=${category}` : ''}${search ? `&search=${search}` : ''}` : '#'}
+                                href={page > 1 ? `/blog?page=${page - 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
                                 className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <span className="material-symbols-outlined">chevron_left</span>
                             </Link>
 
-                            {/* Simple Logic: Just show current page active */}
-                            {/* In a real app we'd generate the range. For now let's just show current page and simple prev/next for cleanliness */}
                             <span className="flex items-center justify-center size-12 rounded-lg bg-trad-primary text-white font-bold shadow-md text-lg">{page}</span>
 
                             <Link
-                                href={page < meta.totalPages ? `/blog?page=${page + 1}${category ? `&category=${category}` : ''}${search ? `&search=${search}` : ''}` : '#'}
+                                href={page < meta.totalPages ? `/blog?page=${page + 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
                                 className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page >= meta.totalPages ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <span className="material-symbols-outlined">chevron_right</span>

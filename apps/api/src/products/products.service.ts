@@ -20,18 +20,22 @@ export class ProductsService {
         featured_section?: string;
     }) {
         const client = this.supabase.getClient();
-        let query = client
-            .from('products')
-            .select(`
+        const isFilteringByCategorySlug = !!options?.category;
+
+        let selectQuery = `
         *,
         quantity,
         translations:product_translations(*),
-        category:categories!category_id(
+        category:categories${isFilteringByCategorySlug ? '!inner' : '!category_id'}(
             id,
             slug,
             translations:category_translations(*)
         )
-      `, { count: 'exact' });
+      `;
+
+        let query = client
+            .from('products')
+            .select(selectQuery, { count: 'exact' });
 
         // Filter by Locale for translations (Inner join trick: only products with this locale translation)
         // Actually, we want LEFT JOIN for products, but we filter translation.

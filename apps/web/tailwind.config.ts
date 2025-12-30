@@ -31,7 +31,6 @@ const config: Config = {
                 "text-main": "#2D1810",
                 "trad-gray": "#78716c",
                 "trad-red-bright": "#c62828",
-                "trad-red-bright": "#c62828",
                 "paper": "#fdfbf7",
 
                 // Zen Theme Colors

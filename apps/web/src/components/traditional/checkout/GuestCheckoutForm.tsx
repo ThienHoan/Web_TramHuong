@@ -44,6 +44,13 @@ export default function GuestCheckoutForm({ onSubmit }: GuestCheckoutFormProps) 
         if (validate()) {
             onSubmit({
                 ...formData,
+                phone: (function (p) {
+                    p = p.trim().replace(/\s/g, '');
+                    if (p.startsWith('0')) return '+84' + p.slice(1);
+                    if (p.startsWith('84')) return '+' + p;
+                    if (!p.startsWith('+')) return '+84' + p;
+                    return p;
+                })(formData.phone),
                 full_address: `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.province}`
             });
         }

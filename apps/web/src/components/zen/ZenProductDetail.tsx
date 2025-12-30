@@ -8,6 +8,7 @@ import ProductImage from '../ui/ProductImage';
 import { Link, useRouter } from '@/i18n/routing';
 import { getReviews, createReview, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { toast } from 'sonner';
 
 export default function ZenProductDetail({ product, relatedProducts }: { product: any; relatedProducts?: any[] }) {
     const { addItem } = useCart();
@@ -46,7 +47,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             getReviews(product.id).then(res => {
                 const data = Array.isArray(res.data) ? res.data : [];
                 setReviews(data);
-                setReviewStats(res.meta || { average: 5, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+                setReviewStats((res.meta as any) || { average: 5, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
                 setCurrentPage(1); // Reset page on fetch
             }).catch(console.error).finally(() => setLoadingReviews(false));
         }
@@ -68,6 +69,8 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
         setCurrentPage(page);
     };
 
+
+
     const handleAddToCart = () => {
         addItem({
             id: product.id,
@@ -76,6 +79,16 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             price: Number(product.price),
             image: product.images?.[0] || '',
             quantity: quantity
+        });
+
+        toast.success(product.translation?.title || product.title, {
+            description: `Has been added to your cart`,
+            action: {
+                label: 'Checkout',
+                onClick: () => router.push('/checkout')
+            },
+            duration: 3000,
+            className: 'font-manrope'
         });
     };
 

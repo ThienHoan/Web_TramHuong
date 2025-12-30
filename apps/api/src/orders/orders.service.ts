@@ -164,6 +164,19 @@ export class OrdersService {
             throw new BadRequestException('Shipping info is required');
         }
 
+        // Normalize Phone Number (Backend Enforcement)
+        if (shippingInfo.phone) {
+            let p = shippingInfo.phone.trim().replace(/\s/g, '');
+            if (p.startsWith('0')) {
+                p = '+84' + p.slice(1);
+            } else if (p.startsWith('84')) {
+                p = '+' + p;
+            } else if (!p.startsWith('+')) {
+                p = '+84' + p;
+            }
+            shippingInfo.phone = p;
+        }
+
         // Fetch products to validate and get prices
         const productIds = items.map(i => i.productId);
         const { data: products, error: productsError } = await this.client
