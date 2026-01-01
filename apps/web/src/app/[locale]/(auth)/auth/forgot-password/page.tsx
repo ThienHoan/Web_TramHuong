@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
                         Click the link in the email to reset your password.
                     </p>
                     <button
-                        onClick={() => router.push('/login')}
+                        onClick={() => router.push(`/${locale}/login`)}
                         className="text-blue-600 text-sm underline"
                     >
                         ← Back to Login
@@ -94,7 +94,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="mt-6 text-center">
                     <button
-                        onClick={() => router.push('/login')}
+                        onClick={() => router.push(`/${locale}/login`)}
                         className="text-sm text-gray-600 hover:underline"
                     >
                         ← Back to Login

@@ -8,6 +8,13 @@ export async function GET(request: Request) {
     // if "next" is in param, use it as the redirect URL
     const next = searchParams.get('next') ?? '/';
 
+    console.log('[Auth Callback] Request received:', {
+        url: request.url,
+        code: code ? `${code.substring(0, 10)}...` : null,
+        next,
+        origin
+    });
+
     if (code) {
         const cookieStore = await cookies();
         const supabase = createServerClient(
@@ -32,21 +39,33 @@ export async function GET(request: Request) {
                 },
             }
         );
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+        console.log('[Auth Callback] Exchanging code for session...');
+        const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+
         if (!error) {
+            console.log('[Auth Callback] ✅ Session created successfully!', {
+                userId: data.session?.user?.id,
+                email: data.session?.user?.email
+            });
+
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
-            if (isLocalEnv) {
-                // for local development, we use origin directly
-                return NextResponse.redirect(`${origin}${next}`);
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`);
-            } else {
-                return NextResponse.redirect(`${origin}${next}`);
-            }
+
+            const redirectUrl = isLocalEnv
+                ? `${origin}${next}`
+                : (forwardedHost ? `https://${forwardedHost}${next}` : `${origin}${next}`);
+
+            console.log('[Auth Callback] Redirecting to:', redirectUrl);
+            return NextResponse.redirect(redirectUrl);
+        } else {
+            console.error('[Auth Callback] ❌ Session exchange failed:', error);
         }
+    } else {
+        console.error('[Auth Callback] ❌ No code parameter found in URL');
     }
 
     // return the user to an error page with instructions
+    console.log('[Auth Callback] Redirecting to error page');
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }

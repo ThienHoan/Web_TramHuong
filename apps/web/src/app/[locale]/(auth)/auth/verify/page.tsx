@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { checkSession } from '@/app/actions/auth'; // Import server action
+import { checkSession, updatePassword } from '@/app/actions/auth'; // Import server actions
 
 export default function VerifyPage() {
     const [loading, setLoading] = useState(true);
@@ -42,15 +42,15 @@ export default function VerifyPage() {
             }
         };
 
-        // Safety timeout: If still loading after 12s, likely something is stuck or network is slow/failed
+        // Safety timeout: Extended to 30s to allow for session propagation
         safetyTimer = setTimeout(() => {
             if (mounted) {
-                console.warn('[Verify] Safety timeout triggered');
+                console.warn('[Verify] Safety timeout triggered after 30s');
                 // If this runs, it means success hasn't cancelled it yet
                 setLoading(false);
                 setError('Verification timed out. Please try again.');
             }
-        }, 12000);
+        }, 30000);
 
         // Check if user clicked magic link and has valid session
         const checkVerification = async () => {
@@ -73,16 +73,18 @@ export default function VerifyPage() {
                         if (error) {
                             console.warn('[Verify] Code exchange failed:', error.message);
 
-                            // Fallback: Poll for session
+                            // Fallback: Poll for session with more attempts
                             let sessionFound = false;
-                            for (let i = 0; i < 3; i++) {
+                            for (let i = 0; i < 10; i++) {
                                 if (!mounted) break;
+                                console.log(`[Verify] Polling attempt ${i + 1}/10...`);
                                 const { data: sessionData } = await supabase.auth.getSession();
                                 if (sessionData.session) {
                                     sessionFound = true;
+                                    console.log('[Verify] Session found via polling!');
                                     break;
                                 }
-                                await new Promise(r => setTimeout(r, 500));
+                                await new Promise(r => setTimeout(r, 1000)); // Wait 1s between attempts
                             }
 
                             if (sessionFound) {
@@ -118,34 +120,49 @@ export default function VerifyPage() {
                     return;
                 }
 
-                // Fallback: Check BOTH client and server session in parallel
-                console.log('[Verify] Checking sessions...');
-                const [clientResult, serverResult] = await Promise.allSettled([
-                    supabase.auth.getSession(),
-                    checkSession()
-                ]);
+                // Fallback: Check BOTH client and server session with retry polling
+                console.log('[Verify] Checking sessions with polling...');
 
-                // Check Server Session (Reference Truth)
-                let serverSuccess = false;
-                if (serverResult.status === 'fulfilled' && serverResult.value.success) {
-                    serverSuccess = true;
-                    console.log('[Verify] Server session confirmed!');
+                let sessionConfirmed = false;
+                for (let attempt = 0; attempt < 10; attempt++) {
+                    if (!mounted) break;
+
+                    console.log(`[Verify] Session check attempt ${attempt + 1}/10...`);
+
+                    const [clientResult, serverResult] = await Promise.allSettled([
+                        supabase.auth.getSession(),
+                        checkSession()
+                    ]);
+
+                    // Check Server Session (Reference Truth)
+                    let serverSuccess = false;
+                    if (serverResult.status === 'fulfilled' && serverResult.value.success) {
+                        serverSuccess = true;
+                        console.log('[Verify] Server session confirmed!');
+                    }
+
+                    // Check Client Session
+                    let clientSuccess = false;
+                    if (clientResult.status === 'fulfilled' && clientResult.value.data.session) {
+                        clientSuccess = true;
+                        console.log('[Verify] Client session confirmed!');
+                    }
+
+                    if (serverSuccess || clientSuccess) {
+                        sessionConfirmed = true;
+                        handleSuccess();
+                        return;
+                    }
+
+                    // Wait before next attempt (unless it's the last one)
+                    if (attempt < 9) {
+                        console.log(`[Verify] No session yet, waiting 1s before retry...`);
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
                 }
 
-                // Check Client Session
-                let clientSuccess = false;
-                if (clientResult.status === 'fulfilled' && clientResult.value.data.session) {
-                    clientSuccess = true;
-                    console.log('[Verify] Client session confirmed!');
-                }
-
-                if (serverSuccess || clientSuccess) {
-                    handleSuccess();
-                    return;
-                }
-
-                // Both failed
-                console.warn('[Verify] No session found on client or server.');
+                // All attempts failed
+                console.warn('[Verify] No session found after 10 attempts.');
                 handleFailure('Invalid or expired verification link');
 
             } catch (err: any) {
@@ -214,27 +231,15 @@ export default function VerifyPage() {
                 throw new Error('Session expired. Please request a new verification link.');
             }
 
-            // Create timeout wrapper for updateUser
-            console.log('[Verify] Calling updateUser with 10s timeout...');
-            const updatePromise = supabase.auth.updateUser({
-                password: password
-            });
 
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Update timed out after 10 seconds')), 10000)
-            );
+            // Update password via Server Action (more reliable than client-side)
+            console.log('[Verify] Calling server updatePassword...');
+            const result = await updatePassword(password);
 
-            const { data, error } = await Promise.race([
-                updatePromise,
-                timeoutPromise
-            ]) as any;
+            console.log('[Verify] Server updatePassword result:', result);
 
-            console.log('[Verify] updateUser completed:', { data: !!data, error });
-
-            if (error) throw error;
-
-            if (!data?.user) {
-                throw new Error('Failed to update password. Please try again.');
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update password');
             }
 
             // Success! Redirect to home

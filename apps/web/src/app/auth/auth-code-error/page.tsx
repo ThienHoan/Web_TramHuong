@@ -22,13 +22,13 @@ function ErrorContent() {
       )}
       <div className="space-y-3">
         <Link
-          href="/login"
+          href="/vi/login"
           className="block w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors"
         >
           Return to Login
         </Link>
         <Link
-          href="/"
+          href="/vi"
           className="block w-full border border-gray-300 py-2 rounded hover:bg-gray-50 transition-colors"
         >
           Back to Home

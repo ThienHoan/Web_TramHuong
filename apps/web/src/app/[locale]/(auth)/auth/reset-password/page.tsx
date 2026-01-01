@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { updatePassword } from '@/app/actions/auth';
 
 export default function ResetPasswordPage() {
+    const locale = useLocale();
     const [loading, setLoading] = useState(true);
     const [hasAccess, setHasAccess] = useState(false);
     const [password, setPassword] = useState('');
@@ -63,16 +66,23 @@ export default function ResetPasswordPage() {
         setSubmitting(true);
 
         try {
-            const { error } = await supabase.auth.updateUser({
-                password: password
-            });
+            console.log('[Reset Password] Calling server updatePassword action...');
 
-            if (error) throw error;
+            // Use server action which has all the workaround logic
+            const result = await updatePassword(password);
 
-            // Success - redirect to login
+            console.log('[Reset Password] Server action result:', result);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update password');
+            }
+
+            // Success!
+            console.log('[Reset Password] Password updated successfully');
             alert('Password reset successfully!');
-            router.push('/login');
+            router.push(`/${locale}/login`);
         } catch (err: any) {
+            console.error('[Reset Password] Error:', err);
             setError(err.message || 'Failed to reset password');
             setSubmitting(false);
         }
@@ -94,7 +104,7 @@ export default function ResetPasswordPage() {
                     <h1 className="text-2xl font-bold mb-4">Invalid Link</h1>
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
-                        onClick={() => router.push('/auth/forgot-password')}
+                        onClick={() => router.push(`/${locale}/auth/forgot-password`)}
                         className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
                     >
                         Request New Link

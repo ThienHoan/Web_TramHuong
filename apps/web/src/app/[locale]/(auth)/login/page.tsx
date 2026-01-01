@@ -70,7 +70,25 @@ export default function LoginPage() {
                 setShowCheckEmail(true);
             }
         } catch (err: any) {
-            setError(err.message);
+            // Improve error messages for better UX
+            let errorMessage = err.message;
+
+            // Map common Supabase auth errors to Vietnamese-friendly messages
+            if (err.message?.includes('Invalid login credentials')) {
+                errorMessage = 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
+            } else if (err.message?.includes('Email not confirmed')) {
+                errorMessage = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.';
+            } else if (err.message?.includes('User not found') || err.message?.includes('No user found')) {
+                errorMessage = 'Không tìm thấy tài khoản với email này.';
+            } else if (err.message?.includes('Invalid email')) {
+                errorMessage = 'Email không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (err.message?.includes('Password should be')) {
+                errorMessage = 'Mật khẩu phải có ít nhất 8 ký tự.';
+            } else if (err.message?.includes('Too many requests')) {
+                errorMessage = 'Quá nhiều lần thử. Vui lòng đợi một lúc rồi thử lại.';
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
