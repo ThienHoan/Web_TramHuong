@@ -302,7 +302,11 @@ export class ProductsService {
                 is_active: true,
                 is_featured: body.is_featured === 'true' || body.is_featured === true,
                 featured_section: body.featured_section || null,
-                variants: parsedVariants
+                variants: parsedVariants,
+                // Discount fields
+                discount_percentage: body.discount_percentage ? parseInt(body.discount_percentage) : 0,
+                discount_start_date: body.discount_start_date || null,
+                discount_end_date: body.discount_end_date || null,
             })
             .select()
             .single();
@@ -392,6 +396,17 @@ export class ProductsService {
 
         if (body.featured_section !== undefined) {
             updateData.featured_section = body.featured_section === '' ? null : body.featured_section;
+        }
+
+        // Discount fields
+        if (body.discount_percentage !== undefined) {
+            updateData.discount_percentage = parseInt(body.discount_percentage) || 0;
+        }
+        if (body.discount_start_date !== undefined) {
+            updateData.discount_start_date = body.discount_start_date || null;
+        }
+        if (body.discount_end_date !== undefined) {
+            updateData.discount_end_date = body.discount_end_date || null;
         }
 
         console.log('Final Update Data:', JSON.stringify(updateData));
