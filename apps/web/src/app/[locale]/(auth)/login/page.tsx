@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
@@ -14,10 +15,42 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [mode, setMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
+    const [mode, setMode] = useState<'LOGIN' | 'SIGNUP' | 'FORGOT_PASSWORD'>('LOGIN');
     const [showCheckEmail, setShowCheckEmail] = useState(false);
     const router = useRouter();
     const locale = useLocale();
+    const searchParams = useSearchParams();
+    const messageParam = searchParams.get('message');
+    const emailParam = searchParams.get('email');
+
+    // Prefill email if provided from password reset
+    useEffect(() => {
+        if (emailParam) {
+            setEmail(decodeURIComponent(emailParam));
+        }
+    }, [emailParam]);
+
+    // Load saved email on mount if remember me was checked previously
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('rememberedEmail');
+        const wasRemembered = localStorage.getItem('rememberMe') === 'true';
+
+        console.log('[Remember Me Load] savedEmail:', savedEmail);
+        console.log('[Remember Me Load] wasRemembered:', wasRemembered);
+
+        if (savedEmail && wasRemembered) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+            console.log('[Remember Me Load] ✅ Auto-filled email:', savedEmail);
+        } else {
+            console.log('[Remember Me Load] ❌ No saved email found');
+        }
+    }, []);
+
+    // Password visibility toggle
+    const [showPassword, setShowPassword] = useState(false);
+    // Remember me state
+    const [rememberMe, setRememberMe] = useState(false);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,6 +65,21 @@ export default function LoginPage() {
                 });
                 if (error) throw error;
                 if (!user) throw new Error('No user found');
+
+                // Save email preference for better UX (NOT password - security)
+                // Session is already persistent by default in Supabase
+                console.log('[Remember Me] Checkbox state:', rememberMe);
+                console.log('[Remember Me] Email to save:', email.trim());
+
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('rememberedEmail', email.trim());
+                    console.log('[Remember Me] ✅ Saved to localStorage');
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('rememberedEmail');
+                    console.log('[Remember Me] ❌ Removed from localStorage');
+                }
 
 
                 // Initial redirect to home, or check role for specific dashboard
@@ -52,8 +100,19 @@ export default function LoginPage() {
                 } else {
                     router.push('/');
                 }
-            } else {
-                // Email-only signup using magic link (OTP)
+            } else if (mode === 'SIGNUP') {
+                // SIGNUP mode - check if email already exists first
+                const { data: existingUser, error: checkError } = await supabase
+                    .from('users')
+                    .select('email')
+                    .eq('email', email.trim())
+                    .single();
+
+                if (existingUser) {
+                    throw new Error('EMAIL_ALREADY_EXISTS');
+                }
+
+                // Email doesn't exist, proceed with OTP signup
                 const { error } = await supabase.auth.signInWithOtp({
                     email: email.trim(),
                     options: {
@@ -68,13 +127,24 @@ export default function LoginPage() {
 
                 // Show check email message
                 setShowCheckEmail(true);
+            } else if (mode === 'FORGOT_PASSWORD') {
+                // Forgot password mode - send reset email
+                const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                    redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/auth/reset-password`
+                });
+                if (error) throw error;
+
+                // Show check email message
+                setShowCheckEmail(true);
             }
         } catch (err: any) {
             // Improve error messages for better UX
             let errorMessage = err.message;
 
             // Map common Supabase auth errors to Vietnamese-friendly messages
-            if (err.message?.includes('Invalid login credentials')) {
+            if (err.message === 'EMAIL_ALREADY_EXISTS') {
+                errorMessage = 'EMAIL_EXISTS';
+            } else if (err.message?.includes('Invalid login credentials')) {
                 errorMessage = 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
             } else if (err.message?.includes('Email not confirmed')) {
                 errorMessage = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.';
@@ -121,10 +191,10 @@ export default function LoginPage() {
                         <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH")' }}>
                             <div className="absolute bottom-4 left-6">
                                 <h1 className="text-2xl font-bold text-white tracking-wide shadow-black drop-shadow-md">
-                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng Nhập' : 'Đăng Ký')}
+                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng Nhập' : mode === 'SIGNUP' ? 'Đăng Ký' : 'Quên Mật Khẩu')}
                                 </h1>
                                 <p className="text-orange-100 text-sm font-medium opacity-90">
-                                    {showCheckEmail ? 'Vui lòng xác thực tài khoản' : 'Chào mừng quý khách quay trở lại'}
+                                    {showCheckEmail ? 'Vui lòng xác thực tài khoản' : mode === 'FORGOT_PASSWORD' ? 'Nhận link đặt lại mật khẩu' : 'Chào mừng quý khách quay trở lại'}
                                 </p>
                             </div>
                         </div>
@@ -148,11 +218,46 @@ export default function LoginPage() {
                                 </div>
                             ) : (
                                 <>
-                                    {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium border border-red-100">{error}</div>}
+                                    {messageParam === 'password_reset_success' && (
+                                        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-3 rounded mb-4 text-sm font-medium border border-green-200 dark:border-green-800">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg">✅</span>
+                                                <span>Mật khẩu đã được đặt lại thành công! Vui lòng đăng nhập với mật khẩu mới.</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {error && (
+                                        <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium border border-red-100">
+                                            {error === 'EMAIL_EXISTS' ? (
+                                                <>
+                                                    <p>Email này đã được đăng ký trước đó. Bạn có thể:</p>
+                                                    <div className="mt-2 flex gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setMode('LOGIN'); setError(null); }}
+                                                            className="text-xs underline font-bold hover:text-red-700"
+                                                        >
+                                                            → Đăng nhập ngay
+                                                        </button>
+                                                        <span className="text-red-400">•</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
+                                                            className="text-[#d56d0b] hover:underline font-medium text-sm"
+                                                        >
+                                                            → Quên mật khẩu?
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                error
+                                            )}
+                                        </div>
+                                    )}
                                     <form onSubmit={handleAuth} className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="block text-sm font-bold text-[#1c140d] dark:text-gray-200" htmlFor="email">
-                                                Email hoặc Tên đăng nhập
+                                                {mode === 'FORGOT_PASSWORD' ? 'Email đã đăng ký' : 'Email hoặc Tên đăng nhập'}
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -183,15 +288,24 @@ export default function LoginPage() {
                                                     </div>
                                                     <input
                                                         autoComplete="current-password"
-                                                        className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
+                                                        className="block w-full pl-10 pr-10 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
                                                         id="password"
                                                         name="password"
                                                         placeholder="••••••••"
                                                         required
-                                                        type="password"
+                                                        type={showPassword ? 'text' : 'password'}
                                                         value={password}
                                                         onChange={e => setPassword(e.target.value)}
                                                     />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl">
+                                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                                        </span>
+                                                    </button>
                                                 </div>
                                             </div>
                                         )}
@@ -199,7 +313,14 @@ export default function LoginPage() {
                                         <div className="flex items-center justify-between">
                                             {mode === 'LOGIN' && (
                                                 <div className="flex items-center">
-                                                    <input className="h-4 w-4 text-[#d56d0b] focus:ring-[#d56d0b] border-gray-300 rounded cursor-pointer" id="remember-me" name="remember-me" type="checkbox" />
+                                                    <input
+                                                        className="h-4 w-4 text-[#d56d0b] focus:ring-[#d56d0b] border-gray-300 rounded cursor-pointer"
+                                                        id="remember-me"
+                                                        name="remember-me"
+                                                        type="checkbox"
+                                                        checked={rememberMe}
+                                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                                    />
                                                     <label className="ml-2 block text-sm text-gray-600 dark:text-gray-400 cursor-pointer" htmlFor="remember-me">
                                                         Ghi nhớ
                                                     </label>
@@ -207,23 +328,27 @@ export default function LoginPage() {
                                             )}
                                             {mode === 'LOGIN' && (
                                                 <div className="text-sm ml-auto">
-                                                    <a className="font-medium text-[#d56d0b] hover:text-[#b05705] hover:underline transition-all" href="#" onClick={(e) => { e.preventDefault(); router.push('/auth/forgot-password'); }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
+                                                        className="font-medium text-[#d56d0b] hover:text-[#b05705] hover:underline transition-all"
+                                                    >
                                                         Quên mật khẩu?
-                                                    </a>
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
 
                                         <div>
                                             <button
-                                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-[#d56d0b] hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d56d0b] transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-[#d56d0b] hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d56d0b] transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                                                 type="submit"
                                                 disabled={loading}
                                             >
                                                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                                                     <span className="material-symbols-outlined text-primary-200 group-hover:text-white">login</span>
                                                 </span>
-                                                {loading ? 'Đang xử lý...' : (mode === 'LOGIN' ? 'Đăng nhập' : 'Đăng ký ngay')}
+                                                {loading ? 'Đang xử lý...' : (mode === 'LOGIN' ? 'Đăng nhập' : mode === 'SIGNUP' ? 'Đăng ký ngay' : 'Gửi link đặt lại')}
                                             </button>
                                         </div>
                                     </form>
@@ -277,15 +402,29 @@ export default function LoginPage() {
                                         </div>
                                     </div>
                                     <div className="mt-8 text-center">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            {mode === 'LOGIN' ? 'Bạn chưa có tài khoản?' : 'Bạn đã có tài khoản?'}
-                                            <button
-                                                onClick={() => { setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN'); setError(null); }}
-                                                className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
-                                            >
-                                                {mode === 'LOGIN' ? 'Đăng ký tài khoản mới' : 'Đăng nhập ngay'}
-                                            </button>
-                                        </p>
+                                        {mode === 'FORGOT_PASSWORD' ? (
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Nhớ mật khẩu rồi?
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setMode('LOGIN'); setError(null); }}
+                                                    className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
+                                                >
+                                                    Đăng nhập ngay
+                                                </button>
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                {mode === 'LOGIN' ? 'Bạn chưa có tài khoản?' : 'Bạn đã có tài khoản?'}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN'); setError(null); }}
+                                                    className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
+                                                >
+                                                    {mode === 'LOGIN' ? 'Đăng ký tài khoản mới' : 'Đăng nhập ngay'}
+                                                </button>
+                                            </p>
+                                        )}
                                     </div>
                                 </>
                             )}

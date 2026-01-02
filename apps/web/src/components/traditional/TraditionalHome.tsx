@@ -329,10 +329,26 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                             </div>
                                             <h3 className="font-bold text-text-main mb-1 truncate group-hover:text-primary transition-colors text-sm md:text-lg">{product.translation?.title}</h3>
                                             <div className="flex flex-col md:flex-row md:items-end justify-between gap-1">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] md:text-xs text-gray-500 line-through font-medium">{formatPrice(Number(product.price) * 1.3)}</span>
-                                                    <span className="text-sm md:text-lg font-bold text-primary">{formatPrice(Number(product.price || 0))}</span>
-                                                </div>
+                                                {/* Discount logic */}
+                                                {(() => {
+                                                    const hasDiscount = product.discount_percentage > 0;
+                                                    const now = new Date();
+                                                    const isActive = hasDiscount &&
+                                                        (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                                        (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+                                                    const currentPrice = Number(product.price || 0);
+                                                    const finalPrice = isActive ? currentPrice * (1 - product.discount_percentage / 100) : currentPrice;
+
+                                                    if (isActive) {
+                                                        return (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] md:text-xs text-gray-500 line-through font-medium">{formatPrice(currentPrice)}</span>
+                                                                <span className="text-sm md:text-lg font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return <span className="text-sm md:text-lg font-bold text-primary">{formatPrice(currentPrice)}</span>;
+                                                })()}
                                                 <div className="flex text-accent-gold-dark text-xs">
                                                     <span className="material-symbols-outlined text-[14px] md:text-[16px] fill-current">star</span>
                                                     <span className="text-gray-500 ml-1 font-bold">5.0</span>
@@ -387,7 +403,26 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                             <div>
                                                 <div className="flex justify-between items-start mb-2">
                                                     <h4 className="font-serif text-2xl font-bold text-text-main group-hover:text-primary transition-colors cursor-pointer">{product.translation?.title}</h4>
-                                                    <span className="text-xl font-bold text-primary">{formatPrice(Number(product.price || 0))}</span>
+                                                    {/* Discount logic */}
+                                                    {(() => {
+                                                        const hasDiscount = product.discount_percentage > 0;
+                                                        const now = new Date();
+                                                        const isActive = hasDiscount &&
+                                                            (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                                            (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+                                                        const currentPrice = Number(product.price || 0);
+                                                        const finalPrice = isActive ? currentPrice * (1 - product.discount_percentage / 100) : currentPrice;
+
+                                                        if (isActive) {
+                                                            return (
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <span className="text-sm text-gray-500 line-through">{formatPrice(currentPrice)}</span>
+                                                                    <span className="text-xl font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return <span className="text-xl font-bold text-primary">{formatPrice(currentPrice)}</span>;
+                                                    })()}
                                                 </div>
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <div className="flex text-accent-gold-dark text-xs">

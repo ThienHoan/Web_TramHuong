@@ -37,6 +37,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     // const [isFeatured, setIsFeatured] = useState(false);
     const [featuredSection, setFeaturedSection] = useState<string>('');
 
+    // Discount fields
+    const [discountPercentage, setDiscountPercentage] = useState('0');
+    const [discountStartDate, setDiscountStartDate] = useState('');
+    const [discountEndDate, setDiscountEndDate] = useState('');
+
     useEffect(() => {
         if (!session) return;
 
@@ -92,6 +97,18 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setSpecsVi(parseSpecs(tVi?.specifications));
                 setVariants(Array.isArray(data.variants) ? data.variants : []);
 
+                // Load discount data
+                setDiscountPercentage(data.discount_percentage?.toString() || '0');
+                // Convert DB timestamp to datetime-local format
+                if (data.discount_start_date) {
+                    const start = new Date(data.discount_start_date);
+                    setDiscountStartDate(start.toISOString().slice(0, 16));
+                }
+                if (data.discount_end_date) {
+                    const end = new Date(data.discount_end_date);
+                    setDiscountEndDate(end.toISOString().slice(0, 16));
+                }
+
                 setLoading(false);
             })
             .catch(err => {
@@ -128,6 +145,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             const specsViObj = specsVi.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
             formData.append('specifications_en', JSON.stringify(specsEnObj));
             formData.append('specifications_vi', JSON.stringify(specsViObj));
+
+            // Discount fields
+            formData.append('discount_percentage', discountPercentage);
+            if (discountStartDate) formData.append('discount_start_date', discountStartDate);
+            if (discountEndDate) formData.append('discount_end_date', discountEndDate);
 
             formData.append('keep_images', JSON.stringify(currentImages));
             newFiles.forEach(f => formData.append('files', f));
@@ -274,6 +296,67 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 value={descVi} onChange={e => setDescVi(e.target.value)} />
                         </div>
                     </div>
+                </div>
+
+                {/* Discount Section */}
+                <div className="border-t pt-4 mt-4">
+                    <h3 className="font-bold mb-3 text-sm text-gray-700 uppercase">⚡ Giảm Giá & Khuyến Mãi</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Giảm giá (%)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                className="w-full border p-2 rounded"
+                                value={discountPercentage}
+                                onChange={e => setDiscountPercentage(e.target.value)}
+                                placeholder="0"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">0-100%</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Bắt đầu (Optional)</label>
+                            <input
+                                type="datetime-local"
+                                className="w-full border p-2 rounded"
+                                value={discountStartDate}
+                                onChange={e => setDiscountStartDate(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Kết thúc (Optional)</label>
+                            <input
+                                type="datetime-local"
+                                className="w-full border p-2 rounded"
+                                value={discountEndDate}
+                                onChange={e => setDiscountEndDate(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Preview */}
+                    {parseInt(discountPercentage) > 0 && (
+                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
+                            <p className="text-sm font-medium text-gray-700 mb-2">📊 Preview giá bán:</p>
+                            <div className="flex items-center gap-3">
+                                <span className="text-gray-500 line-through text-lg">
+                                    {parseFloat(price || '0').toLocaleString()}₫
+                                </span>
+                                <span className="text-2xl font-bold text-red-600">
+                                    {(parseFloat(price || '0') * (1 - parseInt(discountPercentage) / 100)).toLocaleString()}₫
+                                </span>
+                                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                    -{discountPercentage}%
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-2">
+                                💰 Tiết kiệm: {(parseFloat(price || '0') * parseInt(discountPercentage) / 100).toLocaleString()}₫
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Image */}

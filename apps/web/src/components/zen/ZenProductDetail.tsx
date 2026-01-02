@@ -195,9 +195,38 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                             <h1 className="mb-4 text-4xl font-thin uppercase leading-tight tracking-widest text-zen-green-900 dark:text-white lg:text-5xl">
                                 {product.translation?.title}
                             </h1>
-                            <p className="mb-8 text-2xl font-light tracking-wide text-zen-green-text dark:text-gray-200">
-                                {formatPrice(product.price)}
-                            </p>
+                            {/* Price with discount logic */}
+                            {(() => {
+                                const hasDiscount = product.discount_percentage > 0;
+                                const now = new Date();
+                                const isActive = hasDiscount &&
+                                    (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                    (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+
+                                if (isActive) {
+                                    const finalPrice = product.price * (1 - product.discount_percentage / 100);
+                                    return (
+                                        <div className="mb-8 flex flex-col gap-2">
+                                            <p className="text-sm font-light tracking-wide text-zen-green-text/50 dark:text-gray-500 line-through">
+                                                {formatPrice(product.price)}
+                                            </p>
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-3xl font-light tracking-wide text-red-600">
+                                                    {formatPrice(finalPrice)}
+                                                </p>
+                                                <span className="inline-flex items-center rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
+                                                    -{product.discount_percentage}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <p className="mb-8 text-2xl font-light tracking-wide text-zen-green-text dark:text-gray-200">
+                                        {formatPrice(product.price)}
+                                    </p>
+                                );
+                            })()}
                             <div className="mb-10 max-w-md">
                                 <p className="text-sm font-light leading-loose text-zen-green-text/80 dark:text-white/80">
                                     {product.translation?.description}

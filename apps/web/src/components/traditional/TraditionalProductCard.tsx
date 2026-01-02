@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useProductDiscount } from '@/hooks/useProductDiscount';
 
 interface TraditionalProductCardProps {
     product: any;
@@ -10,6 +11,7 @@ interface TraditionalProductCardProps {
 
 export default function TraditionalProductCard({ product }: TraditionalProductCardProps) {
     const { formatPrice } = useCurrency();
+    const { finalPrice, isActive, discountPercent, originalPrice } = useProductDiscount(product);
 
     return (
         <div className="group relative flex flex-col overflow-hidden rounded-md bg-white shadow-sm hover:shadow-xl transition-all duration-300 border border-trad-border-warm">
@@ -19,33 +21,30 @@ export default function TraditionalProductCard({ product }: TraditionalProductCa
                     alt={product.translation?.title}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                {/* Quick Action Button */}
-                <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    <Link href={`/products/${product.slug}`}>
-                        <button className="w-full rounded bg-white py-3 text-xs font-bold uppercase tracking-widest text-trad-text-main shadow-lg hover:bg-trad-primary hover:text-white transition-colors">
-                            Xem chi tiết
-                        </button>
-                    </Link>
-                </div>
+                {isActive && (
+                    <span className="absolute right-3 top-3 rounded bg-trad-red-900 px-2 py-1 text-xs font-bold uppercase text-white shadow-md">
+                        -{discountPercent}%
+                    </span>
+                )}
             </div>
-            <div className="flex flex-1 flex-col p-5">
-                <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-trad-text-muted">Hương Trầm</span>
-                    <div className="flex text-trad-primary">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <span key={star} className="material-symbols-outlined !text-[14px] filled">star</span>
-                        ))}
-                    </div>
-                </div>
-                <h3 className="font-display text-lg font-bold text-trad-text-main hover:text-trad-primary transition-colors line-clamp-1">
-                    <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
+            <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col p-4">
+                <h3 className="mb-2 text-base font-bold text-trad-text-main group-hover:text-trad-primary transition-colors line-clamp-2">
+                    {product.translation?.title}
                 </h3>
-                <div className="mt-auto pt-4 flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-trad-primary">{formatPrice(product.price)}</span>
+                <div className="mt-auto pt-2">
+                    {isActive ? (
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm text-gray-500 line-through">{formatPrice(originalPrice)}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">-{discountPercent}%</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <span className="text-lg font-bold text-trad-primary">{formatPrice(finalPrice)}</span>
+                    )}
                 </div>
-            </div>
+            </Link>
         </div>
     );
 }

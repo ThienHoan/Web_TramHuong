@@ -95,8 +95,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signOut = async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/';
+        console.log('🚨 [SignOut] Function called!');
+        try {
+            // 1. Clear local state immediately
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            setRole(null);
+            setAccessToken('');
+
+            // 2. Clear localStorage - cart only (preserve rememberMe preference!)
+            localStorage.removeItem('cart');
+            // DON'T remove: rememberMe, rememberedEmail (user wants to stay remembered!)
+
+            // 3. Sign out from Supabase
+            await supabase.auth.signOut();
+
+            // 4. Navigate using Next.js router with cache refresh
+            router.replace('/');
+            router.refresh();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Fallback to hard reload only on critical errors
+            window.location.reload();
+        }
     };
 
     const refreshProfile = async () => {

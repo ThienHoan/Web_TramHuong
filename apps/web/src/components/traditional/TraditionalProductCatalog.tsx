@@ -282,15 +282,20 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6 relative">
                             {products.length > 0 ? products.map((product) => {
+                                // Discount logic
+                                const hasDiscount = product.discount_percentage > 0;
+                                const now = new Date();
+                                const isActive = hasDiscount &&
+                                    (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                    (!product.discount_end_date || new Date(product.discount_end_date) >= now);
                                 const currentPrice = Number(product.price);
-                                const originalPrice = Number(product.original_price || 0);
-                                const hasDiscount = originalPrice > currentPrice;
-                                const discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
+                                const finalPrice = isActive ? currentPrice * (1 - product.discount_percentage / 100) : currentPrice;
+                                const discountPercent = product.discount_percentage || 0;
 
                                 return (
                                     <div key={product.id} className="rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
                                         <div className="relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
-                                            {hasDiscount && (
+                                            {isActive && (
                                                 <span className="absolute left-2 top-2 z-10 rounded bg-trad-red-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
                                                     -{discountPercent}%
                                                 </span>
@@ -346,15 +351,15 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                                             </h3>
                                             <div className="mt-auto pt-2 md:pt-3 flex flex-col gap-2 md:gap-3">
                                                 <div className="flex items-baseline gap-2 flex-wrap">
-                                                    <span className="text-base md:text-xl font-bold text-trad-primary">{formatPrice(currentPrice)}</span>
-                                                    {hasDiscount && (
-                                                        <span className="text-xs md:text-sm text-trad-text-muted line-through opacity-70">{formatPrice(originalPrice)}</span>
+                                                    <span className="text-base md:text-xl font-bold text-trad-primary">{formatPrice(finalPrice)}</span>
+                                                    {isActive && (
+                                                        <span className="text-xs md:text-sm text-trad-text-muted line-through opacity-70">{formatPrice(currentPrice)}</span>
                                                     )}
                                                 </div>
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        handleAddToCart(product, currentPrice);
+                                                        handleAddToCart(product, finalPrice);
                                                     }}
                                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-trad-primary text-white shadow bg-trad-primary hover:bg-trad-primary-dark h-11 px-4 py-2 uppercase tracking-wide w-full gap-2 group-hover:bg-trad-bg-warm group-hover:text-trad-primary border border-transparent group-hover:border-trad-primary"
                                                 >

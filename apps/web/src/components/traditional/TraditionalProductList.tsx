@@ -194,8 +194,29 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                                 <h3 className="font-display text-lg font-bold text-trad-text-main hover:text-trad-primary transition-colors">
                                                     <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
                                                 </h3>
-                                                <div className="mt-auto pt-4 flex items-baseline gap-2">
-                                                    <span className="text-lg font-bold text-trad-primary">{formatPrice(product.price)}</span>
+                                                <div className="mt-auto pt-4 flex items-center justify-between gap-2">
+                                                    {/* Price with discount logic */}
+                                                    {(() => {
+                                                        const hasDiscount = product.discount_percentage > 0;
+                                                        const now = new Date();
+                                                        const isActive = hasDiscount &&
+                                                            (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                                            (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+
+                                                        if (isActive) {
+                                                            const finalPrice = product.price * (1 - product.discount_percentage / 100);
+                                                            return (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm text-gray-500 line-through">{formatPrice(product.price)}</span>
+                                                                        <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">-{product.discount_percentage}%</span>
+                                                                    </div>
+                                                                    <span className="text-lg font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return <span className="text-lg font-bold text-trad-primary">{formatPrice(product.price)}</span>;
+                                                    })()}
                                                 </div>
                                             </div>
                                         </div>
@@ -278,7 +299,28 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                             {product.translation?.description || 'Hương thơm an yên'}
                                         </p>
                                         <div className="mt-auto flex items-center justify-between">
-                                            <span className="font-bold text-trad-red-900">{formatPrice(product.price)}</span>
+                                            {/* Price with discount logic */}
+                                            {(() => {
+                                                const hasDiscount = product.discount_percentage > 0;
+                                                const now = new Date();
+                                                const isActive = hasDiscount &&
+                                                    (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                                    (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+
+                                                if (isActive) {
+                                                    const finalPrice = product.price * (1 - product.discount_percentage / 100);
+                                                    return (
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-gray-500 line-through">{formatPrice(product.price)}</span>
+                                                                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">-{product.discount_percentage}%</span>
+                                                            </div>
+                                                            <span className="font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                return <span className="font-bold text-trad-red-900">{formatPrice(product.price)}</span>;
+                                            })()}
                                             <Link href={`/products/${product.slug}`}>
                                                 <button className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
                                                     <span className="material-symbols-outlined text-sm">add</span>

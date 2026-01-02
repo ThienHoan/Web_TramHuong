@@ -223,25 +223,39 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
                                 {/* Price */}
                                 <div className="flex items-end gap-3 mb-6 bg-trad-bg-warm p-4 rounded-lg border border-trad-border-warm/50">
-                                    <span className="text-3xl font-bold text-trad-primary">
-                                        {formatPrice(selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price))}
-                                    </span>
+                                    {/* Price with discount logic */}
                                     {(() => {
                                         const currentPrice = selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price);
-                                        const originalPrice = selectedVariant?.original_price != null ? Number(selectedVariant.original_price) : (product.original_price ? Number(product.original_price) : 0);
-                                        if (originalPrice > currentPrice) {
+                                        const hasDiscount = product.discount_percentage > 0;
+                                        const now = new Date();
+                                        const isActive = hasDiscount &&
+                                            (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
+                                            (!product.discount_end_date || new Date(product.discount_end_date) >= now);
+
+                                        if (isActive) {
+                                            const finalPrice = currentPrice * (1 - product.discount_percentage / 100);
+                                            const savings = currentPrice - finalPrice;
                                             return (
                                                 <>
-                                                    <span className="text-lg text-trad-text-muted line-through mb-1 opacity-60">
-                                                        {formatPrice(originalPrice)}
-                                                    </span>
-                                                    <span className="ml-auto bg-trad-red-900/10 text-trad-red-900 px-2 py-1 rounded text-xs font-bold">
-                                                        -{Math.round((1 - currentPrice / originalPrice) * 100)}%
+                                                    <div className="flex flex-col gap-2">
+                                                        <span className="text-lg text-trad-text-muted line-through opacity-60">
+                                                            {formatPrice(currentPrice)}
+                                                        </span>
+                                                        <span className="text-3xl font-bold text-red-600">
+                                                            {formatPrice(finalPrice)}
+                                                        </span>
+                                                    </div>
+                                                    <span className="ml-auto bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">
+                                                        -{product.discount_percentage}%
                                                     </span>
                                                 </>
                                             );
                                         }
-                                        return null;
+                                        return (
+                                            <span className="text-3xl font-bold text-trad-primary">
+                                                {formatPrice(currentPrice)}
+                                            </span>
+                                        );
                                     })()}
                                 </div>
 
