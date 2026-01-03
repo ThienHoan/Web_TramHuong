@@ -26,8 +26,8 @@ export class OrdersController {
     @UseGuards(ThrottlerGuard)
     async create(@Request() req: any, @Body() body: CreateOrderDto) {
         const userId = req.user?.id || null;
-        const { items, shipping_info, paymentMethod } = body;
-        return this.ordersService.create(userId, items, shipping_info, paymentMethod);
+        const { items, shipping_info, paymentMethod, voucherCode } = body as CreateOrderDto & { voucherCode?: string };
+        return this.ordersService.create(userId, items, shipping_info, paymentMethod, voucherCode);
     }
 
     @Post('sepay-webhook')

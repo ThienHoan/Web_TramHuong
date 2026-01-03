@@ -16,6 +16,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PostsModule } from './posts/posts.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ContactsModule } from './contacts/contacts.module';
     AnalyticsModule,
     PostsModule,
     ContactsModule,
+    VouchersModule,
   ],
   controllers: [AppController],
   providers: [
