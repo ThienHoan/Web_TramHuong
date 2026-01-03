@@ -21,20 +21,50 @@ export default function PaymentSelectPage() {
 
     const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay' | 'showroom'>('cod');
     const [error, setError] = useState<string | null>(null);
+    const [voucherCode, setVoucherCode] = useState<string | null>(null);
+    const [voucherDiscount, setVoucherDiscount] = useState(0);
+
     const isFreeShipping = total >= 300000;
     // Showroom pickup = free shipping
     const shippingFee = (isFreeShipping || paymentMethod === 'showroom') ? 0 : 30000;
-    const finalTotal = total + shippingFee;
+    const finalTotal = Math.max(0, total - voucherDiscount) + shippingFee;
 
     // Load shipping info from localStorage
     useEffect(() => {
+        // Prevent redirect if we are in the middle of processing an order
+        // When handlePlaceOrder runs, it sets loading=true, then clears cart.
+        // Clearing cart updates 'total', which triggers this effect.
+        // If we don't check loading, it sees empty localStorage (removed in handlePlaceOrder) and breaks.
+        if (loading) return;
+
         const storedInfo = localStorage.getItem('checkout_shipping_info');
+        const storedVoucher = localStorage.getItem('checkout_voucher_code');
+
         if (storedInfo) {
             setShippingInfo(JSON.parse(storedInfo));
         } else {
             router.push('/checkout');
         }
-    }, [router]);
+
+        if (storedVoucher) {
+            setVoucherCode(storedVoucher);
+            // Verify voucher again to get discount amount
+            // Use centralized API client
+            import('@/lib/api-client').then(({ validateVoucher }) => {
+                validateVoucher(storedVoucher, total)
+                    .then(data => {
+                        if (data.discountAmount) {
+                            setVoucherDiscount(data.discountAmount);
+                        }
+                    })
+                    .catch(e => {
+                        console.error("Voucher validation failed on payment page:", e);
+                        // If invalid, set discount to 0. 
+                        setVoucherDiscount(0);
+                    });
+            });
+        }
+    }, [router, total, loading]);
 
     const handlePlaceOrder = async () => {
         setError(null);
@@ -89,7 +119,8 @@ export default function PaymentSelectPage() {
             const order = await createOrder({
                 items: orderItems,
                 shipping_info: fullShippingInfo,
-                paymentMethod
+                paymentMethod,
+                voucherCode: voucherCode || undefined
             });
 
             clearCart();
@@ -98,6 +129,7 @@ export default function PaymentSelectPage() {
             // Better to clear it to avoid stale data on next visit
             localStorage.removeItem('checkout_shipping_info');
             localStorage.removeItem('is_guest_checkout');
+            localStorage.removeItem('checkout_voucher_code');
 
             if (paymentMethod === 'cod' || paymentMethod === 'showroom') {
                 router.push(`/checkout/success?id=${order.id}`);
@@ -263,6 +295,16 @@ export default function PaymentSelectPage() {
                                     <p className="text-trad-text-muted">Tạm tính</p>
                                     <p className="text-trad-text-main font-medium">{formatPrice(total)}</p>
                                 </div>
+
+                                {voucherDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-purple-700 font-medium">Voucher ({voucherCode})</p>
+                                        </div>
+                                        <p className="text-purple-700 font-bold">-{formatPrice(voucherDiscount)}</p>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between items-center text-sm">
                                     <div className="flex items-center gap-2">
                                         <p className="text-trad-text-muted">Phí vận chuyển</p>

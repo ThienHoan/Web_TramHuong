@@ -57,4 +57,5 @@ export interface CreateOrderDto {
     }[];
     shipping_info: ShippingInfo;
     paymentMethod: string;
+    voucherCode?: string;
 }

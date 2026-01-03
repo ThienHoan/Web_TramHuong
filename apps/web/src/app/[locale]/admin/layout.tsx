@@ -22,6 +22,7 @@ export default function AdminLayout({
         { name: 'Users', href: '/admin/users' },
         { name: 'Blog', href: '/admin/blog' },
         { name: 'Contacts', href: '/admin/contacts' },
+        { name: 'Vouchers', href: '/admin/vouchers' },
     ];
 
     return (

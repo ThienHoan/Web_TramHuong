@@ -62,9 +62,19 @@ export const createPost = blogService.createPost;
 export const updatePost = blogService.updatePost;
 export const deletePost = blogService.deletePost;
 
+
 // Contact
 export const submitContact = contactService.submitContact;
 export const getContacts = contactService.getContacts;
 export const updateContactStatus = contactService.updateContactStatus;
+
+// Vouchers
+import { vouchersService } from '../services/vouchers-service';
+export const getVouchers = vouchersService.getVouchers;
+export const getVoucher = vouchersService.getVoucher;
+export const createVoucher = vouchersService.createVoucher;
+export const updateVoucher = vouchersService.updateVoucher;
+export const deleteVoucher = vouchersService.deleteVoucher;
+export const validateVoucher = vouchersService.validateVoucher;
 
 

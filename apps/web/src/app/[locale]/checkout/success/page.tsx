@@ -213,7 +213,18 @@ export default function CheckoutSuccessPage() {
                                                             <span>-{formatPrice(totalSavings)}</span>
                                                         </div>
                                                     )}
-                                                    <div className="flex justify-between items-end pt-3 border-t border-[#7a3e3b]">
+                                                    {/* Voucher Discount */}
+                                                    {Number(order.voucher_discount_amount) > 0 && (
+                                                        <div className="flex justify-between items-center text-[#9c8749] text-sm mt-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="material-symbols-outlined text-base text-purple-400">confirmation_number</span>
+                                                                <span>Voucher ({order.voucher_code})</span>
+                                                            </div>
+                                                            <span className="text-purple-400">-{formatPrice(Number(order.voucher_discount_amount))}</span>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex justify-between items-end pt-3 border-t border-[#7a3e3b] mt-2">
                                                         <span className="text-[#fef3c7] font-bold text-lg font-serif">Tổng cộng</span>
                                                         <span className="text-trad-gold text-2xl font-bold font-serif">{formatPrice(order.total)}</span>
                                                     </div>

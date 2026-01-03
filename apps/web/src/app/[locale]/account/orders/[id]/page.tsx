@@ -455,6 +455,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                         })()}
                                                     </span>
                                                 </div>
+                                                {/* Voucher Discount */}
+                                                {Number(order.voucher_discount_amount) > 0 && (
+                                                    <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-purple-300'}`}>
+                                                        <span>Voucher ({order.voucher_code})</span>
+                                                        <span>-{formatPrice(Number(order.voucher_discount_amount))}</span>
+                                                    </div>
+                                                )}
                                                 <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-end">
                                                     <span className={`text-sm font-medium uppercase tracking-wide ${isExpiredOrCanceled ? 'text-white/70' : 'text-white/90'}`}>Tổng cộng</span>
                                                     <span className={`text-2xl font-serif font-bold ${isExpiredOrCanceled ? 'text-white/70' : 'text-accent-gold'}`}>{formatPrice(totalAmount)}</span>

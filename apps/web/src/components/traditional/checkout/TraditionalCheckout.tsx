@@ -38,9 +38,47 @@ export default function TraditionalCheckout() {
     });
 
     const [error, setError] = useState<string | null>(null);
+
+    // Voucher State
+    const [voucherCode, setVoucherCode] = useState('');
+    const [verifyingVoucher, setVerifyingVoucher] = useState(false);
+    const [voucherError, setVoucherError] = useState('');
+    const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discountAmount: number } | null>(null);
+
     const isFreeShipping = total >= 300000;
     const shippingFee = isFreeShipping ? 0 : 30000;
-    const finalTotal = total + shippingFee;
+
+    // Calculate Final Total with Voucher
+    const voucherDiscount = appliedVoucher ? appliedVoucher.discountAmount : 0;
+    // Ensure total doesn't go below 0
+    // Order total logic: (Subtotal - ItemDiscounts(already in total?) - VoucherDiscount) + Shipping
+    // Wait, 'total' from useCart includes item-level discounts. 
+    // So we just subtract voucherDiscount.
+    const finalTotal = Math.max(0, total - voucherDiscount) + shippingFee;
+
+    const handleApplyVoucher = async () => {
+        setVoucherError('');
+        if (!voucherCode.trim()) return;
+
+        setVerifyingVoucher(true);
+        try {
+            // Using centralized API client which handles correct URL construction
+            const { validateVoucher } = await import('@/lib/api-client');
+            const data = await validateVoucher(voucherCode, total);
+
+            setAppliedVoucher({
+                code: data.voucher.code,
+                discountAmount: data.discountAmount
+            });
+            // Don't clear code so user sees it
+        } catch (err: any) {
+            setVoucherError(err.message || 'Mã không hợp lệ');
+            setAppliedVoucher(null);
+        } finally {
+            setVerifyingVoucher(false);
+        }
+    };
+
 
     // Determine Initial Mode
     useEffect(() => {
@@ -75,6 +113,52 @@ export default function TraditionalCheckout() {
         }
     }, [session, authLoading]);
 
+    // Re-validate voucher when total changes
+    useEffect(() => {
+        const revalidate = async () => {
+            if (appliedVoucher) {
+                try {
+                    const { validateVoucher } = await import('@/lib/api-client');
+                    const data = await validateVoucher(appliedVoucher.code, total);
+                    setAppliedVoucher({
+                        code: data.voucher.code,
+                        discountAmount: data.discountAmount
+                    });
+                    // Clear error if re-validation succeeds (e.g. they added enough items to meet min order)
+                    setVoucherError('');
+                } catch (err: any) {
+                    // If validation fails (e.g. total dropped below min), remove voucher
+                    setAppliedVoucher(null);
+                    setVoucherError(err.message || 'Mã giảm giá không còn khả dụng');
+                }
+            }
+        };
+
+        // Debounce slightly to avoid too many calls if user clicks rapidly? 
+        // For 1-2 clicks it's fine.
+        if (appliedVoucher) {
+            revalidate();
+        }
+    }, [total]); // Dependency on total. Note: appliedVoucher is usually stable unless changed. 
+    // If we include appliedVoucher, we need to be careful of loops. 
+    // We only want to trigger when Total changes. 
+    // But if appliedVoucher changes, this runs too? 
+    // If appliedVoucher changes (e.g. updated discount), we don't need to re-validate immediately.
+    // Ideally dependency is just [total]. But we need appliedVoucher value inside.
+    // The conditional check "if (appliedVoucher)" captures the value from closure. 
+    // To be safe, include appliedVoucher.code in dep or refs.
+    // Actually, if we include appliedVoucher, setting it inside causes infinite loop if specific object changes.
+    // Best practice: Use a ref for the code, or check if 'discountAmount' is different?
+    // Let's rely on `total` change mainly. 
+    // However, React rules say include all deps.
+    // If we add appliedVoucher to deps, setting it to new object (even with same content) might loop if we don't check equality.
+    // Better strategy: Extract the re-validation logic and use it.
+    // For simplicity: We trust that `total` updates are the main trigger. 
+    // We can use a REF for the code to avoid dependency loop.
+
+    // Actually, simplest fix is: Check if total changes.
+
+
     const handleUserCheckout = async () => {
         setError(null);
         if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
@@ -93,7 +177,13 @@ export default function TraditionalCheckout() {
                 city: locationParts.province,
                 full_address: `${shippingInfo.address}, ${locationParts.ward}, ${locationParts.district}, ${locationParts.province}`
             };
+
             localStorage.setItem('checkout_shipping_info', JSON.stringify(fullShippingInfo));
+            if (appliedVoucher) {
+                localStorage.setItem('checkout_voucher_code', appliedVoucher.code);
+            } else {
+                localStorage.removeItem('checkout_voucher_code');
+            }
             router.push('/checkout/payment_select');
         } catch (e: any) {
             setError(e.message || 'Có lỗi xảy ra.');
@@ -113,6 +203,11 @@ export default function TraditionalCheckout() {
                 email: '', // Optional for guest
                 city: data.province // standardized
             }));
+            if (appliedVoucher) {
+                localStorage.setItem('checkout_voucher_code', appliedVoucher.code);
+            } else {
+                localStorage.removeItem('checkout_voucher_code');
+            }
             // Mark as guest order
             localStorage.setItem('is_guest_checkout', 'true');
 
@@ -357,13 +452,29 @@ export default function TraditionalCheckout() {
                                                 </div>
 
                                                 {/* Show discount savings if any */}
-                                                {totalSavings > 0 && (
-                                                    <div className="flex justify-between items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="material-symbols-outlined text-green-600 text-[20px]">local_offer</span>
-                                                            <span className="text-sm font-medium text-green-700">Tiết kiệm</span>
-                                                        </div>
-                                                        <span className="font-bold text-green-600">-{formatPrice(totalSavings)}</span>
+                                                {(totalSavings > 0 || appliedVoucher) && (
+                                                    <div className="flex flex-col gap-2 mb-2">
+                                                        {totalSavings > 0 && (
+                                                            <div className="flex justify-between items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="material-symbols-outlined text-green-600 text-[20px]">local_offer</span>
+                                                                    <span className="text-sm font-medium text-green-700">Tiết kiệm (Sản phẩm)</span>
+                                                                </div>
+                                                                <span className="font-bold text-green-600">-{formatPrice(totalSavings)}</span>
+                                                            </div>
+                                                        )}
+                                                        {appliedVoucher && (
+                                                            <div className="flex justify-between items-center px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="material-symbols-outlined text-purple-600 text-[20px]">confirmation_number</span>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-medium text-purple-700">Mã giảm giá</span>
+                                                                        <span className="text-[10px] text-purple-600 font-mono tracking-wider">{appliedVoucher.code}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <span className="font-bold text-purple-600">-{formatPrice(appliedVoucher.discountAmount)}</span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
 
@@ -399,6 +510,60 @@ export default function TraditionalCheckout() {
                                             {loading ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
                                             <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                         </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* VOUCHER INPUT SECTION */}
+                            <div className="rounded-xl overflow-hidden border border-trad-border-warm shadow-md bg-white text-trad-text-main">
+                                <div className="px-6 py-4 border-b border-trad-border-warm bg-trad-bg-warm/50 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-trad-gold">confirmation_number</span>
+                                    <h3 className="font-bold text-trad-red-900">Mã giảm giá</h3>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Nhập mã giảm giá"
+                                            value={voucherCode}
+                                            onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                                            disabled={!!appliedVoucher}
+                                            className="flex-1 bg-white border border-trad-border-warm rounded-lg px-4 py-2.5 text-trad-text-main focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none disabled:bg-gray-100 disabled:text-gray-500 uppercase font-mono"
+                                        />
+                                        {appliedVoucher ? (
+                                            <button
+                                                onClick={() => {
+                                                    setAppliedVoucher(null);
+                                                    setVoucherCode('');
+                                                    setVoucherError('');
+                                                }}
+                                                className="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-4 rounded-lg transition-colors border border-red-200"
+                                            >
+                                                Xóa
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleApplyVoucher}
+                                                disabled={!voucherCode || verifyingVoucher}
+                                                className="bg-trad-text-main hover:bg-black text-[#fef3c7] font-bold px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-trad-text-main shadow-sm"
+                                            >
+                                                {verifyingVoucher ? '...' : 'Áp dụng'}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Messages */}
+                                    {voucherError && (
+                                        <p className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[14px]">error</span>
+                                            {voucherError}
+                                        </p>
+                                    )}
+                                    {appliedVoucher && (
+                                        <p className="mt-2 text-xs text-green-600 font-bold flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                                            Đã áp dụng mã: {appliedVoucher.code} (-{formatPrice(appliedVoucher.discountAmount)})
+                                        </p>
                                     )}
                                 </div>
                             </div>
