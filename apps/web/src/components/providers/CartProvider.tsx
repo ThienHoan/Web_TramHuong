@@ -10,7 +10,9 @@ export interface CartItem {
     id: string;         // Alias for Product ID (Legacy compatibility)
     slug: string;
     title: string;
-    price: number;
+    price: number;  // FINAL price (after discount)
+    original_price?: number;  // Original price before discount (Phase 2)
+    discount_amount?: number;  // Amount saved (Phase 2)
     image: string;
     quantity: number;
     variantId?: string | null;
@@ -19,7 +21,7 @@ export interface CartItem {
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, 'quantity' | 'key' | 'productId' | 'id'> & { id: string, quantity?: number, variantId?: string, variantName?: string }) => void;
+    addItem: (item: Omit<CartItem, 'quantity' | 'key' | 'productId' | 'id'> & { id: string, quantity?: number, variantId?: string, variantName?: string, original_price?: number, discount_amount?: number }) => void;
     removeItem: (key: string) => void;
     updateQuantity: (key: string, delta: number) => void;
     clearCart: () => void;
@@ -50,7 +52,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     id: i.id,
                     slug: i.slug,
                     title: i.title,
-                    price: i.price,
+                    price: i.price,  // Final discounted price
+                    original_price: i.original_price,  // Phase 2
+                    discount_amount: i.discount_amount,  // Phase 2
                     image: i.image,
                     quantity: i.quantity,
                     variantId: i.variantId,
@@ -111,7 +115,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, user, initialized]);
 
-    const addItem = async (newItem: Omit<CartItem, 'quantity' | 'key' | 'productId'> & { quantity?: number, id: string }) => {
+    const addItem = async (newItem: Omit<CartItem, 'quantity' | 'key' | 'productId'> & { quantity?: number, id: string, original_price?: number, discount_amount?: number }) => {
         const qtyToAdd = newItem.quantity || 1;
         const variantId = newItem.variantId || null;
 
@@ -139,6 +143,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 slug: newItem.slug,
                 title: newItem.title,
                 price: newItem.price,
+                original_price: newItem.original_price,  // For guest cart discount display
+                discount_amount: newItem.discount_amount,  // For guest cart discount display
                 image: newItem.image,
                 quantity: qtyToAdd,
                 variantId: variantId,
@@ -198,14 +204,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const updateQuantity = async (key: string, delta: number) => {
+    const updateQuantity = async (key: string, newQuantity: number) => {
         const oldItems = [...items];
-        let newQty = 0;
 
+        // Set to absolute quantity (not delta!)
         setItems(prev => prev.map(i => {
             if (i.key === key) {
-                newQty = Math.max(1, i.quantity + delta);
-                return { ...i, quantity: newQty };
+                return { ...i, quantity: Math.max(1, newQuantity) };
             }
             return i;
         }));
@@ -219,7 +224,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${session.access_token}`
                         },
-                        body: JSON.stringify({ quantity: newQty })
+                        body: JSON.stringify({ quantity: Math.max(1, newQuantity) })
                     });
                 }
             } catch (e) {

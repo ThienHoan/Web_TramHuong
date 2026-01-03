@@ -141,23 +141,107 @@ export default function CheckoutSuccessPage() {
                             {order && order.items && order.items.length > 0 && (
                                 <div className="w-full flex flex-col gap-4 mb-8">
                                     <h3 className="text-[#fef3c7] font-bold text-lg text-left border-b border-[#7a3e3b] pb-2 font-serif">Sản phẩm đã đặt</h3>
-                                    {order.items.map((item: any, idx: number) => (
-                                        <div key={idx} className="w-full bg-[#2a0f0e] p-4 rounded-xl border border-[#7a3e3b] flex items-center gap-4 text-left shadow-sm">
-                                            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-[#7a3e3b] bg-[#2a0f0e]">
-                                                <ProductImage src={item.image} alt={item.title} className="h-full w-full object-cover" />
-                                            </div>
-                                            <div className="flex flex-col flex-1">
-                                                <span className="text-[#fef3c7] font-medium line-clamp-1 text-base">
-                                                    {item.title}
-                                                </span>
-                                                {item.variant_name && <span className="text-[#9c8749]/80 text-xs">{item.variant_name}</span>}
-                                                <div className="flex justify-between items-center mt-1">
-                                                    <span className="text-[#9c8749] text-sm">Số lượng: {String(item.quantity).padStart(2, '0')}</span>
-                                                    <span className="text-[#fef3c7] text-sm font-bold">{formatPrice(item.price)}</span>
+                                    {order.items.map((item: any, idx: number) => {
+                                        const price = Number(item.price || 0);
+                                        const originalPrice = Number(item.original_price || item.price || 0);
+                                        const discountAmount = Number(item.discount_amount || 0);
+                                        const hasDiscount = discountAmount > 0 && originalPrice > price;
+
+                                        return (
+                                            <div key={idx} className="w-full bg-[#2a0f0e] p-4 rounded-xl border border-[#7a3e3b] flex items-center gap-4 text-left shadow-sm">
+                                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-[#7a3e3b] bg-[#2a0f0e]">
+                                                    <ProductImage src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                                                </div>
+                                                <div className="flex flex-col flex-1">
+                                                    <span className="text-[#fef3c7] font-medium line-clamp-1 text-base">
+                                                        {item.title}
+                                                    </span>
+                                                    {item.variant_name && <span className="text-[#9c8749]/80 text-xs">{item.variant_name}</span>}
+                                                    <div className="flex justify-between items-center mt-1 gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[#9c8749] text-sm">Số lượng: {String(item.quantity).padStart(2, '0')}</span>
+                                                            {hasDiscount && (
+                                                                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                                                                    -{Math.round((discountAmount / originalPrice) * 100)}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-end">
+                                                            {hasDiscount && (
+                                                                <span className="text-xs text-[#9c8749] line-through">
+                                                                    {formatPrice(originalPrice)}
+                                                                </span>
+                                                            )}
+                                                            <span className={`text-sm font-bold ${hasDiscount ? 'text-red-400' : 'text-[#fef3c7]'}`}>
+                                                                {formatPrice(price)}
+                                                            </span>
+                                                            {hasDiscount && (
+                                                                <span className="text-[10px] text-red-500 font-medium mt-0.5">
+                                                                    Tiết kiệm {formatPrice(discountAmount)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Order Summary Total */}
+                            {order && (
+                                <div className="w-full bg-[#2a0f0e] p-6 rounded-xl border border-[#7a3e3b] shadow-sm mb-8">
+                                    <div className="flex flex-col gap-3">
+                                        {(() => {
+                                            const subtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0) || 0;
+                                            const totalSavings = order.items?.reduce((sum: number, item: any) => {
+                                                const discountAmount = Number(item.discount_amount || 0);
+                                                return sum + (discountAmount * item.quantity);
+                                            }, 0) || 0;
+                                            // Assume total = subtotal + shipping (simplified as success page doesn't always have exact breakdown unless we calc it, but order.total is source of truth)
+                                            // Actually order.total is the final amount.
+
+                                            return (
+                                                <>
+                                                    {totalSavings > 0 && (
+                                                        <div className="flex justify-between items-center text-[#9c8749] text-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="material-symbols-outlined text-base">savings</span>
+                                                                <span>Đã tiết kiệm</span>
+                                                            </div>
+                                                            <span>-{formatPrice(totalSavings)}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex justify-between items-end pt-3 border-t border-[#7a3e3b]">
+                                                        <span className="text-[#fef3c7] font-bold text-lg font-serif">Tổng cộng</span>
+                                                        <span className="text-trad-gold text-2xl font-bold font-serif">{formatPrice(order.total)}</span>
+                                                    </div>
+                                                    {/* Shipping Fee Display - Inserted BEFORE Total */}
+                                                    <div className="flex justify-between items-center text-[#9c8749] text-sm py-2">
+                                                        <span>Phí vận chuyển</span>
+                                                        <span>
+                                                            {/* Logic check: if Total >= Subtotal (implies shipping added) or 0 if free. Here we assume free if not mentioned or calculated? Success page is tricky. If order.total == subtotal, it is free shipping. */}
+                                                            {(() => {
+                                                                const subtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0) || 0;
+                                                                const isFree = Number(order.total) <= Number(subtotal); // Rough check
+                                                                if (isFree) {
+                                                                    return (
+                                                                        <div className="flex flex-col items-end">
+                                                                            <span className="line-through text-[#9c8749]/50 text-xs">{formatPrice(30000)}</span>
+                                                                            <span className="text-green-400 font-bold">-{formatPrice(30000)}</span>
+                                                                        </div>
+                                                                    );
+                                                                } else {
+                                                                    return formatPrice(Number(order.total) - Number(subtotal));
+                                                                }
+                                                            })()}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )
+                                        })()}
+                                    </div>
                                 </div>
                             )}
 
@@ -211,9 +295,9 @@ export default function CheckoutSuccessPage() {
                         </div>
                     </motion.div>
                 </div>
-            </main>
+            </main >
 
             <TraditionalFooter />
-        </div>
+        </div >
     );
 }

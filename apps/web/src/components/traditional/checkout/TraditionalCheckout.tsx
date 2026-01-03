@@ -193,35 +193,90 @@ export default function TraditionalCheckout() {
                         {/* 2. FORM SECTIONS */}
                         {(mode === 'guest_form' || mode === 'user_checkout') && (
                             <>
-                                {/* Cart Review (Brief) */}
-                                <section className="rounded-xl overflow-hidden border border-trad-border-warm shadow-sm bg-white">
-                                    <div className="px-6 py-4 border-b border-trad-border-warm bg-trad-bg-warm/50 flex justify-between items-center cursor-pointer hover:bg-trad-bg-warm transition-colors"
-                                        onClick={() => { /* Toggle expand logic could go here */ }}
-                                    >
-                                        <h2 className="font-bold flex items-center gap-2 text-trad-red-900">
+                                {/* Cart Review with PROPER CONTROLS */}
+                                <section className="rounded-xl overflow-hidden border-2 border-trad-border-warm shadow-md bg-white">
+                                    <div className="px-6 py-4 border-b-2 border-trad-border-warm bg-trad-bg-warm flex justify-between items-center">
+                                        <h2 className="font-bold flex items-center gap-2 text-trad-red-900 text-lg">
                                             <span className="material-symbols-outlined text-trad-primary">shopping_bag</span>
                                             Giỏ hàng ({items.length})
                                         </h2>
-                                        <span className="text-trad-primary text-sm font-medium">Xem chi tiết</span>
                                     </div>
-                                    <div className="p-6">
-                                        {/* Minimal List */}
-                                        {items.slice(0, 3).map(item => (
-                                            <div key={item.key} className="flex gap-4 mb-4 last:mb-0">
-                                                <div className="w-16 h-16 rounded border border-trad-border-warm overflow-hidden shrink-0">
-                                                    <ProductImage src={item.image} alt={item.title} />
+                                    <div className="p-6 space-y-4">
+                                        {items.map(item => (
+                                            <div key={item.key} className="flex gap-4 pb-4 border-b-2 border-trad-border-warm/30 last:border-0">
+                                                {/* Image */}
+                                                <div className="w-20 h-20 rounded-lg border-2 border-trad-border-warm overflow-hidden shrink-0 bg-trad-bg-warm">
+                                                    <ProductImage src={item.image} alt={item.title} className="w-full h-full object-cover" />
                                                 </div>
-                                                <div className="flex-1">
-                                                    <p className="font-bold text-sm text-trad-text-main line-clamp-1">{item.title}</p>
-                                                    <p className="text-xs text-trad-text-muted">{item.variantName}</p>
-                                                    <div className="flex justify-between mt-1">
-                                                        <span className="text-xs font-medium">x{item.quantity}</span>
-                                                        <span className="text-sm font-bold text-trad-primary">{formatPrice(item.price * item.quantity)}</span>
+
+                                                {/* Info */}
+                                                <div className="flex-1 flex flex-col gap-2">
+                                                    {/* Title Row */}
+                                                    <div className="flex justify-between items-start gap-2">
+                                                        <div className="flex-1">
+                                                            <p className="font-bold text-sm text-trad-text-main leading-tight">{item.title}</p>
+                                                            {item.variantName && <p className="text-xs text-trad-text-muted mt-0.5">{item.variantName}</p>}
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeItem(item.key);
+                                                            }}
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-all"
+                                                            title="Xóa"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Quantity + Price Row */}
+                                                    <div className="flex justify-between items-center">
+                                                        {/* Quantity Controls */}
+                                                        <div className="flex items-center gap-0 border-2 border-trad-border-warm rounded-lg overflow-hidden bg-white">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const newQty = item.quantity - 1;
+                                                                    if (newQty >= 1) {
+                                                                        updateQuantity(item.key, newQty);
+                                                                    }
+                                                                }}
+                                                                disabled={item.quantity <= 1}
+                                                                className="px-3 py-2 hover:bg-trad-bg-warm active:bg-trad-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px] text-trad-text-main font-bold">remove</span>
+                                                            </button>
+                                                            <span className="px-4 py-2 min-w-[3ch] text-center text-sm font-bold text-trad-text-main border-x-2 border-trad-border-warm bg-trad-bg-warm/30">
+                                                                {item.quantity}
+                                                            </span>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const newQty = item.quantity + 1;
+                                                                    updateQuantity(item.key, newQty);
+                                                                }}
+                                                                className="px-3 py-2 hover:bg-trad-bg-warm active:bg-trad-primary/10 transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px] text-trad-text-main font-bold">add</span>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Price */}
+                                                        <div className="text-right">
+                                                            <p className="text-base font-bold text-trad-primary">{formatPrice(item.price * item.quantity)}</p>
+                                                            <p className="text-xs text-trad-text-muted">{formatPrice(item.price)}/sp</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         ))}
-                                        {items.length > 3 && <p className="text-center text-xs text-trad-text-muted italic">+ {items.length - 3} sản phẩm khác</p>}
+
+                                        {items.length === 0 && (
+                                            <div className="text-center py-12 text-trad-text-muted">
+                                                <span className="material-symbols-outlined text-5xl mb-3 opacity-30">shopping_cart</span>
+                                                <p className="font-medium">Giỏ hàng trống</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
 
@@ -286,19 +341,53 @@ export default function TraditionalCheckout() {
                                     <h2 className="text-xl font-bold text-trad-red-900">Tóm tắt đơn hàng</h2>
                                 </div>
                                 <div className="p-6 flex flex-col gap-4">
-                                    <div className="flex justify-between items-center text-trad-text-muted">
-                                        <span>Tạm tính</span>
-                                        <span className="font-medium text-trad-text-main">{formatPrice(total)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-trad-text-muted">
-                                        <span>Phí vận chuyển</span>
-                                        <span className="font-medium text-trad-text-main">{isFreeShipping ? 'Miễn phí' : formatPrice(shippingFee)}</span>
-                                    </div>
-                                    <div className="h-px w-full bg-trad-border-warm/50 my-2"></div>
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-lg font-bold text-trad-text-main">Tổng cộng</span>
-                                        <span className="text-2xl font-bold text-trad-red-900">{formatPrice(finalTotal)}</span>
-                                    </div>
+                                    {(() => {
+                                        // Calculate discount savings
+                                        const totalSavings = items.reduce((sum, item) => {
+                                            // Use discount_amount if available (for logged-in users)
+                                            // For guest users, discount_amount might not exist, so default to 0
+                                            return sum + ((item.discount_amount || 0) * item.quantity);
+                                        }, 0);
+
+                                        return (
+                                            <>
+                                                <div className="flex justify-between items-center text-trad-text-muted">
+                                                    <span>Tạm tính</span>
+                                                    <span className="font-medium text-trad-text-main">{formatPrice(total)}</span>
+                                                </div>
+
+                                                {/* Show discount savings if any */}
+                                                {totalSavings > 0 && (
+                                                    <div className="flex justify-between items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="material-symbols-outlined text-green-600 text-[20px]">local_offer</span>
+                                                            <span className="text-sm font-medium text-green-700">Tiết kiệm</span>
+                                                        </div>
+                                                        <span className="font-bold text-green-600">-{formatPrice(totalSavings)}</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex justify-between items-center text-trad-text-muted">
+                                                    <span>Phí vận chuyển</span>
+                                                    <span className={`font-medium ${isFreeShipping ? 'text-trad-text-muted' : 'text-trad-text-main'}`}>
+                                                        {isFreeShipping ? (
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="line-through text-xs">{formatPrice(30000)}</span>
+                                                                <span className="text-green-600 font-bold">-{formatPrice(30000)}</span>
+                                                            </div>
+                                                        ) : (
+                                                            formatPrice(shippingFee)
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="h-px w-full bg-trad-border-warm/50 my-2"></div>
+                                                <div className="flex justify-between items-end">
+                                                    <span className="text-lg font-bold text-trad-text-main">Tổng cộng</span>
+                                                    <span className="text-2xl font-bold text-trad-red-900">{formatPrice(finalTotal)}</span>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
 
                                     {/* Action Buttons for USER CHECKOUT (Guest handles it in form) */}
                                     {mode === 'user_checkout' && (

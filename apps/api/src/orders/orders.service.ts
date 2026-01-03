@@ -82,13 +82,57 @@ export class OrdersService {
         };
     }
 
-    async findAll(options?: { page?: number; limit?: number }) {
+    async findAll(options?: { page?: number; limit?: number; search?: string }) {
         const page = options?.page || 1;
         const limit = options?.limit || 20;
+        const search = options?.search;
 
-        const { data, count, error } = await this.client
+        let query = this.client
             .from('orders')
-            .select('*', { count: 'exact' })
+            .select('*', { count: 'exact' });
+
+        if (search) {
+            console.log(`[Orders] Searching for: "${search}"`);
+
+            // Check if search term is a valid UUID to use exact match, otherwise use partial match on casted text
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(search);
+
+            if (isUUID) {
+                query = query.eq('id', search);
+            } else {
+                // Fallback to Prefix Search using UUID Ranges
+                // This avoids casting errors (uuid ~~* unknown) and parser errors (id::text)
+                // We convert "528" -> "528000..." (start) and "528fff..." (end)
+                const cleanSearch = search.replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+
+                // Only proceed if we have valid hex chars and simpler than full UUID
+                if (cleanSearch.length > 0 && cleanSearch.length <= 32) {
+                    const padEnd = (str: string, char: string) => str.padEnd(32, char);
+                    const formatUUID = (hex: string) =>
+                        `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+
+                    const minHex = padEnd(cleanSearch, '0');
+                    const maxHex = padEnd(cleanSearch, 'f');
+
+                    try {
+                        const minUUID = formatUUID(minHex);
+                        const maxUUID = formatUUID(maxHex);
+                        query = query.gte('id', minUUID).lte('id', maxUUID);
+                    } catch (e) {
+                        // If formatting fails, fallback (e.g. do nothing or return empty)
+                        console.warn("Invalid UUID prefix search:", search);
+                        // Force empty result as search term matches nothing
+                        query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+                    }
+                } else {
+                    // Invalid characters or too long
+                    // Force empty result
+                    query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+                }
+            }
+        }
+
+        const { data, count, error } = await query
             .order('created_at', { ascending: false })
             .range((page - 1) * limit, page * limit - 1);
 
@@ -177,7 +221,7 @@ export class OrdersService {
             shippingInfo.phone = p;
         }
 
-        // Fetch products to validate and get prices
+        // Fetch products to validate and get prices + DISCOUNT INFO
         const productIds = items.map(i => i.productId);
         const { data: products, error: productsError } = await this.client
             .from('products')
@@ -189,6 +233,9 @@ export class OrdersService {
                 is_active,
                 quantity,
                 variants,
+                discount_percentage,
+                discount_start_date,
+                discount_end_date,
                 translations:product_translations(title, locale)
             `)
             .in('id', productIds);
@@ -229,20 +276,40 @@ export class OrdersService {
                 || product.slug;
             const image = product.images?.[0] || null;
 
-            let price = product.price;
+            // Get BASE price (original price before discount)
+            let originalPrice = Number(product.price);
             if (item.variantId && Array.isArray(product.variants)) {
                 const v = product.variants.find((v: any) => v.name === item.variantId);
                 if (v && v.price !== undefined) {
-                    price = Number(v.price);
+                    originalPrice = Number(v.price);
                 }
             }
 
-            const itemTotal = price * item.quantity;
+            // Calculate discount (same logic as cart.service.ts)
+            let finalPrice = originalPrice;
+            let discountAmount = 0;
+
+            if (product.discount_percentage > 0) {
+                const now = new Date();
+                const startDate = product.discount_start_date ? new Date(product.discount_start_date) : null;
+                const endDate = product.discount_end_date ? new Date(product.discount_end_date) : null;
+
+                const isActive = (!startDate || startDate <= now) && (!endDate || endDate >= now);
+
+                if (isActive) {
+                    finalPrice = Math.round(originalPrice * (1 - product.discount_percentage / 100));
+                    discountAmount = originalPrice - finalPrice;
+                }
+            }
+
+            const itemTotal = finalPrice * item.quantity;
             total += itemTotal;
 
             return {
                 ...item,
-                price: price,
+                price: finalPrice,              // Discounted price
+                original_price: originalPrice,   // Original price before discount
+                discount_amount: discountAmount, // Amount saved per unit
                 slug: product.slug,
                 title,
                 image,
@@ -252,7 +319,13 @@ export class OrdersService {
         });
 
         // 2. Calculate Shipping and Final Total
-        const shippingFee = total >= 300000 ? 0 : 30000;
+        let shippingFee = total >= 300000 ? 0 : 30000;
+
+        // Override shipping fee if picking up at showroom
+        if (paymentMethod === 'showroom') {
+            shippingFee = 0;
+        }
+
         total += shippingFee;
 
         // Record shipping fee in shipping info
@@ -263,6 +336,22 @@ export class OrdersService {
         // 3. Determine order status and deadline based on payment method
         let orderStatus = 'PENDING';
         let paymentDeadline = null;
+        let dbPaymentMethod = paymentMethod;
+
+        if (paymentMethod === 'showroom') {
+            // Map 'showroom' to 'cod' for DB constraint compatibility
+            // But mark delivery_method as 'pickup' in shipping_info
+            dbPaymentMethod = 'cod';
+            if (typeof shippingInfo === 'object') {
+                shippingInfo.delivery_method = 'pickup';
+                shippingInfo.pickup_location = {
+                    name: 'Showroom Thiên Phúc',
+                    address: '123 Đường Trầm Hương, Quận 1, TP. HCM',
+                    hours: '9:00 - 21:00 (T2 - CN)',
+                    instructions: 'Vui lòng đọc mã đơn hàng hoặc số điện thoại cho nhân viên tại quầy.'
+                };
+            }
+        }
 
         if (paymentMethod === 'sepay') {
             orderStatus = 'AWAITING_PAYMENT';
@@ -282,7 +371,7 @@ export class OrdersService {
                 total,
                 items: enrichedItems,
                 shipping_info: shippingInfo,
-                payment_method: paymentMethod,
+                payment_method: dbPaymentMethod,
                 payment_status: 'pending'
             })
             .select()

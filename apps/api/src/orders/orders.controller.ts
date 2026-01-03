@@ -75,11 +75,12 @@ export class OrdersController {
 
     @Get()
     @Roles(Role.ADMIN, Role.STAFF)
-    async findAll(@Request() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
+    async findAll(@Request() req: any, @Query('page') page?: string, @Query('limit') limit?: string, @Query('search') search?: string) {
         // Admin/Staff can see all orders
         return this.ordersService.findAll({
             page: page ? parseInt(page) : 1,
-            limit: limit ? parseInt(limit) : 20
+            limit: limit ? parseInt(limit) : 20,
+            search
         });
     }
 

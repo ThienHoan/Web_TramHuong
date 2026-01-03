@@ -2,6 +2,7 @@
 
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
+import { ProductPrice } from '@/components/ui/ProductPrice'; // Corrected to named import
 import { useCurrency } from '@/hooks/useCurrency';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
 
@@ -32,17 +33,7 @@ export default function TraditionalProductCard({ product }: TraditionalProductCa
                     {product.translation?.title}
                 </h3>
                 <div className="mt-auto pt-2">
-                    {isActive ? (
-                        <div className="flex flex-col gap-1">
-                            <span className="text-sm text-gray-500 line-through">{formatPrice(originalPrice)}</span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-red-600">{formatPrice(finalPrice)}</span>
-                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">-{discountPercent}%</span>
-                            </div>
-                        </div>
-                    ) : (
-                        <span className="text-lg font-bold text-trad-primary">{formatPrice(finalPrice)}</span>
-                    )}
+                    <ProductPrice product={product} size="md" theme="traditional" showBadge={false} />
                 </div>
             </Link>
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useProductDiscount } from '@/hooks/useProductDiscount';
 import ZenFooter from './ZenFooter';
 import ProductImage from '../ui/ProductImage';
 import { Link, useRouter } from '@/i18n/routing';
@@ -19,6 +20,9 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
     const [activeImage, setActiveImage] = useState(product.images?.[0] || '');
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<'story' | 'rituals' | 'reviews'>('story');
+
+    // Calculate discount at component level (required for hooks rules)
+    const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
 
     // Reviews state
     const [reviews, setReviews] = useState<any[]>([]);
@@ -72,11 +76,16 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
 
 
     const handleAddToCart = () => {
+        // Calculate discount amount for cart
+        const discountAmount = isDiscountActive ? (originalPrice - finalPrice) : 0;
+
         addItem({
             id: product.id,
             slug: product.slug,
             title: product.translation?.title || product.title,
-            price: Number(product.price),
+            price: finalPrice,  // ✅ Using discounted price
+            original_price: originalPrice,  // For discount display in checkout
+            discount_amount: discountAmount,  // For discount display in checkout
             image: product.images?.[0] || '',
             quantity: quantity
         });

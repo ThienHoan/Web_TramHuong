@@ -272,6 +272,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             const title = item.title || item.product?.title || 'Sản phẩm';
                                             const image = item.image || item.product?.images?.[0];
                                             const price = Number(item.price || 0);
+                                            const originalPrice = Number(item.original_price || item.price || 0);
+                                            const discountAmount = Number(item.discount_amount || 0);
+                                            const hasDiscount = discountAmount > 0 && originalPrice > price;
 
                                             return (
                                                 <div key={idx} className="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 hover:bg-[#FFFAF0]/30 transition-colors group relative">
@@ -285,15 +288,31 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <div className="flex-1 space-y-2">
                                                         <div className="flex justify-between items-start">
                                                             <h3 className="font-serif text-lg font-bold text-text-main group-hover:text-primary transition-colors">{title}</h3>
-                                                            <span className={`font-bold whitespace-nowrap ${isExpiredOrCanceled ? 'text-text-main/60 line-through decoration-red-400 decoration-2' : 'text-primary'}`}>
-                                                                {formatPrice(price * item.quantity)}
-                                                            </span>
+                                                            <div className="flex flex-col items-end gap-1">
+                                                                {hasDiscount && !isExpiredOrCanceled && (
+                                                                    <span className="text-sm text-gray-500 line-through">
+                                                                        {formatPrice(originalPrice * item.quantity)}
+                                                                    </span>
+                                                                )}
+                                                                <span className={`font-bold whitespace-nowrap ${isExpiredOrCanceled ? 'text-text-main/60 line-through decoration-red-400 decoration-2' : hasDiscount ? 'text-red-600' : 'text-primary'}`}>
+                                                                    {formatPrice(price * item.quantity)}
+                                                                </span>
+                                                                {hasDiscount && !isExpiredOrCanceled && (
+                                                                    <span className="text-[10px] text-red-500 font-medium whitespace-nowrap">
+                                                                        Tiết kiệm {formatPrice(discountAmount * item.quantity)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs text-text-main/50">
+                                                        <div className="flex items-center gap-2 text-xs text-text-main/50 flex-wrap">
                                                             <span className="px-2 py-0.5 rounded bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">Số lượng: {item.quantity}</span>
                                                             {item.variant_name && <span className="bg-trad-bg-warm px-2 py-0.5 rounded border border-trad-border-warm">{item.variant_name}</span>}
-                                                            {/* Placeholder SKU if not available */}
-                                                            <span>Đơn giá: {formatPrice(price)}</span>
+                                                            {hasDiscount && !isExpiredOrCanceled && (
+                                                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                                                                    -{Math.round((discountAmount / originalPrice) * 100)}%
+                                                                </span>
+                                                            )}
+                                                            <span>Đơn giá: {hasDiscount && !isExpiredOrCanceled ? formatPrice(price) : formatPrice(originalPrice)}</span>
                                                         </div>
                                                         <div className="pt-2">
                                                             <p className="text-sm text-text-main/70 italic leading-relaxed font-light border-l-2 border-accent-gold/30 pl-3">
@@ -315,7 +334,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                         </div>
                                         <div>
                                             <p className="text-sm text-text-main/60">{isExpiredOrCanceled ? 'Bạn đã bỏ lỡ ưu đãi' : 'Bạn đã tiết kiệm được'}</p>
-                                            <p className={`font-bold ${isExpiredOrCanceled ? 'text-gray-500 line-through' : 'text-primary'}`}>0₫</p>
+                                            <p className={`font-bold ${isExpiredOrCanceled ? 'text-gray-500 line-through' : 'text-trad-gold'}`}>
+                                                {(() => {
+                                                    const totalSavings = order.items?.reduce((sum: number, item: any) => {
+                                                        const discountAmount = Number(item.discount_amount || 0);
+                                                        return sum + (discountAmount * item.quantity);
+                                                    }, 0) || 0;
+                                                    return formatPrice(totalSavings);
+                                                })()}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className={`h-10 w-px hidden md:block ${isExpiredOrCanceled ? 'bg-gray-200' : 'bg-accent-gold/20'}`}></div>
@@ -405,11 +432,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 </div>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-white/80'}`}>
                                                     <span>Phí vận chuyển</span>
-                                                    <span>{shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee)}</span>
+                                                    <span>
+                                                        {shippingFee === 0 ? (
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="line-through text-white/50 text-xs">{formatPrice(30000)}</span>
+                                                                <span className="text-green-400 font-bold">-{formatPrice(30000)}</span>
+                                                            </div>
+                                                        ) : (
+                                                            formatPrice(shippingFee)
+                                                        )}
+                                                    </span>
                                                 </div>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-accent-gold'}`}>
                                                     <span>Giảm giá</span>
-                                                    <span>0₫</span>
+                                                    <span>
+                                                        {(() => {
+                                                            const totalSavings = order.items?.reduce((sum: number, item: any) => {
+                                                                const discountAmount = Number(item.discount_amount || 0);
+                                                                return sum + (discountAmount * item.quantity);
+                                                            }, 0) || 0;
+                                                            return formatPrice(totalSavings);
+                                                        })()}
+                                                    </span>
                                                 </div>
                                                 <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-end">
                                                     <span className={`text-sm font-medium uppercase tracking-wide ${isExpiredOrCanceled ? 'text-white/70' : 'text-white/90'}`}>Tổng cộng</span>

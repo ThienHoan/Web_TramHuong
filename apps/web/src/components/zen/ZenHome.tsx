@@ -3,7 +3,9 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
+import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useProductDiscount } from '@/hooks/useProductDiscount';
 import ZenFooter from './ZenFooter';
 
 export default function ZenHome({ products }: { products: any[] }) {
@@ -77,38 +79,7 @@ export default function ZenHome({ products }: { products: any[] }) {
                                         <h3 className="text-xl font-zen-display font-light uppercase tracking-wide text-zen-900 dark:text-white group-hover:text-zen-secondary transition-colors">
                                             {product.translation?.title}
                                         </h3>
-                                        {/* Price with discount logic */}
-                                        {(() => {
-                                            const hasDiscount = product.discount_percentage > 0;
-                                            const now = new Date();
-                                            const isActive = hasDiscount &&
-                                                (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
-                                                (!product.discount_end_date || new Date(product.discount_end_date) >= now);
-
-                                            if (isActive) {
-                                                const finalPrice = product.price * (1 - product.discount_percentage / 100);
-                                                return (
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <p className="text-xs font-thin text-zen-800/40 dark:text-gray-500 tracking-wide line-through">
-                                                            {formatPrice(product.price)}
-                                                        </p>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-sm font-zen-sans font-medium text-red-600 tracking-wide">
-                                                                {formatPrice(finalPrice)}
-                                                            </p>
-                                                            <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                                                                -{product.discount_percentage}%
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                            return (
-                                                <p className="text-sm font-zen-sans font-thin text-zen-800 dark:text-gray-400 tracking-wide">
-                                                    {formatPrice(product.price)}
-                                                </p>
-                                            );
-                                        })()}
+                                        <ProductPrice product={product} size="sm" theme="zen" />
                                         <button className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] uppercase tracking-widest border-b border-zen-800 pb-0.5">View Details</button>
                                     </div>
                                 </Link>

@@ -28,6 +28,8 @@ export default function MyOrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: 10, last_page: 1 });
     const router = useRouter();
     const { formatPrice } = useCurrency();
 
@@ -36,14 +38,21 @@ export default function MyOrdersPage() {
             router.push('/login');
         } else if (session) {
             setAccessToken(session.access_token);
-            getMyOrders().then(data => {
-                // Sort orders by date descending
-                const sorted = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
-                setOrders(sorted);
+            setLoading(true);
+            getMyOrders(page).then(response => {
+                // response is now { data: [], meta: {} }
+                const data = response.data || [];
+                // Sort orders by date descending (though backend already sorts, safe to keep or rely on backend)
+                // Backend sends them sorted by created_at desc, so no need to resort if we trust backend.
+                // But let's keep it if we want to be sure locally? 
+                // Actually, resorting a paginated chunk might look weird if not fully sorted. 
+                // Let's rely on backend sort order.
+                setOrders(data);
+                if (response.meta) setMeta(response.meta);
                 setLoading(false);
             });
         }
-    }, [user, session, authLoading, router]);
+    }, [user, session, authLoading, router, page]);
 
     const filteredOrders = orders.filter(order => {
         if (filter === 'ALL') return true;
@@ -234,6 +243,40 @@ export default function MyOrdersPage() {
                             <div className="w-2 h-2 rounded-full bg-[#9A3412]/20 mx-2 mb-2"></div>
                             <div className="w-2 h-2 rounded-full bg-[#9A3412]/20 mb-2"></div>
                         </div>
+
+                        {/* Pagination Controls */}
+                        {meta.last_page > 1 && (
+                            <div className="flex justify-center items-center gap-2 mt-8">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
+                                >
+                                    <span className="material-symbols-outlined text-sm">arrow_back_ios</span>
+                                </button>
+
+                                {Array.from({ length: meta.last_page }, (_, i) => i + 1).map(p => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPage(p)}
+                                        className={`w-10 h-10 rounded-lg border transition-all font-serif font-bold ${page === p
+                                            ? 'bg-[#9A3412] text-white border-[#9A3412]'
+                                            : 'border-stone-200 text-stone-600 hover:border-[#9A3412] hover:text-[#9A3412]'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
+                                    disabled={page === meta.last_page}
+                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
+                                >
+                                    <span className="material-symbols-outlined text-sm">arrow_forward_ios</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

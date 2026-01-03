@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
 import { useWishlist } from '../providers/WishlistProvider';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useProductDiscount } from '@/hooks/useProductDiscount';
+import { ProductPrice } from '@/components/ui/ProductPrice';
 import Image from 'next/image';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
@@ -24,6 +26,11 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
     const { addItem } = useCart();
     const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
     const { formatPrice } = useCurrency();
+    const locale = useLocale();
+
+    // Calculate discount at component level (not inside functions!)
+    const { finalPrice, isActive: isDiscountActive, discountPercent, originalPrice } = useProductDiscount(product);
+
     const [selectedImage, setSelectedImage] = useState(product.images[0]);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
@@ -31,7 +38,6 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
     const [selectedVariant, setSelectedVariant] = useState<any>(null);
     const [isAdding, setIsAdding] = useState(false);
-    const locale = useLocale();
 
     // Initialize variant
     useEffect(() => {
@@ -80,11 +86,17 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
         if (isAdding) return;
         setIsAdding(true);
         try {
+            // Calculate discount amount for cart
+            const discountAmount = isDiscountActive ? (originalPrice - finalPrice) : 0;
+
+            // Use finalPrice calculated at component top level (line 31)
             await addItem({
                 id: product.id,
                 slug: product.slug,
                 title: product.translation.title,
-                price: selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price),
+                price: finalPrice,  // ✅ Using discounted price from hook
+                original_price: originalPrice,  // For discount display in checkout
+                discount_amount: discountAmount,  // For discount display in checkout
                 image: product.images[0],
                 quantity: quantity,
                 variantId: selectedVariant?.name || null,
@@ -223,40 +235,12 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
                                 {/* Price */}
                                 <div className="flex items-end gap-3 mb-6 bg-trad-bg-warm p-4 rounded-lg border border-trad-border-warm/50">
-                                    {/* Price with discount logic */}
-                                    {(() => {
-                                        const currentPrice = selectedVariant?.price != null ? Number(selectedVariant.price) : Number(product.price);
-                                        const hasDiscount = product.discount_percentage > 0;
-                                        const now = new Date();
-                                        const isActive = hasDiscount &&
-                                            (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
-                                            (!product.discount_end_date || new Date(product.discount_end_date) >= now);
-
-                                        if (isActive) {
-                                            const finalPrice = currentPrice * (1 - product.discount_percentage / 100);
-                                            const savings = currentPrice - finalPrice;
-                                            return (
-                                                <>
-                                                    <div className="flex flex-col gap-2">
-                                                        <span className="text-lg text-trad-text-muted line-through opacity-60">
-                                                            {formatPrice(currentPrice)}
-                                                        </span>
-                                                        <span className="text-3xl font-bold text-red-600">
-                                                            {formatPrice(finalPrice)}
-                                                        </span>
-                                                    </div>
-                                                    <span className="ml-auto bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">
-                                                        -{product.discount_percentage}%
-                                                    </span>
-                                                </>
-                                            );
-                                        }
-                                        return (
-                                            <span className="text-3xl font-bold text-trad-primary">
-                                                {formatPrice(currentPrice)}
-                                            </span>
-                                        );
-                                    })()}
+                                    <ProductPrice
+                                        product={product}
+                                        variantPrice={selectedVariant?.price != null ? Number(selectedVariant.price) : undefined}
+                                        size="xl"
+                                        theme="traditional"
+                                    />
                                 </div>
 
                                 <p className="text-trad-text-main/80 leading-relaxed mb-8">

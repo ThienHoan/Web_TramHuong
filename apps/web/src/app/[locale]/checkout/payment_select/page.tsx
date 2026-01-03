@@ -19,10 +19,11 @@ export default function PaymentSelectPage() {
     const router = useRouter();
     const [shippingInfo, setShippingInfo] = useState<any>(null);
 
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay'>('cod');
+    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay' | 'showroom'>('cod');
     const [error, setError] = useState<string | null>(null);
     const isFreeShipping = total >= 300000;
-    const shippingFee = isFreeShipping ? 0 : 30000;
+    // Showroom pickup = free shipping
+    const shippingFee = (isFreeShipping || paymentMethod === 'showroom') ? 0 : 30000;
     const finalTotal = total + shippingFee;
 
     // Load shipping info from localStorage
@@ -58,13 +59,32 @@ export default function PaymentSelectPage() {
                 variantName: i.variantName || undefined
             }));
 
+            // Use showroom address if selected
+            const finalShippingInfo = paymentMethod === 'showroom' ? {
+                ...shippingInfo,
+                full_address: 'Showroom Thiên Phúc - 123 Đường Trầm Hương, Quận 1, TP. HCM',
+                city: 'Hồ Chí Minh', // Override specifically for showroom context if needed, or keep user's just for contact?
+                // Actually, backend needs shipping info. It's better to keep user contact info but set address to showroom.
+                // However, shipping_info usually implies WHERE to ship.
+                // Let's explicitly set the address to the showroom address so it's clear in the order record.
+            } : shippingInfo;
+
             const fullShippingInfo = {
                 name: shippingInfo.name,
                 phone: shippingInfo.phone,
-                city: shippingInfo.city, // The province name
-                address: shippingInfo.full_address,
-                email: shippingInfo.email || '' // Pass email if captured (guest form currently doesn't capture email but let's be safe)
+                city: finalShippingInfo.city,
+                address: finalShippingInfo.full_address || finalShippingInfo.address, // Handle both structures if needed
+                email: shippingInfo.email || ''
             };
+
+            // If showroom, we might want to override the full address construction logic from previous step
+            if (paymentMethod === 'showroom') {
+                fullShippingInfo.address = 'Showroom Thiên Phúc - 123 Đường Trầm Hương, Quận 1, TP. HCM';
+                fullShippingInfo.city = 'Hồ Chí Minh';
+            } else {
+                // Ensure we use the full address constructed in previous step
+                fullShippingInfo.address = shippingInfo.full_address;
+            }
 
             const order = await createOrder({
                 items: orderItems,
@@ -79,7 +99,7 @@ export default function PaymentSelectPage() {
             localStorage.removeItem('checkout_shipping_info');
             localStorage.removeItem('is_guest_checkout');
 
-            if (paymentMethod === 'cod') {
+            if (paymentMethod === 'cod' || paymentMethod === 'showroom') {
                 router.push(`/checkout/success?id=${order.id}`);
             } else {
                 router.push(`/checkout/payment?id=${order.id}`);
@@ -175,6 +195,34 @@ export default function PaymentSelectPage() {
                                     </div>
                                 </div>
                             </label>
+
+                            {/* Option 3: Showroom Pickup */}
+                            <label className={`group relative flex items-start md:items-center gap-4 rounded-xl border p-5 cursor-pointer transition-all shadow-sm ${paymentMethod === 'showroom' ? 'border-trad-primary bg-white ring-1 ring-trad-primary' : 'border-trad-border-warm bg-white hover:border-trad-primary/50'}`}>
+                                <div className="absolute top-2 right-2 md:top-4 md:right-4">
+                                    <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-bold text-orange-700 border border-orange-200">
+                                        Tiết kiệm
+                                    </span>
+                                </div>
+                                <div className="flex items-center h-full pt-1 md:pt-0">
+                                    <input
+                                        className="h-5 w-5 border-2 border-trad-border-warm text-trad-primary focus:ring-trad-primary focus:ring-offset-0 bg-transparent"
+                                        name="payment_method"
+                                        type="radio"
+                                        value="showroom"
+                                        checked={paymentMethod === 'showroom'}
+                                        onChange={() => setPaymentMethod('showroom')}
+                                    />
+                                </div>
+                                <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4">
+                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+                                        <span className="material-symbols-outlined text-[24px]">storefront</span>
+                                    </div>
+                                    <div className="flex grow flex-col">
+                                        <p className="text-trad-text-main text-base font-bold font-display">Nhận tại cửa hàng</p>
+                                        <p className="text-trad-text-muted text-sm font-sans mt-1">Đến trực tiếp showroom để xem, thanh toán và nhận hàng. Miễn phí vận chuyển.</p>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                         {/* Back Link */}
                         <div className="mt-4">
@@ -216,7 +264,12 @@ export default function PaymentSelectPage() {
                                     <p className="text-trad-text-main font-medium">{formatPrice(total)}</p>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <p className="text-trad-text-muted">Phí vận chuyển</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-trad-text-muted">Phí vận chuyển</p>
+                                        {paymentMethod === 'showroom' && (
+                                            <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded border border-green-200">MIỄN PHÍ</span>
+                                        )}
+                                    </div>
                                     <p className="text-trad-text-main font-medium">{formatPrice(shippingFee)}</p>
                                 </div>
                                 <div className="h-px bg-trad-border-warm/50 my-2"></div>
@@ -229,12 +282,23 @@ export default function PaymentSelectPage() {
                                 </div>
 
                                 <div className="mt-4">
-                                    {shippingInfo && (
-                                        <div className="text-sm bg-trad-bg-warm/30 p-3 rounded border border-trad-border-warm/50 mb-2">
-                                            <p className="font-bold text-trad-text-main">Giao tới:</p>
-                                            <p className="text-trad-text-main/80">{shippingInfo.name} - {shippingInfo.phone}</p>
-                                            <p className="text-trad-text-muted text-xs truncate">{shippingInfo.full_address}</p>
+                                    {paymentMethod === 'showroom' ? (
+                                        <div className="text-sm bg-orange-50 p-3 rounded border border-orange-200 mb-2">
+                                            <p className="font-bold text-orange-800 flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-[18px]">store</span>
+                                                Nhận tại cửa hàng:
+                                            </p>
+                                            <p className="text-trad-text-main/80 mt-1">Showroom Thiên Phúc</p>
+                                            <p className="text-trad-text-muted text-xs truncate">123 Đường Trầm Hương, Quận 1, TP. HCM</p>
                                         </div>
+                                    ) : (
+                                        shippingInfo && (
+                                            <div className="text-sm bg-trad-bg-warm/30 p-3 rounded border border-trad-border-warm/50 mb-2">
+                                                <p className="font-bold text-trad-text-main">Giao tới:</p>
+                                                <p className="text-trad-text-main/80">{shippingInfo.name} - {shippingInfo.phone}</p>
+                                                <p className="text-trad-text-muted text-xs truncate">{shippingInfo.full_address}</p>
+                                            </div>
+                                        )
                                     )}
                                 </div>
 

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-interface ProductDiscount {
-    /** Original product price */
+export interface ProductDiscount {
+    /** Original product price (or variant price if specified) */
     originalPrice: number;
     /** Final price after discount (if active) */
     finalPrice: number;
@@ -13,7 +13,7 @@ interface ProductDiscount {
     savings: number;
 }
 
-interface Product {
+export interface Product {
     price: number | string;
     discount_percentage?: number;
     discount_start_date?: string | null;
@@ -24,23 +24,32 @@ interface Product {
  * Custom hook to calculate product discount information
  * 
  * @param product - Product object with price and discount fields
+ * @param variantPrice - Optional variant price override
+ * @param currentDate - Optional current date for testing purposes (defaults to new Date())
  * @returns Discount information including final price, active status, and savings
  * 
  * @example
  * ```tsx
+ * // Basic usage
  * const { finalPrice, isActive, discountPercent } = useProductDiscount(product);
  * 
- * if (isActive) {
- *   return <div>{formatPrice(finalPrice)} <span>-{discountPercent}%</span></div>
- * }
- * return <div>{formatPrice(originalPrice)}</div>
+ * // With variant price
+ * const discount = useProductDiscount(product, selectedVariant?.price);
+ * 
+ * // For testing with specific date
+ * const discount = useProductDiscount(product, undefined, new Date('2024-01-01'));
  * ```
  */
-export function useProductDiscount(product: Product): ProductDiscount {
+export function useProductDiscount(
+    product: Product,
+    variantPrice?: number,
+    currentDate?: Date
+): ProductDiscount {
     return useMemo(() => {
-        const originalPrice = Number(product.price || 0);
+        // Use variant price if provided, otherwise use product base price
+        const originalPrice = variantPrice ?? Number(product.price || 0);
         const hasDiscount = (product.discount_percentage || 0) > 0;
-        const now = new Date();
+        const now = currentDate || new Date();
 
         // Check if discount is active based on date range
         const isActive = hasDiscount &&
@@ -49,7 +58,7 @@ export function useProductDiscount(product: Product): ProductDiscount {
 
         const discountPercent = product.discount_percentage || 0;
         const finalPrice = isActive
-            ? originalPrice * (1 - discountPercent / 100)
+            ? Math.round(originalPrice * (1 - discountPercent / 100))
             : originalPrice;
         const savings = originalPrice - finalPrice;
 
@@ -60,5 +69,5 @@ export function useProductDiscount(product: Product): ProductDiscount {
             discountPercent,
             savings
         };
-    }, [product.price, product.discount_percentage, product.discount_start_date, product.discount_end_date]);
+    }, [product.price, variantPrice, product.discount_percentage, product.discount_start_date, product.discount_end_date, currentDate]);
 }

@@ -15,15 +15,23 @@ export class AuthGuard implements CanActivate {
             context.getHandler(),
             context.getClass(),
         ]);
-        console.log(`[AuthGuard] Handler: ${context.getHandler().name}, isPublic: ${isPublic}`);
-        if (isPublic) {
-            return true;
-        }
-
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
 
+        // Logic:
+        // 1. If public AND no token -> Allow (Guest)
+        // 2. If public AND token -> Validate token. If valid, set user. If invalid, ignore (or could throw, but better to treat as guest?). 
+        //    Actually, if token is sent but invalid, it's safer to treat as guest (ignore) or warn. 
+        //    But for this specific bug (logged in user making public request), we just need to ensure we populate req.user if token is valid.
+        // 3. If private AND no token -> Throw
+        // 4. If private AND token -> Validate. If invalid, Throw.
+
+        if (isPublic && !token) {
+            return true;
+        }
+
         if (!token) {
+            // Private route, no token
             throw new UnauthorizedException();
         }
 
@@ -32,15 +40,11 @@ export class AuthGuard implements CanActivate {
             const { data: { user }, error } = await client.auth.getUser(token);
 
             if (error || !user) {
+                if (isPublic) return true; // Token invalid but route is public -> treat as guest
                 throw new UnauthorizedException();
             }
 
             // Fetch role from public.users to ensure up-to-date permissions
-            // We use the service role client if we want to bypass RLS, but here we can't easily.
-            // Ideally, the user token has RLS to read their own role.
-            // But for Admin check, we might need to trust the token or fetch from DB with admin privileges.
-            // Since SupabaseService uses Service Role Key, we can query users table freely.
-
             const { data: userData, error: roleError } = await client
                 .from('users')
                 .select('role')
@@ -55,7 +59,8 @@ export class AuthGuard implements CanActivate {
             }
 
             return true;
-        } catch {
+        } catch (err) {
+            if (isPublic) return true; // Fail safe for public routes
             throw new UnauthorizedException();
         }
     }

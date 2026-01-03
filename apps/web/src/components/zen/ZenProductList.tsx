@@ -3,6 +3,7 @@
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import ProductImage from '../ui/ProductImage';
+import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
 import { useState, useEffect } from 'react';
@@ -169,36 +170,7 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                             {product.translation?.title}
                                         </h3>
                                         <div className="flex items-center justify-center md:justify-start gap-3">
-                                            {/* Price with discount logic */}
-                                            {(() => {
-                                                const hasDiscount = product.discount_percentage > 0;
-                                                const now = new Date();
-                                                const isActive = hasDiscount &&
-                                                    (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
-                                                    (!product.discount_end_date || new Date(product.discount_end_date) >= now);
-
-                                                if (isActive) {
-                                                    const finalPrice = product.price * (1 - product.discount_percentage / 100);
-                                                    return (
-                                                        <>
-                                                            <span className="text-xs font-light tracking-widest text-zen-green-text/40 line-through">
-                                                                {formatPrice(product.price)}
-                                                            </span>
-                                                            <span className="text-sm font-medium tracking-widest text-red-600">
-                                                                {formatPrice(finalPrice)}
-                                                            </span>
-                                                            <span className="text-[9px] font-bold tracking-wider bg-red-500 text-white px-1.5 py-0.5 rounded uppercase">
-                                                                -{product.discount_percentage}%
-                                                            </span>
-                                                        </>
-                                                    );
-                                                }
-                                                return (
-                                                    <span className="text-sm font-medium tracking-widest text-zen-green-accent">
-                                                        {formatPrice(product.price)}
-                                                    </span>
-                                                );
-                                            })()}
+                                            <ProductPrice product={product} size="sm" theme="zen" />
                                             {product.stock_status === 'out_of_stock' && (
                                                 <span className="text-[10px] uppercase tracking-widest text-red-400 border-l border-zen-green-200 pl-3">Sold Out</span>
                                             )}

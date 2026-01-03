@@ -19,25 +19,50 @@ export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: PAGE_LIMIT, last_page: 1 });
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
     const router = useRouter();
 
-    const fetchOrders = (page = 1) => {
+    const fetchOrders = (page = 1, searchQuery = search) => {
         if (!session) return;
         setLoading(true);
-        fetch(`${API_URL}/orders?page=${page}&limit=${PAGE_LIMIT}`, {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: PAGE_LIMIT.toString()
+        });
+        if (searchQuery) {
+            queryParams.append('search', searchQuery);
+        }
+
+        fetch(`${API_URL}/orders?${queryParams}`, {
             headers: { 'Authorization': `Bearer ${session.access_token}` }
         })
-            .then(res => res.json())
+            .then(async res => {
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error ${res.status}: Failed to fetch orders`);
+                }
+                return res.json();
+            })
             .then(data => {
+                // If API returns success but data structure is valid
                 if (data.data) {
                     setOrders(data.data);
-                    setMeta(data.meta);
+                    setMeta(data.meta || { total: 0, page: 1, limit: PAGE_LIMIT, last_page: 1 });
+                } else {
+                    setOrders([]);
+                    setMeta({ total: 0, page: 1, limit: PAGE_LIMIT, last_page: 1 });
                 }
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error("Fetch error:", err);
+                // Clear orders on error to avoid confusion, or keep previous? 
+                // Better to show error state, but for now let's clear and user sees "No orders found" or we can add error state UI.
+                setOrders([]);
+                setMeta({ total: 0, page: 1, limit: PAGE_LIMIT, last_page: 1 });
                 setLoading(false);
+                // Ideally show a toast or alert here
+                if (err.message) alert(err.message);
             });
     };
 
@@ -52,6 +77,11 @@ export default function AdminOrdersPage() {
             }
         }
     }, [user, session, role, authLoading, router]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchOrders(1, search);
+    };
 
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
         if (!session) return;
@@ -77,7 +107,7 @@ export default function AdminOrdersPage() {
         }
     };
 
-    if (loading) return (
+    if (loading && !orders.length && !search) return (
         <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900"></div>
         </div>
@@ -86,16 +116,34 @@ export default function AdminOrdersPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 pt-24 text-black">
             <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-end mb-8">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-700 to-amber-900 bg-clip-text text-transparent">
                             Orders Management
                         </h1>
                         <p className="text-gray-500 mt-1">Manage and track customer orders.</p>
                     </div>
-                    <span className="bg-amber-900 text-white px-3 py-1 text-xs font-bold tracking-widest uppercase rounded">
-                        {role} Mode
-                    </span>
+
+                    <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
+                        <form onSubmit={handleSearch} className="flex items-center gap-2">
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[18px]">search</span>
+                                <input
+                                    type="text"
+                                    placeholder="Search by Order ID..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-64 shadow-sm"
+                                />
+                            </div>
+                            <Button type="submit" variant="default" className="bg-amber-900 hover:bg-amber-800">
+                                Search
+                            </Button>
+                        </form>
+                        <span className="bg-amber-900 text-white px-3 py-1 text-xs font-bold tracking-widest uppercase rounded h-fit">
+                            {role} Mode
+                        </span>
+                    </div>
                 </div>
 
                 <Card>

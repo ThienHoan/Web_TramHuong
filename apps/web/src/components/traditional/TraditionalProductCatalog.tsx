@@ -4,7 +4,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import ProductImage from '../ui/ProductImage';
+import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useProductDiscount } from '@/hooks/useProductDiscount';
 import { useCart } from '@/components/providers/CartProvider';
 import { useWishlist } from '@/components/providers/WishlistProvider';
 import { useState, useEffect } from 'react';
@@ -51,12 +53,14 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
         setPriceInputs({ min: minPriceParam, max: maxPriceParam });
     }, [minPriceParam, maxPriceParam]);
 
-    const handleAddToCart = (product: any, currentPrice: number) => {
+    const handleAddToCart = (product: any, finalPrice: number, originalPrice: number, discountAmount: number) => {
         addItem({
             id: product.id,
             slug: product.slug,
             title: product.translation.title,
-            price: currentPrice,
+            price: finalPrice,  // ✅ Already receiving finalPrice from caller
+            original_price: originalPrice,  // For discount display in checkout
+            discount_amount: discountAmount,  // For discount display in checkout
             image: product.images?.[0] || 'placeholder',
             quantity: 1
         });
@@ -282,15 +286,8 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6 relative">
                             {products.length > 0 ? products.map((product) => {
-                                // Discount logic
-                                const hasDiscount = product.discount_percentage > 0;
-                                const now = new Date();
-                                const isActive = hasDiscount &&
-                                    (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
-                                    (!product.discount_end_date || new Date(product.discount_end_date) >= now);
-                                const currentPrice = Number(product.price);
-                                const finalPrice = isActive ? currentPrice * (1 - product.discount_percentage / 100) : currentPrice;
-                                const discountPercent = product.discount_percentage || 0;
+                                // Use hook for discount calculation
+                                const { finalPrice, originalPrice, isActive, discountPercent } = useProductDiscount(product);
 
                                 return (
                                     <div key={product.id} className="rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
@@ -350,16 +347,12 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                                                 <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
                                             </h3>
                                             <div className="mt-auto pt-2 md:pt-3 flex flex-col gap-2 md:gap-3">
-                                                <div className="flex items-baseline gap-2 flex-wrap">
-                                                    <span className="text-base md:text-xl font-bold text-trad-primary">{formatPrice(finalPrice)}</span>
-                                                    {isActive && (
-                                                        <span className="text-xs md:text-sm text-trad-text-muted line-through opacity-70">{formatPrice(currentPrice)}</span>
-                                                    )}
-                                                </div>
+                                                <ProductPrice product={product} size="md" theme="traditional" />
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        handleAddToCart(product, finalPrice);
+                                                        const discountAmount = isActive ? (originalPrice - finalPrice) : 0;
+                                                        handleAddToCart(product, finalPrice, originalPrice, discountAmount);
                                                     }}
                                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-trad-primary text-white shadow bg-trad-primary hover:bg-trad-primary-dark h-11 px-4 py-2 uppercase tracking-wide w-full gap-2 group-hover:bg-trad-bg-warm group-hover:text-trad-primary border border-transparent group-hover:border-trad-primary"
                                                 >

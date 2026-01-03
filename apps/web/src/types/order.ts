@@ -11,6 +11,9 @@ export interface OrderItem {
     // Expanded details
     title?: string;
     image?: string;
+    // Discount details
+    original_price?: number;
+    discount_amount?: number;
 }
 
 export interface ShippingInfo {

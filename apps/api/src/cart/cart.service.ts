@@ -10,7 +10,7 @@ export class CartService {
     }
 
     async getCart(userId: string) {
-        // Fetch cart items and join with product details
+        // Fetch cart items and join with product details (including discount fields)
         const { data, error } = await this.client
             .from('cart_items')
             .select(`
@@ -21,6 +21,9 @@ export class CartService {
                     price,
                     images,
                     variants,
+                    discount_percentage,
+                    discount_start_date,
+                    discount_end_date,
                     translations:product_translations(title, locale)
                 )
             `)
@@ -47,12 +50,30 @@ export class CartService {
                 }
             }
 
+            // ✅ CALCULATE DISCOUNT (matching frontend logic)
+            const discountPercent = product.discount_percentage || 0;
+            const now = new Date();
+            const startDate = product.discount_start_date ? new Date(product.discount_start_date) : null;
+            const endDate = product.discount_end_date ? new Date(product.discount_end_date) : null;
+
+            const isDiscountActive = discountPercent > 0
+                && (!startDate || now >= startDate)
+                && (!endDate || now <= endDate);
+
+            const finalPrice = isDiscountActive
+                ? Math.round(price * (1 - discountPercent / 100))
+                : price;
+            
+            const discountAmount = isDiscountActive ? (price - finalPrice) : 0;
+
             return {
                 cartItemId: item.id, // Primary Key of cart_item
                 id: product.id,
                 slug: product.slug,
                 title: title,
-                price: price,
+                price: finalPrice,  // ✅ Return discounted price
+                original_price: price,  // ✅ Phase 2
+                discount_amount: discountAmount,  // ✅ Phase 2
                 image: product.images?.[0] || null,
                 quantity: item.quantity,
                 variantId: item.variant_id || null,

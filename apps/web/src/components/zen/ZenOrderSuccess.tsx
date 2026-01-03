@@ -88,10 +88,53 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                 <span className="text-text-main dark:text-white text-lg font-light tracking-wide">{formatDate(order.created_at)}</span>
                             </div>
                             <div className="flex flex-col items-center md:items-end gap-2">
-                                <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Est. Delivery</span>
-                                <span className="text-text-main dark:text-white text-lg font-light tracking-wide">3 - 5 Days</span>
+                                {order.shipping_info?.delivery_method === 'pickup' ? (
+                                    <>
+                                        <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Status</span>
+                                        <span className="text-primary font-medium text-lg tracking-wide">Ready for Pickup</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Est. Delivery</span>
+                                        <span className="text-text-main dark:text-white text-lg font-light tracking-wide">3 - 5 Days</span>
+                                    </>
+                                )}
                             </div>
                         </div>
+
+                        {/* Pickup Instructions (Only if Pickup) */}
+                        {order.shipping_info?.delivery_method === 'pickup' && order.shipping_info?.pickup_location && (
+                            <div className="mb-10 p-6 bg-[#FDF8F6] border border-[#EBE5E0] rounded-lg text-left">
+                                <h4 className="text-[#9A3412] font-serif font-semibold text-lg mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined">storefront</span>
+                                    Thông tin nhận hàng
+                                </h4>
+                                <div className="space-y-3 text-sm text-stone-600 font-sans">
+                                    <div className="flex gap-3">
+                                        <span className="material-symbols-outlined text-stone-400 text-lg">location_on</span>
+                                        <div>
+                                            <p className="font-semibold text-stone-800">{order.shipping_info.pickup_location.name}</p>
+                                            <p>{order.shipping_info.pickup_location.address}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <span className="material-symbols-outlined text-stone-400 text-lg">schedule</span>
+                                        <div>
+                                            <p className="font-semibold text-stone-800">Giờ mở cửa</p>
+                                            <p>{order.shipping_info.pickup_location.hours}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <span className="material-symbols-outlined text-stone-400 text-lg">info</span>
+                                        <div>
+                                            <p className="font-semibold text-stone-800">Hướng dẫn nhận hàng</p>
+                                            <p>{order.shipping_info.pickup_location.instructions}</p>
+                                            <p className="mt-1 text-xs text-stone-500 italic">*Mã đơn hàng của bạn là: <strong className="text-[#9A3412]">{order.id.slice(0, 8).toUpperCase()}</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Product Preview (Mini) - Loop through items */}
                         {order.items && order.items.length > 0 ? (
@@ -113,8 +156,20 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                                     <h3 className="text-text-main dark:text-white text-sm font-medium tracking-wider uppercase">{item.title}</h3>
                                                     <p className="text-text-muted text-xs tracking-wide">Qty: {item.quantity} {item.variant_name ? `• ${item.variant_name}` : ''}</p>
                                                 </div>
-                                                <div className="text-text-main dark:text-white text-lg font-light tracking-wide whitespace-nowrap">
-                                                    {formatPrice(item.price * item.quantity)}
+                                                <div className="text-right">
+                                                    <div className="text-text-main dark:text-white text-lg font-light tracking-wide whitespace-nowrap">
+                                                        {formatPrice(item.price * item.quantity)}
+                                                    </div>
+                                                    {(item.discount_amount || 0) > 0 && (
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="text-text-muted text-xs line-through block">
+                                                                {formatPrice((item.original_price || item.price) * item.quantity)}
+                                                            </span>
+                                                            <span className="text-primary text-[10px] font-medium tracking-wider uppercase">
+                                                                Saved {formatPrice((item.discount_amount || 0) * item.quantity)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -126,6 +181,25 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                     <span className="text-text-main dark:text-white text-lg font-medium tracking-wider uppercase">Total</span>
                                     <span className="text-text-main dark:text-white text-2xl font-light tracking-wide">{formatPrice(order.total)}</span>
                                 </div>
+                                {(() => {
+                                    const totalSavings = order.items?.reduce((sum: number, item: any) => { // Cast to any to access potentially missing fields or use OrderItem
+                                        const discountAmount = Number(item.discount_amount || 0);
+                                        return sum + (discountAmount * item.quantity);
+                                    }, 0) || 0;
+
+                                    if (totalSavings > 0) {
+                                        return (
+                                            <div className="flex justify-between items-center pt-4 text-primary">
+                                                <span className="text-xs font-medium tracking-widest uppercase flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-sm">savings</span>
+                                                    You Saved
+                                                </span>
+                                                <span className="text-lg font-medium tracking-wide">-{formatPrice(totalSavings)}</span>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </>
                         ) : (
                             <div className="text-center py-8 border-t border-surface-light dark:border-white/5">
