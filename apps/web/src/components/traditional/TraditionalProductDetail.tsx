@@ -205,12 +205,12 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                 </button>
                             </div>
                             {/* Thumbnails */}
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-trad-border-warm scrollbar-track-transparent snap-x">
                                 {product.images.map((img: string, idx: number) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(img)}
-                                        className={`relative aspect-square rounded-lg overflow-hidden border transition-all ${selectedImage === img ? 'border-trad-primary ring-2 ring-trad-primary/20 ring-offset-2' : 'border-trad-border-warm hover:border-trad-primary opacity-70 hover:opacity-100'}`}
+                                        className={`relative flex-none w-24 aspect-square rounded-lg overflow-hidden border transition-all snap-start ${selectedImage === img ? 'border-trad-primary ring-2 ring-trad-primary/20 ring-offset-2' : 'border-trad-border-warm hover:border-trad-primary opacity-70 hover:opacity-100'}`}
                                     >
                                         <Image src={img} alt={`Prod thumb ${idx}`} fill className="object-cover" />
                                     </button>

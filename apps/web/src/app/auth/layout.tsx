@@ -5,7 +5,15 @@ import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import { Toaster } from "@/components/ui/sonner";
 import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
+import { Manrope } from "next/font/google";
 import "../globals.css";
+
+const manrope = Manrope({
+    weight: ['200', '300', '400', '500', '600', '700', '800'],
+    variable: "--font-manrope",
+    subsets: ["latin", "vietnamese"],
+    display: 'swap',
+});
 
 export default async function AuthRootLayout({
     children,
@@ -16,10 +24,7 @@ export default async function AuthRootLayout({
 
     return (
         <html lang="en">
-            <head>
-                <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
-            </head>
-            <body className="font-manrope antialiased bg-zen-green-50">
+            <body className={`${manrope.variable} font-manrope antialiased bg-zen-green-50`}>
                 <NextIntlClientProvider messages={messages}>
                     <AuthProvider>
                         <CartProvider>

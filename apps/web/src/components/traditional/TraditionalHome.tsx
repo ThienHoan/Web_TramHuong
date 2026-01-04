@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import Image from 'next/image';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -9,6 +10,7 @@ import { useProductDiscount } from '@/hooks/useProductDiscount';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import ScrollReveal from '../ui/ScrollReveal';
+import { SHIMMER_PRESETS } from '@/lib/image-blur';
 
 export default function TraditionalHome({ products }: { products: any[] }) {
     const t = useTranslations('HomePage');
@@ -36,7 +38,17 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                 {/* Hero Section */}
                 <section className="relative w-full overflow-hidden bg-background-dark min-h-[85vh] flex items-center">
                     <div className="absolute inset-0 z-0">
-                        <img alt="Background texture" className="h-full w-full object-cover opacity-60 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTEhF6nYXUFQqme420x-8MjtH4uUg24dfEfHSdpSP-reCtR3k0ktxMrYVMWSisJwTHSr4IVwO_fshPCDxWX7XRypxRJNzU8M6BINOB_CjlV_0YLl4IgIR57eCpTIgReMORytWY9nWG22p_SgzALhYR2vFAJbY70G0JSEx6P7WFjJuvebfR3BTWlnCnsttcbZl6zVv3l1aZHhQ1F_oFISyKamvxcneSZBdgter7YNQ-Baj0A5nEsg6VI3o0ZY7d1e8VHTL9EDzIU-rW" />
+                        <Image
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTEhF6nYXUFQqme420x-8MjtH4uUg24dfEfHSdpSP-reCtR3k0ktxMrYVMWSisJwTHSr4IVwO_fshPCDxWX7XRypxRJNzU8M6BINOB_CjlV_0YLl4IgIR57eCpTIgReMORytWY9nWG22p_SgzALhYR2vFAJbY70G0JSEx6P7WFjJuvebfR3BTWlnCnsttcbZl6zVv3l1aZHhQ1F_oFISyKamvxcneSZBdgter7YNQ-Baj0A5nEsg6VI3o0ZY7d1e8VHTL9EDzIU-rW"
+                            alt="Background texture"
+                            fill
+                            className="object-cover opacity-60 mix-blend-overlay"
+                            priority
+                            quality={75}
+                            sizes="100vw"
+                            placeholder="blur"
+                            blurDataURL={SHIMMER_PRESETS.hero}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/80 to-transparent"></div>
                     </div>
                     <div className="container mx-auto px-4 xl:px-8 relative z-10 py-12">
@@ -67,9 +79,19 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                             <div className="lg:col-span-7 relative h-[500px] lg:h-[600px] flex items-center justify-center">
                                 <div className="absolute w-[90%] h-[90%] border border-white/5 rounded-full animate-spin duration-[20s]"></div>
                                 <div className="absolute w-[70%] h-[70%] border border-accent-gold/20 rounded-full"></div>
-                                <div className="relative z-10 w-[320px] md:w-[400px]">
+                                <div className="relative z-10 w-[320px] md:w-[400px] h-[400px] md:h-[500px]">
                                     <div className="absolute -inset-4 bg-accent-gold/20 blur-3xl rounded-full opacity-50"></div>
-                                    <img alt="Premium Agarwood Box" className="relative z-10 w-full h-auto object-cover drop-shadow-2xl transform hover:-translate-y-4 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N" />
+                                    <Image
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N"
+                                        alt="Premium Agarwood Box"
+                                        fill
+                                        className="relative z-10 object-cover drop-shadow-2xl"
+                                        priority
+                                        quality={90}
+                                        sizes="(max-width: 768px) 320px, 400px"
+                                        placeholder="blur"
+                                        blurDataURL={SHIMMER_PRESETS.square}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -135,7 +157,16 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                 <section className="py-24 lg:py-32 relative overflow-hidden bg-stone-900 text-white">
                     {/* Dark/Deep Background for contrast since Chapter 1 was light/mixed */}
                     <div className="absolute inset-0 z-0">
-                        <img alt="Dark wood texture" className="h-full w-full object-cover opacity-30 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH" />
+                        <Image
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH"
+                            alt="Dark wood texture"
+                            fill
+                            className="object-cover opacity-30 mix-blend-overlay"
+                            quality={70}
+                            sizes="100vw"
+                            placeholder="blur"
+                            blurDataURL={SHIMMER_PRESETS.hero}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-b from-stone-950 via-stone-900/90 to-stone-950"></div>
                     </div>
 
@@ -156,7 +187,16 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                             <div className="relative order-2 lg:order-1 group">
                                 <ScrollReveal animation="fade-right" duration={1000}>
                                     <div className="relative z-10 w-full aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-2 group-hover:rotate-0 transition-all duration-1000">
-                                        <img alt="The process of making incense" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[2s]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-7y2yLATT2_GcJRYORWiazELMQkDetIhIC25nlJuNcbHDFFWD8Dm27LWFGJYgHDZysQMsHa6xZyv2qw2MCYMPXnOeBhXBj26Y0aAiM9XKIYHosBEqpnme6efQ0ldtzNF7KU8R-FOL2V-zKlhlPf5MBe49Zrwa5qrfgIflywRW9Tf9CIM3oB5MgacBUsjRDCn8uk--KVqrr82aiLpXZd3uMAfcBVfuYqwSEBc3guS4VQywYBDOOBDBGuWxnrVwmnmWc5zVJuA7v4b1" />
+                                        <Image
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-7y2yLATT2_GcJRYORWiazELMQkDetIhIC25nlJuNcbHDFFWD8Dm27LWFGJYgHDZysQMsHa6xZyv2qw2MCYMPXnOeBhXBj26Y0aAiM9XKIYHosBEqpnme6efQ0ldtzNF7KU8R-FOL2V-zKlhlPf5MBe49Zrwa5qrfgIflywRW9Tf9CIM3oB5MgacBUsjRDCn8uk--KVqrr82aiLpXZd3uMAfcBVfuYqwSEBc3guS4VQywYBDOOBDBGuWxnrVwmnmWc5zVJuA7v4b1"
+                                            alt="The process of making incense"
+                                            fill
+                                            className="object-cover"
+                                            quality={85}
+                                            sizes="(max-width: 1024px) 100vw, 50vw"
+                                            placeholder="blur"
+                                            blurDataURL={SHIMMER_PRESETS.card}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
                                         <div className="absolute bottom-10 left-8 right-8 text-white/90">
                                             <p className="font-serif italic text-xl leading-relaxed">"Chỉ những cây Dó Bầu chịu thương đau mới có thể sinh ra Trầm. <br />Cũng như con người, đi qua giông bão mới thấu hiểu sự bình an."</p>
@@ -233,7 +273,16 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 auto-rows-[300px]">
                                 {/* Hero Card of Collection */}
                                 <div className="lg:col-span-8 lg:row-span-2 relative group overflow-hidden rounded-[2rem] shadow-2xl cursor-pointer">
-                                    <img alt="Thưởng Trầm Nghệ Thuật" className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFQAJQ8CHWk4K1rLNZis7NU5TCjdTgej1LW0BY_W3udpP6I5ECvaXhqwGjt27vlvwkKQw27QGtaYVbmEi8JLnbdDbpflfjBwyRRFIheFX6duevY4tEeBAQjhiJaBLRtgIYCbJrE62U-k8rMKF6txndgCYnf6A0wS0ueAmdpFC0mZTPHwZpOhrnxV06i0NBxuqWbMCSSJ1PshSGR2SBdFm_7wUgYimVe71dpZPDCorf5JGn9Wae2i_a_NSaZ7K1z810psbyadlT0z6S" />
+                                    <Image
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFQAJQ8CHWk4K1rLNZis7NU5TCjdTgej1LW0BY_W3udpP6I5ECvaXhqwGjt27vlvwkKQw27QGtaYVbmEi8JLnbdDbpflfjBwyRRFIheFX6duevY4tEeBAQjhiJaBLRtgIYCbJrE62U-k8rMKF6txndgCYnf6A0wS0ueAmdpFC0mZTPHwZpOhrnxV06i0NBxuqWbMCSSJ1PshSGR2SBdFm_7wUgYimVe71dpZPDCorf5JGn9Wae2i_a_NSaZ7K1z810psbyadlT0z6S"
+                                        alt="Thưởng Trầm Nghệ Thuật"
+                                        fill
+                                        className="object-cover"
+                                        quality={85}
+                                        sizes="(max-width: 1024px) 100vw, 66vw"
+                                        placeholder="blur"
+                                        blurDataURL={SHIMMER_PRESETS.landscape}
+                                    />
                                     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
                                     <div className="absolute top-10 left-10 right-10 bottom-10 flex flex-col justify-between">
                                         <span className="text-white/60 font-mono text-sm uppercase tracking-widest">01 / Nghệ Thuật Sống</span>
@@ -247,7 +296,17 @@ export default function TraditionalHome({ products }: { products: any[] }) {
 
                                 {/* Secondary Cards */}
                                 <div className="lg:col-span-4 lg:row-span-1 relative group overflow-hidden rounded-[2rem] shadow-xl cursor-pointer">
-                                    <img alt="Nụ Trầm Hương" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJXdbsle4XugPy2GHLlKjLV9fVmNMbUg8sc0_axXBHWzw9t_Sf05V0la94sPA_cryAD92fxpiVjee14rdLoemCrS-47ehv-plnpgRrUYk_i8-ROHaKOFVHokQo6T7QEJQf9FGh61Pfg_HJZ5IKPhxWH7B2ZG_sjFUrWtfd3zBpa-Qw_SoqyJvgh39JZO-2E0A38QZI8bRyvbjlIk3MiamFFK-hsOVPVkp_Bw5EFCcdTsNbubUJKaNyiDyfeYQPCaszEJEXcLj3Ougl" />
+                                    <Image
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJXdbsle4XugPy2GHLlKjLV9fVmNMbUg8sc0_axXBHWzw9t_Sf05V0la94sPA_cryAD92fxpiVjee14rdLoemCrS-47ehv-plnpgRrUYk_i8-ROHaKOFVHokQo6T7QEJQf9FGh61Pfg_HJZ5IKPhxWH7B2ZG_sjFUrWtfd3zBpa-Qw_SoqyJvgh39JZO-2E0A38QZI8bRyvbjlIk3MiamFFK-hsOVPVkp_Bw5EFCcdTsNbubUJKaNyiDyfeYQPCaszEJEXcLj3Ougl"
+                                        alt="Nụ Trầm Hương"
+                                        fill
+                                        className="object-cover"
+                                        quality={80}
+                                        sizes="(max-width: 1024px) 50vw, 33vw"
+                                        loading="lazy"
+                                        placeholder="blur"
+                                        blurDataURL={SHIMMER_PRESETS.card}
+                                    />
                                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500"></div>
                                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                                         <span className="text-accent-gold font-mono text-xs uppercase mb-2">02 / Thanh Tẩy</span>
@@ -257,7 +316,17 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                 </div>
 
                                 <div className="lg:col-span-4 lg:row-span-1 relative group overflow-hidden rounded-[2rem] shadow-xl cursor-pointer">
-                                    <img alt="Vòng Tay Trầm" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4KhmQTFRqR-iv3OFaUSXqpAVQ9a2ujEk1u5BvSdUw2VRd5C824TtXkFs9ABsmxHZ3Eq6LIVRTX4bj6zkxDZaem3PrNk3lLoxF3zFg-09y9TS5QnUKwoslW0kLAv6Z0fAK8NViFKpxt-p-5-5RAeRyLPs2cU-XnjuT7_dqgY9KVpqtw37Kh65CsipalOCgVB37m2rDXl8rmhA-1HRcDT9Vc-BhxWGLWtwp4lOoZ7qaR4LK3v4IVLFOKZjeByL4p00CCASI465-ZtaH" />
+                                    <Image
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4KhmQTFRqR-iv3OFaUSXqpAVQ9a2ujEk1u5BvSdUw2VRd5C824TtXkFs9ABsmxHZ3Eq6LIVRTX4bj6zkxDZaem3PrNk3lLoxF3zFg-09y9TS5QnUKwoslW0kLAv6Z0fAK8NViFKpxt-p-5-5RAeRyLPs2cU-XnjuT7_dqgY9KVpqtw37Kh65CsipalOCgVB37m2rDXl8rmhA-1HRcDT9Vc-BhxWGLWtwp4lOoZ7qaR4LK3v4IVLFOKZjeByL4p00CCASI465-ZtaH"
+                                        alt="Vòng Tay Trầm"
+                                        fill
+                                        className="object-cover"
+                                        quality={80}
+                                        sizes="(max-width: 1024px) 50vw, 33vw"
+                                        loading="lazy"
+                                        placeholder="blur"
+                                        blurDataURL={SHIMMER_PRESETS.card}
+                                    />
                                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500"></div>
                                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                                         <span className="text-accent-gold font-mono text-xs uppercase mb-2">03 / Trang Sức</span>
@@ -482,7 +551,17 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                 <article className="group cursor-pointer h-full">
                                     <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
                                         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">Phong Thủy</div>
-                                        <img alt="Tea ceremony" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMkN0jXAptukKsupSJmxfaDSbe9xHqfIrdP4Pu4-_SxXY4xG69k1MrMSVmNhSBMP2y0GfkHnD5cUl8VQ-csDrLHBGMfJPwZ_KkVkTGerJF_0DkQRXiZY5Im-yLe48z90sgfAnKzi13NJUce1u9f9KdAqEMe4H_tLB8QIS1rsaP9mbgzbaI7wQGsTLxez20crymrNQgT7zOQXSQw3_iOb2vKrTc5bXNZ86R-pFobgtMJdVcQAlA_ghchkbatoBWr3VlQMY-JJKMGAvR" />
+                                        <Image
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMkN0jXAptukKsupSJmxfaDSbe9xHqfIrdP4Pu4-_SxXY4xG69k1MrMSVmNhSBMP2y0GfkHnD5cUl8VQ-csDrLHBGMfJPwZ_KkVkTGerJF_0DkQRXiZY5Im-yLe48z90sgfAnKzi13NJUce1u9f9KdAqEMe4H_tLB8QIS1rsaP9mbgzbaI7wQGsTLxez20crymrNQgT7zOQXSQw3_iOb2vKrTc5bXNZ86R-pFobgtMJdVcQAlA_ghchkbatoBWr3VlQMY-JJKMGAvR"
+                                            alt="Tea ceremony"
+                                            fill
+                                            className="object-cover"
+                                            quality={75}
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            loading="lazy"
+                                            placeholder="blur"
+                                            blurDataURL={SHIMMER_PRESETS.landscape}
+                                        />
                                     </div>
                                     <div className="space-y-3 pr-4">
                                         <div className="flex items-center text-xs text-text-sub font-bold gap-2 uppercase tracking-wide">
@@ -500,7 +579,17 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                 <article className="group cursor-pointer h-full">
                                     <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
                                         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">Kiến Thức</div>
-                                        <img alt="Incense smoke" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaMfKhdb6cx3OTnyOpFgcezKGAgOymVCfBPhjvh1yrzFBz4GV72iqBUaR_n_0Td6QYwW77RfnAkNqfnt0ZGWT6SutKiecU_37xeoteDAluLNsJb7E6cZOol2EpKtf67HvrEg8kZay79T-QwIlvKt2ZocH-F57PWMR0PaRPksjRkAaHeL1pQwpTnyqQrzHRlZRdnsO9kAoN1-oD686utk5jKu2b4tz8hpp1K6SrbipwfugYkdF2gJLvH9JoO2YQZUF_bBm4pWAC7Qde" />
+                                        <Image
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaMfKhdb6cx3OTnyOpFgcezKGAgOymVCfBPhjvh1yrzFBz4GV72iqBUaR_n_0Td6QYwW77RfnAkNqfnt0ZGWT6SutKiecU_37xeoteDAluLNsJb7E6cZOol2EpKtf67HvrEg8kZay79T-QwIlvKt2ZocH-F57PWMR0PaRPksjRkAaHeL1pQwpTnyqQrzHRlZRdnsO9kAoN1-oD686utk5jKu2b4tz8hpp1K6SrbipwfugYkdF2gJLvH9JoO2YQZUF_bBm4pWAC7Qde"
+                                            alt="Incense smoke"
+                                            fill
+                                            className="object-cover"
+                                            quality={75}
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            loading="lazy"
+                                            placeholder="blur"
+                                            blurDataURL={SHIMMER_PRESETS.landscape}
+                                        />
                                     </div>
                                     <div className="space-y-3 pr-4">
                                         <div className="flex items-center text-xs text-text-sub font-bold gap-2 uppercase tracking-wide">

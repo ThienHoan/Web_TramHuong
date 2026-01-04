@@ -98,18 +98,22 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const messages = await getMessages();
+
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error('Failed to load messages:', error);
+    messages = {};
+  }
 
   return (
     <html lang={locale}>
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${manrope.variable} antialiased`}
       >
         <NextTopLoader color="var(--color-trad-primary)" showSpinner={false} />
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={messages} locale={locale} timeZone="Asia/Ho_Chi_Minh">
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>

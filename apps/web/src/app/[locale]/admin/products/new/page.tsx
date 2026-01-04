@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Category } from '@/lib/types';
 import { getCategories, setAccessToken } from '@/lib/api-client';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -24,7 +25,7 @@ export default function NewProductPage() {
     const [descEn, setDescEn] = useState('');
     const [titleVi, setTitleVi] = useState('');
     const [descVi, setDescVi] = useState('');
-    const [image, setImage] = useState<File | null>(null);
+    const [images, setImages] = useState<string[]>([]); // Multiple images
     // const [isFeatured, setIsFeatured] = useState(false); // Legacy replacement
     const [featuredSection, setFeaturedSection] = useState<string>(''); // section enum
 
@@ -49,38 +50,40 @@ export default function NewProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session) return;
+
+        // Validate at least one image
+        if (images.length === 0) {
+            alert('Please upload at least one product image');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const formData = new FormData();
-            formData.append('slug', slug);
-            formData.append('price', price);
-            formData.append('quantity', quantity);
-            formData.append('category', category);
-            formData.append('style', style);
-            formData.append('title_en', titleEn);
-            formData.append('desc_en', descEn);
-            formData.append('title_vi', titleVi);
-            formData.append('desc_vi', descVi);
-            // formData.append('is_featured', String(isFeatured)); 
-            if (featuredSection) formData.append('featured_section', featuredSection);
-
-            // Discount fields
-            formData.append('discount_percentage', discountPercentage);
-            if (discountStartDate) formData.append('discount_start_date', discountStartDate);
-            if (discountEndDate) formData.append('discount_end_date', discountEndDate);
-
-            if (image) {
-                formData.append('files', image); // Backend expects 'files' not 'image'
-            }
+            const payload = {
+                slug,
+                price: parseFloat(price),
+                quantity: parseInt(quantity),
+                category,
+                style,
+                title_en: titleEn,
+                desc_en: descEn,
+                title_vi: titleVi,
+                desc_vi: descVi,
+                images, // Array of URLs from Supabase Storage
+                featured_section: featuredSection || null,
+                discount_percentage: parseFloat(discountPercentage),
+                discount_start_date: discountStartDate || null,
+                discount_end_date: discountEndDate || null,
+            };
 
             const res = await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                    // Content-Type is auto-set for FormData
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: formData
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
@@ -270,12 +273,16 @@ export default function NewProductPage() {
                     </div>
                 </div>
 
-                {/* Image */}
+                {/* Product Images */}
                 <div className="border-t pt-4">
-                    <label className="block text-sm font-medium mb-1">Product Image</label>
-                    <input required type="file" accept="image/*"
-                        onChange={e => setImage(e.target.files?.[0] || null)}
-                        className="w-full border p-2 rounded bg-gray-50" />
+                    <h3 className="block text-sm font-medium mb-3">Product Images</h3>
+                    <ImageUploader
+                        images={images}
+                        onChange={setImages}
+                        maxImages={5}
+                        disabled={loading}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Upload up to 5 images. First image will be the primary product image.</p>
                 </div>
 
                 <div className="pt-4 flex gap-4">

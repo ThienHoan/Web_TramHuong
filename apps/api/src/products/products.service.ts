@@ -262,10 +262,17 @@ export class ProductsService {
     }
 
     async create(body: any, files: Array<Express.Multer.File>) {
-        // Upload images
-        const imageUrls = files && files.length > 0
-            ? await Promise.all(files.map(file => this.uploadImage(file)))
-            : [];
+        // Handle images: prioritize pre-uploaded URLs from body, fallback to file uploads
+        let imageUrls: string[] = [];
+
+        if (body.images && Array.isArray(body.images)) {
+            // New workflow: Images already uploaded to Supabase Storage via /storage/upload endpoint
+            imageUrls = body.images;
+        } else if (files && files.length > 0) {
+            // Legacy workflow: Upload files directly
+            imageUrls = await Promise.all(files.map(file => this.uploadImage(file)));
+        }
+
         const { title_en, title_vi, desc_en, desc_vi, price, original_price, slug, category, quantity, variants, specifications_en, specifications_vi, seo_title_en, seo_title_vi, seo_desc_en, seo_desc_vi } = body;
 
         const client = this.supabase.getClient();

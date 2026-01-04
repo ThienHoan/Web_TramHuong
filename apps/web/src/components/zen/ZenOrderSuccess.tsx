@@ -88,21 +88,13 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                 <span className="text-text-main dark:text-white text-lg font-light tracking-wide">{formatDate(order.created_at)}</span>
                             </div>
                             <div className="flex flex-col items-center md:items-end gap-2">
-                                {order.shipping_info?.delivery_method === 'pickup' ? (
-                                    <>
-                                        <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Status</span>
-                                        <span className="text-primary font-medium text-lg tracking-wide">Ready for Pickup</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Est. Delivery</span>
-                                        <span className="text-text-main dark:text-white text-lg font-light tracking-wide">3 - 5 Days</span>
-                                    </>
-                                )}
+                                {/* TODO: delivery_method not in ShippingInfo type - needs backend update */}
+                                <span className="text-text-muted text-xs font-medium tracking-[0.15em] uppercase">Est. Delivery</span>
+                                <span className="text-text-main dark:text-white text-lg font-light tracking-wide">3 - 5 Days</span>
                             </div>
                         </div>
 
-                        {/* Pickup Instructions (Only if Pickup) */}
+                        {/* TODO: Pickup instructions - delivery_method and pickup_location not in ShippingInfo type
                         {order.shipping_info?.delivery_method === 'pickup' && order.shipping_info?.pickup_location && (
                             <div className="mb-10 p-6 bg-[#FDF8F6] border border-[#EBE5E0] rounded-lg text-left">
                                 <h4 className="text-[#9A3412] font-serif font-semibold text-lg mb-4 flex items-center gap-2">
@@ -135,6 +127,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                 </div>
                             </div>
                         )}
+                        */}
 
                         {/* Product Preview (Mini) - Loop through items */}
                         {order.items && order.items.length > 0 ? (

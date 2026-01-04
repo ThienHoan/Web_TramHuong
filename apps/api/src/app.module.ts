@@ -17,6 +17,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { PostsModule } from './posts/posts.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { VouchersModule } from './vouchers/vouchers.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
     PostsModule,
     ContactsModule,
     VouchersModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [

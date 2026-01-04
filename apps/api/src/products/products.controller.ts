@@ -58,10 +58,12 @@ export class ProductsController {
     @UseInterceptors(FilesInterceptor('files'))
     async create(
         @Body() body: any,
-        @UploadedFiles() files: Array<Express.Multer.File>
+        @UploadedFiles() files?: Array<Express.Multer.File>
     ) {
-        // if (!files || files.length === 0) throw new BadRequestException('At least one image is required');
-        return this.productsService.create(body, files);
+        // Support both workflows:
+        // 1. JSON with pre-uploaded images URLs (body.images)
+        // 2. FormData with file uploads (files parameter)
+        return this.productsService.create(body, files || []);
     }
 
     @Patch(':id')
