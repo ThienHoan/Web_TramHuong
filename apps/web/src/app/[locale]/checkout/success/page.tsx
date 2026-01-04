@@ -35,12 +35,39 @@ export default function CheckoutSuccessPage() {
         }
     }, [orderId, router, session]);
 
-    const handleCopyId = () => {
+    const handleCopyId = async () => {
         if (!orderId) return;
-        navigator.clipboard.writeText(orderId);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-        toast.success("Đã sao chép mã đơn hàng!");
+
+        try {
+            // Check if clipboard API is available (browser only, not SSR)
+            if (typeof window !== 'undefined' && navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(orderId);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+                toast.success("Đã sao chép mã đơn hàng!");
+            } else {
+                // Fallback for browsers without clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = orderId;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                    toast.success("Đã sao chép mã đơn hàng!");
+                } catch (err) {
+                    toast.error("Không thể sao chép. Vui lòng copy thủ công!");
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to copy:', err);
+            toast.error("Không thể sao chép. Vui lòng copy thủ công!");
+        }
     };
 
     if (!orderId) return null;

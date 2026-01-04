@@ -18,6 +18,35 @@ export class OrdersService {
         return this.supabaseService.getClient();
     }
 
+    /**
+     * Normalize Vietnamese phone number to +84 format
+     * Examples: 0356176878 -> +84356176878, 84356176878 -> +84356176878
+     */
+    private normalizeVietnamesePhone(phone: string): string {
+        if (!phone) return '';
+
+        // Remove all whitespace and special chars except + and digits
+        let cleaned = phone.trim().replace(/[\s\-()]/g, '');
+
+        // Convert to +84 format
+        if (cleaned.startsWith('0')) {
+            // 0356... -> +84356...
+            return '+84' + cleaned.slice(1);
+        } else if (cleaned.startsWith('84') && !cleaned.startsWith('+')) {
+            // 84356... -> +84356...
+            return '+' + cleaned;
+        } else if (cleaned.startsWith('+84')) {
+            // Already in correct format
+            return cleaned;
+        } else if (/^\d{9,10}$/.test(cleaned)) {
+            // Just digits without prefix, assume Vietnamese
+            return '+84' + cleaned;
+        }
+
+        // Return as-is if doesn't match Vietnamese patterns
+        return cleaned;
+    }
+
     async lookupOrder(dto: LookupOrderDto) {
         const { orderCode, emailOrPhone } = dto;
 
@@ -40,21 +69,21 @@ export class OrdersService {
         // 2. Verify Email OR Phone from shipping_info
         const shippingInfo = order.shipping_info || {};
         const orderEmail = (shippingInfo.email || '').trim().toLowerCase();
-        const orderPhone = (shippingInfo.phone || '').trim().replace(/\s+/g, ''); // Normalize phone
-
-        const inputIsPhone = /^\d+$/.test(cleanEmailOrPhone.replace(/[^\d]/g, ''));
-        const cleanInputPhone = cleanEmailOrPhone.replace(/[^\d]/g, '');
+        const orderPhone = (shippingInfo.phone || '').trim();
 
         let isMatch = false;
 
-        if (orderEmail && orderEmail === cleanEmailOrPhone) {
-            isMatch = true;
-        } else if (orderPhone && cleanInputPhone && orderPhone.includes(cleanInputPhone)) {
-            // Simple contains check for phone to be lenient with formats, or strict?
-            // Let's use flexible match: last 9 digits match
-            if (orderPhone.endsWith(cleanInputPhone) || cleanInputPhone.endsWith(orderPhone)) {
-                isMatch = true;
-            }
+        // Check if input is email
+        if (cleanEmailOrPhone.includes('@')) {
+            // Email match
+            isMatch = orderEmail === cleanEmailOrPhone;
+        } else {
+            // Assume phone number - normalize both sides
+            const normalizedInputPhone = this.normalizeVietnamesePhone(cleanEmailOrPhone);
+            const normalizedOrderPhone = this.normalizeVietnamesePhone(orderPhone);
+
+            // Strict match after normalization
+            isMatch = normalizedInputPhone === normalizedOrderPhone;
         }
 
         if (!isMatch) {
@@ -212,16 +241,9 @@ export class OrdersService {
 
         // Normalize Phone Number (Backend Enforcement)
         if (shippingInfo.phone) {
-            let p = shippingInfo.phone.trim().replace(/\s/g, '');
-            if (p.startsWith('0')) {
-                p = '+84' + p.slice(1);
-            } else if (p.startsWith('84')) {
-                p = '+' + p;
-            } else if (!p.startsWith('+')) {
-                p = '+84' + p;
-            }
-            shippingInfo.phone = p;
+            shippingInfo.phone = this.normalizeVietnamesePhone(shippingInfo.phone);
         }
+
 
         // Fetch products to validate and get prices + DISCOUNT INFO
         const productIds = items.map(i => i.productId);
