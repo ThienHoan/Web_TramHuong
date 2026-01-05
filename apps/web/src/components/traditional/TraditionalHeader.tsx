@@ -9,6 +9,7 @@ import { useLocale } from 'next-intl';
 import { useWishlist } from '@/components/providers/WishlistProvider';
 
 import ZenSearchOverlay from '@/components/zen/ZenSearchOverlay';
+import TopBar from '@/components/layout/TopBar';
 
 export default function TraditionalHeader() {
     const t = useTranslations('HomePage');
@@ -43,6 +44,7 @@ export default function TraditionalHeader() {
 
     return (
         <>
+            <TopBar />
             <ZenSearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} locale={locale} />
             <header className={`sticky top-0 z-50 w-full transition-all duration-300 border-b border-trad-border-warm font-display ${scrolled ? 'bg-trad-bg-light/95 backdrop-blur-md shadow-sm' : 'bg-trad-bg-light/95'}`}>
                 <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">

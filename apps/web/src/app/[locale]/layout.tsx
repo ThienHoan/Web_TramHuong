@@ -12,6 +12,7 @@ import SmoothScroll from '@/components/ui/SmoothScroll';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
 import ChatWidget from '@/components/chat/ChatWidget';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -122,6 +123,7 @@ export default async function RootLayout({
                 <SmoothScroll />
                 {children}
                 <ChatWidget />
+                <ScrollToTop />
                 <Toaster position="top-center" toastOptions={{
                   className: 'md:right-4', // Custom class if needed for desktop offset
                   style: { margin: '0 auto' } // Ensure clear centering
