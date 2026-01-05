@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import ProductRecommendationCard from './ProductRecommendationCard';
+import { Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ChatMessageProps {
     role: 'user' | 'model';
@@ -12,6 +14,20 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
+    const [copied, setCopied] = useState(false);
+
+    // Copy to clipboard handler
+    const handleCopy = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            toast.success('Đã sao chép!');
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error('Không thể sao chép');
+        }
+    };
+
     // 1. Extract JSON blocks if present
     const recommendations: any[] = [];
     let cleanContent = content;
@@ -73,17 +89,30 @@ export default function ChatMessage({ role, content, isTyping }: ChatMessageProp
 
     return (
         <div className={`flex flex-col gap-2 ${isUser ? 'items-end' : 'items-start'}`}>
-            <div
-                className={cn(
-                    "px-4 py-3 max-w-[85%] text-sm leading-relaxed shadow-sm",
-                    isUser
-                        ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-none"
-                        : "bg-white border border-border text-foreground rounded-2xl rounded-tl-none"
-                )}
-            >
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown>{cleanContent}</ReactMarkdown>
+            <div className="group relative max-w-[85%]">
+                <div
+                    className={cn(
+                        "px-4 py-3 text-sm leading-relaxed shadow-sm",
+                        isUser
+                            ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-none"
+                            : "bg-white border border-border text-foreground rounded-2xl rounded-tl-none"
+                    )}
+                >
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown>{cleanContent}</ReactMarkdown>
+                    </div>
                 </div>
+
+                {/* Copy button for model responses */}
+                {!isUser && cleanContent && (
+                    <button
+                        onClick={() => handleCopy(cleanContent)}
+                        className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 shadow-sm"
+                        title="Sao chép"
+                    >
+                        {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                    </button>
+                )}
             </div>
 
             {/* Render Recommendations if found */}
@@ -98,3 +127,4 @@ export default function ChatMessage({ role, content, isTyping }: ChatMessageProp
         </div>
     );
 }
+

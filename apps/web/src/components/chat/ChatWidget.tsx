@@ -6,7 +6,7 @@ import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 import ChatMessage from './ChatMessage';
 import { chatWithAIStream } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { X, Send, Sparkles, MessageSquare, Trash2, Square } from 'lucide-react';
+import { X, Send, Sparkles, MessageSquare, Trash2, Square, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
 
@@ -29,6 +29,10 @@ const getChatStorageKey = (userId: string | null): string => {
     return userId ? `chat_history_${userId}` : 'chat_history_guest';
 };
 
+// Welcome bubble constants
+const WELCOME_SHOWN_KEY = 'chat_welcome_shown';
+const WELCOME_DELAY_MS = 8000; // 8 seconds
+
 export default function ChatWidget() {
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
@@ -36,10 +40,54 @@ export default function ChatWidget() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [streamingContent, setStreamingContent] = useState('');
+    const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+    const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const prevUserIdRef = useRef<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+
+    // Auto-welcome bubble (first visit only)
+    useEffect(() => {
+        if (isOpen) {
+            setShowWelcomeBubble(false);
+            return;
+        }
+
+        try {
+            const alreadyShown = localStorage.getItem(WELCOME_SHOWN_KEY);
+            if (alreadyShown) return;
+        } catch {
+            return; // Storage blocked
+        }
+
+        const timer = setTimeout(() => {
+            setShowWelcomeBubble(true);
+            try {
+                localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
+            } catch { /* ignore */ }
+        }, WELCOME_DELAY_MS);
+
+        return () => clearTimeout(timer);
+    }, [isOpen]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+/ to toggle chat (desktop only)
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                setIsOpen(prev => !prev);
+            }
+            // Esc to close when chat is open and focused
+            if (e.key === 'Escape' && isOpen && chatRef.current?.contains(document.activeElement)) {
+                setIsOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen]);
 
     // Get current storage key
     const storageKey = getChatStorageKey(user?.id ?? null);
@@ -146,14 +194,25 @@ export default function ChatWidget() {
                     setMessages(updatedHistory);
                 }
                 setStreamingContent('');
+                setLastFailedMessage(null);
             } else {
                 const errorMsg: Message = { role: 'model', content: "Xin lỗi, hiện tại tôi không thể kết nối. Vui lòng thử lại sau." };
                 setMessages([...newHistory, errorMsg]);
                 setStreamingContent('');
+                setLastFailedMessage(text); // Save for retry
             }
         } finally {
             setIsLoading(false);
             abortControllerRef.current = null;
+        }
+    };
+
+    const handleRetry = () => {
+        if (lastFailedMessage) {
+            // Remove the last error message
+            setMessages(prev => prev.slice(0, -2));
+            handleSend(lastFailedMessage);
+            setLastFailedMessage(null);
         }
     };
 
@@ -168,7 +227,7 @@ export default function ChatWidget() {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4 font-sans text-trad-text-main">
+        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -278,6 +337,16 @@ export default function ChatWidget() {
                                     >
                                         <Square size={14} />
                                     </Button>
+                                ) : lastFailedMessage ? (
+                                    <Button
+                                        type="button"
+                                        size="icon"
+                                        className="rounded-full w-10 h-10 bg-amber-500 hover:bg-amber-600"
+                                        onClick={handleRetry}
+                                        title="Thử lại"
+                                    >
+                                        <RotateCcw size={16} />
+                                    </Button>
                                 ) : (
                                     <Button
                                         type="submit"
@@ -294,11 +363,58 @@ export default function ChatWidget() {
                 )}
             </AnimatePresence>
 
+            {/* Welcome Bubble */}
+            <AnimatePresence>
+                {showWelcomeBubble && !isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                        className="absolute bottom-20 right-0 w-72 bg-white rounded-2xl shadow-xl border border-border p-4 z-40"
+                    >
+                        <button
+                            onClick={() => setShowWelcomeBubble(false)}
+                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1"
+                        >
+                            <X size={16} />
+                        </button>
+                        <div className="flex items-start gap-2 mb-3">
+                            <div className="p-3 bg-trad-primary/10 rounded-full text-trad-primary shrink-0">
+                                <Sparkles size={16} />
+                            </div>
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                                Chào bạn! 👋 Mình là trợ lý trầm hương <strong>Thiên Phúc</strong>. Mình có thể giúp bạn chọn trầm hợp gu hoặc gợi ý quà tặng tinh tế.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                            <button
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Tư vấn chọn trầm hương'), 100); }}
+                                className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
+                            >
+                                🌿 Chọn trầm
+                            </button>
+                            <button
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Gợi ý quà tặng trầm hương'), 100); }}
+                                className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
+                            >
+                                🎁 Quà tặng
+                            </button>
+                            <button
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Hướng dẫn cách đốt trầm'), 100); }}
+                                className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
+                            >
+                                🔥 Cách đốt
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Launcher Button */}
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => { setIsOpen(!isOpen); setShowWelcomeBubble(false); }}
                 className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors z-50 ${isOpen ? 'bg-gray-600 text-white' : 'bg-trad-primary text-white'}`}
             >
                 {isOpen ? <X size={24} /> : <MessageSquare size={24} />}

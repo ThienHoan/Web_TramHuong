@@ -1,28 +1,62 @@
 import { Controller, Post, Body, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import type { Response } from 'express';
+import type { Response, Request } from 'express';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
+
+// Validation constants
+const MAX_MESSAGE_LENGTH = 500;
+const MAX_HISTORY_LENGTH = 20;
+
+// Helper to sanitize input
+function sanitizeMessage(message: string): string {
+    if (!message || typeof message !== 'string') return '';
+    // Remove control characters except newlines
+    return message.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
+}
 
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) { }
 
     @Post('message')
-    async handleMessage(@Body() body: { message: string; history?: any[] }, @Req() req: any) {
-        // Basic Rate Limiting check could go here or via Guard
-        if (!body.message) {
-            throw new HttpException('Message cannot be empty', HttpStatus.BAD_REQUEST);
+    @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute for chat
+    async handleMessage(@Body() body: { message: string; history?: any[] }, @Req() req: Request) {
+        // Sanitize and validate message
+        const message = sanitizeMessage(body.message);
+        if (!message) {
+            throw new HttpException('Tin nhắn không được để trống', HttpStatus.BAD_REQUEST);
         }
-        return this.chatService.processMessage(body.message, body.history || []);
+        if (message.length > MAX_MESSAGE_LENGTH) {
+            throw new HttpException(`Tin nhắn quá dài (tối đa ${MAX_MESSAGE_LENGTH} ký tự)`, HttpStatus.BAD_REQUEST);
+        }
+
+        // Trim history to limit
+        const history = Array.isArray(body.history)
+            ? body.history.slice(-MAX_HISTORY_LENGTH)
+            : [];
+
+        return this.chatService.processMessage(message, history);
     }
 
     @Post('stream')
+    @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute for chat
     async handleStreamMessage(
         @Body() body: { message: string; history?: any[] },
         @Res() res: Response,
     ) {
-        if (!body.message) {
-            throw new HttpException('Message cannot be empty', HttpStatus.BAD_REQUEST);
+        // Sanitize and validate message
+        const message = sanitizeMessage(body.message);
+        if (!message) {
+            throw new HttpException('Tin nhắn không được để trống', HttpStatus.BAD_REQUEST);
         }
+        if (message.length > MAX_MESSAGE_LENGTH) {
+            throw new HttpException(`Tin nhắn quá dài (tối đa ${MAX_MESSAGE_LENGTH} ký tự)`, HttpStatus.BAD_REQUEST);
+        }
+
+        // Trim history to limit
+        const history = Array.isArray(body.history)
+            ? body.history.slice(-MAX_HISTORY_LENGTH)
+            : [];
 
         // Set SSE headers
         res.setHeader('Content-Type', 'text/event-stream');
@@ -33,8 +67,8 @@ export class ChatController {
 
         try {
             const streamGenerator = this.chatService.processMessageStream(
-                body.message,
-                body.history || []
+                message,
+                history
             );
 
             for await (const chunk of streamGenerator) {
@@ -47,3 +81,4 @@ export class ChatController {
         }
     }
 }
+
