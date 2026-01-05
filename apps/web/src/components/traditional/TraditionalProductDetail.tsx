@@ -194,6 +194,9 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         src={selectedImage || product.images[0]}
                                         alt={product.translation.title}
                                         fill
+                                        priority
+                                        loading="eager"
+                                        sizes="(max-width: 1024px) 100vw, 60vw"
                                         className="object-cover transition-transform duration-500 hover:scale-105"
                                     />
                                 </div>
@@ -212,7 +215,13 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative flex-none w-24 aspect-square rounded-lg overflow-hidden border transition-all snap-start ${selectedImage === img ? 'border-trad-primary ring-2 ring-trad-primary/20 ring-offset-2' : 'border-trad-border-warm hover:border-trad-primary opacity-70 hover:opacity-100'}`}
                                     >
-                                        <Image src={img} alt={`Prod thumb ${idx}`} fill className="object-cover" />
+                                        <Image
+                                            src={img}
+                                            alt={`Prod thumb ${idx}`}
+                                            fill
+                                            sizes="96px"
+                                            className="object-cover"
+                                        />
                                     </button>
                                 ))}
                             </div>

@@ -18,14 +18,13 @@ export const productService = {
             const params: Record<string, any> = { locale, ...options };
             if (options?.include_inactive) params.include_inactive = 'true';
             if (options?.is_featured !== undefined) params.is_featured = String(options.is_featured);
-            if (options?.categoryId) params.category_id = options.categoryId; // Map camelCase to snake_case for API
+            if (options?.categoryId) params.category_id = options.categoryId; // Map camelCase to snake_case
 
             const url = buildUrl('/products', params);
 
-            const res = await fetch(url, { next: { revalidate: 0 } }); // Disable cache for debugging
-            if (!res.ok) return [];
+            // Revalidate 0 for debugging, can be adjusted for production
+            const data = await fetchWithAuth<any>(url, { next: { revalidate: 0 } });
 
-            const data = await res.json();
             const items = Array.isArray(data) ? data : (data.data || []);
             // Map quantity to stock to match frontend Type
             return items.map((p: any) => ({ ...p, stock: p.quantity ?? 0 }));
@@ -38,9 +37,9 @@ export const productService = {
     async getProduct(slug: string, locale: string): Promise<Product | null> {
         try {
             const url = buildUrl(`/products/${slug}`, { locale });
-            const res = await fetch(url, { next: { revalidate: 60 } });
-            if (!res.ok) return null;
-            const data = await res.json();
+            const data = await fetchWithAuth<any>(url, { next: { revalidate: 60 } });
+
+            if (!data) return null;
             // Map quantity to stock
             return { ...data, stock: data.quantity ?? 0 };
         } catch (e) {
@@ -52,11 +51,11 @@ export const productService = {
     async getCategories(locale: string = 'en', includeInactive: boolean = false): Promise<Category[]> {
         try {
             const url = buildUrl('/categories', { locale, include_inactive: includeInactive });
-            const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, next: { revalidate: 60 } });
+            // revalidate 60s
+            const data = await fetchWithAuth<any>(url, { next: { revalidate: 60 } });
 
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : (data.data || []);
+            const items = Array.isArray(data) ? data : (data.data || []);
+            return items;
         } catch (e) {
             console.error("Fetch Categories Error:", e);
             return [];

@@ -23,19 +23,37 @@ export default function TraditionalProductCard({ product }: TraditionalProductCa
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 {isActive && (
-                    <span className="absolute right-3 top-3 rounded bg-trad-red-900 px-2 py-1 text-xs font-bold uppercase text-white shadow-md">
+                    <span className="absolute right-3 top-3 rounded bg-trad-red-900 px-2 py-1 text-xs font-bold uppercase text-white shadow-md z-10">
                         -{discountPercent}%
                     </span>
                 )}
-            </div>
-            <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col p-4">
-                <h3 className="mb-2 text-base font-bold text-trad-text-main group-hover:text-trad-primary transition-colors line-clamp-2">
-                    {product.translation?.title}
-                </h3>
-                <div className="mt-auto pt-2">
-                    <ProductPrice product={product} size="md" theme="traditional" showBadge={false} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <Link href={`/products/${product.slug}`}>
+                        <button className="w-full rounded bg-white py-3 text-xs font-bold uppercase tracking-widest text-trad-text-main shadow-lg hover:bg-trad-primary hover:text-white transition-colors">
+                            Thêm vào giỏ
+                        </button>
+                    </Link>
                 </div>
-            </Link>
+            </div>
+            <div className="flex flex-1 flex-col p-5">
+                <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-trad-text-muted">Hộp gỗ sơn mài</span>
+                    <div className="flex text-trad-primary">
+                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                        <span className="material-symbols-outlined text-[14px] filled">star</span>
+                    </div>
+                </div>
+                <h3 className="font-display text-lg font-bold text-trad-text-main hover:text-trad-primary transition-colors">
+                    <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
+                </h3>
+                <div className="mt-auto pt-4 flex items-center justify-between gap-2">
+                    <ProductPrice product={product} size="md" theme="traditional" />
+                </div>
+            </div>
         </div>
     );
 }

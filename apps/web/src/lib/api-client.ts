@@ -78,3 +78,89 @@ export const deleteVoucher = vouchersService.deleteVoucher;
 export const validateVoucher = vouchersService.validateVoucher;
 
 
+
+// Chat AI
+export async function chatWithAI(message: string, history: any[] = []): Promise<any> {
+    const res = await fetch(`${API_URL}/chat/message`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ message, history }),
+    });
+
+    if (!res.ok) {
+        throw new Error('AI Chat Error');
+    }
+
+    return await res.json();
+}
+
+/**
+ * Streaming chat using fetch + ReadableStream
+ * @param message User message
+ * @param history Chat history
+ * @param onChunk Callback for each text chunk
+ * @param onWarning Callback for truncation warning
+ * @param onError Callback for errors
+ * @param signal AbortSignal for cancellation
+ */
+export async function chatWithAIStream(
+    message: string,
+    history: any[] = [],
+    onChunk: (text: string) => void,
+    onWarning?: (message: string) => void,
+    onError?: (error: string) => void,
+    signal?: AbortSignal
+): Promise<void> {
+    const res = await fetch(`${API_URL}/chat/stream`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ message, history }),
+        signal,
+    });
+
+    if (!res.ok) {
+        throw new Error('AI Stream Error');
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error('No reader available');
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // Parse SSE events from buffer
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+
+                        if (data.type === 'chunk') {
+                            onChunk(data.content);
+                        } else if (data.type === 'warning' && onWarning) {
+                            onWarning(data.content);
+                        } else if (data.type === 'error' && onError) {
+                            onError(data.content);
+                        } else if (data.type === 'done') {
+                            // Stream complete
+                            return;
+                        }
+                    } catch {
+                        // Ignore parse errors for incomplete JSON
+                    }
+                }
+            }
+        }
+    } finally {
+        reader.releaseLock();
+    }
+}

@@ -3,6 +3,39 @@ import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class ProductsService {
+    async getProductsForAI() {
+        // Fetch streamlined data for AI context.
+        // Selecting only necessary fields to save token usage.
+        const client = this.supabase.getClient();
+
+        const { data, error } = await client
+            .from('products')
+            .select(`
+                id,
+                slug,
+                price,
+                translations:product_translations(title, description)
+            `)
+            .eq('is_active', true)
+            // .gt('quantity', 0) // Optional: only suggest available stock
+            .eq('product_translations.locale', 'vi'); // Force Vietnamese for context
+
+        if (error) {
+            console.error('Error fetching products for AI:', error);
+            return [];
+        }
+
+        return data.map((p: any) => ({
+            id: p.id,
+            slug: p.slug,
+            price: p.price,
+            title: p.translations?.[0]?.title,
+            description: p.translations?.[0]?.description,
+            // scent_profile: p.translations?.[0]?.scent_profile, // Column missing
+            // benefit: p.translations?.[0]?.benefit // Column missing
+        }));
+    }
+
     constructor(private readonly supabase: SupabaseService) { }
 
     async findAll(locale: string = 'en', options?: {

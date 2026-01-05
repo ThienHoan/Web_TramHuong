@@ -21,7 +21,7 @@ export default function TraditionalHome({ products }: { products: any[] }) {
 
     return (
         <div className="bg-brand-yellow font-display text-text-main antialiased selection:bg-primary selection:text-white bg-pattern-lotus flex flex-col min-h-screen">
-            {/* Live Chat Button */}
+            {/* Live Chat Button
             <a className="fixed bottom-8 right-6 z-50 group" href="#">
                 <div className="relative flex items-center justify-center size-14 bg-gradient-to-br from-[#0068FF] to-[#0041a3] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 ring-4 ring-white/30">
                     <span className="material-symbols-outlined text-3xl">chat</span>
@@ -30,7 +30,7 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                     </span>
                 </div>
-            </a>
+            </a> */}
 
             <TraditionalHeader />
 

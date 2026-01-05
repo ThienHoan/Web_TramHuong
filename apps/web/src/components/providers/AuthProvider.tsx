@@ -104,8 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setRole(null);
             setAccessToken('');
 
-            // 2. Clear localStorage - cart only (preserve rememberMe preference!)
+            // 2. Clear localStorage - cart and chat history (preserve rememberMe preference!)
             localStorage.removeItem('cart');
+            // Clear chat history for this user and guest
+            if (user?.id) {
+                localStorage.removeItem(`chat_history_${user.id}`);
+            }
+            localStorage.removeItem('chat_history_guest');
             // DON'T remove: rememberMe, rememberedEmail (user wants to stay remembered!)
 
             // 3. Sign out from Supabase
