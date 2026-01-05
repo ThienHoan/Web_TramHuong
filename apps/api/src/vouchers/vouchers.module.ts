@@ -14,7 +14,7 @@ import { createClient } from '@supabase/supabase-js';
             useFactory: (configService: ConfigService) => {
                 return createClient(
                     configService.get<string>('SUPABASE_URL')!,
-                    configService.get<string>('SUPABASE_KEY')!,
+                    configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!,
                 );
             },
             inject: [ConfigService],

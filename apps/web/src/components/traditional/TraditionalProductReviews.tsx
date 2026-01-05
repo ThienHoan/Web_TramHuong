@@ -166,7 +166,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                     {!user ? (
                         <div className="text-center py-8">
                             <p className="mb-4 text-trad-text-main">Vui lòng đăng nhập để viết đánh giá.</p>
-                            <a href="/login" className="inline-block text-trad-primary font-bold underline hover:text-trad-red-900">Đăng nhập ngay</a>
+                            <a href="/vi/login" className="inline-block text-trad-primary font-bold underline hover:text-trad-red-900">Đăng nhập ngay</a>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmitReview}>
