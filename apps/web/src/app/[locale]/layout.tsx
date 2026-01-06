@@ -5,6 +5,7 @@ import "./../globals.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
+import { NetworkStatusProvider } from '@/components/providers/NetworkStatusProvider';
 import Header from '@/components/layout/Header';
 import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
@@ -13,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
 import ChatWidget from '@/components/chat/ChatWidget';
 import ScrollToTop from '@/components/layout/ScrollToTop';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -119,11 +121,15 @@ export default async function RootLayout({
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
-                <SmoothScroll />
-                {children}
-                <ChatWidget />
-                <ScrollToTop />
+                <NetworkStatusProvider>
+                  <ErrorBoundary>
+                    {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
+                    <SmoothScroll />
+                    {children}
+                    <ChatWidget />
+                    <ScrollToTop />
+                  </ErrorBoundary>
+                </NetworkStatusProvider>
                 <Toaster position="top-center" toastOptions={{
                   className: 'md:right-4', // Custom class if needed for desktop offset
                   style: { margin: '0 auto' } // Ensure clear centering
@@ -136,3 +142,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

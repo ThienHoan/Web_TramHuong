@@ -366,7 +366,7 @@ export default function TraditionalOrderLookup() {
                                                             {productDiscount > 0 && (
                                                                 <div className="flex justify-between items-center text-sm">
                                                                     <span className="text-[#5c3a3c] flex items-center gap-1">
-                                                                        <span className="material-symbols-outlined text-xs text-red-500">sell</span>
+
                                                                         Giảm giá sản phẩm
                                                                     </span>
                                                                     <span className="text-red-500 font-medium">-{formatPrice(productDiscount)}</span>
@@ -378,7 +378,7 @@ export default function TraditionalOrderLookup() {
                                                             {/* Shipping Fee */}
                                                             <div className="flex justify-between items-center text-sm">
                                                                 <span className="text-[#5c3a3c] flex items-center gap-1">
-                                                                    <span className="material-symbols-outlined text-xs text-[#ea580c]">local_shipping</span>
+
                                                                     Phí vận chuyển
                                                                 </span>
                                                                 {isPickup ? (

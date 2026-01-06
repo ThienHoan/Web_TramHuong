@@ -49,5 +49,17 @@ export const orderService = {
             console.error("Fetch Order Error:", e);
             return null;
         }
+    },
+
+    // Public endpoint for guest users (no auth required)
+    async getOrderStatus(id: string): Promise<Partial<Order> | null> {
+        try {
+            const res = await fetch(`${API_URL}/orders/status/${id}`);
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (e) {
+            console.error("Fetch Order Status Error:", e);
+            return null;
+        }
     }
 };

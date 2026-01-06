@@ -37,6 +37,7 @@ export async function lookupOrder(orderCode: string, emailOrPhone: string): Prom
 export const createOrder = orderService.createOrder;
 export const getMyOrders = orderService.getMyOrders;
 export const getOrder = orderService.getOrder;
+export const getOrderStatus = orderService.getOrderStatus;
 
 // Auth / User
 export const getProfile = authService.getProfile;

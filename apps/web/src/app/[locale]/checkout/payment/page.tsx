@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/routing';
 import { useEffect, useState, useRef } from 'react';
-import { getOrder, setAccessToken } from '@/lib/api-client';
+import { getOrderStatus, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -31,18 +31,23 @@ export default function CheckoutPaymentPage() {
     const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME || 'NGUYEN VAN A';
 
     useEffect(() => {
-        if (!session || !orderId) return;
+        // Allow guest users to view payment page (orderId is the only requirement)
+        if (!orderId) return;
 
-        setAccessToken(session.access_token);
+        // Set access token if user is logged in (for authenticated API calls)
+        if (session?.access_token) {
+            setAccessToken(session.access_token);
+        }
+
         fetchOrder();
 
-        // Start Polling
+        // Start Polling for payment status updates
         pollingRef.current = setInterval(checkPaymentStatus, 3000);
 
         return () => {
             if (pollingRef.current) clearInterval(pollingRef.current);
         };
-    }, [session, orderId]);
+    }, [orderId, session?.access_token]);
 
     // Countdown timer for payment deadline
     useEffect(() => {
@@ -77,7 +82,7 @@ export default function CheckoutPaymentPage() {
     const fetchOrder = async () => {
         if (!orderId) return;
         try {
-            const data = await getOrder(orderId);
+            const data = await getOrderStatus(orderId);
             if (data) {
                 setOrder(data);
                 setLoading(false);
@@ -88,18 +93,33 @@ export default function CheckoutPaymentPage() {
             } else {
                 setError('Order not found');
                 setLoading(false);
+                // Stop polling when order not found
+                if (pollingRef.current) {
+                    clearInterval(pollingRef.current);
+                    pollingRef.current = null;
+                }
             }
         } catch (e) {
             setError('Failed to load order');
             setLoading(false);
+            // Stop polling on error
+            if (pollingRef.current) {
+                clearInterval(pollingRef.current);
+                pollingRef.current = null;
+            }
         }
     };
 
     const checkPaymentStatus = async () => {
-        if (!orderId) return;
-        const data = await getOrder(orderId);
-        if (data && data.payment_status === 'paid') {
-            router.push(`/checkout/success?id=${orderId}`);
+        // Don't poll if there's an error
+        if (!orderId || error) return;
+        try {
+            const data = await getOrderStatus(orderId);
+            if (data && data.payment_status === 'paid') {
+                router.push(`/checkout/success?id=${orderId}`);
+            }
+        } catch {
+            // Silently fail polling - main fetchOrder handles errors
         }
     };
 

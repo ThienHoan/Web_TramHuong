@@ -32,7 +32,14 @@ export async function fetchWithAuth<T = any>(url: string, options: RequestInit =
 
     // Safe response parsing
     const text = await res.text();
-    return text ? JSON.parse(text) : {} as T;
+    if (!text) return {} as T;
+
+    try {
+        return JSON.parse(text);
+    } catch (parseError) {
+        console.error('[fetchWithAuth] Failed to parse JSON response:', text.substring(0, 200));
+        throw new Error('Unexpected response format from server');
+    }
 }
 
 export function buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {

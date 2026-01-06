@@ -7,7 +7,7 @@ import { Role } from '../auth/role.enum';
 import { Public } from '../auth/public.decorator';
 import { LookupOrderDto } from './dto/lookup-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 
 @Controller('orders')
 @UseGuards(AuthGuard, RolesGuard)
@@ -103,6 +103,24 @@ export class OrdersController {
         // OR if they want to manage orders they should use GET /orders.
         // For consistency, 'me' usually means 'my orders'.
         return this.ordersService.findAllForUser(user.id, options);
+    }
+
+    // Public endpoint for guest users to check their order (payment page)
+    @Get('status/:id')
+    @Public()
+    @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
+    async getOrderStatus(@Param('id') id: string) {
+        const order = await this.ordersService.findOne(id);
+        if (!order) return null;
+        // Return limited info for security (no full shipping_info)
+        return {
+            id: order.id,
+            total: order.total,
+            status: order.status,
+            payment_status: order.payment_status,
+            payment_deadline: order.payment_deadline,
+            created_at: order.created_at,
+        };
     }
 
     @Get(':id')

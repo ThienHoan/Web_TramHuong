@@ -3,6 +3,9 @@ import { ContactsService, CreateContactDto } from './contacts.service';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 
 class CreateContactValidator implements CreateContactDto {
     @IsNotEmpty()
@@ -38,14 +41,17 @@ export class ContactsController {
     }
 
     @Get()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN, Role.STAFF)
     async findAll(@Query('page') page: number, @Query('limit') limit: number) {
         return this.contactsService.findAll(page, limit);
     }
 
     @Patch(':id')
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.ADMIN, Role.STAFF)
     async updateStatus(@Param('id') id: string, @Body('status') status: string) {
         return this.contactsService.updateStatus(id, status);
     }
 }
+
