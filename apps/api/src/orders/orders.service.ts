@@ -105,11 +105,17 @@ export class OrdersService {
                 address: shippingInfo.address ? '******' : null,
                 province: shippingInfo.province,
                 district: shippingInfo.district,
-                ward: shippingInfo.ward
+                ward: shippingInfo.ward,
+                // Include pricing-related info
+                shipping_fee: shippingInfo.shipping_fee || 0,
+                delivery_method: shippingInfo.delivery_method || null
             },
             payment_status: order.payment_status,
             payment_method: order.payment_method,
-            tracking_code: order.tracking_code || null
+            tracking_code: order.tracking_code || null,
+            // Include voucher info for price breakdown
+            voucher_code: order.voucher_code || null,
+            voucher_discount_amount: order.voucher_discount_amount || 0
         };
     }
 

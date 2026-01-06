@@ -463,18 +463,6 @@ export default function TraditionalCheckout() {
                                                                 <span className="font-bold text-green-600">-{formatPrice(totalSavings)}</span>
                                                             </div>
                                                         )}
-                                                        {appliedVoucher && (
-                                                            <div className="flex justify-between items-center px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="material-symbols-outlined text-purple-600 text-[20px]">confirmation_number</span>
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-sm font-medium text-purple-700">Mã giảm giá</span>
-                                                                        <span className="text-[10px] text-purple-600 font-mono tracking-wider">{appliedVoucher.code}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <span className="font-bold text-purple-600">-{formatPrice(appliedVoucher.discountAmount)}</span>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 )}
 
@@ -491,6 +479,22 @@ export default function TraditionalCheckout() {
                                                         )}
                                                     </span>
                                                 </div>
+
+                                                {appliedVoucher && (
+                                                    <div className="flex flex-col gap-2 mb-2">
+                                                        <div className="flex justify-between items-center px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="material-symbols-outlined text-purple-600 text-[20px]">confirmation_number</span>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-medium text-purple-700">Mã giảm giá</span>
+                                                                    <span className="text-[10px] text-purple-600 font-mono tracking-wider">{appliedVoucher.code}</span>
+                                                                </div>
+                                                            </div>
+                                                            <span className="font-bold text-purple-600">-{formatPrice(appliedVoucher.discountAmount)}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <div className="h-px w-full bg-trad-border-warm/50 my-2"></div>
                                                 <div className="flex justify-between items-end">
                                                     <span className="text-lg font-bold text-trad-text-main">Tổng cộng</span>

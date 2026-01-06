@@ -21,10 +21,14 @@ interface OrderResult {
         province?: string;
         district?: string;
         ward?: string;
+        shipping_fee?: number;
+        delivery_method?: string;
     };
     payment_status: string;
     payment_method: string;
     tracking_code?: string;
+    voucher_code?: string;
+    voucher_discount_amount?: number;
 }
 
 export default function TraditionalOrderLookup() {
@@ -323,12 +327,96 @@ export default function TraditionalOrderLookup() {
                                                 <span className="material-symbols-outlined text-xl">payments</span>
                                             </div>
                                             <div className="w-full">
-                                                <h6 className="font-bold text-[#1b0d0e] mb-1">Thanh toán</h6>
-                                                <div className="flex justify-between items-baseline w-full mt-2">
-                                                    <span className="text-sm text-[#5c3a3c]">Tổng cộng</span>
-                                                    <span className="text-lg font-bold text-[#1b0d0e]">{formatPrice(result.total)}</span>
+                                                <h6 className="font-bold text-[#1b0d0e] mb-2">Thanh toán</h6>
+
+                                                {/* Price Breakdown */}
+                                                {(() => {
+                                                    // Calculate subtotal from items (original prices * quantity)
+                                                    const subtotal = result.items?.reduce((sum: number, item: any) => {
+                                                        const price = Number(item.original_price || item.price || 0);
+                                                        return sum + (price * Number(item.quantity || 1));
+                                                    }, 0) || 0;
+
+                                                    // Calculate product discount savings
+                                                    const productDiscount = result.items?.reduce((sum: number, item: any) => {
+                                                        const discountAmount = Number(item.discount_amount || 0);
+                                                        return sum + (discountAmount * Number(item.quantity || 1));
+                                                    }, 0) || 0;
+
+                                                    // Voucher discount
+                                                    const voucherDiscount = Number(result.voucher_discount_amount || 0);
+
+                                                    // Shipping fee from shipping_info
+                                                    const shippingFee = Number(result.shipping_info?.shipping_fee || 0);
+
+                                                    // Check if shipping is free (subtotal >= 300k or pickup)
+                                                    const subtotalAfterDiscount = subtotal - productDiscount;
+                                                    const isFreeShipping = shippingFee === 0 && subtotalAfterDiscount >= 300000;
+                                                    const isPickup = result.shipping_info?.delivery_method === 'pickup';
+
+                                                    return (
+                                                        <div className="space-y-1.5 border-b border-[#bbf7d0]/50 pb-3 mb-3">
+                                                            {/* Subtotal */}
+                                                            <div className="flex justify-between items-center text-sm">
+                                                                <span className="text-[#5c3a3c]">Tạm tính</span>
+                                                                <span className="text-[#1b0d0e]">{formatPrice(subtotal)}</span>
+                                                            </div>
+
+                                                            {/* Product Discount */}
+                                                            {productDiscount > 0 && (
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-[#5c3a3c] flex items-center gap-1">
+                                                                        <span className="material-symbols-outlined text-xs text-red-500">sell</span>
+                                                                        Giảm giá sản phẩm
+                                                                    </span>
+                                                                    <span className="text-red-500 font-medium">-{formatPrice(productDiscount)}</span>
+                                                                </div>
+                                                            )}
+
+
+
+                                                            {/* Shipping Fee */}
+                                                            <div className="flex justify-between items-center text-sm">
+                                                                <span className="text-[#5c3a3c] flex items-center gap-1">
+                                                                    <span className="material-symbols-outlined text-xs text-[#ea580c]">local_shipping</span>
+                                                                    Phí vận chuyển
+                                                                </span>
+                                                                {isPickup ? (
+                                                                    <span className="text-green-600 font-medium text-xs">Nhận tại cửa hàng</span>
+                                                                ) : isFreeShipping ? (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[#9a9a9a] line-through text-xs">{formatPrice(30000)}</span>
+                                                                        <span className="text-green-600 font-medium">Miễn phí</span>
+                                                                    </div>
+                                                                ) : shippingFee > 0 ? (
+                                                                    <span className="text-[#1b0d0e]">{formatPrice(shippingFee)}</span>
+                                                                ) : (
+                                                                    <span className="text-green-600 font-medium">Miễn phí</span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Voucher Discount */}
+                                                            {voucherDiscount > 0 && (
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-[#5c3a3c] flex items-center gap-1">
+                                                                        <span className="material-symbols-outlined text-xs text-purple-500">confirmation_number</span>
+                                                                        Voucher {result.voucher_code && <span className="text-xs text-purple-600">({result.voucher_code})</span>}
+                                                                    </span>
+                                                                    <span className="text-purple-600 font-medium">-{formatPrice(voucherDiscount)}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
+
+                                                {/* Total */}
+                                                <div className="flex justify-between items-baseline w-full">
+                                                    <span className="text-sm font-semibold text-[#1b0d0e]">Tổng cộng</span>
+                                                    <span className="text-xl font-bold text-[#16a34a]">{formatPrice(result.total)}</span>
                                                 </div>
-                                                <div className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#15803d] bg-[#dcfce7] px-2 py-1 rounded-md border border-[#bbf7d0]">
+
+                                                {/* Payment Status */}
+                                                <div className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#15803d] bg-[#dcfce7] px-2 py-1 rounded-md border border-[#bbf7d0]">
                                                     {result.payment_status === 'paid' ? (
                                                         <>
                                                             <span className="material-symbols-outlined text-[14px]">check</span>
