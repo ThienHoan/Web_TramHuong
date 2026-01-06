@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseGuards, UseInterceptors, UploadedFiles, BadRequestException } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -11,6 +12,8 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Get()
+    @UseInterceptors(CacheInterceptor)
+    @CacheTTL(120000) // 2 minutes cache for product listing
     async findAll(
         @Query('locale') locale: string,
         @Query('include_inactive') include_inactive?: string,

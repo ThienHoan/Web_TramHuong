@@ -22,8 +22,8 @@ export const productService = {
 
             const url = buildUrl('/products', params);
 
-            // Revalidate 0 for debugging, can be adjusted for production
-            const data = await fetchWithAuth<any>(url, { next: { revalidate: 0 } });
+            // Cache for 2 minutes, use revalidateTag('products') to clear when admin updates
+            const data = await fetchWithAuth<any>(url, { next: { revalidate: 120, tags: ['products'] } });
 
             const items = Array.isArray(data) ? data : (data.data || []);
             // Map quantity to stock to match frontend Type

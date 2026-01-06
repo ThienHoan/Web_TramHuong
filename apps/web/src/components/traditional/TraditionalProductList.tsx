@@ -11,6 +11,14 @@ import { useState, useEffect } from 'react';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import TraditionalProductCard from './TraditionalProductCard';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel"
+import EmptyState from '../ui/empty-state';
 
 export default function TraditionalProductList({ products }: { products: any[] }) {
     const t = useTranslations('HomePage');
@@ -164,42 +172,70 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 </div>
                             </div>
                             <div className="lg:col-span-7">
-                                <div className="grid gap-8 sm:grid-cols-2">
-                                    {/* Mock Products/Real Products Mapping */}
-                                    {displayProducts1.length > 0 ? displayProducts1.map((product) => (
-                                        <TraditionalProductCard key={product.id} product={product} />
-                                    )) : (
-                                        // Fallback if no products
-                                        <div className="group relative flex flex-col overflow-hidden rounded-md bg-white shadow-sm hover:shadow-xl transition-all duration-300 border border-trad-border-warm">
-                                            {/* ... Static HTML fallback/mock from original file ... */}
-                                            <div className="relative aspect-[4/5] overflow-hidden bg-trad-bg-warm">
-                                                <img alt="Hộp Nụ Trầm Cao Cấp" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg" />
+                                {displayProducts1.length > 0 ? (
+                                    <>
+                                        {displayProducts1.length > 3 ? (
+                                            <div className="col-span-full">
+                                                <Carousel
+                                                    opts={{
+                                                        align: "start",
+                                                        loop: true,
+                                                        dragFree: true,
+                                                    }}
+                                                    className="w-full"
+                                                >
+                                                    <CarouselContent className="-ml-4">
+                                                        {displayProducts1.map((product) => (
+                                                            <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                                                                <TraditionalProductCard product={product} />
+                                                            </CarouselItem>
+                                                        ))}
+                                                    </CarouselContent>
+                                                    <CarouselPrevious className="left-0 -translate-x-1/2" />
+                                                    <CarouselNext className="right-0 translate-x-1/2" />
+                                                </Carousel>
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="mt-10 flex justify-center">
-                                    <Link className="inline-flex items-center justify-center rounded-sm border border-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-trad-primary transition-all hover:bg-trad-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 group" href="/products/catalog">
-                                        Xem tất cả sản phẩm
-                                        <span className="material-symbols-outlined ml-2 text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
-                                    </Link>
-                                </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                                {displayProducts1.map((product) => (
+                                                    <TraditionalProductCard key={product.id} product={product} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="col-span-full">
+                                        <EmptyState
+                                            title="Đang cập nhật sản phẩm"
+                                            description="Bộ sưu tập này đang được chuẩn bị. Quý khách vui lòng quay lại sau."
+                                            icon="inventory_2"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
+                        <div className="mt-10 flex justify-center">
+                            <Link className="inline-flex items-center justify-center rounded-sm border border-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-trad-primary transition-all hover:bg-trad-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 group" href="/products/catalog">
+                                Xem tất cả sản phẩm
+                                <span className="material-symbols-outlined ml-2 text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+                            </Link>
+                        </div>
                     </div>
+
                 </section>
 
                 {/* Chapter 2 Divider */}
-                <div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA53Ox39qBj5FKKQEZ3-qcETM9i39kEbUZT9Ynxi9nZXdV7h4KyLsGNrye5hur-9UYFhigs1i88IYbe_7ITlciEDyQtDqCt_6jMfm8bB-bcz-Bok2HRENwXpziMTSxvgkKinp1xXpLvRxBvcOUM0TXTMmzqPzDf7-pXLfglXt_NiFjfaG2hIDYvLw54kCZ-XR1RXvfs5RKE26OizUGUZc4xhXFHZ6D_iv6jTV1kz9Hv0L117p4mnPyak6oeyuTEmxu_tMTKCqXWwmre')" }}>
+                < div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA53Ox39qBj5FKKQEZ3-qcETM9i39kEbUZT9Ynxi9nZXdV7h4KyLsGNrye5hur-9UYFhigs1i88IYbe_7ITlciEDyQtDqCt_6jMfm8bB-bcz-Bok2HRENwXpziMTSxvgkKinp1xXpLvRxBvcOUM0TXTMmzqPzDf7-pXLfglXt_NiFjfaG2hIDYvLw54kCZ-XR1RXvfs5RKE26OizUGUZc4xhXFHZ6D_iv6jTV1kz9Hv0L117p4mnPyak6oeyuTEmxu_tMTKCqXWwmre')" }
+                }>
                     <div className="absolute inset-0 bg-black/40"></div>
                     <div className="relative z-10 text-center text-white px-4">
                         <span className="material-symbols-outlined text-4xl mb-2 opacity-80">self_improvement</span>
                         <p className="font-display text-2xl md:text-3xl italic font-medium">"Hương trầm tỏa ra, phiền muộn tan biến."</p>
                     </div>
-                </div>
+                </div >
 
                 {/* Chapter 2: The Daily Ritual (An Yên) */}
-                <section className="bg-trad-bg-warm/50 py-20 lg:py-24 scroll-mt-20" id="chuong-2">
+                < section className="bg-trad-bg-warm/50 py-20 lg:py-24 scroll-mt-20" id="chuong-2" >
                     <div className="container mx-auto px-4 md:px-8 xl:px-20">
                         <div className="mb-12 flex flex-col items-center text-center">
                             <span className="mb-2 font-display text-4xl text-trad-primary/40">II</span>
@@ -291,10 +327,10 @@ export default function TraditionalProductList({ products }: { products: any[] }
                             )}
                         </div>
                     </div>
-                </section>
+                </section >
 
                 {/* Chapter 3: Premium Gifting */}
-                <section className="bg-trad-red-900 text-trad-bg-light py-24 lg:py-32 scroll-mt-20 relative overflow-hidden" id="chuong-3">
+                < section className="bg-trad-red-900 text-trad-bg-light py-24 lg:py-32 scroll-mt-20 relative overflow-hidden" id="chuong-3" >
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] opacity-20"></div>
                     <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-black/20 to-transparent"></div>
 
@@ -364,10 +400,10 @@ export default function TraditionalProductList({ products }: { products: any[] }
                             ))}
                         </div>
                     </div>
-                </section>
+                </section >
 
                 {/* Newsletter */}
-                <section className="relative overflow-hidden bg-trad-red-900 py-16 text-center text-white">
+                < section className="relative overflow-hidden bg-trad-red-900 py-16 text-center text-white" >
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
                     <div className="container relative z-10 mx-auto px-4">
                         <span className="material-symbols-outlined mb-4 text-5xl opacity-80">mark_email_unread</span>
@@ -380,10 +416,10 @@ export default function TraditionalProductList({ products }: { products: any[] }
                             <button className="rounded bg-trad-primary px-8 py-3 font-bold text-white shadow-lg hover:bg-trad-primary-dark hover:text-white transition-colors" type="submit">ĐĂNG KÝ</button>
                         </form>
                     </div>
-                </section>
-            </main>
+                </section >
+            </main >
 
             <TraditionalFooter />
-        </div>
+        </div >
     );
 }

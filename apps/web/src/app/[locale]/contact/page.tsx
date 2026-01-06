@@ -87,7 +87,7 @@ export default function ContactPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Chốn đi về</p>
-                                                    <p className="text-sm text-stone-600 mt-1">123 Đường Tơ Lụa, Phố Cổ<br />Hoàn Kiếm, Hà Nội</p>
+                                                    <p className="text-sm text-stone-600 mt-1">153 Lý Thái Tổ, Hương Trà <br />Thành Phố Huế</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-4">

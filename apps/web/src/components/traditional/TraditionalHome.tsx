@@ -11,8 +11,49 @@ import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import ScrollReveal from '../ui/ScrollReveal';
 import { SHIMMER_PRESETS } from '@/lib/image-blur';
+import EmptyState from '../ui/empty-state';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from '@/components/ui/carousel';
 
-export default function TraditionalHome({ products }: { products: any[] }) {
+const BANNER_SLIDES = [
+    {
+        id: 'huong-cua-dat-troi',
+        subtitle: 'Chương mở đầu',
+        title: <>Hương Của<br /><span className="text-accent-gold italic font-light">Đất Trời</span></>,
+        description: 'Từ những vết thương trên thân cây Dó Bầu, qua chục năm dãi dầu mưa nắng, kết tinh thành giọt máu của rừng già. Trầm hương Thiên Phúc - Nơi kể lại câu chuyện về mùi hương của sự bình an.',
+        ctaLabel: 'Khám Phá Ngay',
+        ctaHref: '/products',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTEhF6nYXUFQqme420x-8MjtH4uUg24dfEfHSdpSP-reCtR3k0ktxMrYVMWSisJwTHSr4IVwO_fshPCDxWX7XRypxRJNzU8M6BINOB_CjlV_0YLl4IgIR57eCpTIgReMORytWY9nWG22p_SgzALhYR2vFAJbY70G0JSEx6P7WFjJuvebfR3BTWlnCnsttcbZl6zVv3l1aZHhQ1F_oFISyKamvxcneSZBdgter7YNQ-Baj0A5nEsg6VI3o0ZY7d1e8VHTL9EDzIU-rW',
+        rightImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N'
+    },
+    {
+        id: 'tinh-hoa-tram-viet',
+        subtitle: 'Bộ Sưu Tập Mới',
+        title: <>Tinh Hoa<br /><span className="text-accent-gold italic font-light">Trầm Việt</span></>,
+        description: 'Tuyển chọn những phẩm vật trầm hương thượng hạng nhất, được chế tác thủ công bởi những nghệ nhân lành nghề, lưu giữ trọn vẹn hương thơm nguyên bản.',
+        ctaLabel: 'Xem Bộ Sưu Tập',
+        ctaHref: '/products',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH',
+        rightImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFQAJQ8CHWk4K1rLNZis7NU5TCjdTgej1LW0BY_W3udpP6I5ECvaXhqwGjt27vlvwkKQw27QGtaYVbmEi8JLnbdDbpflfjBwyRRFIheFX6duevY4tEeBAQjhiJaBLRtgIYCbJrE62U-k8rMKF6txndgCYnf6A0wS0ueAmdpFC0mZTPHwZpOhrnxV06i0NBxuqWbMCSSJ1PshSGR2SBdFm_7wUgYimVe71dpZPDCorf5JGn9Wae2i_a_NSaZ7K1z810psbyadlT0z6S'
+    },
+    {
+        id: 'thien-dinh-an-lanh',
+        subtitle: 'Không Gian Sống',
+        title: <>Thiền Định<br /><span className="text-accent-gold italic font-light">An Lành</span></>,
+        description: 'Kiến tạo không gian thanh tịnh cho ngôi nhà của bạn. Hương trầm dịu nhẹ giúp xua tan căng thẳng, mang lại sự thư thái và bình yên cho tâm hồn.',
+        ctaLabel: 'Trải Nghiệm Ngay',
+        ctaHref: '/products',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTEhF6nYXUFQqme420x-8MjtH4uUg24dfEfHSdpSP-reCtR3k0ktxMrYVMWSisJwTHSr4IVwO_fshPCDxWX7XRypxRJNzU8M6BINOB_CjlV_0YLl4IgIR57eCpTIgReMORytWY9nWG22p_SgzALhYR2vFAJbY70G0JSEx6P7WFjJuvebfR3BTWlnCnsttcbZl6zVv3l1aZHhQ1F_oFISyKamvxcneSZBdgter7YNQ-Baj0A5nEsg6VI3o0ZY7d1e8VHTL9EDzIU-rW',
+        rightImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaMfKhdb6cx3OTnyOpFgcezKGAgOymVCfBPhjvh1yrzFBz4GV72iqBUaR_n_0Td6QYwW77RfnAkNqfnt0ZGWT6SutKiecU_37xeoteDAluLNsJb7E6cZOol2EpKtf67HvrEg8kZay79T-QwIlvKt2ZocH-F57PWMR0PaRPksjRkAaHeL1pQwpTnyqQrzHRlZRdnsO9kAoN1-oD686utk5jKu2b4tz8hpp1K6SrbipwfugYkdF2gJLvH9JoO2YQZUF_bBm4pWAC7Qde'
+    }
+];
+
+export default function TraditionalHome({ products, posts = [] }: { products: any[], posts?: any[] }) {
     const t = useTranslations('HomePage');
     const { formatPrice } = useCurrency();
 
@@ -21,81 +62,91 @@ export default function TraditionalHome({ products }: { products: any[] }) {
 
     return (
         <div className="bg-brand-yellow font-display text-text-main antialiased selection:bg-primary selection:text-white bg-pattern-lotus flex flex-col min-h-screen">
-            {/* Live Chat Button
-            <a className="fixed bottom-8 right-6 z-50 group" href="#">
-                <div className="relative flex items-center justify-center size-14 bg-gradient-to-br from-[#0068FF] to-[#0041a3] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 ring-4 ring-white/30">
-                    <span className="material-symbols-outlined text-3xl">chat</span>
-                    <span className="absolute right-0 top-0 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                    </span>
-                </div>
-            </a> */}
-
             <TraditionalHeader />
 
             <main className="flex-1 overflow-x-hidden">
-                {/* Hero Section */}
-                <section className="relative w-full overflow-hidden bg-background-dark min-h-[85vh] flex items-center">
-                    <div className="absolute inset-0 z-0">
-                        <Image
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTEhF6nYXUFQqme420x-8MjtH4uUg24dfEfHSdpSP-reCtR3k0ktxMrYVMWSisJwTHSr4IVwO_fshPCDxWX7XRypxRJNzU8M6BINOB_CjlV_0YLl4IgIR57eCpTIgReMORytWY9nWG22p_SgzALhYR2vFAJbY70G0JSEx6P7WFjJuvebfR3BTWlnCnsttcbZl6zVv3l1aZHhQ1F_oFISyKamvxcneSZBdgter7YNQ-Baj0A5nEsg6VI3o0ZY7d1e8VHTL9EDzIU-rW"
-                            alt="Background texture"
-                            fill
-                            className="object-cover opacity-60 mix-blend-overlay"
-                            priority
-                            quality={75}
-                            sizes="100vw"
-                            placeholder="blur"
-                            blurDataURL={SHIMMER_PRESETS.hero}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/80 to-transparent"></div>
-                    </div>
-                    <div className="container mx-auto px-4 xl:px-8 relative z-10 py-12">
-                        <div className="grid lg:grid-cols-12 gap-12 items-center">
-                            <div className="lg:col-span-5 space-y-8">
-                                <ScrollReveal animation="fade-up" delay={200}>
-                                    <div className="inline-flex items-center gap-2 mb-2">
-                                        <div className="h-[1px] w-8 bg-accent-gold"></div>
-                                        <span className="text-accent-gold uppercase tracking-[0.3em] text-xs font-bold">Chương mở đầu</span>
+                {/* Hero Carousel Section */}
+                <section className="relative w-full bg-background-dark min-h-[85vh] flex items-stretch">
+                    <Carousel className="w-full flex" opts={{ loop: true, duration: 60 }}>
+                        <CarouselContent className="m-0 h-full">
+                            {BANNER_SLIDES.map((slide, index) => (
+                                <CarouselItem key={slide.id} className="p-0 relative h-full min-h-[85vh] flex items-center pl-0">
+                                    {/* Slide Background */}
+                                    <div className="absolute inset-0 z-0">
+                                        <Image
+                                            src={slide.image}
+                                            alt="Background texture"
+                                            fill
+                                            className="object-cover opacity-60 mix-blend-overlay"
+                                            priority={index === 0}
+                                            quality={75}
+                                            sizes="100vw"
+                                            placeholder="blur"
+                                            blurDataURL={SHIMMER_PRESETS.hero}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/80 to-transparent"></div>
                                     </div>
-                                    <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-white mt-4">
-                                        Hương Của<br />
-                                        <span className="text-accent-gold italic font-light">Đất Trời</span>
-                                    </h2>
-                                    <p className="text-lg text-white/90 font-normal leading-relaxed mt-6">
-                                        Từ những vết thương trên thân cây Dó Bầu, qua chục năm dãi dầu mưa nắng, kết tinh thành giọt máu của rừng già. Trầm hương Thiên Phúc - Nơi kể lại câu chuyện về mùi hương của sự bình an.
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row gap-4 pt-8">
-                                        <Link href="/products">
-                                            <button className="group inline-flex h-14 items-center justify-center rounded-full bg-primary px-8 text-base font-bold text-white shadow-lg transition-all hover:bg-primary-dark border border-primary">
-                                                <span>Khám Phá Ngay</span>
-                                                <span className="material-symbols-outlined ml-2 text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                            </button>
-                                        </Link>
+
+                                    {/* Slide Content */}
+                                    <div className="container mx-auto px-4 xl:px-8 relative z-10 py-12 w-full">
+                                        <div className="grid lg:grid-cols-12 gap-12 items-center">
+                                            <div className="lg:col-span-5 space-y-8">
+                                                <ScrollReveal animation="fade-up" delay={200} key={slide.id}>
+                                                    <div className="inline-flex items-center gap-2 mb-2">
+                                                        <div className="h-[1px] w-8 bg-accent-gold"></div>
+                                                        <span className="text-accent-gold uppercase tracking-[0.3em] text-xs font-bold">{slide.subtitle}</span>
+                                                    </div>
+                                                    <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-white mt-4">
+                                                        {slide.title}
+                                                    </h2>
+                                                    <p className="text-lg text-white/90 font-normal leading-relaxed mt-6">
+                                                        {slide.description}
+                                                    </p>
+                                                    <div className="flex flex-col sm:flex-row gap-4 pt-8">
+                                                        <Link href={slide.ctaHref}>
+                                                            <button className="group inline-flex h-14 items-center justify-center rounded-full bg-primary px-8 text-base font-bold text-white shadow-lg transition-all hover:bg-primary-dark border border-primary">
+                                                                <span>{slide.ctaLabel}</span>
+                                                                <span className="material-symbols-outlined ml-2 text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                                            </button>
+                                                        </Link>
+                                                    </div>
+                                                </ScrollReveal>
+                                            </div>
+
+                                            <div className="lg:col-span-7 relative h-[500px] lg:h-[600px] flex items-center justify-center">
+                                                <ScrollReveal animation="fade-in" duration={1000} delay={300} key={`img-${slide.id}`} className="relative w-full h-full flex items-center justify-center">
+                                                    <div className="absolute w-[90%] h-[90%] border border-white/5 rounded-full animate-spin duration-[20s]"></div>
+                                                    <div className="absolute w-[70%] h-[70%] border border-accent-gold/20 rounded-full"></div>
+                                                    <div className="relative z-10 w-[320px] md:w-[400px] h-[400px] md:h-[500px]">
+                                                        <div className="absolute -inset-4 bg-accent-gold/20 blur-3xl rounded-full opacity-50"></div>
+                                                        <Image
+                                                            src={slide.rightImage}
+                                                            alt={typeof slide.title === 'string' ? slide.title : 'Banner Image'}
+                                                            fill
+                                                            className="relative z-10 object-cover drop-shadow-2xl"
+                                                            priority={index === 0}
+                                                            quality={90}
+                                                            sizes="(max-width: 768px) 320px, 400px"
+                                                            placeholder="blur"
+                                                            blurDataURL={SHIMMER_PRESETS.square}
+                                                        />
+                                                    </div>
+                                                </ScrollReveal>
+                                            </div>
+                                        </div>
                                     </div>
-                                </ScrollReveal>
-                            </div>
-                            <div className="lg:col-span-7 relative h-[500px] lg:h-[600px] flex items-center justify-center">
-                                <div className="absolute w-[90%] h-[90%] border border-white/5 rounded-full animate-spin duration-[20s]"></div>
-                                <div className="absolute w-[70%] h-[70%] border border-accent-gold/20 rounded-full"></div>
-                                <div className="relative z-10 w-[320px] md:w-[400px] h-[400px] md:h-[500px]">
-                                    <div className="absolute -inset-4 bg-accent-gold/20 blur-3xl rounded-full opacity-50"></div>
-                                    <Image
-                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N"
-                                        alt="Premium Agarwood Box"
-                                        fill
-                                        className="relative z-10 object-cover drop-shadow-2xl"
-                                        priority
-                                        quality={90}
-                                        sizes="(max-width: 768px) 320px, 400px"
-                                        placeholder="blur"
-                                        blurDataURL={SHIMMER_PRESETS.square}
-                                    />
-                                </div>
-                            </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+
+                        {/* Navigation Buttons - Positioned Absolutely */}
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+                            <CarouselPrevious className="relative left-0 bg-white/10 hover:bg-accent-gold border-white/20 text-white hover:text-white" />
                         </div>
-                    </div>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+                            <CarouselNext className="relative right-0 bg-white/10 hover:bg-accent-gold border-white/20 text-white hover:text-white" />
+                        </div>
+                    </Carousel>
                 </section>
 
 
@@ -541,74 +592,51 @@ export default function TraditionalHome({ products }: { products: any[] }) {
                                     <span className="text-primary font-bold uppercase tracking-widest text-sm mb-2 block">Góc Chia Sẻ</span>
                                     <h2 className="text-3xl md:text-4xl font-serif font-bold text-text-main">Kiến Thức & Đời Sống</h2>
                                 </div>
-                                <a className="hidden sm:inline-flex items-center gap-2 text-sm font-bold text-text-main hover:text-primary transition-colors uppercase tracking-wide" href="#">
+                                <Link className="hidden sm:inline-flex items-center gap-2 text-sm font-bold text-text-main hover:text-primary transition-colors uppercase tracking-wide" href="/blog">
                                     Xem tất cả <span className="material-symbols-outlined text-lg font-bold">arrow_forward</span>
-                                </a>
+                                </Link>
                             </div>
                         </ScrollReveal>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                            <ScrollReveal delay={100} animation="fade-up" className="h-full">
-                                <article className="group cursor-pointer h-full">
-                                    <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
-                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">Phong Thủy</div>
-                                        <Image
-                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMkN0jXAptukKsupSJmxfaDSbe9xHqfIrdP4Pu4-_SxXY4xG69k1MrMSVmNhSBMP2y0GfkHnD5cUl8VQ-csDrLHBGMfJPwZ_KkVkTGerJF_0DkQRXiZY5Im-yLe48z90sgfAnKzi13NJUce1u9f9KdAqEMe4H_tLB8QIS1rsaP9mbgzbaI7wQGsTLxez20crymrNQgT7zOQXSQw3_iOb2vKrTc5bXNZ86R-pFobgtMJdVcQAlA_ghchkbatoBWr3VlQMY-JJKMGAvR"
-                                            alt="Tea ceremony"
-                                            fill
-                                            className="object-cover"
-                                            quality={75}
-                                            sizes="(max-width: 768px) 100vw, 50vw"
-                                            loading="lazy"
-                                            placeholder="blur"
-                                            blurDataURL={SHIMMER_PRESETS.landscape}
-                                        />
-                                    </div>
-                                    <div className="space-y-3 pr-4">
-                                        <div className="flex items-center text-xs text-text-sub font-bold gap-2 uppercase tracking-wide">
-                                            <span>12 Tháng 10, 2023</span>
-                                            <span>•</span>
-                                            <span>5 phút đọc</span>
-                                        </div>
-                                        <h3 className="text-2xl font-serif font-bold text-text-main group-hover:text-primary transition-colors leading-tight">Công Dụng Của Trầm Hương Theo Phong Thủy Và Đời Sống</h3>
-                                        <p className="text-text-main/90 font-medium line-clamp-2">Trầm hương được mệnh danh là &#39;Vua của các bậc phong thủy&#39; bởi khả năng xua đuổi tà khí, mang lại may mắn và tài lộc cho gia chủ...</p>
-                                        <span className="inline-block text-sm font-bold text-primary underline decoration-transparent group-hover:decoration-primary transition-all">Đọc tiếp</span>
-                                    </div>
-                                </article>
-                            </ScrollReveal>
-                            <ScrollReveal delay={200} animation="fade-up" className="h-full">
-                                <article className="group cursor-pointer h-full">
-                                    <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
-                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">Kiến Thức</div>
-                                        <Image
-                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaMfKhdb6cx3OTnyOpFgcezKGAgOymVCfBPhjvh1yrzFBz4GV72iqBUaR_n_0Td6QYwW77RfnAkNqfnt0ZGWT6SutKiecU_37xeoteDAluLNsJb7E6cZOol2EpKtf67HvrEg8kZay79T-QwIlvKt2ZocH-F57PWMR0PaRPksjRkAaHeL1pQwpTnyqQrzHRlZRdnsO9kAoN1-oD686utk5jKu2b4tz8hpp1K6SrbipwfugYkdF2gJLvH9JoO2YQZUF_bBm4pWAC7Qde"
-                                            alt="Incense smoke"
-                                            fill
-                                            className="object-cover"
-                                            quality={75}
-                                            sizes="(max-width: 768px) 100vw, 50vw"
-                                            loading="lazy"
-                                            placeholder="blur"
-                                            blurDataURL={SHIMMER_PRESETS.landscape}
-                                        />
-                                    </div>
-                                    <div className="space-y-3 pr-4">
-                                        <div className="flex items-center text-xs text-text-sub font-bold gap-2 uppercase tracking-wide">
-                                            <span>05 Tháng 10, 2023</span>
-                                            <span>•</span>
-                                            <span>3 phút đọc</span>
-                                        </div>
-                                        <h3 className="text-2xl font-serif font-bold text-text-main group-hover:text-primary transition-colors leading-tight">Cách Phân Biệt Trầm Hương Thật Giả Đơn Giản Tại Nhà</h3>
-                                        <p className="text-text-main/90 font-medium line-clamp-2">Trên thị trường hiện nay có rất nhiều loại trầm giả tẩm hóa chất độc hại. Hãy cùng chuyên gia của Thiên Phúc tìm hiểu cách nhận biết chính xác...</p>
-                                        <span className="inline-block text-sm font-bold text-primary underline decoration-transparent group-hover:decoration-primary transition-all">Đọc tiếp</span>
-                                    </div>
-                                </article>
-                            </ScrollReveal>
+                            {posts.length > 0 ? (
+                                posts.slice(0, 2).map((post, index) => (
+                                    <ScrollReveal key={post.id} delay={100 * (index + 1)} animation="fade-up" className="h-full">
+                                        <Link href={`/blog/${post.slug}`} className="group cursor-pointer h-full block">
+                                            <article className="h-full flex flex-col">
+                                                <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
+                                                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">{post.category?.name || 'Kiến Thức'}</div>
+                                                    <Image
+                                                        alt={post.title}
+                                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                                        fill
+                                                        src={post.image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
+                                                        placeholder="blur"
+                                                        blurDataURL={SHIMMER_PRESETS.landscape}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 flex flex-col">
+                                                    <div className="flex items-center gap-4 text-xs font-medium text-text-muted mb-3">
+                                                        <span>{new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(post.published_at || post.created_at))}</span>
+                                                        <span className="w-1 h-1 rounded-full bg-accent-gold"></span>
+                                                        <span>5 phút đọc</span>
+                                                    </div>
+                                                    <h3 className="text-xl font-bold font-serif mb-3 group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                                                    <p className="text-text-muted text-sm line-clamp-3 mb-4 leading-relaxed flex-1">{post.excerpt || post.content?.substring(0, 150) + '...'}</p>
+                                                    <span className="text-primary font-bold text-sm uppercase tracking-wide group-hover:underline decoration-accent-gold underline-offset-4">Đọc tiếp</span>
+                                                </div>
+                                            </article>
+                                        </Link>
+                                    </ScrollReveal>
+                                ))
+                            ) : (
+                                <div className="col-span-2 text-center py-10 text-text-sub">Chưa có bài viết nào.</div>
+                            )}
                         </div>
                     </div>
-                </section>
-            </main>
+                </section >
+            </main >
 
             <TraditionalFooter />
-        </div>
+        </div >
     );
 }

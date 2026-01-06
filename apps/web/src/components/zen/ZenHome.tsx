@@ -7,8 +7,9 @@ import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
 import ZenFooter from './ZenFooter';
+import ScrollReveal from '../ui/ScrollReveal';
 
-export default function ZenHome({ products }: { products: any[] }) {
+export default function ZenHome({ products, posts = [] }: { products: any[], posts?: any[] }) {
     const { formatPrice } = useCurrency();
     const t = useTranslations('HomePage');
 
@@ -96,7 +97,7 @@ export default function ZenHome({ products }: { products: any[] }) {
                 {/* Story Section */}
                 <section className="py-24 bg-zen-50 dark:bg-[#151515] relative overflow-hidden" id="story">
                     <div className="absolute top-0 right-0 w-1/3 h-full bg-zen-100/50 dark:bg-white/5 skew-x-12 transform translate-x-20 pointer-events-none"></div>
-                    <div className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+                    <ScrollReveal animation="fade-up" className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
                         <div className="order-2 lg:order-1 space-y-10">
                             <div>
                                 <span className="block text-zen-secondary text-[10px] uppercase tracking-superwide mb-4">Provenance &amp; Craft</span>
@@ -133,12 +134,12 @@ export default function ZenHome({ products }: { products: any[] }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 </section>
 
                 {/* Newsletter */}
                 <section className="py-32 bg-zen-50 dark:bg-zinc-950 border-t border-zen-100 dark:border-zinc-900">
-                    <div className="max-w-3xl mx-auto px-6 text-center">
+                    <ScrollReveal animation="fade-up" className="max-w-3xl mx-auto px-6 text-center">
                         <span className="material-symbols-outlined text-4xl font-thin text-zen-secondary mb-6 block mx-auto">spa</span>
                         <h2 className="text-3xl md:text-4xl font-zen-display font-light text-zen-900 dark:text-white mb-6 tracking-wide">
                             Join the Circle of Stillness
@@ -153,7 +154,7 @@ export default function ZenHome({ products }: { products: any[] }) {
                             </button>
                         </form>
                         <p className="text-[10px] text-gray-400 mt-4 tracking-wide">We respect your privacy and inbox peace.</p>
-                    </div>
+                    </ScrollReveal>
                 </section>
             </main>
 

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, BadRequestException, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { CategoriesService } from './categories.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -10,6 +11,8 @@ export class CategoriesController {
     constructor(private readonly categoriesService: CategoriesService) { }
 
     @Get()
+    @UseInterceptors(CacheInterceptor)
+    @CacheTTL(300000) // 5 minutes cache for categories (rarely changes)
     async findAll(
         @Query('locale') locale: string,
         @Query('include_inactive') include_inactive?: string,

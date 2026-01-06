@@ -95,29 +95,26 @@ export function ProductPrice({
     const sizes = sizeClasses[size];
     const styles = themeClasses[theme];
 
-    if (isActive) {
-        return (
-            <div className={`flex flex-col gap-1 ${className}`}>
-                <p className={`${sizes.original} ${styles.original} line-through`}>
-                    {formatPrice(originalPrice)}
-                </p>
-                <div className={`flex items-center gap-2 ${badgePosition === 'bottom' ? 'flex-col items-start' : ''}`}>
-                    <p className={`${sizes.price} font-bold ${styles.discountPrice}`}>
-                        {formatPrice(finalPrice)}
-                    </p>
-                    {showBadge && (
-                        <span className={`${sizes.badge} ${styles.badge} font-bold rounded`}>
-                            -{discountPercent}%
-                        </span>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <p className={`${sizes.price} font-bold ${styles.normalPrice} ${className}`}>
-            {formatPrice(originalPrice)}
-        </p>
+        <div className={`flex flex-col gap-1 ${className}`}>
+            <p className={`${sizes.original} ${styles.original} ${isActive ? 'line-through' : 'opacity-0 select-none'}`}>
+                {formDataPrice(originalPrice)}
+            </p>
+            <div className={`flex items-center gap-2 ${badgePosition === 'bottom' ? 'flex-col items-start' : ''}`}>
+                <p className={`${sizes.price} font-bold ${isActive ? styles.discountPrice : styles.normalPrice}`}>
+                    {formatPrice(isActive ? finalPrice : originalPrice)}
+                </p>
+                {isActive && showBadge && (
+                    <span className={`${sizes.badge} ${styles.badge} font-bold rounded`}>
+                        -{discountPercent}%
+                    </span>
+                )}
+            </div>
+        </div>
     );
+}
+
+// Helper to format price for placeholder (just to keep height correct, use originalPrice or 0)
+function formDataPrice(price: number | string) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(price));
 }

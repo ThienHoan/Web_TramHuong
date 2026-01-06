@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,6 +24,12 @@ import { ChatModule } from './chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '../../.env' }),
+    // In-memory cache: TTL 60 seconds default
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 60000, // 60 seconds in ms
+      max: 100, // max items in cache
+    }),
     ScheduleModule.forRoot(),
     // Rate Limiting: 100 requests per 60 seconds
     ThrottlerModule.forRoot([{
