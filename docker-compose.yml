@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Backend API (NestJS)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: tramhuong-api
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      # Supabase & Auth config (Replace with real values in .env)
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - SEPAY_API_KEY=${SEPAY_API_KEY}
+      - SEPAY_ACCOUNT_NUMBER=${SEPAY_ACCOUNT_NUMBER}
+    networks:
+      - tramhuong-network
+
+  # Frontend Web (Next.js)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      # Next.js build needs API URL to bake into static pages if needed, 
+      # but mostly client-side envs.
+    container_name: tramhuong-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_SEPAY_ACCOUNT_NUMBER=${NEXT_PUBLIC_SEPAY_ACCOUNT_NUMBER}
+    depends_on:
+      - api
+    networks:
+      - tramhuong-network
+
+networks:
+  tramhuong-network:
+    driver: bridge

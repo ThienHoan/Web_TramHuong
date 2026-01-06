@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
+import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SupabaseModule } from './supabase/supabase.module';
@@ -24,11 +25,42 @@ import { ChatModule } from './chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '../../.env' }),
+    // Structured Logging with Pino
+    LoggerModule.forRoot({
+      pinoHttp: {
+        // Pretty print in development, JSON in production
+        transport: process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { singleLine: true } }
+          : undefined,
+        // Redact sensitive data
+        redact: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'req.headers["x-api-key"]',
+          'req.body.password',
+          'req.body.token',
+          'req.body.refreshToken',
+          'req.body.access_token'
+        ],
+        // Auto-assign request ID if missing
+        genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
+        // Custom log levels: 5xx=error, 4xx=warn, others=info
+        customLogLevel: (req, res, err) => {
+          if (res.statusCode >= 500 || err) return 'error';
+          if (res.statusCode >= 400) return 'warn';
+          return 'info';
+        },
+        // Capture client IP
+        customProps: (req, res) => ({
+          ip: req.headers['x-forwarded-for'] || req.socket?.remoteAddress,
+        }),
+      },
+    }),
     // In-memory cache: TTL 60 seconds default
     CacheModule.register({
       isGlobal: true,
-      ttl: 60000, // 60 seconds in ms
-      max: 100, // max items in cache
+      ttl: 60000,
+      max: 100,
     }),
     ScheduleModule.forRoot(),
     // Rate Limiting: 100 requests per 60 seconds
@@ -61,3 +93,4 @@ import { ChatModule } from './chat/chat.module';
   ],
 })
 export class AppModule { }
+
