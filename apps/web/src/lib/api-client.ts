@@ -27,8 +27,18 @@ export async function lookupOrder(orderCode: string, emailOrPhone: string): Prom
     });
 
     if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Không tìm thấy đơn hàng');
+        let errorData: any = {};
+        try {
+            errorData = await res.json();
+        } catch (e) {
+            // Ignore if JSON parse fails
+        }
+
+        throw {
+            status: res.status,
+            message: errorData.message || 'Không tìm thấy đơn hàng',
+            errors: errorData.errors
+        };
     }
 
     return await res.json();
@@ -89,7 +99,16 @@ export async function chatWithAI(message: string, history: any[] = []): Promise<
     });
 
     if (!res.ok) {
-        throw new Error('AI Chat Error');
+        let errorData: any = {};
+        try {
+            errorData = await res.json();
+        } catch { }
+
+        throw {
+            status: res.status,
+            message: errorData.message || 'AI Chat Error',
+            errors: errorData.errors
+        };
     }
 
     return await res.json();
@@ -120,7 +139,16 @@ export async function chatWithAIStream(
     });
 
     if (!res.ok) {
-        throw new Error('AI Stream Error');
+        let errorData: any = {};
+        try {
+            errorData = await res.json();
+        } catch { }
+
+        throw {
+            status: res.status,
+            message: errorData.message || 'AI Stream Error',
+            errors: errorData.errors
+        };
     }
 
     const reader = res.body?.getReader();

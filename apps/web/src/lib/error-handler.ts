@@ -7,6 +7,7 @@ export interface ApiResult<T> {
     data: T | null;
     error: string | null;
     status?: number;
+    errors?: string[]; // Add errors support for form fields if needed later
 }
 
 /**
@@ -54,6 +55,38 @@ const ERROR_MESSAGES: Record<string, string> = {
 export function parseApiError(error: unknown): string {
     if (!error) return 'Đã có lỗi xảy ra.';
 
+    // Check for structured error object with status
+    const err = error as any;
+    const status = err?.status || err?.statusCode;
+
+    if (status) {
+        switch (status) {
+            case 400:
+                // Prioritize validation errors array
+                if (Array.isArray(err.errors) && err.errors.length > 0) {
+                    return err.errors[0];
+                }
+                return err.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+            case 401:
+                return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+            case 403:
+                return 'Bạn không có quyền thực hiện thao tác này.';
+            case 404:
+                return 'Không tìm thấy dữ liệu yêu cầu.';
+            case 409:
+                return err.message || 'Dữ liệu bị trùng lặp.';
+            case 429:
+                return 'Bạn đang thao tác quá nhanh. Vui lòng thử lại sau.';
+            case 500:
+            case 502:
+            case 503:
+                return 'Lỗi hệ thống. Vui lòng thử lại sau.';
+            default:
+                // Fallback to message if available
+                if (err.message) return err.message;
+        }
+    }
+
     // Handle Error objects
     if (error instanceof Error) {
         const message = error.message;
@@ -82,9 +115,8 @@ export function parseApiError(error: unknown): string {
         return error;
     }
 
-    // Handle API response object
+    // Fallback for object with message prop but no status
     if (typeof error === 'object' && error !== null) {
-        const err = error as any;
         if (err.message) {
             return parseApiError(err.message);
         }
