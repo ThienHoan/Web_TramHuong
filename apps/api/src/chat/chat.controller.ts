@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import type { Response, Request } from 'express';
-import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 
 // Validation constants
 const MAX_MESSAGE_LENGTH = 500;
@@ -11,6 +11,7 @@ const MAX_HISTORY_LENGTH = 20;
 function sanitizeMessage(message: string): string {
     if (!message || typeof message !== 'string') return '';
     // Remove control characters except newlines
+    // eslint-disable-next-line no-control-regex
     return message.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
 }
 
@@ -20,7 +21,7 @@ export class ChatController {
 
     @Post('message')
     @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute for chat
-    async handleMessage(@Body() body: { message: string; history?: any[] }, @Req() req: Request) {
+    async handleMessage(@Body() body: { message: string; history?: any[] }, @Req() _req: Request) {
         // Sanitize and validate message
         const message = sanitizeMessage(body.message);
         if (!message) {
@@ -74,7 +75,7 @@ export class ChatController {
             for await (const chunk of streamGenerator) {
                 res.write(chunk);
             }
-        } catch (error) {
+        } catch (_error) {
             res.write(`data: ${JSON.stringify({ type: 'error', content: 'Stream error' })}\n\n`);
         } finally {
             res.end();

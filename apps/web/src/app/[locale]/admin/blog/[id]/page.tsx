@@ -30,13 +30,13 @@ export default function AdminBlogEditPage() {
             // Fetch post by ID directly (Backend now supports ID lookup via slug param)
             const fetchPost = async () => {
                 try {
-                    const post = await getPostBySlug(id); // Effectively getById
-                    if (post) {
-                        Object.entries(post).forEach(([key, value]) => {
+                    const result = await getPostBySlug(id); // Returns { data, error }
+                    if (result.data) {
+                        Object.entries(result.data).forEach(([key, value]) => {
                             setValue(key as any, value);
                         });
                     } else {
-                        toast.error('Post not found');
+                        toast.error(result.error || 'Post not found');
                         router.push('/admin/blog');
                     }
                 } catch (e) {

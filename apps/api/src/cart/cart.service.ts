@@ -1,6 +1,37 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
+// INTERFACES
+interface ProductVariant {
+    name: string;
+    price: number;
+}
+
+interface ProductTranslation {
+    title: string;
+    locale: string;
+}
+
+interface Product {
+    id: string;
+    slug: string;
+    price: number;
+    images: string[];
+    variants: ProductVariant[];
+    discount_percentage: number;
+    discount_start_date: string;
+    discount_end_date: string;
+    translations: ProductTranslation[];
+}
+
+interface CartItemDb {
+    id: string;
+    quantity: number;
+    variant_id?: string;
+    variant_name?: string;
+    product: Product;
+}
+
 @Injectable()
 export class CartService {
     constructor(private readonly supabase: SupabaseService) { }
@@ -32,7 +63,7 @@ export class CartService {
         if (error) throw new BadRequestException(error.message);
 
         // Transform to simplified CartItem format for frontend
-        return data.map((item: any) => {
+        return (data as unknown as CartItemDb[]).map((item) => {
             const product = item.product;
             // Best effort title (VI -> EN -> first available)
             const title = product.translations?.find((t: any) => t.locale === 'vi')?.title
@@ -44,7 +75,7 @@ export class CartService {
             // Resolve variant price
             if (item.variant_id && Array.isArray(product.variants)) {
                 // We stored variant name in variant_id for now
-                const variant = product.variants.find((v: any) => v.name === item.variant_id);
+                const variant = product.variants.find((v) => v.name === item.variant_id);
                 if (variant && variant.price !== undefined) {
                     price = Number(variant.price);
                 }
@@ -63,7 +94,7 @@ export class CartService {
             const finalPrice = isDiscountActive
                 ? Math.round(price * (1 - discountPercent / 100))
                 : price;
-            
+
             const discountAmount = isDiscountActive ? (price - finalPrice) : 0;
 
             return {
@@ -82,7 +113,7 @@ export class CartService {
         });
     }
 
-    async mergeCart(userId: string, items: any[]) {
+    async mergeCart(userId: string, items: { id: string; quantity: number; variantId?: string; variantName?: string }[]) {
         if (!items || items.length === 0) return { success: true };
 
         for (const item of items) {

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -294,13 +295,13 @@ export class ProductsService {
         };
     }
 
-    async create(body: any, files: Array<Express.Multer.File>) {
+    async create(body: CreateProductDto, files: Array<Express.Multer.File>) {
         // Handle images: prioritize pre-uploaded URLs from body, fallback to file uploads
         let imageUrls: string[] = [];
 
         if (body.images && Array.isArray(body.images)) {
             // New workflow: Images already uploaded to Supabase Storage via /storage/upload endpoint
-            imageUrls = body.images;
+            imageUrls = body.images || [];
         } else if (files && files.length > 0) {
             // Legacy workflow: Upload files directly
             imageUrls = await Promise.all(files.map(file => this.uploadImage(file)));
@@ -315,6 +316,8 @@ export class ProductsService {
         if (category) {
             const { data: catData } = await client.from('categories').select('id').eq('slug', category).single();
             if (catData) category_id = catData.id;
+        } else if (body.category === '') {
+            category_id = null; // explicit Unlink if needed
         }
 
         // Parse Variants (if sent as stringified JSON in FormData)
@@ -337,14 +340,14 @@ export class ProductsService {
                 original_price: original_price ? parseFloat(original_price.toString().replace(/\./g, '')) : null,
                 images: imageUrls, // Store as JSONB Array
                 category_id: category_id,
-                quantity: quantity ? parseInt(quantity) : 0,
+                quantity: typeof quantity === 'number' ? quantity : parseInt(String(quantity)),
                 style: body.style || 'both',
                 is_active: true,
-                is_featured: body.is_featured === 'true' || body.is_featured === true,
+                is_featured: String(body.is_featured) === 'true' || body.is_featured === true,
                 featured_section: body.featured_section || null,
                 variants: parsedVariants,
                 // Discount fields
-                discount_percentage: body.discount_percentage ? parseInt(body.discount_percentage) : 0,
+                discount_percentage: body.discount_percentage ? Number(body.discount_percentage) : 0,
                 discount_start_date: body.discount_start_date || null,
                 discount_end_date: body.discount_end_date || null,
             })
@@ -384,7 +387,7 @@ export class ProductsService {
         return product;
     }
 
-    async update(id: string, body: any, files?: Array<Express.Multer.File>) {
+    async update(id: string, body: UpdateProductDto, files?: Array<Express.Multer.File>) {
         console.log('Update Product ID:', id);
         console.log('Update Body:', JSON.stringify(body));
 
@@ -395,7 +398,9 @@ export class ProductsService {
         let keepImages: string[] = [];
         if (body.keep_images) {
             try {
-                keepImages = typeof body.keep_images === 'string' ? JSON.parse(body.keep_images) : body.keep_images;
+                // Ensure keep_images is an array of strings
+                const parsed = typeof body.keep_images === 'string' ? JSON.parse(body.keep_images) : body.keep_images;
+                if (Array.isArray(parsed)) keepImages = parsed;
             } catch { }
         }
 
@@ -430,9 +435,9 @@ export class ProductsService {
                 if (catData) updateData.category_id = catData.id;
             }
         }
-        if (body.quantity !== undefined && body.quantity !== null) updateData.quantity = parseInt(body.quantity);
-        if (body.is_active !== undefined) updateData.is_active = body.is_active === 'true' || body.is_active === true;
-        if (body.is_featured !== undefined) updateData.is_featured = body.is_featured === 'true' || body.is_featured === true;
+        if (body.quantity !== undefined && body.quantity !== null) updateData.quantity = Number(body.quantity);
+        if (body.is_active !== undefined) updateData.is_active = String(body.is_active) === 'true' || body.is_active === true;
+        if (body.is_featured !== undefined) updateData.is_featured = String(body.is_featured) === 'true' || body.is_featured === true;
 
         if (body.featured_section !== undefined) {
             updateData.featured_section = body.featured_section === '' ? null : body.featured_section;
@@ -440,7 +445,7 @@ export class ProductsService {
 
         // Discount fields
         if (body.discount_percentage !== undefined) {
-            updateData.discount_percentage = parseInt(body.discount_percentage) || 0;
+            updateData.discount_percentage = Number(body.discount_percentage) || 0;
         }
         if (body.discount_start_date !== undefined) {
             updateData.discount_start_date = body.discount_start_date || null;

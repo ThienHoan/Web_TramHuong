@@ -1,4 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { SupabaseService } from '../supabase/supabase.service';
 import { IS_PUBLIC_KEY } from './public.decorator';
@@ -53,9 +54,9 @@ export class AuthGuard implements CanActivate {
 
             if (roleError || !userData) {
                 // Fallback or treat as customer
-                request.user = { ...user, role: 'CUSTOMER' };
+                (request as any).user = { ...user, role: 'CUSTOMER' };
             } else {
-                request.user = { ...user, role: userData.role };
+                (request as any).user = { ...user, role: userData.role };
             }
 
             return true;
@@ -65,7 +66,7 @@ export class AuthGuard implements CanActivate {
         }
     }
 
-    private extractTokenFromHeader(request: any): string | undefined {
+    private extractTokenFromHeader(request: Request): string | undefined {
         const [type, token] = request.headers.authorization?.split(' ') ?? [];
         return type === 'Bearer' ? token : undefined;
     }

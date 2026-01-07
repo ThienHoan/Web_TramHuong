@@ -1,6 +1,40 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
+// INTERFACES
+export interface CategoryTranslation {
+    id?: string;
+    category_id?: string;
+    locale: string;
+    name: string;
+    description?: string;
+}
+
+export interface Category {
+    id: string;
+    slug: string;
+    is_active: boolean;
+    translations: CategoryTranslation[];
+}
+
+export interface CreateCategoryDto {
+    name_en: string;
+    name_vi: string;
+    description_en?: string;
+    description_vi?: string;
+    slug: string;
+    is_active?: boolean;
+}
+
+export interface UpdateCategoryDto {
+    name_en?: string;
+    name_vi?: string;
+    description_en?: string;
+    description_vi?: string;
+    slug?: string;
+    is_active?: boolean;
+}
+
 @Injectable()
 export class CategoriesService {
     constructor(private readonly supabase: SupabaseService) { }
@@ -28,7 +62,7 @@ export class CategoriesService {
             throw error;
         }
 
-        const items = data.map((category: any) => {
+        const items = (data as unknown as Category[]).map((category) => {
             const translation = category.translations?.[0] || {};
             const { translations, ...rest } = category;
             return {
@@ -64,7 +98,7 @@ export class CategoriesService {
         return data;
     }
 
-    async create(body: any) {
+    async create(body: CreateCategoryDto) {
         const client = this.supabase.getClient();
         const { name_en, name_vi, description_en, description_vi, slug, is_active } = body;
 
@@ -99,7 +133,7 @@ export class CategoriesService {
         return category;
     }
 
-    async update(id: string, body: any) {
+    async update(id: string, body: UpdateCategoryDto) {
         const client = this.supabase.getClient();
 
         // Update Category fields

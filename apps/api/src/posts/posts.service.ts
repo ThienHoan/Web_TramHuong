@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostsService {
@@ -70,7 +71,7 @@ export class PostsService {
         return data;
     }
 
-    async create(dto: any) {
+    async create(dto: CreatePostDto) {
         // Auto generate slug if missing (basic implementation)
         if (!dto.slug && dto.title) {
             dto.slug = this.slugify(dto.title);
@@ -86,7 +87,7 @@ export class PostsService {
         return data;
     }
 
-    async update(id: string, dto: any) {
+    async update(id: string, dto: UpdatePostDto) {
         const { data, error } = await this.client
             .from('posts')
             .update({ ...dto, updated_at: new Date() })

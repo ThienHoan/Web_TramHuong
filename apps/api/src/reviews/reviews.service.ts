@@ -151,7 +151,7 @@ export class ReviewsService {
         // Map product title based on Translation if possible, but for key info keeping it simple
         return data.map(r => ({
             ...r,
-            product_title: r.product?.translations?.find((t: any) => t.locale === 'en')?.title || r.product?.slug
+            product_title: (r.product?.translations as any[])?.find((t: any) => t.locale === 'en')?.title || r.product?.slug
         }));
     }
 }

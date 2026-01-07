@@ -1,6 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
+
+interface IOrderForMail {
+    id: string;
+    total: number;
+    items: any[];
+    shipping_info: {
+        email: string;
+        [key: string]: any;
+    };
+    status: string;
+}
 
 @Injectable()
 export class MailService {
@@ -9,7 +21,7 @@ export class MailService {
         private readonly configService: ConfigService
     ) { }
 
-    private async sendSafe(options: any) {
+    private async sendSafe(options: ISendMailOptions) {
         try {
             await this.mailerService.sendMail(options);
 
@@ -28,7 +40,7 @@ export class MailService {
         }
     }
 
-    async sendOrderConfirmation(order: any) {
+    async sendOrderConfirmation(order: IOrderForMail) {
         // Find main customer email - assuming user object is attached or we use shipping info?
         // In orders.service, we usually have user_id, but prompt says "shipping_info" has details.
         // Let's assume shipping_info.email Exists.
@@ -48,7 +60,7 @@ export class MailService {
         });
     }
 
-    async sendAdminAlert(order: any) {
+    async sendAdminAlert(order: IOrderForMail) {
         const adminEmail = this.configService.get('MAIL_ADMIN_ADDRESS');
         if (!adminEmail) return;
 
@@ -66,7 +78,7 @@ export class MailService {
         });
     }
 
-    async sendPaymentSuccess(order: any) {
+    async sendPaymentSuccess(order: IOrderForMail) {
         const email = order.shipping_info?.email;
         if (!email) return;
 
@@ -81,7 +93,7 @@ export class MailService {
         });
     }
 
-    async sendOrderStatusUpdate(order: any) {
+    async sendOrderStatusUpdate(order: IOrderForMail) {
         const email = order.shipping_info?.email;
         if (!email) return;
 

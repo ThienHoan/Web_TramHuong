@@ -112,8 +112,8 @@ export default function PaymentSelectPage() {
                 fullShippingInfo.address = 'Showroom Thiên Phúc - 123 Đường Trầm Hương, Quận 1, TP. HCM';
                 fullShippingInfo.city = 'Hồ Chí Minh';
             } else {
-                // Ensure we use the full address constructed in previous step
-                fullShippingInfo.address = shippingInfo.full_address;
+                // Ensure we use the full address constructed in previous step, with proper fallback
+                fullShippingInfo.address = shippingInfo.full_address || shippingInfo.address || '';
             }
 
             const order = await createOrder({

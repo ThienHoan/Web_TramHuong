@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
+import { CreateVoucherDto, UpdateVoucherDto, ValidateVoucherDto } from './dto/voucher.dto';
 
 @Controller('vouchers')
 export class VouchersController {
@@ -8,7 +9,7 @@ export class VouchersController {
     // Public / Protected: Validate Voucher
     // POST /vouchers/validate { code: "ABC", cartTotal: 100000 }
     @Post('validate')
-    async validate(@Body() body: { code: string; cartTotal: number }) {
+    async validate(@Body() body: ValidateVoucherDto) {
         return this.vouchersService.validateVoucher(body.code, body.cartTotal);
     }
 
@@ -26,13 +27,13 @@ export class VouchersController {
 
     // Admin: Create
     @Post()
-    async create(@Body() body: any) {
+    async create(@Body() body: CreateVoucherDto) {
         return this.vouchersService.createVoucher(body);
     }
 
     // Admin: Update
     @Patch(':id')
-    async update(@Param('id') id: string, @Body() body: any) {
+    async update(@Param('id') id: string, @Body() body: UpdateVoucherDto) {
         return this.vouchersService.updateVoucher(id, body);
     }
 }

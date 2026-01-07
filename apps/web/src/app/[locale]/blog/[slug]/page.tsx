@@ -26,7 +26,7 @@ const CATEGORIES = [
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
     try {
-        const post = await getPostBySlug(slug);
+        const { data: post } = await getPostBySlug(slug);
         return {
             title: post?.seo_title || post?.title || 'Bài viết Trầm Hương',
             description: post?.seo_description || post?.excerpt || 'Khám phá kiến thức trầm hương.',
@@ -48,7 +48,8 @@ export default async function BlogDetailPage({ params }: PageProps) {
     let relatedPosts: BlogPost[] = [];
 
     try {
-        post = await getPostBySlug(slug);
+        const { data } = await getPostBySlug(slug);
+        post = data;
         if (!post) notFound();
 
         // Fetch related posts (parallel)

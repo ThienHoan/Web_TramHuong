@@ -1,5 +1,7 @@
-import { Controller, Post, Body, Get, Param, BadRequestException, UseGuards, Delete, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, BadRequestException, UseGuards, Delete, Request } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
 import { ReviewsService } from './reviews.service';
+import { CreateReviewDto, SeedReviewDto } from './dto/review.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Public } from '../auth/public.decorator';
@@ -13,7 +15,7 @@ export class ReviewsController {
 
     @Post()
     @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF) // Only customers can review? Admin too?
-    async create(@Body() body: { productId: string; rating: number; comment: string }, @Req() req: any) {
+    async create(@Body() body: CreateReviewDto, @Request() req: ExpressRequest & { user: any }) {
         const user = req.user;
         if (!user || !user.id) throw new BadRequestException('User not found');
         const userId = user.id;
@@ -24,13 +26,13 @@ export class ReviewsController {
 
     @Post('seed')
     @Roles(Role.ADMIN)
-    async seed(@Body() body: { productId: string; rating: number; comment: string; reviewerName: string; reviewerAvatar?: string }) {
+    async seed(@Body() body: SeedReviewDto) {
         return this.reviewsService.createGuestSeed(body.productId, body.rating, body.comment, body.reviewerName, body.reviewerAvatar);
     }
 
     @Get('user/me')
     @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
-    async getMyReviews(@Req() req: any) {
+    async getMyReviews(@Request() req: ExpressRequest & { user: any }) {
         const user = req.user;
         if (!user || !user.id) throw new BadRequestException('User not found');
         return this.reviewsService.findAllForUser(user.id);
@@ -44,7 +46,7 @@ export class ReviewsController {
 
     @Delete(':id')
     @Roles(Role.CUSTOMER, Role.ADMIN) // Customers can delete their own, Admins can delete any
-    async delete(@Param('id') id: string, @Req() req: any) {
+    async delete(@Param('id') id: string, @Request() req: ExpressRequest & { user: any }) {
         const userId = req.user.id;
         const isAdmin = req.user.role === Role.ADMIN;
         return this.reviewsService.delete(id, userId, isAdmin);

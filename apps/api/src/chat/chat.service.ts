@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { ProductsService } from '../products/products.service';
 
 // Token optimization constants
@@ -14,7 +14,7 @@ const PRODUCT_INTENT_KEYWORDS = [
 export class ChatService {
     private readonly logger = new Logger(ChatService.name);
     private genAI: GoogleGenerativeAI;
-    private model: any;
+    private model: GenerativeModel;
 
     // Simple in-memory cache for product context
     private productContextCache: { data: string; timestamp: number } | null = null;
@@ -45,7 +45,7 @@ export class ChatService {
     /**
      * Compress history to save tokens: keep last N messages, summarize older ones
      */
-    private compressHistory(history: any[]): any[] {
+    private compressHistory(history: { role: string; content: string }[]): { role: string; content: string }[] {
         if (history.length <= MAX_FULL_HISTORY) return history;
 
         const recent = history.slice(-MAX_FULL_HISTORY);
@@ -84,7 +84,7 @@ export class ChatService {
     }
 
 
-    async processMessage(userMessage: string, history: any[]) {
+    async processMessage(userMessage: string, history: { role: string; content: string }[]) {
         if (!this.model) {
             return { text: "Xin lỗi, hệ thống tư vấn đang bảo trì. Vui lòng thử lại sau.", recommendations: [] };
         }
@@ -162,7 +162,7 @@ QUY TẮC TƯ VẤN:
      * Streaming version of processMessage using sendMessageStream()
      * Yields SSE-formatted events for each chunk
      */
-    async *processMessageStream(userMessage: string, history: any[]): AsyncGenerator<string> {
+    async *processMessageStream(userMessage: string, history: { role: string; content: string }[]): AsyncGenerator<string> {
         if (!this.model) {
             yield `data: ${JSON.stringify({ type: 'error', content: 'Hệ thống tư vấn đang bảo trì.' })}\n\n`;
             return;

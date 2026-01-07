@@ -1,4 +1,5 @@
 import { Controller, Get, Patch, Post, Param, Body, UseGuards, Request, ForbiddenException, BadRequestException, Query } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -24,7 +25,7 @@ export class OrdersController {
     @Post()
     @Public()
     @UseGuards(ThrottlerGuard)
-    async create(@Request() req: any, @Body() body: CreateOrderDto) {
+    async create(@Request() req: ExpressRequest & { user: any }, @Body() body: CreateOrderDto) {
         const userId = req.user?.id || null;
         const { items, shipping_info, paymentMethod, voucherCode } = body as CreateOrderDto & { voucherCode?: string };
         return this.ordersService.create(userId, items, shipping_info, paymentMethod, voucherCode);
@@ -32,7 +33,7 @@ export class OrdersController {
 
     @Post('sepay-webhook')
     @Public()
-    async sepayWebhook(@Body() body: any, @Request() req: any) {
+    async sepayWebhook(@Body() body: any, @Request() req: ExpressRequest) {
         // Security Check: Verify API Key or SePay Source
         // SePay sends 'Authorization' header optionally, or we can check a shared secret?
         // Plan said: "Protects webhook by secret/API key".
@@ -75,7 +76,7 @@ export class OrdersController {
 
     @Get()
     @Roles(Role.ADMIN, Role.STAFF)
-    async findAll(@Request() req: any, @Query('page') page?: string, @Query('limit') limit?: string, @Query('search') search?: string) {
+    async findAll(@Request() _req: any, @Query('page') page?: string, @Query('limit') limit?: string, @Query('search') search?: string) {
         // Admin/Staff can see all orders
         return this.ordersService.findAll({
             page: page ? parseInt(page) : 1,
@@ -86,7 +87,7 @@ export class OrdersController {
 
     @Get('me')
     @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
-    async findMyOrders(@Request() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
+    async findMyOrders(@Request() req: ExpressRequest & { user: any }, @Query('page') page?: string, @Query('limit') limit?: string) {
         const user = req.user;
 
         const options = {
@@ -125,7 +126,7 @@ export class OrdersController {
 
     @Get(':id')
     @Roles(Role.ADMIN, Role.STAFF, Role.CUSTOMER)
-    async findOne(@Request() req: any, @Param('id') id: string) {
+    async findOne(@Request() _req: any, @Param('id') id: string) {
         // TODO: Enforce ownership if Customer
         return this.ordersService.findOne(id);
     }

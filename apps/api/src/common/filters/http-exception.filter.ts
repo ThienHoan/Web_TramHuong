@@ -36,20 +36,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
         };
 
         // Extract message and details
+        // Extract message and details
         if (exception instanceof HttpException) {
-            const response = exception.getResponse() as any;
+            const response = exception.getResponse();
 
             // Standard NestJS structure often puts the message in `message`
             // If validation fails, `message` is often an array of strings
             if (typeof response === 'object' && response !== null) {
-                responseBody.error = response.error || exception.message;
+                const respObj = response as Record<string, any>;
+                responseBody.error = respObj.error || exception.message;
 
-                if (Array.isArray(response.message)) {
+                if (Array.isArray(respObj.message)) {
                     // Validation errors usually come here as string[]
                     responseBody.message = 'Validation failed';
-                    responseBody.errors = response.message;
+                    responseBody.errors = respObj.message as string[];
                 } else {
-                    responseBody.message = response.message || exception.message;
+                    responseBody.message = (respObj.message as string) || exception.message;
                 }
             } else {
                 responseBody.message = typeof response === 'string' ? response : exception.message;
@@ -62,10 +64,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
 
         // Log the error with context
+        const errorDetails = responseBody.errors ? ` | Errors: ${JSON.stringify(responseBody.errors)}` : '';
         this.logger.error(
             `[${request.method}] ${responseBody.path} >> Status: ${httpStatus}, Message: ${JSON.stringify(
                 responseBody.message,
-            )}`,
+            )}${errorDetails}`,
             exception instanceof Error ? exception.stack : String(exception),
         );
 

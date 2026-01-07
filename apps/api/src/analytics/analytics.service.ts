@@ -41,7 +41,7 @@ export class AnalyticsService {
 
         const wishlistCounts: Record<string, number> = {};
         if (wishlistData) {
-            wishlistData.forEach((w: any) => {
+            wishlistData.forEach((w: { product_id: string }) => {
                 wishlistCounts[w.product_id] = (wishlistCounts[w.product_id] || 0) + 1;
             });
         }
@@ -72,15 +72,39 @@ export class AnalyticsService {
 
         const { data: allProducts } = await this.client.from('products').select('id, category:categories(slug), translations:product_translations(title)');
         const productMap: Record<string, { name: string, category: string }> = {};
+
+        interface ProductData {
+            id: string;
+            category: { slug: string } | null;
+            translations: { title: string }[];
+        }
+
         if (allProducts) {
-            allProducts.forEach((p: any) => {
+            (allProducts as unknown as ProductData[]).forEach((p) => {
                 const name = p.translations?.[0]?.title || 'Unknown Product';
                 const cat = p.category?.slug || 'Uncategorized';
                 productMap[p.id] = { name, category: cat };
             });
         }
 
-        rawOrders.forEach(order => {
+        interface OrderItem {
+            productId?: string;
+            product_id?: string;
+            title?: string;
+            slug?: string;
+            quantity?: number;
+            price?: number;
+        }
+
+        interface Order {
+            created_at: string;
+            status: string;
+            payment_status: string;
+            total: number;
+            items: OrderItem[];
+        }
+
+        (rawOrders as unknown as Order[]).forEach(order => {
             const date = new Date(order.created_at).toLocaleDateString('vi-VN'); // DD/MM/YYYY
 
             // Count Status
@@ -98,9 +122,11 @@ export class AnalyticsService {
 
                 // Top Products Logic (Only from confirmed orders)
                 if (Array.isArray(order.items)) {
-                    order.items.forEach((item: any) => {
+                    order.items.forEach((item) => {
                         const key = item.productId || item.product_id; // Handle case sensitivity
-                        const pInfo = productMap[key] || { name: item.title || item.slug, category: 'Uncategorized' };
+                        if (!key) return; // Skip if no product ID
+
+                        const pInfo = productMap[key] || { name: item.title || item.slug || 'Unknown', category: 'Uncategorized' };
 
                         // Product Sales
                         if (!productSales[key]) {

@@ -8,6 +8,16 @@ export interface CreateContactDto {
     message: string;
 }
 
+interface Contact {
+    id: string;
+    full_name: string;
+    email: string;
+    topic: string;
+    message: string;
+    status: string;
+    created_at: string;
+}
+
 @Injectable()
 export class ContactsService {
     constructor(private readonly supabase: SupabaseService) { }

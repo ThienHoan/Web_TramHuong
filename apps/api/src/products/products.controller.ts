@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, Post, Body, Patch, Delete, UseGuards, Us
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -60,7 +61,7 @@ export class ProductsController {
     @Roles(Role.ADMIN, Role.STAFF)
     @UseInterceptors(FilesInterceptor('files'))
     async create(
-        @Body() body: any,
+        @Body() body: CreateProductDto,
         @UploadedFiles() files?: Array<Express.Multer.File>
     ) {
         // Support both workflows:
@@ -75,7 +76,7 @@ export class ProductsController {
     @UseInterceptors(FilesInterceptor('files'))
     async update(
         @Param('id') id: string,
-        @Body() body: any,
+        @Body() body: UpdateProductDto,
         @UploadedFiles() files?: Array<Express.Multer.File>
     ) {
         return this.productsService.update(id, body, files);

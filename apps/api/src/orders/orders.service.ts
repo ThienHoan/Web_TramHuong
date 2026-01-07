@@ -1,12 +1,37 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
 import { MailService } from '../mail/mail.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { LookupOrderDto } from './dto/lookup-order.dto';
 
+interface OrderItemInput {
+    productId: string;
+    quantity: number;
+    variantId?: string;
+    variantName?: string;
+}
+
+interface ShippingInfo {
+    full_name?: string;
+    name?: string; // DTO uses name
+    email?: string;
+    phone: string;
+    address: string;
+    province?: string;
+    city?: string; // DTO uses city
+    district?: string;
+    ward?: string;
+    shipping_fee?: number;
+    delivery_method?: string;
+    pickup_location?: any;
+    [key: string]: any;
+}
+
 @Injectable()
 export class OrdersService {
+    private readonly logger = new Logger(OrdersService.name);
+
     constructor(
         private readonly supabaseService: SupabaseService,
         private readonly cartService: CartService,
@@ -24,9 +49,10 @@ export class OrdersService {
      */
     private normalizeVietnamesePhone(phone: string): string {
         if (!phone) return '';
+        const phoneStr = String(phone); // Ensure string
 
         // Remove all whitespace and special chars except + and digits
-        let cleaned = phone.trim().replace(/[\s\-()]/g, '');
+        let cleaned = phoneStr.trim().replace(/[\s\-()]/g, '');
 
         // Convert to +84 format
         if (cleaned.startsWith('0')) {
@@ -237,25 +263,27 @@ export class OrdersService {
         return data;
     }
 
-    async create(userId: string | null, items: any[], shippingInfo: any, paymentMethod: string = 'cod', voucherCode?: string) {
-        if (!items || items.length === 0) {
-            throw new BadRequestException('Items are required');
-        }
-        if (!shippingInfo) {
-            throw new BadRequestException('Shipping info is required');
-        }
+    async create(userId: string | null, items: OrderItemInput[], shippingInfo: ShippingInfo, paymentMethod: string = 'cod', voucherCode?: string) {
+        this.logger.log(`Creating order for User: ${userId || 'Guest'}, Payment: ${paymentMethod}`);
+        try {
+            if (!items || items.length === 0) {
+                throw new BadRequestException('Items are required');
+            }
+            if (!shippingInfo) {
+                throw new BadRequestException('Shipping info is required');
+            }
 
-        // Normalize Phone Number (Backend Enforcement)
-        if (shippingInfo.phone) {
-            shippingInfo.phone = this.normalizeVietnamesePhone(shippingInfo.phone);
-        }
+            // Normalize Phone Number (Backend Enforcement)
+            if (shippingInfo.phone) {
+                shippingInfo.phone = this.normalizeVietnamesePhone(shippingInfo.phone);
+            }
 
 
-        // Fetch products to validate and get prices + DISCOUNT INFO
-        const productIds = items.map(i => i.productId);
-        const { data: products, error: productsError } = await this.client
-            .from('products')
-            .select(`
+            // Fetch products to validate and get prices + DISCOUNT INFO
+            const productIds = items.map(i => i.productId);
+            const { data: products, error: productsError } = await this.client
+                .from('products')
+                .select(`
                 id,
                 price,
                 slug,
@@ -268,228 +296,238 @@ export class OrdersService {
                 discount_end_date,
                 translations:product_translations(title, locale)
             `)
-            .in('id', productIds);
+                .in('id', productIds);
 
-        if (productsError) {
-            console.error('Error fetching products:', productsError);
-            throw new BadRequestException('Database error while fetching products');
-        }
-
-        // 1. Validate Stock & Active Status
-        for (const item of items) {
-            const product = products?.find(p => p.id === item.productId);
-            if (!product) continue;
-
-            // Check Active
-            if (!product.is_active) {
-                const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
-                throw new BadRequestException(`Product '${title}' is currently unavailable.`);
+            if (productsError) {
+                this.logger.error('Error fetching products:', productsError);
+                throw new BadRequestException('Database error while fetching products');
             }
 
-            // Check Stock
-            if (product.quantity < item.quantity) {
-                const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
-                throw new BadRequestException(`Product '${title}' is out of stock (Only ${product.quantity} left).`);
-            }
-        }
+            // 1. Validate Stock & Active Status
+            for (const item of items) {
+                const product = products?.find(p => p.id === item.productId);
+                if (!product) continue;
 
-        let total = 0;
-        const enrichedItems = items.map(item => {
-            const product = products?.find(p => p.id === item.productId);
-            if (!product) {
-                throw new BadRequestException(`One or more items in your cart are invalid.`);
-            }
+                // Check Active
+                if (!product.is_active) {
+                    const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                    throw new BadRequestException(`Product '${title}' is currently unavailable.`);
+                }
 
-            const title = product.translations?.find((t: any) => t.locale === 'vi')?.title
-                || product.translations?.find((t: any) => t.locale === 'en')?.title
-                || product.translations?.[0]?.title
-                || product.slug;
-            const image = product.images?.[0] || null;
-
-            // Get BASE price (original price before discount)
-            let originalPrice = Number(product.price);
-            if (item.variantId && Array.isArray(product.variants)) {
-                const v = product.variants.find((v: any) => v.name === item.variantId);
-                if (v && v.price !== undefined) {
-                    originalPrice = Number(v.price);
+                // Check Stock
+                if (product.quantity < item.quantity) {
+                    const title = product.translations?.find((t: any) => t.locale === 'vi')?.title || product.translations?.find((t: any) => t.locale === 'en')?.title || product.slug;
+                    throw new BadRequestException(`Product '${title}' is out of stock (Only ${product.quantity} left).`);
                 }
             }
 
-            // Calculate discount (same logic as cart.service.ts)
-            let finalPrice = originalPrice;
-            let discountAmount = 0;
-
-            if (product.discount_percentage > 0) {
-                const now = new Date();
-                const startDate = product.discount_start_date ? new Date(product.discount_start_date) : null;
-                const endDate = product.discount_end_date ? new Date(product.discount_end_date) : null;
-
-                const isActive = (!startDate || startDate <= now) && (!endDate || endDate >= now);
-
-                if (isActive) {
-                    finalPrice = Math.round(originalPrice * (1 - product.discount_percentage / 100));
-                    discountAmount = originalPrice - finalPrice;
+            let total = 0;
+            const enrichedItems = items.map(item => {
+                const product = products?.find(p => p.id === item.productId);
+                if (!product) {
+                    throw new BadRequestException(`One or more items in your cart are invalid.`);
                 }
-            }
 
-            const itemTotal = finalPrice * item.quantity;
-            total += itemTotal;
+                const title = product.translations?.find((t: any) => t.locale === 'vi')?.title
+                    || product.translations?.find((t: any) => t.locale === 'en')?.title
+                    || product.translations?.[0]?.title
+                    || product.slug;
+                const image = product.images?.[0] || null;
 
-            return {
-                ...item,
-                price: finalPrice,              // Discounted price
-                original_price: originalPrice,   // Original price before discount
-                discount_amount: discountAmount, // Amount saved per unit
-                slug: product.slug,
-                title,
-                image,
-                variant_id: item.variantId || null,
-                variant_name: item.variantName || null
-            };
-        });
-
-        // 2. Calculate Final Total & Shipping
-
-        // Calculate Subtotal (Sum of item totals)
-        // Note: 'total' currently holds the sum of item prices * quantity
-        const subtotal = total;
-
-        // Validate Voucher & Calculate Discount
-        let voucherDiscountAmount = 0;
-        let appliedVoucherCode = null;
-
-        if (voucherCode) {
-            try {
-                // Determine effective subtotal for validation constraints
-                // (e.g. min_order_value usually applies to subtotal before shipping)
-                const validation = await this.vouchersService.validateVoucher(voucherCode, subtotal);
-
-                if (validation.isValid) {
-                    voucherDiscountAmount = validation.discountAmount;
-                    appliedVoucherCode = validation.voucher.code; // Use normalized code
-
-                    // Decrement Usage Count (Optimistic Lock)
-                    // If limit is null, it's unlimited. If limit exists, must be > usage_count.
-                    // We need to atomically increment usage_count.
-                    const { error: usageError, data: updatedVoucher } = await this.client
-                        .from('vouchers')
-                        .update({ usage_count: validation.voucher.usage_count + 1 })
-                        .eq('id', validation.voucher.id)
-                        // Safety check again: only update if usage_count is still what we saw OR just rely on constraint?
-                        // Better: constraint check in WHERE clause.
-                        // Usage: usage_limit IS NULL OR usage_count < usage_limit
-                        // Supabase/Postgres doesn't support complex WHERE on UPDATE easily via JS client .eq().
-                        // We will rely on the initial check + DB constraint if possible, but JS client is limited.
-                        // Best effort: Update and check usage_limit in application logic previously.
-                        // Since we don't have high concurrency, simple increment is acceptable for now.
-                        // Ideally: .rpc('increment_voucher_usage', { voucher_id: ... })
-                        .select()
-                        .single();
-
-                    if (usageError) {
-                        // Rollback/Throw? 
-                        // If update fails (e.g. constraint), invalid voucher.
-                        throw new BadRequestException('Mã giảm giá không khả dụng (đã hết lượt hoặc lỗi)');
+                // Get BASE price (original price before discount)
+                let originalPrice = Number(product.price);
+                if (item.variantId && Array.isArray(product.variants)) {
+                    const v = product.variants.find((v: any) => v.name === item.variantId);
+                    if (v && v.price !== undefined) {
+                        originalPrice = Number(v.price);
                     }
                 }
-            } catch (error) {
-                // If voucher invalid, throw error to stop order creation? Or ignore?
-                // User expects valid voucher if entered. Throw error.
-                if (error instanceof BadRequestException || error instanceof NotFoundException) {
-                    throw error;
+
+                // Calculate discount (same logic as cart.service.ts)
+                let finalPrice = originalPrice;
+                let discountAmount = 0;
+
+                if (product.discount_percentage > 0) {
+                    const now = new Date();
+                    const startDate = product.discount_start_date ? new Date(product.discount_start_date) : null;
+                    const endDate = product.discount_end_date ? new Date(product.discount_end_date) : null;
+
+                    const isActive = (!startDate || startDate <= now) && (!endDate || endDate >= now);
+
+                    if (isActive) {
+                        finalPrice = Math.round(originalPrice * (1 - product.discount_percentage / 100));
+                        discountAmount = originalPrice - finalPrice;
+                    }
                 }
-                console.error("Voucher error:", error);
-                // If system error, maybe ignore to not block order? No, consistent behavior better.
-            }
-        }
 
-        let shippingFee = total >= 300000 ? 0 : 30000;
+                const itemTotal = finalPrice * item.quantity;
+                total += itemTotal;
 
-        // Override shipping fee if picking up at showroom
-        if (paymentMethod === 'showroom') {
-            shippingFee = 0;
-        }
-
-        // Final Total Calculation
-        // Formula: Subtotal - Discount + Shipping
-        total = subtotal - voucherDiscountAmount + shippingFee;
-
-        // Sanity Check: Total >= 0
-        if (total < 0) total = 0;
-
-        // Record shipping fee in shipping info
-        if (typeof shippingInfo === 'object') {
-            shippingInfo.shipping_fee = shippingFee;
-        }
-
-        // 3. Determine order status and deadline based on payment method
-        let orderStatus = 'PENDING';
-        let paymentDeadline = null;
-        let dbPaymentMethod = paymentMethod;
-
-        if (paymentMethod === 'showroom') {
-            // Map 'showroom' to 'cod' for DB constraint compatibility
-            // But mark delivery_method as 'pickup' in shipping_info
-            dbPaymentMethod = 'cod';
-            if (typeof shippingInfo === 'object') {
-                shippingInfo.delivery_method = 'pickup';
-                shippingInfo.pickup_location = {
-                    name: 'Showroom Thiên Phúc',
-                    address: '123 Đường Trầm Hương, Quận 1, TP. HCM',
-                    hours: '9:00 - 21:00 (T2 - CN)',
-                    instructions: 'Vui lòng đọc mã đơn hàng hoặc số điện thoại cho nhân viên tại quầy.'
+                return {
+                    ...item,
+                    price: finalPrice,              // Discounted price
+                    original_price: originalPrice,   // Original price before discount
+                    discount_amount: discountAmount, // Amount saved per unit
+                    slug: product.slug,
+                    title,
+                    image,
+                    variant_id: item.variantId || null,
+                    variant_name: item.variantName || null
                 };
+            });
+
+            // 2. Calculate Final Total & Shipping
+
+            // Calculate Subtotal (Sum of item totals)
+            // Note: 'total' currently holds the sum of item prices * quantity
+            const subtotal = total;
+
+            // Validate Voucher & Calculate Discount
+            let voucherDiscountAmount = 0;
+            let appliedVoucherCode = null;
+
+            if (voucherCode) {
+                try {
+                    // Determine effective subtotal for validation constraints
+                    // (e.g. min_order_value usually applies to subtotal before shipping)
+                    const validation = await this.vouchersService.validateVoucher(voucherCode, subtotal);
+
+                    if (validation.isValid) {
+                        voucherDiscountAmount = validation.discountAmount;
+                        appliedVoucherCode = validation.voucher.code; // Use normalized code
+
+                        // Decrement Usage Count (Optimistic Lock)
+                        // If limit is null, it's unlimited. If limit exists, must be > usage_count.
+                        // We need to atomically increment usage_count.
+                        const { error: usageError, data: updatedVoucher } = await this.client
+                            .from('vouchers')
+                            .update({ usage_count: validation.voucher.usage_count + 1 })
+                            .eq('id', validation.voucher.id)
+                            // Safety check again: only update if usage_count is still what we saw OR just rely on constraint?
+                            // Better: constraint check in WHERE clause.
+                            // Usage: usage_limit IS NULL OR usage_count < usage_limit
+                            // Supabase/Postgres doesn't support complex WHERE on UPDATE easily via JS client .eq().
+                            // We will rely on the initial check + DB constraint if possible, but JS client is limited.
+                            // Best effort: Update and check usage_limit in application logic previously.
+                            // Since we don't have high concurrency, simple increment is acceptable for now.
+                            // Ideally: .rpc('increment_voucher_usage', { voucher_id: ... })
+                            .select()
+                            .single();
+
+                        if (usageError) {
+                            // Rollback/Throw? 
+                            // If update fails (e.g. constraint), invalid voucher.
+                            throw new BadRequestException('Mã giảm giá không khả dụng (đã hết lượt hoặc lỗi)');
+                        }
+                    }
+                } catch (error) {
+                    // If voucher invalid, throw error to stop order creation? Or ignore?
+                    // User expects valid voucher if entered. Throw error.
+                    if (error instanceof BadRequestException || error instanceof NotFoundException) {
+                        throw error;
+                    }
+                    this.logger.error("Voucher error:", error);
+                    // If system error, maybe ignore to not block order? No, consistent behavior better.
+                }
             }
-        }
 
-        if (paymentMethod === 'sepay') {
-            orderStatus = 'AWAITING_PAYMENT';
-            // Set deadline 15 minutes from now (in UTC)
-            const now = new Date();
-            const deadlineMs = now.getTime() + (15 * 60 * 1000); // Add 15 minutes in milliseconds
-            paymentDeadline = new Date(deadlineMs).toISOString();
-        }
+            let shippingFee = total >= 300000 ? 0 : 30000;
 
-        // 3. Insert Order
-        const { data: orderData, error: orderError } = await this.client
-            .from('orders')
-            .insert({
-                user_id: userId, // Can be null
-                status: orderStatus,
-                payment_deadline: paymentDeadline,
-                total,
-                items: enrichedItems,
-                shipping_info: shippingInfo,
-                payment_method: dbPaymentMethod,
-                payment_status: 'pending',
-                voucher_code: appliedVoucherCode,
-                voucher_discount_amount: voucherDiscountAmount
-            })
-            .select()
-            .single();
-
-        if (orderError) throw new BadRequestException(orderError.message);
-
-        // 3. Decrement Stock
-        for (const item of items) {
-            const product = products?.find(p => p.id === item.productId);
-            if (product) {
-                const newQty = product.quantity - item.quantity;
-                await this.client
-                    .from('products')
-                    .update({ quantity: newQty })
-                    .eq('id', item.productId);
+            // Override shipping fee if picking up at showroom
+            if (paymentMethod === 'showroom') {
+                shippingFee = 0;
             }
+
+            // Final Total Calculation
+            // Formula: Subtotal - Discount + Shipping
+            total = subtotal - voucherDiscountAmount + shippingFee;
+
+            // Sanity Check: Total >= 0
+            if (total < 0) total = 0;
+
+            // Record shipping fee in shipping info
+            if (typeof shippingInfo === 'object') {
+                shippingInfo.shipping_fee = shippingFee;
+            }
+
+            // 3. Determine order status and deadline based on payment method
+            let orderStatus = 'PENDING';
+            let paymentDeadline = null;
+            let dbPaymentMethod = paymentMethod;
+
+            if (paymentMethod === 'showroom') {
+                // Map 'showroom' to 'cod' for DB constraint compatibility
+                // But mark delivery_method as 'pickup' in shipping_info
+                dbPaymentMethod = 'cod';
+                if (typeof shippingInfo === 'object') {
+                    shippingInfo.delivery_method = 'pickup';
+                    shippingInfo.pickup_location = {
+                        name: 'Showroom Thiên Phúc',
+                        address: '123 Đường Trầm Hương, Quận 1, TP. HCM',
+                        hours: '9:00 - 21:00 (T2 - CN)',
+                        instructions: 'Vui lòng đọc mã đơn hàng hoặc số điện thoại cho nhân viên tại quầy.'
+                    };
+                }
+            }
+
+            if (paymentMethod === 'sepay') {
+                orderStatus = 'AWAITING_PAYMENT';
+                // Set deadline 15 minutes from now (in UTC)
+                const now = new Date();
+                const deadlineMs = now.getTime() + (15 * 60 * 1000); // Add 15 minutes in milliseconds
+                paymentDeadline = new Date(deadlineMs).toISOString();
+
+                // Log SePay Initiation
+                this.logger.log(`SePay initiated for amount ${total}, phone ${shippingInfo.phone}`);
+            }
+
+            // 3. Insert Order
+            const { data: orderData, error: orderError } = await this.client
+                .from('orders')
+                .insert({
+                    user_id: userId, // Can be null
+                    status: orderStatus,
+                    payment_deadline: paymentDeadline,
+                    total,
+                    items: enrichedItems,
+                    shipping_info: shippingInfo,
+                    payment_method: dbPaymentMethod,
+                    payment_status: 'pending',
+                    voucher_code: appliedVoucherCode,
+                    voucher_discount_amount: voucherDiscountAmount
+                })
+                .select()
+                .single();
+
+            if (orderError) throw new BadRequestException(orderError.message);
+
+            // 3. Decrement Stock
+            for (const item of items) {
+                const product = products?.find(p => p.id === item.productId);
+                if (product) {
+                    const newQty = product.quantity - item.quantity;
+                    await this.client
+                        .from('products')
+                        .update({ quantity: newQty })
+                        .eq('id', item.productId);
+                }
+            }
+
+            // 4. Clear Cart (Only if user logged in)
+            if (userId) {
+                await this.cartService.clearCart(userId);
+            }
+
+            // 5. Emails are now triggered in verifyPayment (Webhook)
+            this.logger.log(`Order created successfully: ${orderData.id}`);
+            return orderData;
+        } catch (error) {
+            this.logger.error('Create order failed', error.stack || error);
+            if (error instanceof BadRequestException || error instanceof NotFoundException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Không tạo được đơn hàng, vui lòng thử lại');
         }
-
-        // 4. Clear Cart (Only if user logged in)
-        if (userId) {
-            await this.cartService.clearCart(userId);
-        }
-
-        // 5. Emails are now triggered in verifyPayment (Webhook)
-
-        return orderData;
     }
 
     async updateStatus(id: string, status: string) {
@@ -596,6 +634,8 @@ export class OrdersService {
     }
 
     async verifyPayment(content: string, amount: number, transactionCode: string) {
+        this.logger.log(`Verifying Payment: Content="${content}", Amount=${amount}, Code=${transactionCode}`);
+        // Regex for UUID (Standard)
         // Regex for UUID (Standard)
         const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
         let match = content.match(uuidRegex);
@@ -614,7 +654,7 @@ export class OrdersService {
         }
 
         if (!orderId) {
-
+            this.logger.warn(`Payment Verification Failed: No Order ID found in content "${content}"`);
             return { success: false, reason: 'No Order ID found' };
         }
 
@@ -625,18 +665,19 @@ export class OrdersService {
             .single();
 
         if (error || !order) {
-
+            this.logger.warn(`Payment Verification Failed: Order ${orderId} not found`);
             return { success: false, reason: 'Order not found' };
         }
 
         // Idempotency Check
         if (order.payment_status === 'paid') {
+            this.logger.log(`Payment Verification: Order ${orderId} already paid`);
             return { success: true, message: 'Already paid' };
         }
 
         // Amount Check 
         if (amount < order.total) {
-
+            this.logger.warn(`Payment Verification Failed: Amount mismatch for ${orderId}. Expected ${order.total}, Got ${amount}`);
             return { success: false, reason: 'Amount mismatch' };
         }
 

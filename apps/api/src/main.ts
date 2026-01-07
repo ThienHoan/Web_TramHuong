@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
 import compression from 'compression';
 import helmet from 'helmet';
@@ -22,7 +22,8 @@ async function bootstrap() {
   });
 
   // Global Exception Filter
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   // Global Validation Pipe
   app.useGlobalPipes(

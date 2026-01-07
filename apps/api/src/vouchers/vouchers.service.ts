@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { CreateVoucherDto, UpdateVoucherDto } from './dto/voucher.dto';
 
 @Injectable()
 export class VouchersService {
@@ -10,7 +11,7 @@ export class VouchersService {
 
     // 1. Admin: Create Voucher
     // Note: In real production, use DTOs. For now, using loose types for MVP speed.
-    async createVoucher(data: any) {
+    async createVoucher(data: CreateVoucherDto) {
         // Validation handled by database constraints mostly, but good to check basic enums
         // Map frontend 'discount_amount' to DB 'discount_value'
         const discountValue = data.discount_value ?? data.discount_amount;
@@ -84,7 +85,7 @@ export class VouchersService {
     }
 
     // 3. Admin: Update Voucher (e.g. deactivate)
-    async updateVoucher(id: string, updates: any) {
+    async updateVoucher(id: string, updates: UpdateVoucherDto) {
         // Map discount_amount -> discount_value if present
         if (updates.discount_amount !== undefined) {
             updates.discount_value = updates.discount_amount;

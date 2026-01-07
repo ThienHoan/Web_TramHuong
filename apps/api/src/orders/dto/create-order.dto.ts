@@ -61,4 +61,8 @@ export class CreateOrderDto {
     @IsString()
     @IsNotEmpty()
     paymentMethod: string;
+
+    @IsOptional()
+    @IsString()
+    voucherCode?: string;
 }
