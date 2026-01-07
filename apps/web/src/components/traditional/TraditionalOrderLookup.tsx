@@ -399,7 +399,6 @@ export default function TraditionalOrderLookup() {
                                                             {voucherDiscount > 0 && (
                                                                 <div className="flex justify-between items-center text-sm">
                                                                     <span className="text-[#5c3a3c] flex items-center gap-1">
-                                                                        <span className="material-symbols-outlined text-xs text-purple-500">confirmation_number</span>
                                                                         Voucher {result.voucher_code && <span className="text-xs text-purple-600">({result.voucher_code})</span>}
                                                                     </span>
                                                                     <span className="text-purple-600 font-medium">-{formatPrice(voucherDiscount)}</span>
