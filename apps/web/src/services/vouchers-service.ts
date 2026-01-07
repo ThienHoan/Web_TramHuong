@@ -1,4 +1,4 @@
-import { fetchWithAuth, getHeaders, API_URL } from './base-http';
+import { getHeaders, API_URL } from './base-http';
 
 export interface CreateVoucherDto {
     code: string;
@@ -12,10 +12,33 @@ export interface CreateVoucherDto {
     is_active: boolean;
 }
 
-export interface UpdateVoucherDto extends Partial<CreateVoucherDto> { }
+export type UpdateVoucherDto = Partial<CreateVoucherDto>;
+
+export interface Voucher extends CreateVoucherDto {
+    id: string;
+    usage_count: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface VoucherValidation {
+    valid: boolean;
+    isValid?: boolean; // API alias
+    discount: number;
+    discountAmount?: number; // Added for checkout page compatibility
+    message?: string;
+    voucher?: {
+        id: string;
+        code: string;
+        discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT';
+        discount_value: number;
+        usage_count: number;
+        [key: string]: unknown;
+    };
+}
 
 export const vouchersService = {
-    async getVouchers(query?: any) {
+    async getVouchers(query?: Record<string, string>): Promise<Voucher[]> {
         try {
             const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
             const res = await fetch(`${API_URL}/vouchers${queryString}`, {
@@ -25,27 +48,27 @@ export const vouchersService = {
                 // Return empty if fail or throw?
                 return [];
             }
-            return await res.json();
+            return await res.json() as Voucher[];
         } catch (e) {
             console.error("Get Vouchers Error:", e);
             throw e;
         }
     },
 
-    async getVoucher(id: string) {
+    async getVoucher(id: string): Promise<Voucher | null> {
         try {
             const res = await fetch(`${API_URL}/vouchers/${id}`, {
                 headers: getHeaders(),
             });
             if (!res.ok) return null;
-            return await res.json();
+            return await res.json() as Voucher;
         } catch (e) {
             console.error("Get Voucher Error:", e);
             throw e;
         }
     },
 
-    async createVoucher(data: CreateVoucherDto) {
+    async createVoucher(data: CreateVoucherDto): Promise<Voucher> {
         try {
             const res = await fetch(`${API_URL}/vouchers`, {
                 method: 'POST',
@@ -53,17 +76,17 @@ export const vouchersService = {
                 body: JSON.stringify(data),
             });
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json() as { message?: string };
                 throw new Error(err.message || 'Failed to create voucher');
             }
-            return await res.json();
+            return await res.json() as Voucher;
         } catch (e) {
             console.error("Create Voucher Error:", e);
             throw e;
         }
     },
 
-    async updateVoucher(id: string, data: UpdateVoucherDto) {
+    async updateVoucher(id: string, data: UpdateVoucherDto): Promise<Voucher> {
         try {
             const res = await fetch(`${API_URL}/vouchers/${id}`, {
                 method: 'PATCH',
@@ -71,17 +94,17 @@ export const vouchersService = {
                 body: JSON.stringify(data),
             });
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json() as { message?: string };
                 throw new Error(err.message || 'Failed to update voucher');
             }
-            return await res.json();
+            return await res.json() as Voucher;
         } catch (e) {
             console.error("Update Voucher Error:", e);
             throw e;
         }
     },
 
-    async deleteVoucher(id: string) {
+    async deleteVoucher(id: string): Promise<boolean> {
         try {
             const res = await fetch(`${API_URL}/vouchers/${id}`, {
                 method: 'DELETE',
@@ -97,14 +120,14 @@ export const vouchersService = {
         }
     },
 
-    async validateVoucher(code: string, cartTotal: number) {
+    async validateVoucher(code: string, cartTotal: number): Promise<VoucherValidation> {
         try {
             const res = await fetch(`${API_URL}/vouchers/validate`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({ code, cartTotal }),
             });
-            const data = await res.json();
+            const data = await res.json() as VoucherValidation & { message?: string };
 
             if (!res.ok) {
                 throw new Error(data.message || 'Mã giảm giá không hợp lệ');

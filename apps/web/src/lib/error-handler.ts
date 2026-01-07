@@ -56,7 +56,14 @@ export function parseApiError(error: unknown): string {
     if (!error) return 'Đã có lỗi xảy ra.';
 
     // Check for structured error object with status
-    const err = error as any;
+    interface ErrorWithStatus {
+        status?: number;
+        statusCode?: number;
+        message?: string;
+        error?: string;
+        errors?: string[];
+    }
+    const err = error as ErrorWithStatus;
     const status = err?.status || err?.statusCode;
 
     if (status) {
@@ -165,13 +172,14 @@ export async function safeAsync<T>(
     try {
         const data = await asyncFn();
         return { data, error: null };
-    } catch (e: any) {
+    } catch (e: unknown) {
         const error = parseApiError(e);
         console.error('[safeAsync]', e);
+        const errorWithStatus = e as { status?: number; response?: { status?: number } };
         return {
             data: fallback ?? null,
             error,
-            status: e?.status || e?.response?.status
+            status: errorWithStatus?.status || errorWithStatus?.response?.status
         };
     }
 }

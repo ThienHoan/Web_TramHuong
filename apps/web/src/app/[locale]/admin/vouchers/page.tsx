@@ -48,18 +48,18 @@ export default function AdminVouchersPage() {
         try {
             const data = await getVouchers(params);
 
-            if (data.data) {
-                // Client-side filtering for isActive if backend doesn't support it yet
-                let filtered = data.data;
-                if (isActive !== 'all') {
-                    const activeBool = isActive === 'active';
-                    filtered = filtered.filter((v: any) => v.is_active === activeBool);
-                }
-                setVouchers(filtered);
-                setMeta(data.meta);
-            } else {
-                setVouchers(Array.isArray(data) ? data : []);
+            // getVouchers returns Voucher[] directly
+            const vouchersList = Array.isArray(data) ? data : [];
+
+            // Client-side filtering for isActive if backend doesn't support it yet
+            let filtered = vouchersList;
+            if (isActive !== 'all') {
+                const activeBool = isActive === 'active';
+                filtered = filtered.filter((v: { is_active: boolean }) => v.is_active === activeBool);
             }
+            setVouchers(filtered);
+            // Since we don't have pagination from backend, set basic meta
+            setMeta({ total: filtered.length, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
         } catch (err) {
             console.error(err);
         } finally {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const http = require('http');
 
 const BASE_URL = 'http://localhost:3000';
@@ -25,13 +26,10 @@ async function fetchHtml(path) {
 }
 
 async function runQA() {
-
-    let passed = 0;
     let failed = 0;
 
     for (const route of ROUTES) {
         try {
-
             const html = await fetchHtml(route.path);
 
             // Check Title
@@ -40,8 +38,7 @@ async function runQA() {
             const title = titleMatch ? titleMatch[1] : 'NO TITLE FOUND';
 
             if (title.includes(route.expectedTitle)) {
-
-                passed++;
+                // Passed
             } else {
                 console.error(`❌ Title MISMATCH: Expected "${route.expectedTitle}", Found "${title}"`);
                 failed++;
@@ -55,8 +52,7 @@ async function runQA() {
             // Let's just check if it contains the path.
 
             if (canonical.endsWith(route.expectedCanonical)) {
-
-                passed++;
+                // Passed
             } else {
                 console.error(`❌ Canonical MISMATCH: Expected suffix "${route.expectedCanonical}", Found "${canonical}"`);
                 failed++;
@@ -67,8 +63,6 @@ async function runQA() {
             failed++;
         }
     }
-
-
 
     if (failed > 0) process.exit(1);
 }

@@ -188,9 +188,10 @@ export default function ZenCheckout() {
                 router.push(`/order-confirmation/${order.id}`);
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Order creation failed:', error);
-            alert(error.message || 'Failed to place order. Please try again.');
+            const err = error as Error;
+            alert(err.message || 'Failed to place order. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -274,21 +275,21 @@ export default function ZenCheckout() {
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold tracking-widest text-zen-green-text/60 uppercase" htmlFor="province">Province</label>
                                             <select required className="w-full bg-transparent border border-zen-green-200 dark:border-white/20 rounded-md px-4 py-3 text-sm text-zen-green-900 dark:text-white focus:outline-none focus:border-zen-green-primary" value={selectedProvince?.code || ''} onChange={(e) => handleLocationChange('province', Number(e.target.value))} disabled={loadingP}>
-                                                <option value="" className="text-gray-500">Select...</option>
+                                                <option value="" className="text-gray-500">{loadingP ? 'Loading...' : 'Select...'}</option>
                                                 {provinces.map(p => <option key={p.code} value={p.code} className="text-black">{p.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold tracking-widest text-zen-green-text/60 uppercase" htmlFor="district">District</label>
-                                            <select required className="w-full bg-transparent border border-zen-green-200 dark:border-white/20 rounded-md px-4 py-3 text-sm text-zen-green-900 dark:text-white focus:outline-none focus:border-zen-green-primary" value={selectedDistrict?.code || ''} onChange={(e) => handleLocationChange('district', Number(e.target.value))} disabled={!selectedProvince}>
-                                                <option value="" className="text-gray-500">Select...</option>
+                                            <select required className="w-full bg-transparent border border-zen-green-200 dark:border-white/20 rounded-md px-4 py-3 text-sm text-zen-green-900 dark:text-white focus:outline-none focus:border-zen-green-primary" value={selectedDistrict?.code || ''} onChange={(e) => handleLocationChange('district', Number(e.target.value))} disabled={!selectedProvince || loadingD}>
+                                                <option value="" className="text-gray-500">{loadingD ? 'Loading...' : 'Select...'}</option>
                                                 {districts.map(d => <option key={d.code} value={d.code} className="text-black">{d.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold tracking-widest text-zen-green-text/60 uppercase" htmlFor="ward">Ward</label>
-                                            <select required className="w-full bg-transparent border border-zen-green-200 dark:border-white/20 rounded-md px-4 py-3 text-sm text-zen-green-900 dark:text-white focus:outline-none focus:border-zen-green-primary" value={selectedWard?.code || ''} onChange={(e) => handleLocationChange('ward', Number(e.target.value))} disabled={!selectedDistrict}>
-                                                <option value="" className="text-gray-500">Select...</option>
+                                            <select required className="w-full bg-transparent border border-zen-green-200 dark:border-white/20 rounded-md px-4 py-3 text-sm text-zen-green-900 dark:text-white focus:outline-none focus:border-zen-green-primary" value={selectedWard?.code || ''} onChange={(e) => handleLocationChange('ward', Number(e.target.value))} disabled={!selectedDistrict || loadingW}>
+                                                <option value="" className="text-gray-500">{loadingW ? 'Loading...' : 'Select...'}</option>
                                                 {wards.map(w => <option key={w.code} value={w.code} className="text-black">{w.name}</option>)}
                                             </select>
                                         </div>

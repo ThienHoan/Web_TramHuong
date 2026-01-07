@@ -3,19 +3,21 @@
 import { useState, useEffect } from 'react';
 import { getCategories } from '@/lib/api-client';
 import { useLocale } from 'next-intl';
+import { Category } from '@/types/product';
 import ZenFooter from './ZenFooter';
 
-import { Link, useRouter, usePathname } from '@/i18n/routing';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import ZenProductCard from './ZenProductCard';
+import { Product } from '@/types/product';
 
-export default function ZenProductList({ products }: { products: any[] }) {
+export default function ZenProductList({ products }: { products: Product[] }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const locale = useLocale();
 
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
         getCategories(locale).then(cats => setCategories(cats || []));
@@ -65,7 +67,7 @@ export default function ZenProductList({ products }: { products: any[] }) {
                                         { id: 'all', label: 'VIEW ALL' },
                                         ...categories.map(cat => ({
                                             id: cat.slug, // Use slug for cleaner URLs and API compatibility
-                                            label: (cat.translation?.name || cat.name).toUpperCase()
+                                            label: (cat.translation?.name || cat.slug).toUpperCase()
                                         }))
                                     ].map((cat) => (
                                         <label key={cat.id} className="group flex items-center justify-between cursor-pointer py-2" onClick={() => handleCategoryChange(cat.id)}>

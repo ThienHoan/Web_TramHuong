@@ -4,8 +4,8 @@ import { ContactsService } from './contacts.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-    imports: [SupabaseModule],
-    controllers: [ContactsController],
-    providers: [ContactsService],
+  imports: [SupabaseModule],
+  controllers: [ContactsController],
+  providers: [ContactsService],
 })
-export class ContactsModule { }
+export class ContactsModule {}

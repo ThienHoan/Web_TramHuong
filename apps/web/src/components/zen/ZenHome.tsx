@@ -1,18 +1,16 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+// import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';
-import { useCurrency } from '@/hooks/useCurrency';
-import { useProductDiscount } from '@/hooks/useProductDiscount';
+// import { useCurrency } from '@/hooks/useCurrency';
 import ZenFooter from './ZenFooter';
 import ScrollReveal from '../ui/ScrollReveal';
+import { Product } from '@/types/product';
+import Image from 'next/image';
 
-export default function ZenHome({ products, posts = [] }: { products: any[], posts?: any[] }) {
-    const { formatPrice } = useCurrency();
-    const t = useTranslations('HomePage');
-
+export default function ZenHome({ products }: { products: Product[] }) {
     // Filter for "Zen" affinity products or just take first few for demo
     const zenProducts = products.filter(p => !p.style_affinity || p.style_affinity === 'zen' || p.style_affinity === 'both').slice(0, 3);
     // Fill with fallback if not enough
@@ -24,10 +22,13 @@ export default function ZenHome({ products, posts = [] }: { products: any[], pos
             {/* Hero Section */}
             <header className="relative h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <img
+                    <Image
                         alt="Serene agarwood incense smoke"
                         className="w-full h-full object-cover object-center opacity-95 dark:opacity-70 animate-fade-in scale-105 duration-[20s]"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowdR6auj8zzL27aUJupmrLecfj0ANaqKMe-2rnu1Qv3ophqvBINDqWza6xU3DxCEeaKpwnAZ93FUQsctUo_lKJ3PrFPyMHzUNy2HPJeqQIsVlkmSrVvA_MlzULYOzSkrYfH3Nx6Ou2gDqs4vZzx7C1W0iriuXtWYK6rJnCw9OOvzhpyLEAhxgWekpF4Kr0_690wKsyvU-sdrEE701vu0wNzqUHGUnGHPt-S3WNxw8qHTRWcOXY3BcTajZYzdC9C-o1WpqhEhNv5Y"
+                        width={1920}
+                        height={1080}
+                        priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zen-50/20 dark:to-black/60"></div>
                 </div>
@@ -68,8 +69,8 @@ export default function ZenHome({ products, posts = [] }: { products: any[], pos
                                 <Link key={product.id} href={`/products/${product.slug}`} className={`group cursor-pointer animate-[fadeIn_1.5s_ease-out_forwards]`} style={{ animationDelay: `${(idx + 1) * 100}ms` }}>
                                     <div className="relative aspect-[4/5] overflow-hidden bg-zen-100 dark:bg-zinc-900 mb-6 shadow-xl shadow-zen-200/40 dark:shadow-black/20 rounded-sm">
                                         <ProductImage
-                                            src={product.images?.[0]}
-                                            alt={product.translation?.title}
+                                            src={product.images?.[0] || ''}
+                                            alt={product.translation?.title || product.title || 'Product'}
                                             className="h-full w-full object-cover transition-transform duration-[2s] group-hover:scale-110 opacity-95 group-hover:opacity-100"
                                         />
                                         <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] uppercase tracking-widest text-zen-secondary font-medium rounded-sm">
@@ -122,15 +123,27 @@ export default function ZenHome({ products, posts = [] }: { products: any[], pos
                         <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 lg:gap-8">
                             <div className="relative mt-12">
                                 <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-xl">
-                                    <img alt="Artisan hands carving wood" className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPyflVzrUTSkJ8pX7n1Y9O30q9bk9XcTCPXhV6ruLYeAhD34IQJVXxEPUDTDNPZmsNWNDagAOHwTUV926lB8nqwi1dB06Ab4ihmt7rM5tbL0gKc7YdyNL0kdx2PHLF60r-LeukWH-GMPAoUvlpwfO25b-DVRubYNmXGQQi2Dqqte7f2dapLAO5-f9VSVPHqmxpSm2QjFSQ1FsAlfgb6czazxiX_ugLX59TTa6kSHjqAkX2XaYjnK4vsM7JkfYcEMAM7MnNfQZT9-AC" />
+                                    <Image
+                                        alt="Artisan hands carving wood"
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPyflVzrUTSkJ8pX7n1Y9O30q9bk9XcTCPXhV6ruLYeAhD34IQJVXxEPUDTDNPZmsNWNDagAOHwTUV926lB8nqwi1dB06Ab4ihmt7rM5tbL0gKc7YdyNL0kdx2PHLF60r-LeukWH-GMPAoUvlpwfO25b-DVRubYNmXGQQi2Dqqte7f2dapLAO5-f9VSVPHqmxpSm2QjFSQ1FsAlfgb6czazxiX_ugLX59TTa6kSHjqAkX2XaYjnK4vsM7JkfYcEMAM7MnNfQZT9-AC"
+                                        width={400}
+                                        height={600}
+                                    />
                                 </div>
                                 <div className="absolute -bottom-6 -left-6 bg-white dark:bg-zinc-800 p-4 shadow-lg hidden md:block max-w-[150px]">
-                                    <p className="font-zen-display italic text-sm text-zen-800 dark:text-gray-300">"Patience is the only true method."</p>
+                                    <p className="font-zen-display italic text-sm text-zen-800 dark:text-gray-300">&quot;Patience is the only true method.&quot;</p>
                                 </div>
                             </div>
                             <div className="relative">
                                 <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-xl">
-                                    <img alt="Close up of incense texture" className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowdR6auj8zzL27aUJupmrLecfj0ANaqKMe-2rnu1Qv3ophqvBINDqWza6xU3DxCEeaKpwnAZ93FUQsctUo_lKJ3PrFPyMHzUNy2HPJeqQIsVlkmSrVvA_MlzULYOzSkrYfH3Nx6Ou2gDqs4vZzx7C1W0iriuXtWYK6rJnCw9OOvzhpyLEAhxgWekpF4Kr0_690wKsyvU-sdrEE701vu0wNzqUHGUnGHPt-S3WNxw8qHTRWcOXY3BcTajZYzdC9C-o1WpqhEhNv5Y" />
+                                    <Image
+                                        alt="Close up of incense texture"
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowdR6auj8zzL27aUJupmrLecfj0ANaqKMe-2rnu1Qv3ophqvBINDqWza6xU3DxCEeaKpwnAZ93FUQsctUo_lKJ3PrFPyMHzUNy2HPJeqQIsVlkmSrVvA_MlzULYOzSkrYfH3Nx6Ou2gDqs4vZzx7C1W0iriuXtWYK6rJnCw9OOvzhpyLEAhxgWekpF4Kr0_690wKsyvU-sdrEE701vu0wNzqUHGUnGHPt-S3WNxw8qHTRWcOXY3BcTajZYzdC9C-o1WpqhEhNv5Y"
+                                        width={400}
+                                        height={600}
+                                    />
                                 </div>
                             </div>
                         </div>

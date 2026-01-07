@@ -6,6 +6,7 @@ import { getCategories, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import ProductImage from '@/components/ui/ProductImage';
 import { Category } from '@/lib/types';
+import { toast } from 'sonner';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -119,10 +120,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
     }, [id, session, router]);
 
+
+
+    // ...
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session) return;
         setSubmitting(true);
+        const toastId = toast.loading('Updating product...');
 
         try {
             const formData = new FormData();
@@ -165,15 +171,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             });
 
             if (res.ok) {
-                alert('Product updated successfully');
+                toast.success('Product updated successfully', { id: toastId });
                 router.push('/admin/products');
                 router.refresh();
             } else {
                 const err = await res.json();
-                alert(`Error: ${err.message || 'Unknown error'}`);
+                toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
             }
         } catch (e: any) {
-            alert('Failed to update product');
+            toast.error('Failed to update product', { id: toastId });
         } finally {
             setSubmitting(false);
         }

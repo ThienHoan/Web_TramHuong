@@ -4,9 +4,9 @@ import { CartService } from './cart.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-    imports: [SupabaseModule],
-    controllers: [CartController],
-    providers: [CartService],
-    exports: [CartService]
+  imports: [SupabaseModule],
+  controllers: [CartController],
+  providers: [CartService],
+  exports: [CartService],
 })
-export class CartModule { }
+export class CartModule {}

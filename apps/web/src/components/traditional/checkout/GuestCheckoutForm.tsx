@@ -145,25 +145,41 @@ function LightLocationSelector({ onLocationChange }: { onLocationChange: (loc: {
     const [loadingW, setLoadingW] = useState(false);
 
     useEffect(() => {
-        setLoadingP(true);
-        fetch('https://provinces.open-api.vn/api/?depth=1')
-            .then(res => res.json())
-            .then(data => { setProvinces(data); setLoadingP(false); })
-            .catch(() => setLoadingP(false));
+        const init = async () => {
+            setLoadingP(true);
+            try {
+                const res = await fetch('https://provinces.open-api.vn/api/?depth=1');
+                const data = await res.json();
+                setProvinces(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingP(false);
+            }
+        };
+        init();
     }, []);
 
-    const fetchDistricts = (code: number) => {
+    const fetchDistricts = async (code: number) => {
         setLoadingD(true);
-        fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
-            .then(res => res.json())
-            .then(data => { setDistricts(data.districts); setLoadingD(false); });
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`);
+            const data = await res.json();
+            setDistricts(data.districts);
+        } finally {
+            setLoadingD(false);
+        }
     };
 
-    const fetchWards = (code: number) => {
+    const fetchWards = async (code: number) => {
         setLoadingW(true);
-        fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
-            .then(res => res.json())
-            .then(data => { setWards(data.wards); setLoadingW(false); });
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`);
+            const data = await res.json();
+            setWards(data.wards);
+        } finally {
+            setLoadingW(false);
+        }
     };
 
     const handleProvinceChange = (code: number) => {

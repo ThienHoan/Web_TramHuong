@@ -47,7 +47,7 @@ export default function ZenOrderLookupDialog({ order, isOpen, onClose }: ZenOrde
                 {/* Dialog Header */}
                 <div className="flex flex-col items-center border-b border-black/5 dark:border-white/5 bg-gradient-to-b from-white/50 to-transparent px-8 pb-6 pt-10 text-center dark:from-white/5">
                     <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#6d974e] dark:text-[#54ae13]/80">
-                        Your Journey's Echoes
+                        Your Journey&apos;s Echoes
                     </h3>
                     <h1 className="font-display text-3xl font-light tracking-tight text-[#131b0e] dark:text-white sm:text-4xl">
                         ORDER #{order.id.slice(0, 8).toUpperCase()}

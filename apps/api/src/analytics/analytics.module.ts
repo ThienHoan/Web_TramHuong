@@ -4,8 +4,8 @@ import { AnalyticsService } from './analytics.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-    imports: [SupabaseModule],
-    controllers: [AnalyticsController],
-    providers: [AnalyticsService],
+  imports: [SupabaseModule],
+  controllers: [AnalyticsController],
+  providers: [AnalyticsService],
 })
-export class AnalyticsModule { }
+export class AnalyticsModule {}

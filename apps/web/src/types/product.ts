@@ -24,8 +24,13 @@ export interface Product {
     images: string[];
     thumbnail?: string;
     stock: number;
+    quantity?: number; // Backend returns quantity, we normalize to stock
     is_active: boolean;
     style_affinity?: 'zen' | 'traditional' | 'both';
+
+    discount_percentage?: number;
+    discount_start_date?: string | null;
+    discount_end_date?: string | null;
 
     is_featured?: boolean;
     featured_section?: string | null;

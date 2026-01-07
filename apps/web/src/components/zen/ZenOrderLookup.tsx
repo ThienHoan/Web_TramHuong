@@ -53,17 +53,21 @@ export default function ZenOrderLookup() {
             // Verify order exists first
             const data = await lookupOrder(orderCode, query);
             setResult(data as unknown as Order); // Cast to Order type
-        } catch (err: any) {
-            toast.error(err.message || 'Cannot find order details. Please check your information.');
+        } catch (err: unknown) {
+            let message = 'Cannot find order details. Please check your information.';
+            if (err instanceof Error) message = err.message;
+            else if (typeof err === 'object' && err !== null && 'message' in err) message = (err as { message: string }).message;
+
+            toast.error(message);
         } finally {
             setLoading(false);
         }
     };
 
-    // Close dialog handler
-    const handleCloseDialog = () => {
-        setResult(null);
-    };
+    // Close dialog handler - Unused for now
+    // const handleCloseDialog = () => {
+    //     setResult(null);
+    // };
 
     return (
         <div className="bg-[#fafcf8] dark:bg-[#131b0e] font-display text-[#131b0e] antialiased selection:bg-[#54ae13]/20 selection:text-[#54ae13] min-h-screen flex flex-col transition-colors duration-500">

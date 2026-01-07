@@ -32,61 +32,135 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
     const [loadingD, setLoadingD] = useState(false);
     const [loadingW, setLoadingW] = useState(false);
 
-    // Fetch Provinces
+    // Initial Fetch of Provinces
     useEffect(() => {
-        setLoadingP(true);
-        fetch('https://provinces.open-api.vn/api/?depth=1')
-            .then(res => res.json())
-            .then(data => {
+        const fetchProvinces = async () => {
+            setLoadingP(true);
+            try {
+                const res = await fetch('https://provinces.open-api.vn/api/?depth=1');
+                const data = await res.json();
                 setProvinces(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
                 setLoadingP(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoadingP(false);
-            });
+            }
+        };
+        fetchProvinces();
     }, []);
 
-    // Sync initial state when provinces are loaded or initial props change
+    // Sync state with props when they change (e.g. loaded from profile)
     useEffect(() => {
-        if (provinces.length > 0 && initialProvince && !selectedProvince) {
-            const foundP = provinces.find((p: Division) => p.name === initialProvince);
-            if (foundP) {
-                setSelectedProvince(foundP);
-                fetchDistricts(foundP.code, initialDistrict, initialWard);
-            }
-        }
-    }, [provinces, initialProvince, initialDistrict, initialWard]);
+        const syncAddress = async () => {
+            if (provinces.length === 0) return;
 
-    const fetchDistricts = (provinceCode: number, initDistrict?: string, initWard?: string) => {
-        setLoadingD(true);
-        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                setDistricts(data.districts);
-                setLoadingD(false);
-                if (initDistrict) {
-                    const foundD = data.districts.find((d: Division) => d.name === initDistrict);
-                    if (foundD) {
-                        setSelectedDistrict(foundD);
-                        fetchWards(foundD.code, initWard);
+            // 1. Sync Province
+            if (initialProvince && (!selectedProvince || selectedProvince.name !== initialProvince)) {
+                const p = provinces.find(x => x.name === initialProvince);
+                if (p) {
+                    setSelectedProvince(p);
+
+                    // Fetch Districts for this province
+                    setLoadingD(true);
+                    try {
+                        const dRes = await fetch(`https://provinces.open-api.vn/api/p/${p.code}?depth=2`);
+                        const dData = await dRes.json();
+                        setDistricts(dData.districts);
+
+                        // 2. Sync District (if waiting for district)
+                        if (initialDistrict) {
+                            const d = dData.districts.find((x: Division) => x.name === initialDistrict);
+                            if (d) {
+                                setSelectedDistrict(d);
+
+                                // Fetch Wards for this district
+                                setLoadingW(true);
+                                const wRes = await fetch(`https://provinces.open-api.vn/api/d/${d.code}?depth=2`);
+                                const wData = await wRes.json();
+                                setWards(wData.wards);
+                                setLoadingW(false);
+
+                                // 3. Sync Ward
+                                if (initialWard) {
+                                    const w = wData.wards.find((x: Division) => x.name === initialWard);
+                                    if (w) setSelectedWard(w);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        setLoadingD(false);
                     }
                 }
+            } else if (selectedProvince && selectedProvince.name === initialProvince) {
+                // Province matches, check District mismatch (rare but possible if only district changed externally)
+                if (initialDistrict && (!selectedDistrict || selectedDistrict.name !== initialDistrict)) {
+                    // Ensure districts are loaded
+                    let currentDistricts = districts;
+                    if (currentDistricts.length === 0) {
+                        setLoadingD(true);
+                        const dRes = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince.code}?depth=2`);
+                        const dData = await dRes.json();
+                        setDistricts(dData.districts);
+                        currentDistricts = dData.districts;
+                        setLoadingD(false);
+                    }
+
+                    const d = currentDistricts.find(x => x.name === initialDistrict);
+                    if (d) {
+                        setSelectedDistrict(d);
+
+                        // Fetch Wards
+                        setLoadingW(true);
+                        const wRes = await fetch(`https://provinces.open-api.vn/api/d/${d.code}?depth=2`);
+                        const wData = await wRes.json();
+                        setWards(wData.wards);
+                        setLoadingW(false);
+
+                        if (initialWard) {
+                            const w = wData.wards.find((x: Division) => x.name === initialWard);
+                            if (w) setSelectedWard(w);
+                        }
+                    }
+                }
+            }
+        };
+
+        syncAddress();
+    }, [provinces, initialProvince, initialDistrict, initialWard]);
+
+    const updateParent = (p: Division | null, d: Division | null, w: Division | null) => {
+        if (p) {
+            onLocationChange({
+                province: p.name,
+                district: d ? d.name : '',
+                ward: w ? w.name : '',
+                fullString: w && d ? `${w.name}, ${d.name}, ${p.name}` : ''
             });
+        }
     };
 
-    const fetchWards = (districtCode: number, initWard?: string) => {
+    const fetchDistricts = async (provinceCode: number) => {
+        setLoadingD(true);
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+            const data = await res.json();
+            setDistricts(data.districts);
+        } finally {
+            setLoadingD(false);
+        }
+    };
+
+    const fetchWards = async (districtCode: number) => {
         setLoadingW(true);
-        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                setWards(data.wards);
-                setLoadingW(false);
-                if (initWard) {
-                    const foundW = data.wards.find((w: Division) => w.name === initWard);
-                    if (foundW) setSelectedWard(foundW);
-                }
-            });
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+            const data = await res.json();
+            setWards(data.wards);
+        } finally {
+            setLoadingW(false);
+        }
     };
 
     const handleProvinceChange = (code: number) => {
@@ -119,17 +193,6 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
         const ward = wards.find(w => w.code === code) || null;
         setSelectedWard(ward);
         updateParent(selectedProvince, selectedDistrict, ward);
-    };
-
-    const updateParent = (p: Division | null, d: Division | null, w: Division | null) => {
-        if (p) {
-            onLocationChange({
-                province: p.name,
-                district: d ? d.name : '',
-                ward: w ? w.name : '',
-                fullString: w && d ? `${w.name}, ${d.name}, ${p.name}` : ''
-            });
-        }
     };
 
     const selectClass = "w-full appearance-none bg-black/20 border border-trad-amber-600/50 rounded-lg px-4 py-2.5 text-white focus:border-trad-amber-600 focus:ring-1 focus:ring-trad-amber-600 transition-all outline-none pr-10 disabled:opacity-50";
