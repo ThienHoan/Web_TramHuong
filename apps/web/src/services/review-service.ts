@@ -1,6 +1,19 @@
 import { fetchWithAuth, getHeaders, API_URL } from './base-http';
 import { Review, ReviewResponse } from '../types/review';
 
+export interface UpdateReviewDto {
+    rating?: number;
+    comment?: string;
+}
+
+export interface SeedReviewDto {
+    productId: string;
+    rating: number;
+    comment: string;
+    reviewerName?: string;
+    reviewerAvatar?: string;
+}
+
 export const reviewService = {
     async getReviews(productId: string): Promise<ReviewResponse> {
         try {
@@ -8,7 +21,7 @@ export const reviewService = {
                 next: { revalidate: 0 } // Always fresh
             });
             if (!res.ok) return { data: [], meta: { total: 0, average: 0, distribution: {} } };
-            return await res.json();
+            return await res.json() as ReviewResponse;
         } catch (e) {
             console.error("Fetch Reviews Error:", e);
             return { data: [], meta: { total: 0, average: 0, distribution: {} } };
@@ -23,10 +36,10 @@ export const reviewService = {
                 body: JSON.stringify({ productId, rating, comment }),
             });
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json() as { message?: string };
                 throw new Error(err.message || 'Failed to submit review');
             }
-            return await res.json();
+            return await res.json() as Review;
         } catch (e) {
             console.error("Create Review Error:", e);
             throw e;
@@ -39,7 +52,7 @@ export const reviewService = {
         });
     },
 
-    async updateReview(id: string, data: any): Promise<Review> {
+    async updateReview(id: string, data: UpdateReviewDto): Promise<Review> {
         return fetchWithAuth<Review>(`${API_URL}/reviews/${id}`, {
             method: 'PATCH',
             headers: {
@@ -49,24 +62,24 @@ export const reviewService = {
         });
     },
 
-    async deleteReview(id: string): Promise<any> {
+    async deleteReview(id: string): Promise<{ success: boolean }> {
         try {
             const res = await fetch(`${API_URL}/reviews/${id}`, {
                 method: 'DELETE',
                 headers: getHeaders(),
             });
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json() as { message?: string };
                 throw new Error(err.message || 'Failed to delete review');
             }
-            return await res.json();
+            return await res.json() as { success: boolean };
         } catch (e) {
             console.error("Delete Review Error:", e);
             throw e;
         }
     },
 
-    async seedReview(data: any) {
+    async seedReview(data: SeedReviewDto): Promise<Review> {
         try {
             const res = await fetch(`${API_URL}/reviews/seed`, {
                 method: 'POST',
@@ -74,10 +87,10 @@ export const reviewService = {
                 body: JSON.stringify(data),
             });
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json() as { message?: string };
                 throw new Error(err.message || 'Failed to seed review');
             }
-            return await res.json();
+            return await res.json() as Review;
         } catch (e) {
             console.error("Seed Review Error:", e);
             throw e;

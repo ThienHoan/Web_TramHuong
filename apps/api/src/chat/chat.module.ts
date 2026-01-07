@@ -5,11 +5,8 @@ import { ProductsModule } from '../products/products.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-    imports: [
-        ProductsModule,
-        ConfigModule,
-    ],
-    controllers: [ChatController],
-    providers: [ChatService],
+  imports: [ProductsModule, ConfigModule],
+  controllers: [ChatController],
+  providers: [ChatService],
 })
-export class ChatModule { }
+export class ChatModule {}

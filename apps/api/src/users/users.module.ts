@@ -5,8 +5,8 @@ import { SupabaseModule } from '../supabase/supabase.module';
 import { OrdersModule } from '../orders/orders.module';
 
 @Module({
-    imports: [SupabaseModule, OrdersModule],
-    controllers: [UsersController],
-    providers: [UsersService],
+  imports: [SupabaseModule, OrdersModule],
+  controllers: [UsersController],
+  providers: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

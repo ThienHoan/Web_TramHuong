@@ -17,7 +17,15 @@ export default function PaymentSelectPage() {
     const { formatPrice } = useCurrency();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const [shippingInfo, setShippingInfo] = useState<any>(null);
+    interface ShippingInfo {
+        name: string;
+        phone: string;
+        email?: string;
+        city?: string;
+        address?: string;
+        full_address?: string;
+    }
+    const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
 
     const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay' | 'showroom'>('cod');
     const [error, setError] = useState<string | null>(null);
@@ -99,11 +107,11 @@ export default function PaymentSelectPage() {
                 // Let's explicitly set the address to the showroom address so it's clear in the order record.
             } : shippingInfo;
 
-            const fullShippingInfo = {
+            const fullShippingInfo: { name: string; phone: string; city: string; address: string; email: string } = {
                 name: shippingInfo.name,
                 phone: shippingInfo.phone,
-                city: finalShippingInfo.city,
-                address: finalShippingInfo.full_address || finalShippingInfo.address, // Handle both structures if needed
+                city: finalShippingInfo?.city || '',
+                address: finalShippingInfo?.full_address || finalShippingInfo?.address || '', // Handle both structures if needed
                 email: shippingInfo.email || ''
             };
 
@@ -136,9 +144,10 @@ export default function PaymentSelectPage() {
             } else {
                 router.push(`/checkout/payment?id=${order.id}`);
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            setError(e.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+            const errorMessage = e instanceof Error ? e.message : 'Đặt hàng thất bại. Vui lòng thử lại.';
+            setError(errorMessage);
             setLoading(false); // Only stop loading on error
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }

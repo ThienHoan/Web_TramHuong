@@ -7,6 +7,22 @@ export interface ContactData {
     message: string;
 }
 
+export interface Contact {
+    id: string;
+    full_name: string;
+    email: string;
+    topic?: string;
+    message: string;
+    status: string;
+    created_at: string;
+}
+
+export interface ContactMeta {
+    total: number;
+    page?: number;
+    limit?: number;
+}
+
 export const contactService = {
     submitContact: async (data: ContactData) => {
         const url = buildUrl('/contacts');
@@ -22,7 +38,7 @@ export const contactService = {
 
     getContacts: async (page = 1, limit = 10) => {
         const url = buildUrl('/contacts', { page, limit });
-        return fetchWithAuth<{ data: any[], meta: any }>(url);
+        return fetchWithAuth<{ data: Contact[], meta: ContactMeta }>(url);
     },
 
     updateContactStatus: async (id: string, status: string) => {

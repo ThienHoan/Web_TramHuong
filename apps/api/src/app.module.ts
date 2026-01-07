@@ -29,9 +29,10 @@ import { ChatModule } from './chat/chat.module';
     LoggerModule.forRoot({
       pinoHttp: {
         // Pretty print in development, JSON in production
-        transport: process.env.NODE_ENV !== 'production'
-          ? { target: 'pino-pretty', options: { singleLine: true } }
-          : undefined,
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? { target: 'pino-pretty', options: { singleLine: true } }
+            : undefined,
         // Redact sensitive data
         redact: [
           'req.headers.authorization',
@@ -40,7 +41,7 @@ import { ChatModule } from './chat/chat.module';
           'req.body.password',
           'req.body.token',
           'req.body.refreshToken',
-          'req.body.access_token'
+          'req.body.access_token',
         ],
         // Auto-assign request ID if missing
         genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
@@ -64,10 +65,12 @@ import { ChatModule } from './chat/chat.module';
     }),
     ScheduleModule.forRoot(),
     // Rate Limiting: 100 requests per 60 seconds
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     SupabaseModule,
     ProductsModule,
     OrdersModule,
@@ -92,5 +95,4 @@ import { ChatModule } from './chat/chat.module';
     },
   ],
 })
-export class AppModule { }
-
+export class AppModule {}

@@ -16,16 +16,16 @@ export const getHeaders = () => {
     return headers;
 };
 
-export async function fetchWithAuth<T = any>(url: string, options: RequestInit = {}): Promise<T> {
-    const headers = { ...getHeaders(), ...(options.headers as any) };
+export async function fetchWithAuth<T = unknown>(url: string, options: RequestInit = {}): Promise<T> {
+    const headers = { ...getHeaders(), ...(options.headers as Record<string, string>) };
     const res = await fetch(url, { ...options, headers });
 
     if (!res.ok) {
         // Safe json parsing
         try {
-            const err = await res.json();
+            const err = await res.json() as { message?: string };
             throw new Error(err.message || 'Request failed');
-        } catch (e: any) {
+        } catch (_e: unknown) {
             throw new Error(res.statusText || 'Request failed');
         }
     }
@@ -35,8 +35,8 @@ export async function fetchWithAuth<T = any>(url: string, options: RequestInit =
     if (!text) return {} as T;
 
     try {
-        return JSON.parse(text);
-    } catch (parseError) {
+        return JSON.parse(text) as T;
+    } catch (_parseError) {
         console.error('[fetchWithAuth] Failed to parse JSON response:', text.substring(0, 200));
         throw new Error('Unexpected response format from server');
     }

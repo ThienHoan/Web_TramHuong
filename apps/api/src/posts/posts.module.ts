@@ -4,9 +4,9 @@ import { PostsService } from './posts.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-    imports: [SupabaseModule],
-    controllers: [PostsController],
-    providers: [PostsService],
-    exports: [PostsService],
+  imports: [SupabaseModule],
+  controllers: [PostsController],
+  providers: [PostsService],
+  exports: [PostsService],
 })
-export class PostsModule { }
+export class PostsModule {}

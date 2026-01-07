@@ -18,8 +18,44 @@ export const getProducts = productService.getProducts;
 export const getProduct = productService.getProduct;
 export const getCategories = productService.getCategories;
 
+interface ApiErrorData {
+    message?: string;
+    errors?: string[];
+}
+
+export interface OrderLookupResult {
+    id: string;
+    status: string;
+    created_at: string;
+    total: number;
+    items: Array<{
+        title: string;
+        price: number;
+        original_price?: number;
+        discount_amount?: number;
+        quantity: number;
+        image?: string;
+        variant_name?: string;
+    }>;
+    shipping_info: {
+        full_name: string;
+        phone: string | null;
+        address: string | null;
+        province?: string;
+        district?: string;
+        ward?: string;
+        shipping_fee?: number;
+        delivery_method?: string;
+    };
+    payment_status: string;
+    payment_method: string;
+    tracking_code?: string;
+    voucher_code?: string;
+    voucher_discount_amount?: number;
+}
+
 // Orders
-export async function lookupOrder(orderCode: string, emailOrPhone: string): Promise<any> {
+export async function lookupOrder(orderCode: string, emailOrPhone: string): Promise<OrderLookupResult> {
     const res = await fetch(`${API_URL}/orders/lookup`, {
         method: 'POST',
         headers: getHeaders(),
@@ -27,10 +63,10 @@ export async function lookupOrder(orderCode: string, emailOrPhone: string): Prom
     });
 
     if (!res.ok) {
-        let errorData: any = {};
+        let errorData: ApiErrorData = {};
         try {
-            errorData = await res.json();
-        } catch (e) {
+            errorData = await res.json() as ApiErrorData;
+        } catch {
             // Ignore if JSON parse fails
         }
 
@@ -41,7 +77,7 @@ export async function lookupOrder(orderCode: string, emailOrPhone: string): Prom
         };
     }
 
-    return await res.json();
+    return await res.json() as OrderLookupResult;
 }
 
 export const createOrder = orderService.createOrder;
@@ -89,9 +125,18 @@ export const deleteVoucher = vouchersService.deleteVoucher;
 export const validateVoucher = vouchersService.validateVoucher;
 
 
+interface ChatMessage {
+    role: 'user' | 'model';
+    content: string;
+}
+
+interface ChatAIResponse {
+    response: string;
+    [key: string]: unknown;
+}
 
 // Chat AI
-export async function chatWithAI(message: string, history: any[] = []): Promise<any> {
+export async function chatWithAI(message: string, history: ChatMessage[] = []): Promise<ChatAIResponse> {
     const res = await fetch(`${API_URL}/chat/message`, {
         method: 'POST',
         headers: getHeaders(),
@@ -99,9 +144,9 @@ export async function chatWithAI(message: string, history: any[] = []): Promise<
     });
 
     if (!res.ok) {
-        let errorData: any = {};
+        let errorData: ApiErrorData = {};
         try {
-            errorData = await res.json();
+            errorData = await res.json() as ApiErrorData;
         } catch { }
 
         throw {
@@ -111,7 +156,7 @@ export async function chatWithAI(message: string, history: any[] = []): Promise<
         };
     }
 
-    return await res.json();
+    return await res.json() as ChatAIResponse;
 }
 
 /**
@@ -125,7 +170,7 @@ export async function chatWithAI(message: string, history: any[] = []): Promise<
  */
 export async function chatWithAIStream(
     message: string,
-    history: any[] = [],
+    history: ChatMessage[] = [],
     onChunk: (text: string) => void,
     onWarning?: (message: string) => void,
     onError?: (error: string) => void,
@@ -139,9 +184,9 @@ export async function chatWithAIStream(
     });
 
     if (!res.ok) {
-        let errorData: any = {};
+        let errorData: ApiErrorData = {};
         try {
-            errorData = await res.json();
+            errorData = await res.json() as ApiErrorData;
         } catch { }
 
         throw {
@@ -157,6 +202,11 @@ export async function chatWithAIStream(
     const decoder = new TextDecoder();
     let buffer = '';
 
+    interface StreamData {
+        type: 'chunk' | 'warning' | 'error' | 'done';
+        content: string;
+    }
+
     try {
         while (true) {
             const { done, value } = await reader.read();
@@ -171,7 +221,7 @@ export async function chatWithAIStream(
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     try {
-                        const data = JSON.parse(line.slice(6));
+                        const data = JSON.parse(line.slice(6)) as StreamData;
 
                         if (data.type === 'chunk') {
                             onChunk(data.content);

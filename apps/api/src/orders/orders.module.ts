@@ -10,9 +10,9 @@ import { MailModule } from '../mail/mail.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
 
 @Module({
-    imports: [SupabaseModule, CartModule, MailModule, VouchersModule],
-    controllers: [OrdersController],
-    providers: [OrdersService, OrderCleanupService],
-    exports: [OrdersService], // Export for UsersModule
+  imports: [SupabaseModule, CartModule, MailModule, VouchersModule],
+  controllers: [OrdersController],
+  providers: [OrdersService, OrderCleanupService],
+  exports: [OrdersService], // Export for UsersModule
 })
-export class OrdersModule { }
+export class OrdersModule {}

@@ -66,10 +66,17 @@ export default function TraditionalCheckout() {
             const { validateVoucher } = await import('@/lib/api-client');
             const data = await validateVoucher(voucherCode, total);
 
-            setAppliedVoucher({
-                code: data.voucher.code,
-                discountAmount: data.discountAmount
-            });
+            if (data.voucher) {
+                setAppliedVoucher({
+                    code: data.voucher.code,
+                    discountAmount: data.discountAmount ?? data.discount ?? 0
+                });
+            } else {
+                setAppliedVoucher({
+                    code: voucherCode,
+                    discountAmount: data.discountAmount ?? data.discount ?? 0
+                });
+            }
             // Don't clear code so user sees it
         } catch (err: any) {
             setVoucherError(err.message || 'Mã không hợp lệ');
@@ -121,8 +128,8 @@ export default function TraditionalCheckout() {
                     const { validateVoucher } = await import('@/lib/api-client');
                     const data = await validateVoucher(appliedVoucher.code, total);
                     setAppliedVoucher({
-                        code: data.voucher.code,
-                        discountAmount: data.discountAmount
+                        code: data.voucher?.code || appliedVoucher.code,
+                        discountAmount: data.discountAmount ?? data.discount ?? 0
                     });
                     // Clear error if re-validation succeeds (e.g. they added enough items to meet min order)
                     setVoucherError('');

@@ -33,7 +33,7 @@ export default function WishlistPage() {
                 getProducts('vi', { limit: 12 }) // Fetch enough to filter
             ])
                 .then(([wishlistData, productsData]) => {
-                    const wishlist = wishlistData || [];
+                    const wishlist = Array.isArray(wishlistData) ? wishlistData : [];
                     setWishlistProducts(wishlist);
 
                     // Filter suggestions: Exclude items already in wishlist

@@ -1,35 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { lookupOrder } from '@/lib/api-client';
+import { lookupOrder, OrderLookupResult } from '@/lib/api-client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import Image from 'next/image';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
-
-interface OrderResult {
-    id: string;
-    status: string;
-    created_at: string;
-    total: number;
-    items: any[];
-    shipping_info: {
-        full_name: string;
-        phone: string | null;
-        address: string | null;
-        province?: string;
-        district?: string;
-        ward?: string;
-        shipping_fee?: number;
-        delivery_method?: string;
-    };
-    payment_status: string;
-    payment_method: string;
-    tracking_code?: string;
-    voucher_code?: string;
-    voucher_discount_amount?: number;
-}
 
 export default function TraditionalOrderLookup() {
     const searchParams = useSearchParams();
@@ -37,7 +14,7 @@ export default function TraditionalOrderLookup() {
     const [emailOrPhone, setEmailOrPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<OrderResult | null>(null);
+    const [result, setResult] = useState<OrderLookupResult | null>(null);
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {

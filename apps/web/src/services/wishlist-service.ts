@@ -20,7 +20,7 @@ export const wishlistService = {
             });
             if (!res.ok) return [];
             return await res.json();
-        } catch (e) {
+        } catch (_e) {
             return [];
         }
     }

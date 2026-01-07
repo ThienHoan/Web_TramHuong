@@ -17,7 +17,9 @@ async function bootstrap() {
   app.use(compression());
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'],
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',')
+      : ['http://localhost:3000'],
     credentials: true,
   });
 
@@ -40,4 +42,3 @@ async function bootstrap() {
   logger.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
-

@@ -4,9 +4,9 @@ import { CategoriesService } from './categories.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-    imports: [SupabaseModule],
-    controllers: [CategoriesController],
-    providers: [CategoriesService],
-    exports: [CategoriesService],
+  imports: [SupabaseModule],
+  controllers: [CategoriesController],
+  providers: [CategoriesService],
+  exports: [CategoriesService],
 })
-export class CategoriesModule { }
+export class CategoriesModule {}
