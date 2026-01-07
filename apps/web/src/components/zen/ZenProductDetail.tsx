@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCart } from '../providers/CartProvider';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
@@ -10,8 +10,9 @@ import { Link, useRouter } from '@/i18n/routing';
 import { getReviews, createReview, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
+import { Product } from '@/types/product';
 
-export default function ZenProductDetail({ product, relatedProducts }: { product: any; relatedProducts?: any[] }) {
+export default function ZenProductDetail({ product, relatedProducts }: { product: Product; relatedProducts?: Product[] }) {
     const { addItem } = useCart();
     const { formatPrice } = useCurrency();
     const { session } = useAuth();
@@ -25,8 +26,24 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
     const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
 
     // Reviews state
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [reviewStats, setReviewStats] = useState({ average: 0, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+    interface ReviewUser {
+        full_name: string;
+    }
+    interface Review {
+        id: string;
+        rating: number;
+        comment: string;
+        created_at: string;
+        user?: ReviewUser;
+    }
+    interface ReviewStats {
+        average: number;
+        total: number;
+        distribution: { [key: number]: number };
+    }
+
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewStats, setReviewStats] = useState<ReviewStats>({ average: 0, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
     const [loadingReviews, setLoadingReviews] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const reviewsPerPage = 3;
@@ -45,23 +62,23 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
     }, [session]);
 
     // Fetch reviews when tab is active
-    const fetchReviews = () => {
+    const fetchReviews = useCallback(() => {
         if (product.id) {
             setLoadingReviews(true);
             getReviews(product.id).then(res => {
                 const data = Array.isArray(res.data) ? res.data : [];
-                setReviews(data);
-                setReviewStats((res.meta as any) || { average: 5, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+                setReviews(data as Review[]);
+                setReviewStats((res.meta as unknown as ReviewStats) || { average: 5, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
                 setCurrentPage(1); // Reset page on fetch
             }).catch(console.error).finally(() => setLoadingReviews(false));
         }
-    };
+    }, [product.id]);
 
     useEffect(() => {
         if (activeTab === 'reviews') {
             fetchReviews();
         }
-    }, [activeTab, product.id]);
+    }, [activeTab, fetchReviews]);
 
     // Pagination Logic
     const indexOfLastReview = currentPage * reviewsPerPage;
@@ -82,7 +99,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
         addItem({
             id: product.id,
             slug: product.slug,
-            title: product.translation?.title || product.title,
+            title: product.translation?.title || product.title || 'Untitled',
             price: finalPrice,  // ✅ Using discounted price
             original_price: originalPrice,  // For discount display in checkout
             discount_amount: discountAmount,  // For discount display in checkout
@@ -90,7 +107,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             quantity: quantity
         });
 
-        toast.success(product.translation?.title || product.title, {
+        toast.success(product.translation?.title || product.title || 'Product', {
             description: `Has been added to your cart`,
             action: {
                 label: 'Checkout',
@@ -131,15 +148,25 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             setFormRating(5);
             fetchReviews(); // Refresh reviews
             alert('Your reflection has been shared.');
-        } catch (err: any) {
-            if (err?.message === 'Unauthorized' || err?.status === 401) {
+        } catch (err: unknown) {
+            let message = 'Failed to submit reflection.';
+            let status = 0;
+
+            if (err instanceof Error) {
+                message = err.message;
+            } else if (typeof err === 'object' && err !== null) {
+                message = (err as { message?: string }).message || message;
+                status = (err as { status?: number }).status || 0;
+            }
+
+            if (message === 'Unauthorized' || status === 401) {
                 setSubmitError('Please sign in to share your reflection.');
-            } else if (err?.message?.includes('Forbidden') || err?.message?.includes('purchase')) {
+            } else if (message.includes('Forbidden') || message.includes('purchase')) {
                 setSubmitError('You must purchase this artifact to leave a reflection.');
-            } else if (err?.message?.includes('already reviewed')) {
+            } else if (message.includes('already reviewed')) {
                 setSubmitError('You have already shared your reflection for this artifact.');
             } else {
-                setSubmitError(err?.message || 'Failed to submit reflection.');
+                setSubmitError(message);
             }
         } finally {
             setIsSubmitting(false);
@@ -168,7 +195,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-md bg-zen-green-100 dark:bg-white/5">
                                 <ProductImage
                                     src={activeImage}
-                                    alt={product.translation?.title}
+                                    alt={product.translation?.title || 'Product Image'}
                                     className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover/gallery:scale-105"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-500"></div>
@@ -206,14 +233,14 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                             </h1>
                             {/* Price with discount logic */}
                             {(() => {
-                                const hasDiscount = product.discount_percentage > 0;
+                                const hasDiscount = (product.discount_percentage || 0) > 0;
                                 const now = new Date();
                                 const isActive = hasDiscount &&
                                     (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
                                     (!product.discount_end_date || new Date(product.discount_end_date) >= now);
 
                                 if (isActive) {
-                                    const finalPrice = product.price * (1 - product.discount_percentage / 100);
+                                    const finalPrice = product.price * (1 - (product.discount_percentage || 0) / 100);
                                     return (
                                         <div className="mb-8 flex flex-col gap-2">
                                             <p className="text-sm font-light tracking-wide text-zen-green-text/50 dark:text-gray-500 line-through">
@@ -224,7 +251,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                     {formatPrice(finalPrice)}
                                                 </p>
                                                 <span className="inline-flex items-center rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
-                                                    -{product.discount_percentage}%
+                                                    -{product.discount_percentage || 0}%
                                                 </span>
                                             </div>
                                         </div>
@@ -345,7 +372,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                 <div className="p-6 bg-zen-green-50 dark:bg-white/5 border border-zen-green-100 dark:border-white/10 rounded-sm">
                                                     <span className="block mb-2 text-[10px] uppercase tracking-[0.2em] text-zen-green-primary">Mindful Tip</span>
                                                     <p className="text-sm italic font-light text-zen-green-900 dark:text-white">
-                                                        "The smoke of agarwood is a bridge between the earth and the heavens. Let it carry your intentions upward."
+                                                        &quot;The smoke of agarwood is a bridge between the earth and the heavens. Let it carry your intentions upward.&quot;
                                                     </p>
                                                 </div>
                                             </div>
@@ -378,7 +405,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
 
                                                 <div className="w-full md:w-1/3 space-y-2">
                                                     {[5, 4, 3, 2, 1].map((star) => {
-                                                        const count = (reviewStats.distribution as any)[star] || 0;
+                                                        const count = (reviewStats.distribution as Record<number, number>)[star] || 0;
                                                         const percent = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
                                                         return (
                                                             <div key={star} className="flex items-center gap-3 text-[10px]">
@@ -397,7 +424,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                     <div className="text-center py-12 text-zen-green-text/40 text-xs uppercase tracking-widest animate-pulse">Loading Reflections...</div>
                                                 ) : reviews.length > 0 ? (
                                                     <>
-                                                        {currentReviews.map((review: any) => (
+                                                        {currentReviews.map((review) => (
                                                             <div key={review.id} className="p-8 bg-white dark:bg-white/5 shadow-xl shadow-zen-green-100/50 dark:shadow-none rounded-sm border border-transparent hover:border-zen-green-100 transition-all">
                                                                 <div className="flex justify-between items-start mb-4">
                                                                     <div>
@@ -499,7 +526,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                             {p.images?.[0] ? (
                                                 <ProductImage
                                                     src={p.images[0]}
-                                                    alt={p.translation?.title || p.title}
+                                                    alt={p.translation?.title || p.title || 'Related Product'}
                                                     className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
                                                 />
                                             ) : (

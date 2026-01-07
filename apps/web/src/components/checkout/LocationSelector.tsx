@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Division {
     code: number;
@@ -32,60 +32,88 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
     const [loadingD, setLoadingD] = useState(false);
     const [loadingW, setLoadingW] = useState(false);
 
-    // Fetch Provinces and handle initial values
-    useEffect(() => {
-        setLoadingP(true);
-        fetch('https://provinces.open-api.vn/api/?depth=1')
-            .then(res => res.json())
-            .then(data => {
-                setProvinces(data);
-                setLoadingP(false);
+    const updateParent = useCallback((p: Division | null, d: Division | null, w: Division | null) => {
+        if (p && d && w) {
+            onLocationChange({
+                province: p.name,
+                district: d.name,
+                ward: w.name,
+                fullString: `${w.name}, ${d.name}, ${p.name}`
+            });
+        } else if (p) {
+            // Partial update if needed
+            onLocationChange({
+                province: p.name,
+                district: d ? d.name : '',
+                ward: w ? w.name : '',
+                fullString: '' // Empty means incomplete
+            });
+        }
+    }, [onLocationChange]);
 
-                // Handle initial province
+    const fetchWards = useCallback(async (districtCode: number, initWard?: string) => {
+        setLoadingW(true);
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+            const data = await res.json();
+            setWards(data.wards);
+
+            if (initWard) {
+                const foundW = data.wards.find((w: Division) => w.name === initWard);
+                if (foundW) setSelectedWard(foundW);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingW(false);
+        }
+    }, []);
+
+    const fetchDistricts = useCallback(async (provinceCode: number, initDistrict?: string, initWard?: string) => {
+        setLoadingD(true);
+        try {
+            const res = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+            const data = await res.json();
+            setDistricts(data.districts);
+
+            if (initDistrict) {
+                const foundD = data.districts.find((d: Division) => d.name === initDistrict);
+                if (foundD) {
+                    setSelectedDistrict(foundD);
+                    fetchWards(foundD.code, initWard);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingD(false);
+        }
+    }, [fetchWards]);
+
+    // Initial Fetch
+    useEffect(() => {
+        const init = async () => {
+            setLoadingP(true);
+            try {
+                const res = await fetch('https://provinces.open-api.vn/api/?depth=1');
+                const data = await res.json();
+                setProvinces(data);
+
                 if (initialProvince) {
                     const foundP = data.find((p: Division) => p.name === initialProvince);
                     if (foundP) {
                         setSelectedProvince(foundP);
-
-                        // Fetch Districts for this province
-                        setLoadingD(true);
-                        fetch(`https://provinces.open-api.vn/api/p/${foundP.code}?depth=2`)
-                            .then(res => res.json())
-                            .then(dData => {
-                                setDistricts(dData.districts);
-                                setLoadingD(false);
-
-                                // Handle initial district
-                                if (initialDistrict) {
-                                    const foundD = dData.districts.find((d: Division) => d.name === initialDistrict);
-                                    if (foundD) {
-                                        setSelectedDistrict(foundD);
-
-                                        // Fetch Wards for this district
-                                        setLoadingW(true);
-                                        fetch(`https://provinces.open-api.vn/api/d/${foundD.code}?depth=2`)
-                                            .then(res => res.json())
-                                            .then(wData => {
-                                                setWards(wData.wards);
-                                                setLoadingW(false);
-
-                                                // Handle initial ward
-                                                if (initialWard) {
-                                                    const foundW = wData.wards.find((w: Division) => w.name === initialWard);
-                                                    if (foundW) setSelectedWard(foundW);
-                                                }
-                                            });
-                                    }
-                                }
-                            });
+                        fetchDistricts(foundP.code, initialDistrict, initialWard);
                     }
                 }
-            })
-            .catch(err => {
-                console.error(err);
+            } catch (error) {
+                console.error(error);
+            } finally {
                 setLoadingP(false);
-            });
-    }, []); // Run once on mount (dependency on initial values strictly meant for mounting)
+            }
+        };
+        init();
+    }, []); // Run once
 
     const handleProvinceChange = (code: number) => {
         const province = provinces.find(p => p.code === code) || null;
@@ -96,13 +124,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
         setWards([]);
 
         if (province) {
-            setLoadingD(true);
-            fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
-                .then(res => res.json())
-                .then(data => {
-                    setDistricts(data.districts);
-                    setLoadingD(false);
-                });
+            fetchDistricts(code);
         }
         updateParent(province, null, null);
     };
@@ -114,13 +136,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
         setWards([]);
 
         if (district) {
-            setLoadingW(true);
-            fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
-                .then(res => res.json())
-                .then(data => {
-                    setWards(data.wards);
-                    setLoadingW(false);
-                });
+            fetchWards(code);
         }
         updateParent(selectedProvince, district, null);
     };
@@ -129,25 +145,6 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
         const ward = wards.find(w => w.code === code) || null;
         setSelectedWard(ward);
         updateParent(selectedProvince, selectedDistrict, ward);
-    };
-
-    const updateParent = (p: Division | null, d: Division | null, w: Division | null) => {
-        if (p && d && w) {
-            onLocationChange({
-                province: p.name,
-                district: d.name,
-                ward: w.name,
-                fullString: `${w.name}, ${d.name}, ${p.name}`
-            });
-        } else if (p) {
-            // Partial update if needed, but usually we wait for full address
-            onLocationChange({
-                province: p.name,
-                district: d ? d.name : '',
-                ward: w ? w.name : '',
-                fullString: '' // Empty means incomplete
-            });
-        }
     };
 
     return (

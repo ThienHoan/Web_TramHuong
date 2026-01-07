@@ -223,7 +223,7 @@ export class ReviewsService {
       .select(
         `
                 *,
-                product:products(id, slug, image, images, translations)
+                product:products(id, slug, images, translations:product_translations(title, locale))
             `,
       )
       .eq('user_id', userId)

@@ -3,10 +3,12 @@
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';
+
+
 import { Product } from '@/types/product';
 
 interface ZenProductCardProps {
-    product: any; // Using any for now to match list, but should be Product
+    product: Product;
 }
 
 export default function ZenProductCard({ product }: ZenProductCardProps) {
@@ -15,8 +17,8 @@ export default function ZenProductCard({ product }: ZenProductCardProps) {
             <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg bg-zen-green-100">
                 <div className="absolute inset-0">
                     <ProductImage
-                        src={product.images?.[0]}
-                        alt={product.translation?.title}
+                        src={product.images?.[0] || ''}
+                        alt={product.translation?.title || 'Product'}
                         className="w-full h-full object-cover object-center transition-transform duration-[2000ms] ease-out group-hover:scale-105"
                     />
                 </div>
@@ -42,10 +44,10 @@ export default function ZenProductCard({ product }: ZenProductCardProps) {
                 </h3>
                 <div className="flex items-center justify-center md:justify-start gap-3">
                     <ProductPrice product={product} size="sm" theme="zen" />
-                    {product.stock_status === 'out_of_stock' && (
+                    {product.stock === 0 && (
                         <span className="text-[10px] uppercase tracking-widest text-red-400 border-l border-zen-green-200 pl-3">Sold Out</span>
                     )}
-                    {product.stock_status !== 'out_of_stock' && (
+                    {product.stock > 0 && (
                         <span className="text-[10px] uppercase tracking-widest text-zen-green-text/40 border-l border-zen-green-200 pl-3">
                             {product.category?.translation?.name || 'Collection'}
                         </span>

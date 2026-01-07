@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '../common/types/database.types';
 
 @Injectable()
 export class SupabaseService {
   private readonly logger = new Logger(SupabaseService.name);
-  private clientInstance: SupabaseClient;
+  private clientInstance: SupabaseClient<Database, 'public'>;
 
   constructor(private readonly configService: ConfigService) {
     this.initClient();
@@ -30,16 +31,20 @@ export class SupabaseService {
       return;
     }
 
-    this.clientInstance = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
+    this.clientInstance = createClient<Database, 'public'>(
+      supabaseUrl,
+      supabaseKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
       },
-    });
+    );
     this.logger.log('Supabase client initialized');
   }
 
-  getClient(): SupabaseClient {
+  getClient(): SupabaseClient<Database, 'public'> {
     return this.clientInstance;
   }
 }

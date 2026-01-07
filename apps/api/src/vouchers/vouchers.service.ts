@@ -28,12 +28,6 @@ export interface VoucherWithAlias extends VoucherRecord {
   discount_amount: number;
 }
 
-interface ListVouchersFilters {
-  active?: string;
-  page?: string;
-  limit?: string;
-}
-
 @Injectable()
 export class VouchersService {
   constructor(
@@ -82,9 +76,7 @@ export class VouchersService {
   }
 
   // 2. Admin: List Vouchers
-  async listVouchers(
-    _filters: ListVouchersFilters = {},
-  ): Promise<VoucherWithAlias[]> {
+  async listVouchers(): Promise<VoucherWithAlias[]> {
     const query = this.supabase
       .from('vouchers')
       .select('*')

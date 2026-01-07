@@ -5,7 +5,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { getProducts, getPosts } from '@/lib/api-client';
 import { Product } from '@/types/product';
 import { BlogPost } from '@/types/blog'; // Verify type exists
-import { Link, useRouter } from '@/i18n/routing'; // Use i18n routing
+import { useRouter } from '@/i18n/routing'; // Use i18n routing
 import Image from 'next/image';
 
 interface ZenSearchOverlayProps {
@@ -40,6 +40,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
     // Search Logic
     useEffect(() => {
         if (!debouncedQuery.trim()) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setResults({ products: [], posts: [], loading: false });
             return;
         }
@@ -227,7 +228,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                             {/* No Results */}
                             {query && results.products.length === 0 && results.posts.length === 0 && (
                                 <div className="text-center py-20">
-                                    <p className="text-zen-400 text-lg font-light">We searched far and wide, but found nothing for "{query}".</p>
+                                    <p className="text-zen-400 text-lg font-light">We searched far and wide, but found nothing for &quot;{query}&quot;.</p>
                                     <button onClick={() => setQuery('')} className="mt-4 text-primary text-sm font-bold uppercase tracking-widest hover:underline">Clear Search</button>
                                 </div>
                             )}

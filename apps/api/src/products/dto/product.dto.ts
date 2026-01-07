@@ -84,14 +84,6 @@ export class CreateProductDto {
 
 export class UpdateProductDto {
   @IsOptional()
-  @IsString()
-  title_en?: string;
-
-  @IsOptional()
-  @IsString()
-  title_vi?: string;
-
-  @IsOptional()
   price?: number | string;
 
   @IsOptional()
@@ -115,5 +107,44 @@ export class UpdateProductDto {
   @IsOptional()
   keep_images?: string | string[];
 
-  [key: string]: any; // Allow loose update for now
+  // Missing fields for update
+  @IsOptional()
+  is_featured?: boolean | string;
+
+  @IsOptional()
+  featured_section?: string;
+
+  @IsOptional()
+  discount_percentage?: number | string;
+
+  @IsOptional()
+  discount_start_date?: string;
+
+  @IsOptional()
+  discount_end_date?: string;
+
+  @IsOptional()
+  variants?: any;
+
+  // Translation fields (optional for update)
+  @IsOptional()
+  title_en?: string;
+  @IsOptional()
+  title_vi?: string;
+  @IsOptional()
+  desc_en?: string;
+  @IsOptional()
+  desc_vi?: string;
+  @IsOptional()
+  specifications_en?: any;
+  @IsOptional()
+  specifications_vi?: any;
+  @IsOptional()
+  seo_title_en?: string;
+  @IsOptional()
+  seo_title_vi?: string;
+  @IsOptional()
+  seo_desc_en?: string;
+  @IsOptional()
+  seo_desc_vi?: string;
 }

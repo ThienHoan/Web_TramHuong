@@ -28,6 +28,10 @@ export interface Product {
     is_active: boolean;
     style_affinity?: 'zen' | 'traditional' | 'both';
 
+    discount_percentage?: number;
+    discount_start_date?: string | null;
+    discount_end_date?: string | null;
+
     is_featured?: boolean;
     featured_section?: string | null;
 

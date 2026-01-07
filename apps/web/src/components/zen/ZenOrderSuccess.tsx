@@ -175,7 +175,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                     <span className="text-text-main dark:text-white text-2xl font-light tracking-wide">{formatPrice(order.total)}</span>
                                 </div>
                                 {(() => {
-                                    const totalSavings = order.items?.reduce((sum: number, item: any) => { // Cast to any to access potentially missing fields or use OrderItem
+                                    const totalSavings = order.items?.reduce((sum: number, item) => {
                                         const discountAmount = Number(item.discount_amount || 0);
                                         return sum + (discountAmount * item.quantity);
                                     }, 0) || 0;
@@ -227,7 +227,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                     </div>
 
                     <div className="animate-fade-in delay-500 mt-16 opacity-60">
-                        <p className="text-xs text-text-muted italic font-display tracking-widest">"May tranquility be with you"</p>
+                        <p className="text-xs text-text-muted italic font-display tracking-widest">&quot;May tranquility be with you&quot;</p>
                     </div>
                 </div>
             </main>

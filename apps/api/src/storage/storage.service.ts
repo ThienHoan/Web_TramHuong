@@ -44,7 +44,6 @@ export class StorageService {
    */
   async uploadProductImage(
     file: Express.Multer.File,
-    _userId: string,
   ): Promise<{ url: string; path: string }> {
     // Validate file
     this.validateImage(file);
@@ -90,7 +89,7 @@ export class StorageService {
    * @param path - The storage path of the image
    * @param _userId - The ID of the admin user deleting (logged for audit)
    */
-  async deleteProductImage(path: string, _userId: string): Promise<void> {
+  async deleteProductImage(path: string): Promise<void> {
     // Validate path to prevent directory traversal attacks
     if (!this.isValidProductImagePath(path)) {
       throw new ForbiddenException('Invalid file path');

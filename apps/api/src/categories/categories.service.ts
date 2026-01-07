@@ -190,7 +190,7 @@ export class CategoriesService {
         {
           category_id: id,
           locale: 'en',
-          name: name_en,
+          name: name_en || '',
           description: description_en,
         },
         { onConflict: 'category_id,locale' },
@@ -202,7 +202,7 @@ export class CategoriesService {
         {
           category_id: id,
           locale: 'vi',
-          name: name_vi,
+          name: name_vi || '',
           description: description_vi,
         },
         { onConflict: 'category_id,locale' },

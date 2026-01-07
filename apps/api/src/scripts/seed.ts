@@ -226,4 +226,9 @@ async function seed() {
   }
 }
 
-seed();
+seed()
+  .then(() => console.log('Seed completed'))
+  .catch((err) => {
+    console.error('Seed failed:', err);
+    process.exit(1);
+  });

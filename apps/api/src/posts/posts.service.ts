@@ -96,7 +96,7 @@ export class PostsService {
   async update(id: string, dto: UpdatePostDto) {
     const { data, error } = await this.client
       .from('posts')
-      .update({ ...dto, updated_at: new Date() })
+      .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();

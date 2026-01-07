@@ -25,7 +25,7 @@ export async function fetchWithAuth<T = unknown>(url: string, options: RequestIn
         try {
             const err = await res.json() as { message?: string };
             throw new Error(err.message || 'Request failed');
-        } catch (_e: unknown) {
+        } catch {
             throw new Error(res.statusText || 'Request failed');
         }
     }
@@ -36,7 +36,7 @@ export async function fetchWithAuth<T = unknown>(url: string, options: RequestIn
 
     try {
         return JSON.parse(text) as T;
-    } catch (_parseError) {
+    } catch {
         console.error('[fetchWithAuth] Failed to parse JSON response:', text.substring(0, 200));
         throw new Error('Unexpected response format from server');
     }

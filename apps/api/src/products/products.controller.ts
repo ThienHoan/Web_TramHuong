@@ -10,7 +10,6 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFiles,
-  BadRequestException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';

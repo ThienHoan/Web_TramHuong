@@ -33,8 +33,8 @@ export class VouchersController {
 
   // Admin: List
   @Get()
-  async list(@Query() query: ListVouchersQuery) {
-    return this.vouchersService.listVouchers(query);
+  async list() {
+    return this.vouchersService.listVouchers();
   }
 
   // Admin: Get One

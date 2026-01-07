@@ -63,7 +63,7 @@ export class StorageController {
     }
 
     try {
-      const result = await this.storageService.uploadProductImage(file, userId);
+      const result = await this.storageService.uploadProductImage(file);
 
       return {
         success: true,
@@ -98,7 +98,7 @@ export class StorageController {
     }
 
     try {
-      await this.storageService.deleteProductImage(path, userId);
+      await this.storageService.deleteProductImage(path);
 
       return {
         success: true,

@@ -18,15 +18,30 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (user) {
+        let mounted = true;
+
+        const loadWishlist = async () => {
+            if (!user) {
+                setItems(new Set());
+                return;
+            }
+
             setLoading(true);
-            getLikedIds()
-                .then(ids => setItems(new Set(ids)))
-                .catch(console.error)
-                .finally(() => setLoading(false));
-        } else {
-            setItems(new Set());
-        }
+            try {
+                const ids = await getLikedIds();
+                if (mounted) setItems(new Set(ids));
+            } catch (error) {
+                console.error(error);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        loadWishlist();
+
+        return () => {
+            mounted = false;
+        };
     }, [user]);
 
     const toggle = async (productId: string) => {

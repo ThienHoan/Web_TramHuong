@@ -23,5 +23,5 @@ export default async function Home({
     return <TraditionalHome products={products} posts={posts} />;
   }
 
-  return <ZenHome products={products} posts={posts} />;
+  return <ZenHome products={products} />;
 }
