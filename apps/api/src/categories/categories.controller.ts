@@ -19,11 +19,12 @@ import { Role } from '../auth/role.enum';
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(private readonly categoriesService: CategoriesService) { }
 
   @Get()
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(300000) // 5 minutes cache for categories (rarely changes)
+  @Get()
+  // @UseInterceptors(CacheInterceptor)
+  // @CacheTTL(300000) // Removed to allow instant admin updates
   async findAll(
     @Query('locale') locale: string,
     @Query('include_inactive') include_inactive?: string,

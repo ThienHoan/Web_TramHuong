@@ -41,7 +41,7 @@ export interface UpdateCategoryDto {
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(private readonly supabase: SupabaseService) { }
 
   async findAll(
     locale: string = 'en',
@@ -186,7 +186,7 @@ export class CategoriesService {
     const { name_en, name_vi, description_en, description_vi } = body;
 
     if (name_en || description_en) {
-      await client.from('category_translations').upsert(
+      const { error } = await client.from('category_translations').upsert(
         {
           category_id: id,
           locale: 'en',
@@ -195,10 +195,11 @@ export class CategoriesService {
         },
         { onConflict: 'category_id,locale' },
       );
+      if (error) throw new BadRequestException(`EN Translation Error: ${error.message}`);
     }
 
     if (name_vi || description_vi) {
-      await client.from('category_translations').upsert(
+      const { error } = await client.from('category_translations').upsert(
         {
           category_id: id,
           locale: 'vi',
@@ -207,6 +208,7 @@ export class CategoriesService {
         },
         { onConflict: 'category_id,locale' },
       );
+      if (error) throw new BadRequestException(`VI Translation Error: ${error.message}`);
     }
 
     return { success: true };

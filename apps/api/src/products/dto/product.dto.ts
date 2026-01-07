@@ -147,4 +147,7 @@ export class UpdateProductDto {
   seo_desc_en?: string;
   @IsOptional()
   seo_desc_vi?: string;
+
+  @IsOptional()
+  style?: string;
 }

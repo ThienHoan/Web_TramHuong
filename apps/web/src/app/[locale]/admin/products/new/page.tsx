@@ -6,6 +6,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { Category } from '@/lib/types';
 import { getCategories, setAccessToken } from '@/lib/api-client';
 import { ImageUploader } from '@/components/admin/ImageUploader';
+import { toast } from 'sonner';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -47,17 +48,22 @@ export default function NewProductPage() {
         }
     }, [session]);
 
+
+
+    // ...
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session) return;
 
         // Validate at least one image
         if (images.length === 0) {
-            alert('Please upload at least one product image');
+            toast.error('Please upload at least one product image');
             return;
         }
 
         setLoading(true);
+        const toastId = toast.loading('Creating product...');
 
         try {
             const payload = {
@@ -87,16 +93,18 @@ export default function NewProductPage() {
             });
 
             if (res.ok) {
+                toast.success('Product created successfully', { id: toastId });
                 router.push('/admin/products');
                 router.refresh();
             } else {
                 const err = await res.json();
-                alert(`Error: ${err.message || 'Unknown error'}`);
+                toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
             }
         } catch (e: any) {
-            alert('Failed to create product');
+            toast.error('Failed to create product', { id: toastId });
         } finally {
             setLoading(false);
+            // toast.dismiss(toastId); // success/error updates id, so no need to dismiss manually if handled
         }
     };
 
