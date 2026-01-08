@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/tramhuong-api:latest
+    container_name: tramhuong-api
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tramhuong-network
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/tramhuong-web:latest
+    container_name: tramhuong-web
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - api
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tramhuong-network
+
+networks:
+  tramhuong-network:
+    driver: bridge

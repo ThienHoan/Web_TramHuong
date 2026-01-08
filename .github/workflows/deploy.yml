@@ -1,0 +1,187 @@
+name: Build and Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/tramhuong-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/tramhuong-web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code (for docker-compose file)
+        uses: actions/checkout@v4
+
+      - name: Deploy using SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            # Navigate to deployment directory (create if not exists)
+            mkdir -p ~/tramhuong-deploy
+            cd ~/tramhuong-deploy
+
+            # 1. Decode ENV_FILE secret to .env
+            echo "${{ secrets.ENV_FILE }}" | base64 -d > .env
+            chmod 600 .env
+
+            # 2. Write docker-compose.prod.yml
+            # We write it directly here to ensure the server has the version from this commit
+            cat <<EOF > docker-compose.prod.yml
+            version: '3.8'
+
+            services:
+              api:
+                image: ghcr.io/${{ github.repository_owner }}/tramhuong-api:latest
+                container_name: tramhuong-api
+                restart: always
+                ports:
+                  - "4000:4000"
+                env_file:
+                  - .env
+                depends_on:
+                  - db
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                networks:
+                  - tramhuong-network
+
+              web:
+                image: ghcr.io/${{ github.repository_owner }}/tramhuong-web:latest
+                container_name: tramhuong-web
+                restart: always
+                ports:
+                  - "3000:3000"
+                env_file:
+                  - .env
+                depends_on:
+                  - api
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                networks:
+                  - tramhuong-network
+
+              # Database (Optional: If you run DB in docker as well, otherwise remove)
+              # Assuming provided codebase has a db folder but might be external (Supabase)
+              # Based on existing docker-compose.yml, there is NO db service, just API and Web.
+              # So I will remove the 'depends_on: db' from API.
+              
+            networks:
+              tramhuong-network:
+                driver: bridge
+            EOF
+
+            # Fix for removed db dependency in EOF block strictly
+            sed -i '/- db/d' docker-compose.prod.yml
+            sed -i '/depends_on:/d' docker-compose.prod.yml
+            # Actually, let's just write the correct content first without sed hacking.
+            
+            # Re-writing docker-compose.prod.yml cleanly
+            cat <<YAML > docker-compose.prod.yml
+            version: '3.8'
+            
+            services:
+              api:
+                image: ghcr.io/$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/tramhuong-api:latest
+                container_name: tramhuong-api
+                restart: always
+                ports:
+                  - "4000:4000"
+                env_file:
+                  - .env
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                networks:
+                  - tramhuong-network
+            
+              web:
+                image: ghcr.io/$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/tramhuong-web:latest
+                container_name: tramhuong-web
+                restart: always
+                ports:
+                  - "3000:3000"
+                env_file:
+                  - .env
+                depends_on:
+                  - api
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                networks:
+                  - tramhuong-network
+            
+            networks:
+              tramhuong-network:
+                driver: bridge
+            YAML
+
+            # 3. Pull latest images
+            # Need to login to GHCR on VPS too? 
+            # Public packages don't need login, but if private, yes.
+            # Assuming private:
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            
+            docker compose -f docker-compose.prod.yml pull
+
+            # 4. Restart containers
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            
+            # 5. Cleanup
+            docker image prune -f
