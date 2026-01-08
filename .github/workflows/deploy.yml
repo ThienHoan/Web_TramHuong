@@ -17,6 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Lowercase Repository Owner
+        run: |
+          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+        env:
+          GITHUB_REPOSITORY_OWNER: '${{ github.repository_owner }}'
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -33,7 +39,7 @@ jobs:
           context: ./apps/api
           file: ./apps/api/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tramhuong-api:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/tramhuong-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -43,7 +49,7 @@ jobs:
           context: ./apps/web
           file: ./apps/web/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tramhuong-web:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/tramhuong-web:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
