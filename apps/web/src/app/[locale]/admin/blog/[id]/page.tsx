@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { Link } from '@/i18n/routing';
-import { createPost, updatePost, getPostBySlug, getPosts } from '@/lib/api-client';
+import { createPost, updatePost, getPostBySlug } from '@/lib/api-client';
 import { BlogPost } from '@/types/blog';
 import { toast } from 'sonner';
 
@@ -33,7 +33,7 @@ export default function AdminBlogEditPage() {
                     const result = await getPostBySlug(id); // Returns { data, error }
                     if (result.data) {
                         Object.entries(result.data).forEach(([key, value]) => {
-                            setValue(key as any, value);
+                            setValue(key as keyof BlogPost, value);
                         });
                     } else {
                         toast.error(result.error || 'Post not found');

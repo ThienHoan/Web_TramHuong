@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
+import Image from 'next/image';
 import { useRouter } from '@/i18n/routing';
 import { getCategories, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -13,7 +14,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     // Force refresh
-    const { session, role } = useAuth();
+    const { session } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -74,7 +75,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 const imgs = data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []);
                 setCurrentImages(imgs);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                 const tEn = data.translations?.find((t: any) => t.locale === 'en');
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                 const tVi = data.translations?.find((t: any) => t.locale === 'vi');
 
                 setTitleEn(tEn?.title || '');
@@ -82,6 +85,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setTitleVi(tVi?.title || '');
                 setDescVi(tVi?.description || '');
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                 const parseSpecs = (raw: any) => {
                     if (!raw) return [];
                     if (typeof raw === 'object') return Object.entries(raw).map(([key, value]) => ({ key, value: String(value) }));
@@ -90,6 +94,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         return raw.split('. ').map((s: string) => {
                             const [k, v] = s.split(':');
                             return { key: k?.trim() || '', value: v?.trim() || '' };
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                         }).filter((x: any) => x.key);
                     }
                     return [];
@@ -118,7 +123,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 router.push('/admin/products');
             });
 
-    }, [id, session, router]);
+    }, [id, session, router, categories]);
 
 
 
@@ -178,7 +183,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 const err = await res.json();
                 toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
             }
-        } catch (e: any) {
+        } catch {
             toast.error('Failed to update product', { id: toastId });
         } finally {
             setSubmitting(false);
@@ -415,7 +420,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <div className="flex flex-wrap gap-4">
                             {newFiles.map((file, idx) => (
                                 <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
-                                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                    <Image src={URL.createObjectURL(file)} alt="Preview" width={80} height={80} className="w-full h-full object-cover" />
                                     <button type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
                                         className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl">
                                         <span className="material-symbols-outlined text-xs">close</span>
@@ -561,6 +566,7 @@ function SeedReviewForm({ productId }: { productId: string }) {
             setAvatarUrl('');
             setComment('');
             router.refresh();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         } catch (error: any) {
             alert(error.message);
         } finally {

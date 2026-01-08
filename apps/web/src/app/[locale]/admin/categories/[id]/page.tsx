@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
+import { CategoryTranslation } from '@/lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -32,8 +33,8 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                     setSlug(data.slug);
                     setIsActive(data.is_active);
 
-                    const en = data.translations.find((t: any) => t.locale === 'en');
-                    const vi = data.translations.find((t: any) => t.locale === 'vi');
+                    const en = data.translations?.find((t: CategoryTranslation) => t.locale === 'en');
+                    const vi = data.translations?.find((t: CategoryTranslation) => t.locale === 'vi');
 
                     if (en) {
                         setNameEn(en.name);
@@ -81,8 +82,8 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
 
             router.push('/admin/categories');
             router.refresh();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : 'An error occurred');
         } finally {
             setSubmitting(false);
         }

@@ -4,7 +4,7 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import { Toaster } from "@/components/ui/sonner";
-import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
+// import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
 import { Manrope } from "next/font/google";
 import "../globals.css";
 

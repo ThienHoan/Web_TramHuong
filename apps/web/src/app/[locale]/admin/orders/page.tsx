@@ -1,28 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
 import { useCurrency } from '@/hooks/useCurrency';
 import Pagination from '@/components/ui/Pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const PAGE_LIMIT = 20;
+import { Order } from "@/types/order";
 
 export default function AdminOrdersPage() {
     const { session, user, role, loading: authLoading } = useAuth();
     const { formatPrice } = useCurrency();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [orders, setOrders] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: PAGE_LIMIT, last_page: 1 });
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [now, setNow] = useState(() => Date.now());
     const router = useRouter();
 
-    const fetchOrders = (page = 1, searchQuery = search) => {
+    useEffect(() => {
+        // Update 'now' every minute to keep timers fresh
+        const intervalId = setInterval(() => {
+            setNow(Date.now());
+        }, 60000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const fetchOrders = useCallback((page = 1, searchQuery = search) => {
         if (!session) return;
         setLoading(true);
         const queryParams = new URLSearchParams({
@@ -64,7 +76,7 @@ export default function AdminOrdersPage() {
                 // Ideally show a toast or alert here
                 if (err.message) alert(err.message);
             });
-    };
+    }, [session, search]);
 
     useEffect(() => {
         if (!authLoading) {
@@ -73,10 +85,11 @@ export default function AdminOrdersPage() {
             } else if (role !== 'ADMIN' && role !== 'STAFF') {
                 router.push('/');
             } else if (session) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initial fetch only
                 fetchOrders(1);
             }
         }
-    }, [user, session, role, authLoading, router]);
+    }, [user, session, role, authLoading, router, fetchOrders]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -102,7 +115,7 @@ export default function AdminOrdersPage() {
                 const err = await res.json();
                 alert(`Failed: ${err.message}`);
             }
-        } catch (e) {
+        } catch {
             alert('Connection Error updating status');
         }
     };
@@ -172,6 +185,7 @@ export default function AdminOrdersPage() {
                                             order={order}
                                             onStatusUpdate={handleStatusUpdate}
                                             formatPrice={formatPrice}
+                                            now={now}
                                         />
                                     ))
                                 )}
@@ -191,8 +205,15 @@ export default function AdminOrdersPage() {
     );
 }
 
-function OrderRow({ order, onStatusUpdate, formatPrice }: any) {
-    const getTimeInfo = (order: any) => {
+interface OrderRowProps {
+    order: Order;
+    onStatusUpdate: (id: string, status: string) => void;
+    formatPrice: (price: number) => string;
+    now: number;
+}
+
+function OrderRow({ order, onStatusUpdate, formatPrice, now }: OrderRowProps) {
+    const getTimeInfo = (order: Order) => {
         if (!order.payment_deadline) return null;
 
         // Only show timing info for AWAITING_PAYMENT and EXPIRED statuses
@@ -201,7 +222,6 @@ function OrderRow({ order, onStatusUpdate, formatPrice }: any) {
         }
 
         const deadline = new Date(order.payment_deadline).getTime();
-        const now = Date.now();
         const diff = deadline - now;
 
         if (order.status === 'EXPIRED') {
@@ -287,7 +307,7 @@ function OrderRow({ order, onStatusUpdate, formatPrice }: any) {
                 </div>
             </td>
             <td className="p-4 font-semibold text-amber-700">
-                {formatPrice(Number(order.total || order.total_amount || 0))}
+                {formatPrice(Number(order.total || 0))}
             </td>
             <td className="p-4">
                 <Link

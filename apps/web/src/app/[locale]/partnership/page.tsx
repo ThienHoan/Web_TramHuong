@@ -25,6 +25,7 @@ export default function PartnershipPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<PartnershipFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         resolver: zodResolver(partnershipSchema as any),
         defaultValues: {
             region: 'Toàn Quốc'

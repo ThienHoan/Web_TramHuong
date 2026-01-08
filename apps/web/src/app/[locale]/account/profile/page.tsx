@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getProfile, updateProfile, setAccessToken } from '@/lib/api-client';
@@ -160,7 +162,7 @@ export default function ProfilePage() {
             ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // router.refresh(); // Removed to prevent session kick and delay
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast.custom((t) => (
                 <Alert
                     variant="destructive"
@@ -169,7 +171,7 @@ export default function ProfilePage() {
                     className="w-[300px] bg-white border-none shadow-xl"
                     onClose={() => toast.dismiss(t)}
                 >
-                    {error.message || 'Cập nhật thất bại'}
+                    {error instanceof Error ? error.message : 'Cập nhật thất bại'}
                 </Alert>
             ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -198,7 +200,7 @@ export default function ProfilePage() {
             <main className="relative z-10 container mx-auto px-4 py-12 max-w-6xl flex-grow">
                 <header className="mb-12 text-center">
                     <h1 className="font-display text-4xl md:text-5xl font-bold text-trad-red-900 mb-3">Hồ Sơ Của Tôi</h1>
-                    <p className="text-trad-text-muted italic font-serif text-lg">"Hành trình của hương thơm, lưu giữ từng khoảnh khắc"</p>
+                    <p className="text-trad-text-muted italic font-serif text-lg">&quot;Hành trình của hương thơm, lưu giữ từng khoảnh khắc&quot;</p>
                 </header>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -216,7 +218,13 @@ export default function ProfilePage() {
                                     <div className="absolute inset-0 rounded-full border-2 border-trad-gold border-dashed animate-spin-slow opacity-50"></div>
                                     <div className="absolute inset-2 rounded-full border-2 border-trad-primary shadow-glow overflow-hidden bg-gray-100">
                                         {formData.avatar_url ? (
-                                            <img alt="User Avatar" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src={formData.avatar_url} />
+                                            <Image
+                                                alt="User Avatar"
+                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                                src={formData.avatar_url}
+                                                fill
+                                                unoptimized
+                                            />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-trad-bg-warm text-trad-primary text-4xl font-display font-bold">
                                                 {formData.full_name?.charAt(0) || 'T'}
@@ -278,11 +286,17 @@ export default function ProfilePage() {
                     <div className="lg:col-span-8">
                         <div className="bg-white dark:bg-stone-900 rounded-xl shadow-soft border border-trad-border-warm overflow-hidden h-full flex flex-col">
                             <div className="relative h-48 w-full overflow-hidden bg-trad-bg-dark">
-                                <img alt="Traditional Vietnamese Landscape Silk Painting Style" className="w-full h-full object-cover opacity-80 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5M3Hxs-r5S6jSon1zANp9U9E_swJAZcH-ns9joJszLE2lpWR0-yLTYCfNtLdTijd34Udo0o6cesH6U3SrwKbfPZAVdq86yHk0xBRjNBINwrDw1P_DVFrimKDS4QoVj_8r9seYPtApGrNqrr0v9MJDnoyV_ghsmFj8P6mgwfkdfUC_bD8Hg4mRExEXrbFr-8yT-p3qiTI2v_vJSTFtlK7fge9ZssXfqXqpzatG-7dtWfkdOk-SnNDU4FsZUlVIwV_x3VZBP7CWF52z" />
+                                <Image
+                                    alt="Traditional Vietnamese Landscape Silk Painting Style"
+                                    className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5M3Hxs-r5S6jSon1zANp9U9E_swJAZcH-ns9joJszLE2lpWR0-yLTYCfNtLdTijd34Udo0o6cesH6U3SrwKbfPZAVdq86yHk0xBRjNBINwrDw1P_DVFrimKDS4QoVj_8r9seYPtApGrNqrr0v9MJDnoyV_ghsmFj8P6mgwfkdfUC_bD8Hg4mRExEXrbFr-8yT-p3qiTI2v_vJSTFtlK7fge9ZssXfqXqpzatG-7dtWfkdOk-SnNDU4FsZUlVIwV_x3VZBP7CWF52z"
+                                    width={1000}
+                                    height={192}
+                                />
                                 <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black to-transparent"></div>
                                 <div className="absolute bottom-6 left-8">
                                     <h2 className="font-display text-3xl font-bold text-trad-primary mb-1 shadow-black drop-shadow-sm">Dấu Chân Hương Trầm</h2>
-                                    <p className="text-trad-text-main font-medium italic">"Hương trầm tìm về chốn an yên"</p>
+                                    <p className="text-trad-text-main font-medium italic">&quot;Hương trầm tìm về chốn an yên&quot;</p>
                                 </div>
                             </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { Link } from '@/i18n/routing';
 import { getOrder } from '@/lib/api-client';
 import { Order } from '@/types/order';
 import ZenOrderSuccess from '@/components/zen/ZenOrderSuccess';
@@ -13,7 +14,7 @@ export default function OrderConfirmationPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { user } = useAuth(); // Monitor auth state if needed, though getHeaders handles token
+    useAuth(); // Monitor auth state if needed, though getHeaders handles token
 
     useEffect(() => {
         if (!id) return;
@@ -41,6 +42,7 @@ export default function OrderConfirmationPage() {
                         payment_method: 'cod',
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString(),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                     } as any);
                 }
             } catch (err) {
@@ -71,7 +73,7 @@ export default function OrderConfirmationPage() {
                 <div className="flex flex-col items-center gap-4">
                     <span className="material-symbols-outlined text-4xl text-red-500">error</span>
                     <p className="tracking-widest uppercase text-xs">{error || 'Order not found'}</p>
-                    <a href="/" className="text-primary hover:underline text-xs tracking-widest uppercase mt-4">Return Home</a>
+                    <Link href="/" className="text-primary hover:underline text-xs tracking-widest uppercase mt-4">Return Home</Link>
                 </div>
             </div>
         );

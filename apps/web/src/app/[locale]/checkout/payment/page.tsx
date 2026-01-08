@@ -13,6 +13,7 @@ export default function CheckoutPaymentPage() {
     const { session } = useAuth();
     const { formatPrice } = useCurrency();
     const orderId = searchParams.get('id');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,24 +31,7 @@ export default function CheckoutPaymentPage() {
     const BANK_ACC = process.env.NEXT_PUBLIC_BANK_ACC || '0333333333';
     const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME || 'NGUYEN VAN A';
 
-    useEffect(() => {
-        // Allow guest users to view payment page (orderId is the only requirement)
-        if (!orderId) return;
 
-        // Set access token if user is logged in (for authenticated API calls)
-        if (session?.access_token) {
-            setAccessToken(session.access_token);
-        }
-
-        fetchOrder();
-
-        // Start Polling for payment status updates
-        pollingRef.current = setInterval(checkPaymentStatus, 3000);
-
-        return () => {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
-    }, [orderId, session?.access_token]);
 
     // Countdown timer for payment deadline
     useEffect(() => {
@@ -99,7 +83,7 @@ export default function CheckoutPaymentPage() {
                     pollingRef.current = null;
                 }
             }
-        } catch (e) {
+        } catch {
             setError('Failed to load order');
             setLoading(false);
             // Stop polling on error
@@ -122,6 +106,26 @@ export default function CheckoutPaymentPage() {
             // Silently fail polling - main fetchOrder handles errors
         }
     };
+
+    useEffect(() => {
+        // Allow guest users to view payment page (orderId is the only requirement)
+        if (!orderId) return;
+
+        // Set access token if user is logged in (for authenticated API calls)
+        if (session?.access_token) {
+            setAccessToken(session.access_token);
+        }
+
+        void fetchOrder();
+
+        // Start Polling for payment status updates
+        pollingRef.current = setInterval(() => { void checkPaymentStatus() }, 3000);
+
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderId, session?.access_token]);
 
     // Calculate QR URL
     // Format: https://qr.sepay.vn/img?bank=[BANK]&acc=[ACC]&template=compact&amount=[AMOUNT]&des=[CONTENT]
@@ -228,6 +232,7 @@ export default function CheckoutPaymentPage() {
                                         </div>
                                     </div>
                                     <div className="aspect-square w-full bg-white rounded-lg overflow-hidden relative border border-gray-100 p-1">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             alt="Quét mã VietQR"
                                             className="w-full h-full object-contain mix-blend-darken"

@@ -1,12 +1,11 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/routing';
+import { Product } from '@/types/product';
+import Image from 'next/image';
+import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useProductDiscount } from '@/hooks/useProductDiscount';
-import { useCart } from '@/components/providers/CartProvider';
 import { useState, useEffect } from 'react';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
@@ -20,10 +19,8 @@ import {
 } from "@/components/ui/carousel"
 import EmptyState from '../ui/empty-state';
 
-export default function TraditionalProductList({ products }: { products: any[] }) {
-    const t = useTranslations('HomePage');
+export default function TraditionalProductList({ products }: { products: Product[] }) {
     const { formatPrice } = useCurrency();
-    const router = useRouter();
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('chuong-1');
 
@@ -104,7 +101,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                             Hành Trình Hương Trầm
                         </h1>
                         <p className="mx-auto max-w-2xl text-lg italic leading-relaxed text-trad-text-main/80 md:text-xl opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-                            "Từ những vết thương của cây dó bầu nơi rừng già, thời gian và linh khí đất trời đã hun đúc nên trầm hương quý giá. Mỗi nén hương Thiên Phúc là một câu chuyện về sự chữa lành và an yên."
+                            &quot;Từ những vết thương của cây dó bầu nơi rừng già, thời gian và linh khí đất trời đã hun đúc nên trầm hương quý giá. Mỗi nén hương Thiên Phúc là một câu chuyện về sự chữa lành và an yên.&quot;
                         </p>
                         <div className="mt-10 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
                             <span className="material-symbols-outlined animate-bounce text-3xl text-trad-primary/50">keyboard_arrow_down</span>
@@ -230,7 +227,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                     <div className="absolute inset-0 bg-black/40"></div>
                     <div className="relative z-10 text-center text-white px-4">
                         <span className="material-symbols-outlined text-4xl mb-2 opacity-80">self_improvement</span>
-                        <p className="font-display text-2xl md:text-3xl italic font-medium">"Hương trầm tỏa ra, phiền muộn tan biến."</p>
+                        <p className="font-display text-2xl md:text-3xl italic font-medium">&quot;Hương trầm tỏa ra, phiền muộn tan biến.&quot;</p>
                     </div>
                 </div >
 
@@ -242,7 +239,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                             <h2 className="text-3xl font-bold text-trad-text-main lg:text-4xl">Nghi Thức An Yên</h2>
                             <div className="mt-4 h-px w-24 bg-trad-red-900/30"></div>
                             <p className="mt-4 max-w-2xl text-trad-text-main/70">
-                                "Trầm hương không chỉ là mùi hương, mà là người bạn đồng hành trong từng khoảnh khắc sống. Để mỗi sáng mai thức dậy là một khởi đầu thanh khiết, và mỗi tối trở về là sự buông bỏ muộn phiền."
+                                &quot;Trầm hương không chỉ là mùi hương, mà là người bạn đồng hành trong từng khoảnh khắc sống. Để mỗi sáng mai thức dậy là một khởi đầu thanh khiết, và mỗi tối trở về là sự buông bỏ muộn phiền.&quot;
                             </p>
                         </div>
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -271,8 +268,8 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                     <div key={product.id} className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm flex flex-col">
                                         <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
                                             <ProductImage
-                                                src={product.images?.[0]}
-                                                alt={product.translation?.title}
+                                                src={product.images?.[0] || ''}
+                                                alt={product.translation?.title || 'Sản phẩm'}
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
                                         </div>
@@ -298,9 +295,14 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 <>
                                     <div className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm">
                                         <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
-                                            <img alt="Nụ Trầm Phổ Thông" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOKtIdZ0oq8DvVaSeMdvfQeKKZodHYka3UWR0MVdJGXY5FLE4vaAIOa4C_CDcXnf2pBpAiemrI1CWebFQkUQvJ8hVoo8V2csRmON-rGAmG7Z8ov5BuWBYY8w5mV6vgzwc5d2qxyigbswGJXFVqVmyWjLOsQc0GkLXT2a2fAE319rzQ6V6cfb50qZC48h54v5lGvxBCvUssTAbilDdZ3QbJfAlpOE7ZHkKqu8Sz6bDhlwVuMwz8xsLisPfp1cmzz2hFgMEzf90SoyUh" />
+                                            <Image
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOKtIdZ0oq8DvVaSeMdvfQeKKZodHYka3UWR0MVdJGXY5FLE4vaAIOa4C_CDcXnf2pBpAiemrI1CWebFQkUQvJ8hVoo8V2csRmON-rGAmG7Z8ov5BuWBYY8w5mV6vgzwc5d2qxyigbswGJXFVqVmyWjLOsQc0GkLXT2a2fAE319rzQ6V6cfb50qZC48h54v5lGvxBCvUssTAbilDdZ3QbJfAlpOE7ZHkKqu8Sz6bDhlwVuMwz8xsLisPfp1cmzz2hFgMEzf90SoyUh"
+                                                alt="Nụ Trầm Phổ Thông"
+                                                fill
+                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
                                         </div>
-                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><a href="#">Nụ Trầm Phổ Thông</a></h3>
+                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><Link href="#">Nụ Trầm Phổ Thông</Link></h3>
                                         <p className="text-xs text-trad-text-muted mt-1 mb-3">Gói 100g (~60 viên)</p>
                                         <div className="flex items-center justify-between">
                                             <span className="font-bold text-trad-red-900">180.000 ₫</span>
@@ -311,10 +313,15 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                     </div>
                                     <div className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm">
                                         <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
-                                            <img alt="Combo Trải Nghiệm" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmLQp5pT5Y-cAkmxjCSjmiemDGOkD2xraiLcWSu4-BOzzp0baxiZSzRW-VBQWker0mQv25uem3U89YDE-PhDD_FmiIuxKdjQUPb9Qe9a188t2vqposa6njiyRntMMSo6Yq947ZjlujmFwbk_Tnw1qXUx0ZQNNYxbdSJJqGomqVdll0kMndDl8dDiKMk643X4e7pd2rKzFvePMAZpv_fKfYBCoyZCPbevp4ksM_AHHb4j7coG5fGIC9ggvwrnIdBsSX_pkfqLnWXnmf" />
-                                            <div className="absolute left-2 top-2 rounded bg-trad-gold px-2 py-0.5 text-[10px] font-bold uppercase text-white">Best Seller</div>
+                                            <Image
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmLQp5pT5Y-cAkmxjCSjmiemDGOkD2xraiLcWSu4-BOzzp0baxiZSzRW-VBQWker0mQv25uem3U89YDE-PhDD_FmiIuxKdjQUPb9Qe9a188t2vqposa6njiyRntMMSo6Yq947ZjlujmFwbk_Tnw1qXUx0ZQNNYxbdSJJqGomqVdll0kMndDl8dDiKMk643X4e7pd2rKzFvePMAZpv_fKfYBCoyZCPbevp4ksM_AHHb4j7coG5fGIC9ggvwrnIdBsSX_pkfqLnWXnmf"
+                                                alt="Combo Trải Nghiệm"
+                                                fill
+                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                            <div className="absolute left-2 top-2 rounded bg-trad-gold px-2 py-0.5 text-[10px] font-bold uppercase text-white z-10">Best Seller</div>
                                         </div>
-                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><a href="#">Combo Trải Nghiệm</a></h3>
+                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><Link href="#">Combo Trải Nghiệm</Link></h3>
                                         <p className="text-xs text-trad-text-muted mt-1 mb-3">3 loại nụ hương</p>
                                         <div className="flex items-center justify-between">
                                             <span className="font-bold text-trad-red-900">120.000 ₫</span>
@@ -341,7 +348,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 <h2 className="text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">Tâm Giao Gửi Trao</h2>
                             </div>
                             <div className="text-right">
-                                <p className="text-white/60 italic max-w-sm ml-auto">"Món quà quý không nằm ở giá trị vật chất, mà ở tấm lòng và sự tinh tế của người trao."</p>
+                                <p className="text-white/60 italic max-w-sm ml-auto">&quot;Món quà quý không nằm ở giá trị vật chất, mà ở tấm lòng và sự tinh tế của người trao.&quot;</p>
                             </div>
                         </div>
 
@@ -351,8 +358,8 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 <>
                                     <div className="relative min-h-[400px] lg:min-h-full">
                                         <ProductImage
-                                            src={giftProducts[0].images?.[0]}
-                                            alt={giftProducts[0].translation?.title}
+                                            src={giftProducts[0].images?.[0] || ''}
+                                            alt={giftProducts[0].translation?.title || 'Gift Set'}
                                             className="absolute inset-0 h-full w-full object-cover"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-transparent to-transparent lg:hidden"></div>
@@ -388,7 +395,7 @@ export default function TraditionalProductList({ products }: { products: any[] }
                                 <Link key={i} href={`/products/${product.slug}`}>
                                     <div className="group bg-stone-800 rounded-xl p-6 border border-white/5 hover:border-amber-500/30 transition-all hover:bg-stone-750 cursor-pointer h-full">
                                         <div className="h-48 rounded-lg overflow-hidden bg-stone-900 mb-4 relative">
-                                            <ProductImage src={product.images?.[0]} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt={product.slug} />
+                                            <ProductImage src={product.images?.[0] || ''} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt={product.slug || 'Product'} />
                                         </div>
                                         <h4 className="text-xl font-display font-bold text-white group-hover:text-amber-400 transition-colors mb-2">{product.translation?.title || product.slug}</h4>
                                         <div className="flex justify-between items-center">

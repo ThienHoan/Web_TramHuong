@@ -41,7 +41,7 @@ export interface UpdateCategoryDto {
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly supabase: SupabaseService) { }
+  constructor(private readonly supabase: SupabaseService) {}
 
   async findAll(
     locale: string = 'en',
@@ -77,7 +77,8 @@ export class CategoriesService {
 
     const items = (data as unknown as Category[]).map((category) => {
       const translation = category.translations?.[0] || {};
-      const { translations, ...rest } = category;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { translations: _unused, ...rest } = category;
       return {
         ...rest,
         translation,
@@ -171,7 +172,8 @@ export class CategoriesService {
 
     // Update Category fields
     if (body.slug || body.is_active !== undefined) {
-      const updateData: any = {};
+      const updateData: import('../common/types/database.types').Database['public']['Tables']['categories']['Update'] =
+        {};
       if (body.slug) updateData.slug = body.slug;
       if (body.is_active !== undefined) updateData.is_active = body.is_active;
 
@@ -195,7 +197,8 @@ export class CategoriesService {
         },
         { onConflict: 'category_id,locale' },
       );
-      if (error) throw new BadRequestException(`EN Translation Error: ${error.message}`);
+      if (error)
+        throw new BadRequestException(`EN Translation Error: ${error.message}`);
     }
 
     if (name_vi || description_vi) {
@@ -208,7 +211,8 @@ export class CategoriesService {
         },
         { onConflict: 'category_id,locale' },
       );
-      if (error) throw new BadRequestException(`VI Translation Error: ${error.message}`);
+      if (error)
+        throw new BadRequestException(`VI Translation Error: ${error.message}`);
     }
 
     return { success: true };

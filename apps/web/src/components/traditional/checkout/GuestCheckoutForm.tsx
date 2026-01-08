@@ -7,8 +7,18 @@ interface Division {
     name: string;
 }
 
+export interface GuestSubmitData {
+    name: string;
+    phone: string;
+    address: string;
+    province: string;
+    district: string;
+    ward: string;
+    full_address: string;
+}
+
 interface GuestCheckoutFormProps {
-    onSubmit: (data: any) => void;
+    onSubmit: (data: GuestSubmitData) => void;
 }
 
 export default function GuestCheckoutForm({ onSubmit }: GuestCheckoutFormProps) {

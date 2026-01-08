@@ -17,9 +17,49 @@ import { useCurrency } from '@/hooks/useCurrency';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 
+interface OrderItem {
+    title?: string;
+    product?: {
+        title?: string;
+        images?: string[];
+    };
+    image?: string;
+    price: number;
+    original_price?: number;
+    discount_amount?: number;
+    quantity: number;
+    variant_name?: string;
+}
+
+interface Order {
+    id: string;
+    status: string;
+    created_at: string;
+    total_amount?: number;
+    total?: number;
+    payment_method?: string;
+    voucher_discount_amount?: number;
+    voucher_code?: string;
+    shipping_info?: {
+        name?: string;
+        full_name?: string;
+        fullName?: string;
+        phone?: string;
+        phone_number?: string;
+        phoneNumber?: string;
+        full_address?: string;
+        address?: string;
+        ward?: string;
+        district?: string;
+        city?: string;
+        shipping_fee?: number;
+    };
+    items?: OrderItem[];
+}
+
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { session, user, loading: authLoading } = useAuth();
-    const [order, setOrder] = useState<any>(null);
+    const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { formatPrice } = useCurrency();
@@ -268,7 +308,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                         <span className="text-xs text-text-main/50 font-medium uppercase tracking-wider">{order.items?.length || 0} Sản phẩm</span>
                                     </div>
                                     <div className="divide-y divide-[#F5EFE6]">
-                                        {order.items?.map((item: any, idx: number) => {
+                                        {order.items?.map((item: OrderItem, idx: number) => {
                                             const title = item.title || item.product?.title || 'Sản phẩm';
                                             const image = item.image || item.product?.images?.[0];
                                             const price = Number(item.price || 0);
@@ -316,7 +356,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                         </div>
                                                         <div className="pt-2">
                                                             <p className="text-sm text-text-main/70 italic leading-relaxed font-light border-l-2 border-accent-gold/30 pl-3">
-                                                                "Hương thơm ngọt dịu của trầm núi rừng, lan tỏa sự thanh tịnh cho không gian thiền định."
+                                                                &quot;Hương thơm ngọt dịu của trầm núi rừng, lan tỏa sự thanh tịnh cho không gian thiền định.&quot;
                                                             </p>
                                                         </div>
                                                     </div>
@@ -336,7 +376,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <p className="text-sm text-text-main/60">{isExpiredOrCanceled ? 'Bạn đã bỏ lỡ ưu đãi' : 'Bạn đã tiết kiệm được'}</p>
                                             <p className={`font-bold ${isExpiredOrCanceled ? 'text-gray-500 line-through' : 'text-trad-gold'}`}>
                                                 {(() => {
-                                                    const totalSavings = order.items?.reduce((sum: number, item: any) => {
+                                                    const totalSavings = order.items?.reduce((sum: number, item: OrderItem) => {
                                                         const discountAmount = Number(item.discount_amount || 0);
                                                         return sum + (discountAmount * item.quantity);
                                                     }, 0) || 0;
@@ -407,7 +447,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                                 {/* Order Summary Card */}
                                 {(() => {
-                                    const subtotal = order.items?.reduce((acc: number, item: any) => acc + (Number(item.price) * Number(item.quantity)), 0) || 0;
+                                    const subtotal = order.items?.reduce((acc: number, item: OrderItem) => acc + (Number(item.price) * Number(item.quantity)), 0) || 0;
                                     // Shipping Fee Priority: 1. From Shipping Info (New Logic) 2. Calculated (Total - Subtotal)
                                     let shippingFee = 0;
                                     if (order.shipping_info?.shipping_fee !== undefined) {
@@ -447,7 +487,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <span>Giảm giá</span>
                                                     <span>
                                                         {(() => {
-                                                            const totalSavings = order.items?.reduce((sum: number, item: any) => {
+                                                            const totalSavings = order.items?.reduce((sum: number, item: OrderItem) => {
                                                                 const discountAmount = Number(item.discount_amount || 0);
                                                                 return sum + (discountAmount * item.quantity);
                                                             }, 0) || 0;
@@ -517,7 +557,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                                         035.617.68.78
                                                                     </p>
                                                                     <p className="text-xs text-gray-400 italic">
-                                                                        "Thiên Phúc luôn sẵn sàng lắng nghe và hỗ trợ bạn!"
+                                                                        &quot;Thiên Phúc luôn sẵn sàng lắng nghe và hỗ trợ bạn!&quot;
                                                                     </p>
                                                                 </div>
                                                             </DialogContent>

@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function NewProductPage() {
-    const { session, role } = useAuth();
+    const { session } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -100,7 +100,7 @@ export default function NewProductPage() {
                 const err = await res.json();
                 toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
             }
-        } catch (e: any) {
+        } catch {
             toast.error('Failed to create product', { id: toastId });
         } finally {
             setLoading(false);

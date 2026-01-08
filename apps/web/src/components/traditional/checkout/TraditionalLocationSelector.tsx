@@ -87,7 +87,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
                                 }
                             }
                         }
-                    } catch (err) {
+                    } catch (err: unknown) {
                         console.error(err);
                     } finally {
                         setLoadingD(false);
@@ -128,6 +128,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
         };
 
         syncAddress();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [provinces, initialProvince, initialDistrict, initialWard]);
 
     const updateParent = (p: Division | null, d: Division | null, w: Division | null) => {

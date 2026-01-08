@@ -1,17 +1,21 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';
-import { useCurrency } from '@/hooks/useCurrency';
-import { useProductDiscount } from '@/hooks/useProductDiscount';
+// import { useCurrency } from '@/hooks/useCurrency';
+// import { useProductDiscount } from '@/hooks/useProductDiscount';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import ScrollReveal from '../ui/ScrollReveal';
 import { SHIMMER_PRESETS } from '@/lib/image-blur';
-import EmptyState from '../ui/empty-state';
+// import EmptyState from '../ui/empty-state';
+import { Product } from '@/types/product';
+import { BlogPost } from '@/types/blog';
+
+
+
 import {
     Carousel,
     CarouselContent,
@@ -53,12 +57,12 @@ const BANNER_SLIDES = [
     }
 ];
 
-export default function TraditionalHome({ products, posts = [] }: { products: any[], posts?: any[] }) {
-    const t = useTranslations('HomePage');
-    const { formatPrice } = useCurrency();
+export default function TraditionalHome({ products, posts = [] }: { products: Product[], posts?: BlogPost[] }) {
+    //     const t = useTranslations('HomePage');
+    //     const { formatPrice } = useCurrency();
 
     const flashSaleProducts = products.slice(0, 4);
-    const featuredProducts = products.slice(0, 8);
+    // const featuredProducts = products.slice(0, 8);
 
     return (
         <div className="bg-brand-yellow font-display text-text-main antialiased selection:bg-primary selection:text-white bg-pattern-lotus flex flex-col min-h-screen">
@@ -250,7 +254,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
                                         <div className="absolute bottom-10 left-8 right-8 text-white/90">
-                                            <p className="font-serif italic text-xl leading-relaxed">"Chỉ những cây Dó Bầu chịu thương đau mới có thể sinh ra Trầm. <br />Cũng như con người, đi qua giông bão mới thấu hiểu sự bình an."</p>
+                                            <p className="font-serif italic text-xl leading-relaxed">&quot;Chỉ những cây Dó Bầu chịu thương đau mới có thể sinh ra Trầm. <br />Cũng như con người, đi qua giông bão mới thấu hiểu sự bình an.&quot;</p>
                                         </div>
                                     </div>
                                     <div className="absolute -top-10 -right-10 w-64 h-64 bg-accent-gold/20 rounded-full blur-[80px] -z-10 animate-pulse"></div>
@@ -302,7 +306,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                 {/* Chapter 3: Collection Section */}
                 <section className="py-24 lg:py-32 relative bg-stone-50" id="collection">
                     <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-stone-700 to-stone-50"></div>
-                    <img alt="Background Ink" className="absolute top-[20%] right-0 w-1/3 opacity-5 mix-blend-multiply pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTZTOm2b961Nkr-mdubbi08OgTgVUP12bdFu780qdmTi6hxqypZZiIBCCRwEXpeRYHAxMCpBvNlEU3eAPPOm8YWEBeWraAlvVPONXA6WPRgZ4rS-qGcjAKpv_RXgw5HL4CGUn_5WIw0GDXojGpPts7F5SxKVFfkNT893aKIyHX9O2k6FtMOYI8mqNevXNhTfhC2FbGZfOjjLn0MDA17rxB0I1ixGuOFa1aCRvi5JQqIl6p714U9BkbhWiB8RmVhcAl7rRL2VUZ_5k0" />
+                    <Image width={500} height={500} alt="Background Ink" className="absolute top-[20%] right-0 w-1/3 opacity-5 mix-blend-multiply pointer-events-none h-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTZTOm2b961Nkr-mdubbi08OgTgVUP12bdFu780qdmTi6hxqypZZiIBCCRwEXpeRYHAxMCpBvNlEU3eAPPOm8YWEBeWraAlvVPONXA6WPRgZ4rS-qGcjAKpv_RXgw5HL4CGUn_5WIw0GDXojGpPts7F5SxKVFfkNT893aKIyHX9O2k6FtMOYI8mqNevXNhTfhC2FbGZfOjjLn0MDA17rxB0I1ixGuOFa1aCRvi5JQqIl6p714U9BkbhWiB8RmVhcAl7rRL2VUZ_5k0" />
 
                     <div className="container mx-auto px-4 xl:px-8 relative z-10">
                         <ScrollReveal animation="fade-up">
@@ -315,7 +319,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                                     <h2 className="font-serif text-5xl lg:text-6xl font-bold text-text-main leading-none">Không Gian<br />Trầm Mặc</h2>
                                 </div>
                                 <p className="md:max-w-md text-text-sub font-medium text-right md:text-left text-lg leading-relaxed border-l-4 border-accent-gold pl-6">
-                                    "Hương thơm không hình không tướng, nhưng lại có khả năng kiến tạo không gian và dẫn lối cảm xúc."
+                                    &quot;Hương thơm không hình không tướng, nhưng lại có khả năng kiến tạo không gian và dẫn lối cảm xúc.&quot;
                                 </p>
                             </div>
                         </ScrollReveal>
@@ -402,12 +406,12 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                 {/* Quote Section */}
                 <section className="py-16 bg-primary text-white text-center relative overflow-hidden">
                     <div className="absolute inset-0 opacity-10 pattern-dots"></div>
-                    <img alt="Tranh lụa mây" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-screen pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1SIk0W2_zmZFz10h8YLZSZX9FRWBaeERDmxfpWxqoZ3fu-HbjPTz2srTRdvNHdlHRwg0rrNaEuQQrjRLUKULpa9yzbRwsBYGtUmyIshVH97-v8FnhIc3HPZq_FbgN1ga_KR-2K7sLs7Fsc6B_ErYWogCYsEMEUMHLtypy5XZ1wRa0Sks2TjVoHot4dj_RVrbiFxggG09P9Fmr6l-JTANhuS4UHDWWv7NSAyn19Z9Q37ronWQQfvcohiZCmlNd1idQrSL0WdZOzaxD" />
+                    <Image width={1920} height={1080} alt="Tranh lụa mây" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-screen pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1SIk0W2_zmZFz10h8YLZSZX9FRWBaeERDmxfpWxqoZ3fu-HbjPTz2srTRdvNHdlHRwg0rrNaEuQQrjRLUKULpa9yzbRwsBYGtUmyIshVH97-v8FnhIc3HPZq_FbgN1ga_KR-2K7sLs7Fsc6B_ErYWogCYsEMEUMHLtypy5XZ1wRa0Sks2TjVoHot4dj_RVrbiFxggG09P9Fmr6l-JTANhuS4UHDWWv7NSAyn19Z9Q37ronWQQfvcohiZCmlNd1idQrSL0WdZOzaxD" />
                     <div className="container mx-auto px-4 relative z-10">
                         <ScrollReveal animation="zoom-in" duration={1000}>
                             <span className="material-symbols-outlined text-4xl mb-4 opacity-50">format_quote</span>
                             <p className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed max-w-4xl mx-auto italic font-medium">
-                                "Hương trầm là tiếng nói của tâm linh, là cầu nối giữa đất và trời, giữa con người và tổ tiên."
+                                &quot;Hương trầm là tiếng nói của tâm linh, là cầu nối giữa đất và trời, giữa con người và tổ tiên.&quot;
                             </p>
                         </ScrollReveal>
                     </div>
@@ -442,7 +446,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                                                 <div className="absolute top-3 left-3 bg-primary text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded shadow-md">-30%</div>
                                                 <ProductImage
                                                     src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3_PiQCS8QGvrIj99N-j3jeC831CFiaHuU8_BnFOqJSxKLbQpSZQx2w0BNwqIP1rXpa0D3HIWZCkHpgS3GpT7eFCspZIhtXde8F5GDBDroYLZb-_7H_uRR9pP3QnyUbEl3OOrlhcdiQM5vFvoX0d2iHzZHD0FMh7N9up-J0EIrGM1FZe8zqXVNQOCnieBPFJpK6AjtqBiEFLUFWMsLJkMFw4Ci6leh7XKdmvbfb_Cj5JRzPVV_Rs917e_ClSWqpZLfFQPNCrNcT49N'}
-                                                    alt={product.translation?.title}
+                                                    alt={product.translation?.title || product.title || 'Product'}
                                                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
                                                 <button className="absolute bottom-3 right-3 bg-white p-2 rounded-full shadow-lg text-text-main hover:text-primary transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 hover:scale-110 hidden md:block">
@@ -471,9 +475,9 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                 <section className="py-20 lg:py-28 relative" id="products">
                     <div className="ornament-divider">
                         <span className="material-symbols-outlined text-accent-gold-dark text-2xl relative z-10">spa</span>
-                        <img alt="Decoration" className="absolute w-48 opacity-40 mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1ERgD_6s9LrHv7IGQx0wusLIRS8vcYOftwIwh0xkhBEpuGwqp8RMCG8cs0-n0Di0F-aOzWzckmD4-lj-IR3TaQ3JL1KyLYP09dcdsUktAfaCWajyV6DTT_SgzgQ2edM7kyE6OGHM5e4Nf-7ENoU-mTyOJMbuJ1x_wZvDoay6ByOeZd9esaXxI27Amt2iwFPbBYM_5-jUo_yDmcYvJGRO1jUlLTaYSbUdX-edfV_dVUzCCNpnzcvAy5CZpkz15W_YE4n9uk0EhSSWc" />
+                        <Image width={200} height={200} alt="Decoration" className="absolute w-48 opacity-40 mix-blend-multiply h-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1ERgD_6s9LrHv7IGQx0wusLIRS8vcYOftwIwh0xkhBEpuGwqp8RMCG8cs0-n0Di0F-aOzWzckmD4-lj-IR3TaQ3JL1KyLYP09dcdsUktAfaCWajyV6DTT_SgzgQ2edM7kyE6OGHM5e4Nf-7ENoU-mTyOJMbuJ1x_wZvDoay6ByOeZd9esaXxI27Amt2iwFPbBYM_5-jUo_yDmcYvJGRO1jUlLTaYSbUdX-edfV_dVUzCCNpnzcvAy5CZpkz15W_YE4n9uk0EhSSWc" />
                     </div>
-                    <img alt="Tranh lụa tre" className="hidden 2xl:block absolute top-40 left-0 w-64 h-auto opacity-15 silk-illustration mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPbp-qB0x1Eh9uP5wPGvB2ddr40E4EorPXyKNw891MwbXSoGiTmKI28RzSqPpMQqYWbtIkN93OjkDTnjK_3rcNvxSej6z42B-BQCUSAB6owcy40qB9ENiVwqmSMrFsYTYsFjgFalLV3qhXieUofItpVt68wSZry9VpGeARkJoKA0GwtGpFewqBBmDCY3gQ-8NiTsS0P_GRIcef_62Mld5pw6QYBWSex9Pp1JU6j9p0ZiqBuL0ktUVgHdlXOCOvZ0kBoMxo7XcYL11n" />
+                    <Image width={300} height={400} alt="Tranh lụa tre" className="hidden 2xl:block absolute top-40 left-0 w-64 h-auto opacity-15 silk-illustration mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPbp-qB0x1Eh9uP5wPGvB2ddr40E4EorPXyKNw891MwbXSoGiTmKI28RzSqPpMQqYWbtIkN93OjkDTnjK_3rcNvxSej6z42B-BQCUSAB6owcy40qB9ENiVwqmSMrFsYTYsFjgFalLV3qhXieUofItpVt68wSZry9VpGeARkJoKA0GwtGpFewqBBmDCY3gQ-8NiTsS0P_GRIcef_62Mld5pw6QYBWSex9Pp1JU6j9p0ZiqBuL0ktUVgHdlXOCOvZ0kBoMxo7XcYL11n" />
                     <div className="container mx-auto px-4 xl:px-8 relative z-10">
                         <div className="grid lg:grid-cols-12 gap-12">
                             <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit space-y-8">
@@ -500,7 +504,11 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                                 {products.slice(0, 3).map((product) => (
                                     <div key={product.id} className="group flex flex-col md:flex-row gap-6 bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-white/50 hover:border-accent-gold/40">
                                         <div className="w-full md:w-48 aspect-square shrink-0 overflow-hidden rounded-xl bg-surface-accent border border-gray-100">
-                                            <img alt={product.translation?.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJpMCUidBU7fmIn-cUc3Z4x0Rtlui8PJFsU_RCc2Oq2kdq543MBFr0t1hrrtru7NJ-Ue5J1C4xpiIOmIHAeHoaGz1qcjie4bDETM9IdBTqS5ASoADqm5jD2pUAUdhPgC75s8tjBnQszVtshlm1hFHDGaF2KSm17HvIbSXHOq3hul_fWRbn0_m2gbB_H1Z7mveIIg64MUNMAQ-NKJqXoecNgImjncAubBnUtjNI-e9LSrgPDp9nsCVfcACFbHI9xyv9wg1AkDPFXO45'} />
+                                            <ProductImage
+                                                src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJpMCUidBU7fmIn-cUc3Z4x0Rtlui8PJFsU_RCc2Oq2kdq543MBFr0t1hrrtru7NJ-Ue5J1C4xpiIOmIHAeHoaGz1qcjie4bDETM9IdBTqS5ASoADqm5jD2pUAUdhPgC75s8tjBnQszVtshlm1hFHDGaF2KSm17HvIbSXHOq3hul_fWRbn0_m2gbB_H1Z7mveIIg64MUNMAQ-NKJqXoecNgImjncAubBnUtjNI-e9LSrgPDp9nsCVfcACFbHI9xyv9wg1AkDPFXO45'}
+                                                alt={product.translation?.title || product.title || 'Product'}
+                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
                                         </div>
                                         <div className="flex flex-col justify-between flex-1">
                                             <div>
@@ -550,33 +558,33 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="bg-white/5 backdrop-blur-md p-8 rounded-2xl border border-white/10 hover:border-accent-gold/50 transition-colors group">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <img alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ-F2gzkO5VP-bYKvMckVYhX4GXTMXWeqDL7bvWWEjQaYfhn4f0KlyJOjOgG7dISgMsEMnNNVBqeZk28AdLy_8Ts7FNZlbOl3GwcM6o0VujmdsMllfkL5dfSK89aBbnJxrU97V2C4g9ltGXXmtmsKg5mlNrDz3YjGK4LlU-LmVmj4BnF6G8chMXjrleO1WjuKrTcMR8UJh_wyExG_gVdqDcejphCUte9_pzkS_NY0fKWCXaE_WOisAq55LdkyEBjVmJJwvVpZVBTHm" />
+                                    <Image width={48} height={48} alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ-F2gzkO5VP-bYKvMckVYhX4GXTMXWeqDL7bvWWEjQaYfhn4f0KlyJOjOgG7dISgMsEMnNNVBqeZk28AdLy_8Ts7FNZlbOl3GwcM6o0VujmdsMllfkL5dfSK89aBbnJxrU97V2C4g9ltGXXmtmsKg5mlNrDz3YjGK4LlU-LmVmj4BnF6G8chMXjrleO1WjuKrTcMR8UJh_wyExG_gVdqDcejphCUte9_pzkS_NY0fKWCXaE_WOisAq55LdkyEBjVmJJwvVpZVBTHm" />
                                     <div>
                                         <p className="font-bold text-accent-gold">Chị Lan</p>
                                         <p className="text-xs text-white/70 font-medium">TP. Hồ Chí Minh</p>
                                     </div>
                                 </div>
-                                <p className="text-white/90 italic font-normal leading-relaxed">"Mùi thơm rất dễ chịu, thanh khiết, không bị nồng gắt như các loại khác mình từng dùng. Giao hàng nhanh và đóng gói rất cẩn thận, cảm giác như nhận một món quà quý."</p>
+                                <p className="text-white/90 italic font-normal leading-relaxed">&quot;Mùi thơm rất dễ chịu, thanh khiết, không bị nồng gắt như các loại khác mình từng dùng. Giao hàng nhanh và đóng gói rất cẩn thận, cảm giác như nhận một món quà quý.&quot;</p>
                             </div>
                             <div className="bg-white/5 backdrop-blur-md p-8 rounded-2xl border border-white/10 hover:border-accent-gold/50 transition-colors group transform md:-translate-y-4">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <img alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh575bTGq0Kb4S-mIDYezCj3ULm9Sv35NvhuRGzP9Wt7WNWxkRWHAWr1h4t32IX_kyux5fkTaloJy5ASrR1oSpvKwAXkzwt7b6ikZKkS19Pkaakc9FTFlEZbPvdWiAuqQsoyY_DjXg6fmrNYQ1NtrQsXwyXqSaI_KafGenzdfgQwxEc315hj5__-CZHTsIPDmjDG9Qz2ylOikzHqNParbAgUF0SAcCJJ6Q_-BFghONZt76PXEEiHFWPPtu3gm9gd7rxHdKlglfWmD-" />
+                                    <Image width={48} height={48} alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh575bTGq0Kb4S-mIDYezCj3ULm9Sv35NvhuRGzP9Wt7WNWxkRWHAWr1h4t32IX_kyux5fkTaloJy5ASrR1oSpvKwAXkzwt7b6ikZKkS19Pkaakc9FTFlEZbPvdWiAuqQsoyY_DjXg6fmrNYQ1NtrQsXwyXqSaI_KafGenzdfgQwxEc315hj5__-CZHTsIPDmjDG9Qz2ylOikzHqNParbAgUF0SAcCJJ6Q_-BFghONZt76PXEEiHFWPPtu3gm9gd7rxHdKlglfWmD-" />
                                     <div>
                                         <p className="font-bold text-accent-gold">Anh Tuấn</p>
                                         <p className="text-xs text-white/70 font-medium">Hà Nội</p>
                                     </div>
                                 </div>
-                                <p className="text-white/90 italic font-normal leading-relaxed">"Mua biếu bố mẹ dịp Tết, các cụ rất thích. Hộp quà sang trọng, nhang cháy lâu và thơm mùi gỗ tự nhiên. Chắc chắn sẽ ủng hộ shop dài dài vì chất lượng."</p>
+                                <p className="text-white/90 italic font-normal leading-relaxed">&quot;Mua biếu bố mẹ dịp Tết, các cụ rất thích. Hộp quà sang trọng, nhang cháy lâu và thơm mùi gỗ tự nhiên. Chắc chắn sẽ ủng hộ shop dài dài vì chất lượng.&quot;</p>
                             </div>
                             <div className="bg-white/5 backdrop-blur-md p-8 rounded-2xl border border-white/10 hover:border-accent-gold/50 transition-colors group">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <img alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATrmkPtESpW5eO-I5zAybQmgiGz11XPWP3oF7kHi6cydwcyc483LN262DZVIZnx2qYtrS-D_K6Db6B2OyhKsGLBiztVKR79rQ_6IXgRiWgHwfXYiiF6xsKNkKGJ4DlPivLu-B0xehxDByegMDzZez2vBrRfcEpCbknpHmq_BGV3Ik1kGg7kSiFqia0KCMbdXIxku9aVIOPbwfacfJ5qzXBwnua2rxoT-X2rOvVI7MgHUOMrhI8PnVPVNJXF_rKMDjTZrgE_5ezpRIy" />
+                                    <Image width={48} height={48} alt="Customer" className="h-12 w-12 rounded-full object-cover ring-2 ring-accent-gold/50 group-hover:ring-accent-gold transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATrmkPtESpW5eO-I5zAybQmgiGz11XPWP3oF7kHi6cydwcyc483LN262DZVIZnx2qYtrS-D_K6Db6B2OyhKsGLBiztVKR79rQ_6IXgRiWgHwfXYiiF6xsKNkKGJ4DlPivLu-B0xehxDByegMDzZez2vBrRfcEpCbknpHmq_BGV3Ik1kGg7kSiFqia0KCMbdXIxku9aVIOPbwfacfJ5qzXBwnua2rxoT-X2rOvVI7MgHUOMrhI8PnVPVNJXF_rKMDjTZrgE_5ezpRIy" />
                                     <div>
                                         <p className="font-bold text-accent-gold">Cô Mai</p>
                                         <p className="text-xs text-white/70 font-medium">Đà Nẵng</p>
                                     </div>
                                 </div>
-                                <p className="text-white/90 italic font-normal leading-relaxed">"Mình dùng để xông nhà mới, cảm giác không gian ấm cúng hẳn lên. Rất thích cách shop tư vấn nhiệt tình về phong thủy. Sản phẩm xứng đáng đồng tiền bát gạo."</p>
+                                <p className="text-white/90 italic font-normal leading-relaxed">&quot;Mình dùng để xông nhà mới, cảm giác không gian ấm cúng hẳn lên. Rất thích cách shop tư vấn nhiệt tình về phong thủy. Sản phẩm xứng đáng đồng tiền bát gạo.&quot;</p>
                             </div>
                         </div>
                     </div>
@@ -584,7 +592,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
 
                 {/* Blog Section */}
                 <section className="py-20 lg:py-24 relative" id="blog">
-                    <img alt="Tranh lụa hạc" className="absolute top-0 right-0 w-64 h-auto opacity-15 silk-illustration mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5FntkrbQx_7zsbw0Ng2x-MPUCUTr0CRe1i-kwqdGfo-TYIH1mIXWItWA_4qdmM8mYIU7-jMcGhIL3l1sSzqqk9vo_5afqamACOxFlsoG9lNRlE2VJs3XpGblOKabiWFNdjuFtmyk86lzJq2Ir8jUOKHRQcLUJR6682dvaakeL4ayMBeIJNKXU0HQZbeYZHNMTQFndnwiICKXKoSb622ypFHlmh5oJzFsZd6UODhBSYgD9FWe9xlPDXez1odXXU3nzW9rQVMmqIDFO" />
+                    <Image width={300} height={400} alt="Tranh lụa hạc" className="absolute top-0 right-0 w-64 h-auto opacity-15 silk-illustration mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5FntkrbQx_7zsbw0Ng2x-MPUCUTr0CRe1i-kwqdGfo-TYIH1mIXWItWA_4qdmM8mYIU7-jMcGhIL3l1sSzqqk9vo_5afqamACOxFlsoG9lNRlE2VJs3XpGblOKabiWFNdjuFtmyk86lzJq2Ir8jUOKHRQcLUJR6682dvaakeL4ayMBeIJNKXU0HQZbeYZHNMTQFndnwiICKXKoSb622ypFHlmh5oJzFsZd6UODhBSYgD9FWe9xlPDXez1odXXU3nzW9rQVMmqIDFO" />
                     <div className="container mx-auto px-4 xl:px-8 relative z-10">
                         <ScrollReveal animation="fade-up">
                             <div className="flex justify-between items-end mb-12 border-b border-accent-gold/30 pb-4">
@@ -604,12 +612,12 @@ export default function TraditionalHome({ products, posts = [] }: { products: an
                                         <Link href={`/blog/${post.slug}`} className="group cursor-pointer h-full block">
                                             <article className="h-full flex flex-col">
                                                 <div className="overflow-hidden rounded-2xl mb-6 aspect-[16/9] relative shadow-lg border border-white/20">
-                                                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">{post.category?.name || 'Kiến Thức'}</div>
+                                                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-text-main px-3 py-1 text-xs font-bold rounded uppercase z-10 shadow-sm">{post.category || 'Kiến Thức'}</div>
                                                     <Image
                                                         alt={post.title}
                                                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                                                         fill
-                                                        src={post.image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
+                                                        src={post.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
                                                         placeholder="blur"
                                                         blurDataURL={SHIMMER_PRESETS.landscape}
                                                     />

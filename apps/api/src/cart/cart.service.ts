@@ -69,8 +69,10 @@ export class CartService {
       const product = item.product;
       // Best effort title (VI -> EN -> first available)
       const title =
-        product.translations?.find((t: any) => t.locale === 'vi')?.title ||
-        product.translations?.find((t: any) => t.locale === 'en')?.title ||
+        product.translations?.find((t: ProductTranslation) => t.locale === 'vi')
+          ?.title ||
+        product.translations?.find((t: ProductTranslation) => t.locale === 'en')
+          ?.title ||
         product.translations?.[0]?.title ||
         product.slug;
 

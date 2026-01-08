@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
@@ -23,11 +24,13 @@ interface User {
 
 export default function AdminUserDetailPage() {
     const { id } = useParams();
-    const { session, role, loading: authLoading } = useAuth();
+    const { session, loading: authLoading } = useAuth();
     const router = useRouter();
 
     const [user, setUser] = useState<User | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [orders, setOrders] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
     const [loading, setLoading] = useState(true);
 
@@ -74,8 +77,10 @@ export default function AdminUserDetailPage() {
     }, [id, session]);
 
     // Initial Fetch
+    // Initial Fetch
     useEffect(() => {
         if (!authLoading && session) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initial fetch only
             fetchUserOrders(1);
         }
     }, [authLoading, session, fetchUserOrders]);
@@ -100,7 +105,7 @@ export default function AdminUserDetailPage() {
                 const err = await res.json();
                 alert(`Failed: ${err.message}`);
             }
-        } catch (e) {
+        } catch {
             alert('Connection Error updating status');
         }
     };
@@ -125,9 +130,9 @@ export default function AdminUserDetailPage() {
                 {/* User Info Card */}
                 {user && (
                     <div className="bg-white shadow-sm rounded-lg p-6 mb-8 border border-gray-100 flex flex-col md:flex-row gap-6 items-start">
-                        <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-2xl">
+                        <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-2xl overflow-hidden">
                             {user.avatar_url ? (
-                                <img src={user.avatar_url} alt="Ava" className="w-full h-full rounded-full object-cover" />
+                                <Image src={user.avatar_url} alt="Ava" width={80} height={80} className="w-full h-full object-cover" />
                             ) : (
                                 user.email.charAt(0).toUpperCase()
                             )}

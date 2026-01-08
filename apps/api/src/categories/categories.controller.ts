@@ -8,10 +8,12 @@ import {
   Param,
   Query,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { CategoriesService } from './categories.service';
+import type {
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from './categories.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -19,9 +21,8 @@ import { Role } from '../auth/role.enum';
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) { }
+  constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Get()
   @Get()
   // @UseInterceptors(CacheInterceptor)
   // @CacheTTL(300000) // Removed to allow instant admin updates
@@ -47,14 +48,14 @@ export class CategoriesController {
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  async create(@Body() body: any) {
+  async create(@Body() body: CreateCategoryDto) {
     return this.categoriesService.create(body);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  async update(@Param('id') id: string, @Body() body: any) {
+  async update(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
     return this.categoriesService.update(id, body);
   }
 

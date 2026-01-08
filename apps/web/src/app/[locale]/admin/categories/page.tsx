@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
 import { Category } from '@/lib/types';
@@ -9,16 +9,23 @@ import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+interface PaginationMeta {
+    total: number;
+    page: number;
+    limit: number;
+    last_page: number;
+}
+
 export default function AdminCategoriesPage() {
     const { session, role, loading: authLoading } = useAuth();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
+    const [meta, setMeta] = useState<PaginationMeta>({ total: 0, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
     const router = useRouter();
 
-    const fetchCategories = (page = 1) => {
+    const fetchCategories = useCallback((page = 1, showLoading = true) => {
         if (!session) return;
-        setLoading(true);
+        if (showLoading) setLoading(true);
         fetch(`${API_URL}/categories?include_inactive=true&page=${page}&limit=${ADMIN_PAGE_LIMIT}`, {
             headers: { 'Authorization': `Bearer ${session.access_token}` },
             cache: 'no-store'
@@ -27,7 +34,7 @@ export default function AdminCategoriesPage() {
             .then(data => {
                 if (data.data) {
                     setCategories(data.data);
-                    setMeta(data.meta);
+                    setMeta(data.meta as PaginationMeta);
                 } else {
                     setCategories([]); // Fallback
                 }
@@ -37,7 +44,7 @@ export default function AdminCategoriesPage() {
                 console.error(err);
                 setLoading(false);
             });
-    };
+    }, [session]);
 
     useEffect(() => {
         if (!authLoading) {
@@ -47,10 +54,12 @@ export default function AdminCategoriesPage() {
             }
 
             if (session) {
-                fetchCategories(1);
+                // Initial load: loading is already true, so avoid triggering a rerender
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initial fetch only
+                fetchCategories(1, false);
             }
         }
-    }, [authLoading, role, session, router]);
+    }, [authLoading, role, session, router, fetchCategories]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to deactivate (soft delete) this category?')) return;
@@ -66,7 +75,7 @@ export default function AdminCategoriesPage() {
             } else {
                 alert('Failed to delete category');
             }
-        } catch (e) {
+        } catch {
             alert('Error deleting category');
         }
     };
@@ -89,7 +98,7 @@ export default function AdminCategoriesPage() {
             } else {
                 alert('Failed to restore category');
             }
-        } catch (e) {
+        } catch {
             alert('Error restoring category');
         }
     };

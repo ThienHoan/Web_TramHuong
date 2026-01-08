@@ -1,13 +1,11 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
-import { useAuth } from '../providers/AuthProvider';
 import { useCart } from '../providers/CartProvider';
 import { useState } from 'react';
 import ZenSearchOverlay from '@/components/zen/ZenSearchOverlay';
 
 export default function ZenHeader({ locale }: { locale: string }) {
-    const { user, role, profile, signOut } = useAuth();
     const { count } = useCart();
     const pathname = usePathname();
     const [menuOpen, setMenuOpen] = useState(false);

@@ -22,6 +22,7 @@ export default function ContactPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         resolver: zodResolver(contactSchema as any),
         defaultValues: {
             topic: 'Tư vấn sản phẩm trầm hương'

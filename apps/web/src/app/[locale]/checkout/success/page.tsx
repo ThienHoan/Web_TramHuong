@@ -18,6 +18,7 @@ export default function CheckoutSuccessPage() {
     const orderId = searchParams.get('id');
     const [date, setDate] = useState('');
     const { session } = useAuth();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [order, setOrder] = useState<any>(null);
     const { formatPrice } = useCurrency();
     const [copied, setCopied] = useState(false);
@@ -58,7 +59,7 @@ export default function CheckoutSuccessPage() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                     toast.success("Đã sao chép mã đơn hàng!");
-                } catch (err) {
+                } catch {
                     toast.error("Không thể sao chép. Vui lòng copy thủ công!");
                 } finally {
                     document.body.removeChild(textArea);
@@ -168,6 +169,7 @@ export default function CheckoutSuccessPage() {
                             {order && order.items && order.items.length > 0 && (
                                 <div className="w-full flex flex-col gap-4 mb-8">
                                     <h3 className="text-[#fef3c7] font-bold text-lg text-left border-b border-[#7a3e3b] pb-2 font-serif">Sản phẩm đã đặt</h3>
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type */}
                                     {order.items.map((item: any, idx: number) => {
                                         const price = Number(item.price || 0);
                                         const originalPrice = Number(item.original_price || item.price || 0);
@@ -221,7 +223,7 @@ export default function CheckoutSuccessPage() {
                                 <div className="w-full bg-[#2a0f0e] p-6 rounded-xl border border-[#7a3e3b] shadow-sm mb-8">
                                     <div className="flex flex-col gap-3">
                                         {(() => {
-                                            const subtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0) || 0;
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
                                             const totalSavings = order.items?.reduce((sum: number, item: any) => {
                                                 const discountAmount = Number(item.discount_amount || 0);
                                                 return sum + (discountAmount * item.quantity);
@@ -261,6 +263,7 @@ export default function CheckoutSuccessPage() {
                                                         <span>
                                                             {/* Logic check: if Total >= Subtotal (implies shipping added) or 0 if free. Here we assume free if not mentioned or calculated? Success page is tricky. If order.total == subtotal, it is free shipping. */}
                                                             {(() => {
+                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
                                                                 const subtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0) || 0;
                                                                 const isFree = Number(order.total) <= Number(subtotal); // Rough check
                                                                 if (isFree) {

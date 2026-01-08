@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -14,6 +15,7 @@ export default function OrderDetailPage() {
     const { id } = useParams();
     const { session, user, role, loading: authLoading } = useAuth();
     const router = useRouter();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const { formatPrice } = useCurrency();
@@ -47,6 +49,7 @@ export default function OrderDetailPage() {
     if (loading) return <div className="p-10 text-center">Loading Order Details...</div>;
     if (!order) return null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const subtotal = order.items?.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * Number(item.quantity || 0)), 0) || 0;
     const total = Number(order.total || order.total_amount || 0);
 
@@ -122,11 +125,12 @@ export default function OrderDetailPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type */}
                             {order.items && order.items.map((item: any, idx: number) => (
                                 <tr key={idx}>
                                     <td className="p-3">
                                         <div className="flex items-center gap-3">
-                                            {item.image && <img src={item.image} alt="" className="w-10 h-10 object-cover rounded" />}
+                                            {item.image && <Image src={item.image} alt="" width={40} height={40} className="w-10 h-10 object-cover rounded" />}
                                             <span className="text-sm font-medium">{item.title}</span>
                                         </div>
                                     </td>

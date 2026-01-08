@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 
 export interface CartItem {
@@ -37,7 +37,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [initialized, setInitialized] = useState(false);
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-    const fetchCart = async () => {
+    const fetchCart = useCallback(async () => {
         if (!user || !session) return;
         try {
             const res = await fetch(`${API_URL}/cart`, {
@@ -46,6 +46,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             if (res.ok) {
                 const data = await res.json();
                 // Map backend format to frontend CartItem
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
                 const mapped = data.map((i: any) => ({
                     key: i.cartItemId,
                     productId: i.id,
@@ -65,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
             console.error('Failed to fetch cart', e);
         }
-    };
+    }, [user, session, API_URL]);
 
     // 1. Initial Load (Guest) or Sync (User)
     useEffect(() => {
@@ -83,6 +84,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${session.access_token}`
                             },
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
                             body: JSON.stringify({ items: localCart.map((i: any) => ({ ...i, id: i.productId })) })
                         });
                         localStorage.removeItem('cart'); // Clear local after merge
@@ -106,7 +108,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
 
         loadCart();
-    }, [user, session]);
+    }, [user, session, API_URL, fetchCart]);
 
     // 2. Persist to Local Storage (Only for guests)
     useEffect(() => {
@@ -123,7 +125,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // For Guest: Composite Key. For User: Temporary until re-fetch, but we reuse composite for matching.
         const compositeKey = `${newItem.id}-${variantId || 'default'}`;
 
-        const oldItems = [...items];
+
 
         setItems(prev => {
             // Check existence by Product + Variant

@@ -7,11 +7,11 @@ import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
 import { updatePassword } from '@/app/actions/auth';
 
 export default function ResetPasswordPage() {
-    const locale = useLocale();
+    useLocale(); // Ensure locale context is available
     const [loading, setLoading] = useState(true);
     const [hasAccess, setHasAccess] = useState(false);
     const [password, setPassword] = useState('');
@@ -103,15 +103,15 @@ export default function ResetPasswordPage() {
                 // Redirect to login with success message and prefilled email
                 console.log('[Reset Password] Redirecting to login...');
                 router.push(`/login?message=password_reset_success&email=${encodeURIComponent(userEmail)}`);
-            } catch (redirectErr: any) {
+            } catch (redirectErr: unknown) {
                 console.error('[Reset Password] Error during redirect flow:', redirectErr);
                 // Even if redirect fails, show success and let user manually go to login
                 alert('Password updated successfully! Please login with your new password.');
                 router.push('/login');
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[Reset Password] Error:', err);
-            setError(err.message || 'Failed to reset password');
+            setError(err instanceof Error ? err.message : 'Failed to reset password');
         } finally {
             // Always reset submitting state (important for when redirect is slow)
             console.log('[Reset Password] Resetting submitting state');

@@ -24,6 +24,9 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
             setComment('');
             setRating(5);
             onSuccess();
+            setRating(5);
+            onSuccess();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         } catch (err: any) {
             // Check for verified purchase error
             if (err.message.includes('Forbidden') || err.message.includes('purchase')) {

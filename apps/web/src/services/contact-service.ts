@@ -1,5 +1,7 @@
 import { fetchWithAuth, buildUrl } from './base-http';
 
+import { Contact } from '@/types/contact';
+
 export interface ContactData {
     full_name: string;
     email: string;
@@ -7,15 +9,8 @@ export interface ContactData {
     message: string;
 }
 
-export interface Contact {
-    id: string;
-    full_name: string;
-    email: string;
-    topic?: string;
-    message: string;
-    status: string;
-    created_at: string;
-}
+// Contact interface moved to @/types/contact
+export type { Contact };
 
 export interface ContactMeta {
     total: number;

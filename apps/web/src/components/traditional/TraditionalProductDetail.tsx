@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
 import { useWishlist } from '../providers/WishlistProvider';
-import { useCurrency } from '@/hooks/useCurrency';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
 import { ProductPrice } from '@/components/ui/ProductPrice';
 import Image from 'next/image';
@@ -13,8 +12,7 @@ import { Link } from '@/i18n/routing';
 
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
-import { CheckCircle2 } from 'lucide-react';
-import TraditionalProductReviews from './TraditionalProductReviews';
+import TraditionalProductReviews from '@/components/traditional/TraditionalProductReviews';
 import TraditionalProductDescription from './tabs/TraditionalProductDescription';
 import TraditionalProductSpecs from './tabs/TraditionalProductSpecs';
 import TraditionalProductStory from './tabs/TraditionalProductStory';
@@ -22,21 +20,22 @@ import TraditionalProductCard from './TraditionalProductCard';
 import { getProducts, getReviews } from '@/lib/api-client';
 import { useLocale } from 'next-intl';
 
-export default function TraditionalProductDetail({ product }: { product: any }) {
+import { Product, ProductVariant } from '@/types/product';
+
+export default function TraditionalProductDetail({ product }: { product: Product }) {
     const { addItem } = useCart();
     const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
-    const { formatPrice } = useCurrency();
     const locale = useLocale();
 
     // Calculate discount at component level (not inside functions!)
-    const { finalPrice, isActive: isDiscountActive, discountPercent, originalPrice } = useProductDiscount(product);
+    const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
 
     const [selectedImage, setSelectedImage] = useState(product.images[0]);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
-    const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
-    const [selectedVariant, setSelectedVariant] = useState<any>(null);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const [isAdding, setIsAdding] = useState(false);
 
     // Initialize variant
@@ -48,7 +47,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
     // Parse Specs for Sidebar
     const specsList = (() => {
-        const raw = product.translation.specifications;
+        const raw = product.translation?.specifications;
         if (!raw) return [];
         if (typeof raw === 'object') return Object.entries(raw).map(([key, value]) => ({ key, value: String(value) }));
         if (typeof raw === 'string') {
@@ -56,7 +55,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
             return raw.split('. ').map((s: string) => {
                 const [k, v] = s.split(':');
                 return { key: k?.trim() || '', value: v?.trim() || '' };
-            }).filter((x: any) => x.key);
+            }).filter((x: { key: string; value: string }) => x.key);
         }
         return [];
     })();
@@ -65,13 +64,13 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
         const loadData = async () => {
             // 1. Fetch Related Products
             // Safe category slug retrieval
-            const catSlug = product.category?.slug || (typeof product.category === 'string' ? product.category : null);
+            const catSlug = product.category?.slug || (typeof product.category === 'string' ? product.category : undefined);
             const related = await getProducts(locale, {
                 category: catSlug,
                 limit: 4
             });
             // Filter out current product
-            setRelatedProducts(related.filter((p: any) => p.id !== product.id));
+            setRelatedProducts(related.filter((p: Product) => p.id !== product.id));
 
             // 2. Fetch Review Stats
             const { meta } = await getReviews(product.id);
@@ -93,14 +92,14 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
             await addItem({
                 id: product.id,
                 slug: product.slug,
-                title: product.translation.title,
+                title: product.translation?.title || 'Trầm Hương',
                 price: finalPrice,  // ✅ Using discounted price from hook
                 original_price: originalPrice,  // For discount display in checkout
                 discount_amount: discountAmount,  // For discount display in checkout
                 image: product.images[0],
                 quantity: quantity,
-                variantId: selectedVariant?.name || null,
-                variantName: selectedVariant?.name || null
+                variantId: selectedVariant?.name || undefined,
+                variantName: selectedVariant?.name || undefined
             });
 
             toast.custom((t) => (
@@ -145,9 +144,6 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
 
     // Render stars helper using dynamic count
     const renderStars = (rating: number) => {
-        const fullStars = Math.floor(rating);
-        const hasHalf = rating % 1 >= 0.5;
-        // Simple star logic (just 5 stars)
         return (
             <div className="flex text-trad-primary">
                 {[...Array(5)].map((_, i) => (
@@ -177,7 +173,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                             </li>
                             <li className="text-trad-text-muted">/</li>
                             <li aria-current="page">
-                                <span className="text-trad-text-main font-semibold truncate max-w-[200px] md:max-w-none text-ellipsis block">{product.translation.title}</span>
+                                <span className="text-trad-text-main font-semibold truncate max-w-[200px] md:max-w-none text-ellipsis block">{product.translation?.title}</span>
                             </li>
                         </ol>
                     </nav>
@@ -192,7 +188,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                 <div className="relative w-full h-full">
                                     <Image
                                         src={selectedImage || product.images[0]}
-                                        alt={product.translation.title}
+                                        alt={product.translation?.title || 'Sản phẩm'}
                                         fill
                                         priority
                                         loading="eager"
@@ -231,7 +227,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                         <div className="lg:col-span-5 flex flex-col gap-6">
                             <div>
                                 <div className="flex items-center gap-2 text-trad-primary text-sm font-bold uppercase tracking-widest mb-2">Trầm Hương Tự Nhiên</div>
-                                <h1 className="text-3xl md:text-4xl font-bold text-trad-text-main mb-4 leading-tight">{product.translation.title}</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold text-trad-text-main mb-4 leading-tight">{product.translation?.title}</h1>
 
                                 {/* Ratings */}
                                 <div className="flex items-center gap-4 mb-6">
@@ -253,7 +249,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                 </div>
 
                                 <p className="text-trad-text-main/80 leading-relaxed mb-8">
-                                    {product.translation.description}
+                                    {product.translation?.description}
                                 </p>
                                 <hr className="border-trad-border-warm mb-8" />
 
@@ -264,7 +260,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                         <div>
                                             <h3 className="text-sm font-bold text-trad-text-main mb-3">Tùy chọn</h3>
                                             <div className="flex flex-wrap gap-3">
-                                                {product.variants.map((v: any, idx: number) => (
+                                                {product.variants.map((v: ProductVariant, idx: number) => (
                                                     <label key={idx} className="cursor-pointer">
                                                         <input
                                                             className="peer sr-only"
@@ -274,7 +270,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                                             onChange={() => setSelectedVariant(v)}
                                                         />
                                                         <div className={`px-4 py-2 rounded border transition-all text-sm font-medium ${selectedVariant === v ? 'bg-trad-primary text-white border-trad-primary' : 'bg-white text-trad-text-main border-trad-border-warm hover:border-trad-primary'}`}>
-                                                            {v.name} {v.description && `(${v.description})`}
+                                                            {v.name}
                                                         </div>
                                                     </label>
                                                 ))}
@@ -390,7 +386,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                     </h3>
                                     <div className="space-y-4">
                                         {specsList.length > 0 ? (
-                                            specsList.slice(0, 6).map((item: any, idx: number) => (
+                                            specsList.slice(0, 6).map((item: { key: string; value: string }, idx: number) => (
                                                 <div key={idx} className="flex justify-between py-3 border-b border-trad-border-subtle last:border-0 text-sm">
                                                     <span className="text-trad-text-muted">{item.key}</span>
                                                     <span className="font-medium text-trad-text-main text-right break-words max-w-[50%]">{item.value}</span>
@@ -411,7 +407,7 @@ export default function TraditionalProductDetail({ product }: { product: any }) 
                                     </div>
                                     <div className="mt-8 bg-trad-bg-warm p-4 rounded-lg border border-trad-primary/20">
                                         <p className="text-sm text-trad-text-muted italic text-center">
-                                            "Hương trầm là cầu nối tâm linh, là nét đẹp văn hóa ngàn đời của người Việt."
+                                            &quot;Hương trầm là cầu nối tâm linh, là nét đẹp văn hóa ngàn đời của người Việt.&quot;
                                         </p>
                                     </div>
                                 </div>

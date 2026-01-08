@@ -5,8 +5,8 @@ import {
   ValidateNested,
   IsNumber,
   IsOptional,
-  IsPhoneNumber,
-  IsEnum,
+  // IsPhoneNumber,
+  // IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

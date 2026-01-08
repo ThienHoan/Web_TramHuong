@@ -2,12 +2,14 @@
 
 import React from 'react';
 
+import { Product } from '@/types/product';
+
 interface TraditionalProductStoryProps {
-    product: any;
+    product: Product;
 }
 
 export default function TraditionalProductStory({ product }: TraditionalProductStoryProps) {
-    const storyText = product.translation.story || product.translation.description;
+    const storyText = product.translation?.story || product.translation?.description;
 
     return (
         <div className="animate-fade-in relative">

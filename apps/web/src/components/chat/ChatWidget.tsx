@@ -44,7 +44,7 @@ export default function ChatWidget() {
     const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+
     const prevUserIdRef = useRef<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -184,6 +184,8 @@ export default function ChatWidget() {
             setMessages(trimmed);
             setStreamingContent('');
 
+            setStreamingContent('');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         } catch (error: any) {
             if (error.name === 'AbortError') {
                 // User cancelled - save partial content if any

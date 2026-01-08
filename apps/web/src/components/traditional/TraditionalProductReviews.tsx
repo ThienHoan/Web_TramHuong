@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getReviews, createReview, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Image from 'next/image';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Link } from '@/i18n/routing';
+import { Alert } from '@/components/ui/alert';
 
 interface Review {
     id: string;
@@ -38,7 +39,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback(async () => {
         try {
             if (session?.access_token) {
                 setAccessToken(session.access_token);
@@ -52,14 +53,14 @@ export default function TraditionalProductReviews({ productId }: { productId: st
         } finally {
             setLoading(false);
         }
-    };
+    }, [productId, session?.access_token]);
 
     useEffect(() => {
         if (session?.access_token) {
             setAccessToken(session.access_token);
         }
         fetchReviews();
-    }, [productId, session]);
+    }, [fetchReviews, session?.access_token]);
 
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,8 +76,8 @@ export default function TraditionalProductReviews({ productId }: { productId: st
             setShowForm(false);
             fetchReviews(); // Refresh list
             setTimeout(() => setSuccess(false), 3000);
-        } catch (err: any) {
-            const msg = err.message || '';
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
             if (msg.includes('already reviewed') || msg.includes('đã đánh giá')) {
                 setError('Bạn đã đánh giá sản phẩm này trước đó.');
             } else {
@@ -100,7 +101,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
     const formatDate = (dateString: string) => {
         try {
             return new Date(dateString).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
-        } catch (e) {
+        } catch {
             return dateString;
         }
     };
@@ -166,7 +167,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                     {!user ? (
                         <div className="text-center py-8">
                             <p className="mb-4 text-trad-text-main">Vui lòng đăng nhập để viết đánh giá.</p>
-                            <a href="/vi/login" className="inline-block text-trad-primary font-bold underline hover:text-trad-red-900">Đăng nhập ngay</a>
+                            <Link href="/login" className="inline-block text-trad-primary font-bold underline hover:text-trad-red-900">Đăng nhập ngay</Link>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmitReview}>

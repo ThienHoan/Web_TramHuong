@@ -13,12 +13,19 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Contact } from "@/types/contact";
+
+const StatusBadge = ({ status }: { status: string }) => {
+    if (status === 'new') return <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Mới</span>;
+    if (status === 'read') return <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Đã xem</span>;
+    return <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Đã trả lời</span>;
+};
 
 export default function AdminContactsPage() {
     const { data, error, isLoading, mutate } = useSWR('/contacts', () => getContacts());
-    const [selectedContact, setSelectedContact] = useState<any>(null);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-    const contacts = data?.data || [];
+    const contacts: Contact[] = data?.data || [];
     const meta = data?.meta;
 
     const handleMarkAsRead = async (id: string, currentStatus: string) => {
@@ -31,16 +38,12 @@ export default function AdminContactsPage() {
             if (selectedContact && selectedContact.id === id) {
                 setSelectedContact({ ...selectedContact, status: 'read' });
             }
-        } catch (e) {
+        } catch {
             toast.error('Lỗi khi cập nhật trạng thái');
         }
     };
 
-    const StatusBadge = ({ status }: { status: string }) => {
-        if (status === 'new') return <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Mới</span>;
-        if (status === 'read') return <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Đã xem</span>;
-        return <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Đã trả lời</span>;
-    };
+
 
     if (isLoading) return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
     if (error) return <div className="p-8 text-center text-red-500">Lỗi: {error.message || 'Không thể tải dữ liệu'}</div>;
@@ -74,7 +77,7 @@ export default function AdminContactsPage() {
                                 </td>
                             </tr>
                         ) : (
-                            contacts.map((contact: any) => (
+                            contacts.map((contact: Contact) => (
                                 <tr
                                     key={contact.id}
                                     className="bg-white border-b hover:bg-gray-50 cursor-pointer transition-colors"

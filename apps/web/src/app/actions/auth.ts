@@ -126,6 +126,7 @@ export async function updatePassword(password: string) {
         // Other errors
         console.error('[Server] Password update failed:', directError);
         return { success: false, error: directError.message };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     } catch (e: any) {
         console.error('[Server] Exception during password update:', e);
         return { success: false, error: e.message || 'Update failed' };

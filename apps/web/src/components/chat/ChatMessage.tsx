@@ -29,6 +29,7 @@ export default function ChatMessage({ role, content, isTyping }: ChatMessageProp
     };
 
     // 1. Extract JSON blocks if present
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const recommendations: any[] = [];
     let cleanContent = content;
 

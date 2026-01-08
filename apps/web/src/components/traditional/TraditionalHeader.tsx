@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useCart } from '@/components/providers/CartProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -12,7 +12,7 @@ import ZenSearchOverlay from '@/components/zen/ZenSearchOverlay';
 import TopBar from '@/components/layout/TopBar';
 
 export default function TraditionalHeader() {
-    const t = useTranslations('HomePage');
+    // const t = useTranslations('HomePage');
     const { items } = useCart();
     const { items: wishlistItems } = useWishlist();
     const { user, profile, role, signOut } = useAuth();

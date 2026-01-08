@@ -103,7 +103,7 @@ export default async function BlogListPage({
                             <h1 className="text-trad-text-main text-4xl lg:text-5xl font-black leading-tight tracking-[-0.02em] font-display">Thư Viện Hương Trầm</h1>
                             <div className="w-24 h-1 bg-trad-primary rounded-full mb-2"></div>
                             <p className="text-trad-text-muted text-lg lg:text-xl font-normal leading-relaxed max-w-2xl font-serif italic">
-                                "Nơi Câu Chuyện Khởi Nguồn - Khám phá những câu chuyện sâu sắc về văn hóa, sức khỏe và nghệ thuật thưởng trầm truyền thống."
+                                &quot;Nơi Câu Chuyện Khởi Nguồn - Khám phá những câu chuyện sâu sắc về văn hóa, sức khỏe và nghệ thuật thưởng trầm truyền thống.&quot;
                             </p>
                         </div>
                     </div>

@@ -9,6 +9,7 @@ interface Order {
     status: string;
     total: number;
     created_at: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     shipping_info?: any;
 }
 

@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Req,
   Res,
   HttpException,
   HttpStatus,
@@ -30,8 +29,11 @@ export class ChatController {
   @Post('message')
   @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute for chat
   async handleMessage(
-    @Body() body: { message: string; history?: any[] },
-    @Req() _req: Request,
+    @Body()
+    body: {
+      message: string;
+      history?: { role: string; content: string }[];
+    },
   ) {
     // Sanitize and validate message
     const message = sanitizeMessage(body.message);
@@ -43,7 +45,7 @@ export class ChatController {
     }
     if (message.length > MAX_MESSAGE_LENGTH) {
       throw new HttpException(
-        `Tin nhắn quá dài (tối đa ${MAX_MESSAGE_LENGTH} ký tự)`,
+        `Tin nhắn quá dài(tối đa ${MAX_MESSAGE_LENGTH} ký tự)`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -59,7 +61,11 @@ export class ChatController {
   @Post('stream')
   @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute for chat
   async handleStreamMessage(
-    @Body() body: { message: string; history?: any[] },
+    @Body()
+    body: {
+      message: string;
+      history?: { role: string; content: string }[];
+    },
     @Res() res: Response,
   ) {
     // Sanitize and validate message
@@ -72,7 +78,7 @@ export class ChatController {
     }
     if (message.length > MAX_MESSAGE_LENGTH) {
       throw new HttpException(
-        `Tin nhắn quá dài (tối đa ${MAX_MESSAGE_LENGTH} ký tự)`,
+        `Tin nhắn quá dài(tối đa ${MAX_MESSAGE_LENGTH} ký tự)`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -98,9 +104,9 @@ export class ChatController {
       for await (const chunk of streamGenerator) {
         res.write(chunk);
       }
-    } catch (_error) {
+    } catch {
       res.write(
-        `data: ${JSON.stringify({ type: 'error', content: 'Stream error' })}\n\n`,
+        `data: ${JSON.stringify({ type: 'error', content: 'Stream error' })} \n\n`,
       );
     } finally {
       res.end();

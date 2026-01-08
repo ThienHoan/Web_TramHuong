@@ -14,7 +14,9 @@ export default function AdminVouchersPage() {
     const router = useRouter();
 
     // State
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [vouchers, setVouchers] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: ADMIN_PAGE_LIMIT, last_page: 1 });
     const [loading, setLoading] = useState(true);
 
@@ -33,6 +35,7 @@ export default function AdminVouchersPage() {
         if (!session) return;
         setLoading(true);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
         const params: any = {
             page: page.toString(),
             limit: ADMIN_PAGE_LIMIT.toString(),
@@ -82,7 +85,7 @@ export default function AdminVouchersPage() {
         try {
             await deleteVoucher(id);
             fetchVouchersList(meta.page);
-        } catch (e) {
+        } catch {
             alert('Không thể xóa mã giảm giá.');
         }
     };
@@ -92,7 +95,7 @@ export default function AdminVouchersPage() {
             await updateVoucher(id, { is_active: !currentStatus });
             // Optimistic update
             setVouchers(prev => prev.map(v => v.id === id ? { ...v, is_active: !currentStatus } : v));
-        } catch (e) {
+        } catch {
             alert('Không thể cập nhật trạng thái.');
         }
     };

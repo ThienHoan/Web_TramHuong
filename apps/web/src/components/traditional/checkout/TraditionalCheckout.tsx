@@ -12,11 +12,19 @@ import ProductImage from '@/components/ui/ProductImage';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 
+interface GuestShippingInfo {
+    name: string;
+    phone: string;
+    full_address: string;
+    email?: string;
+    province: string;
+}
+
 type CheckoutMode = 'init' | 'guest_form' | 'user_checkout';
 
 export default function TraditionalCheckout() {
-    const { items, total, updateQuantity, removeItem, clearCart } = useCart();
-    const { user, session, loading: authLoading } = useAuth();
+    const { items, total, updateQuantity, removeItem } = useCart();
+    const { session, loading: authLoading } = useAuth();
     const { formatPrice } = useCurrency();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -78,8 +86,8 @@ export default function TraditionalCheckout() {
                 });
             }
             // Don't clear code so user sees it
-        } catch (err: any) {
-            setVoucherError(err.message || 'Mã không hợp lệ');
+        } catch (err: unknown) {
+            setVoucherError(err instanceof Error ? err.message : 'Mã không hợp lệ');
             setAppliedVoucher(null);
         } finally {
             setVerifyingVoucher(false);
@@ -133,10 +141,10 @@ export default function TraditionalCheckout() {
                     });
                     // Clear error if re-validation succeeds (e.g. they added enough items to meet min order)
                     setVoucherError('');
-                } catch (err: any) {
+                } catch (err: unknown) {
                     // If validation fails (e.g. total dropped below min), remove voucher
                     setAppliedVoucher(null);
-                    setVoucherError(err.message || 'Mã giảm giá không còn khả dụng');
+                    setVoucherError(err instanceof Error ? err.message : 'Mã giảm giá không còn khả dụng');
                 }
             }
         };
@@ -146,7 +154,8 @@ export default function TraditionalCheckout() {
         if (appliedVoucher) {
             revalidate();
         }
-    }, [total]); // Dependency on total. Note: appliedVoucher is usually stable unless changed. 
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Revalidate voucher only when cart total changes; ignoring appliedVoucher here to avoid setState loop from validateVoucher updating voucher meta.
+    }, [total]);
     // If we include appliedVoucher, we need to be careful of loops. 
     // We only want to trigger when Total changes. 
     // But if appliedVoucher changes, this runs too? 
@@ -192,14 +201,14 @@ export default function TraditionalCheckout() {
                 localStorage.removeItem('checkout_voucher_code');
             }
             router.push('/checkout/payment_select');
-        } catch (e: any) {
-            setError(e.message || 'Có lỗi xảy ra.');
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : 'Có lỗi xảy ra.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleGuestSubmit = (data: any) => {
+    const handleGuestSubmit = (data: GuestShippingInfo) => {
         setLoading(true);
         try {
             // Save to localStorage

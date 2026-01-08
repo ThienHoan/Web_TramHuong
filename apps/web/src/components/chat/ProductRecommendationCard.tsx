@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+
 import { Link } from '@/i18n/routing';
 import { useCurrency } from '@/hooks/useCurrency';
 

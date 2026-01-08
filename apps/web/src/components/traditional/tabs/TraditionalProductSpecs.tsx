@@ -2,24 +2,26 @@
 
 import React from 'react';
 
+import { Product } from '@/types/product';
+
 interface TraditionalProductSpecsProps {
-    product: any;
+    product: Product;
 }
 
 export default function TraditionalProductSpecs({ product }: TraditionalProductSpecsProps) {
     // Parse specs if it's a string, or use directly if object
     const specsData = React.useMemo(() => {
-        if (typeof product.translation.specifications === 'string') {
-            return product.translation.specifications.split('. ').map((s: string) => {
+        if (typeof product.translation?.specifications === 'string') {
+            return product.translation?.specifications.split('. ').map((s: string) => {
                 const [key, value] = s.split(':');
                 return { label: key?.trim() || 'Thông tin', value: value?.trim() || s };
             });
         }
-        return Object.entries(product.translation.specifications || {}).map(([key, value]) => ({
+        return Object.entries(product.translation?.specifications || {}).map(([key, value]) => ({
             label: key,
             value: String(value)
         }));
-    }, [product.translation.specifications]);
+    }, [product.translation?.specifications]);
 
     // Icon mapping helper
     const getIcon = (label: string) => {
@@ -43,7 +45,7 @@ export default function TraditionalProductSpecs({ product }: TraditionalProductS
 
             {/* Specs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {specsData.map((item: any, idx: number) => (
+                {specsData.map((item, idx: number) => (
                     <div key={idx} className="flex items-start gap-4 p-5 bg-white rounded-lg border border-trad-border-warm hover:border-trad-amber-600 transition-colors shadow-sm group">
                         <div className="shrink-0 w-12 h-12 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-amber-700 group-hover:bg-trad-primary group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined">{getIcon(item.label)}</span>
@@ -75,7 +77,7 @@ export default function TraditionalProductSpecs({ product }: TraditionalProductS
                     <span className="material-symbols-outlined text-trad-primary text-3xl">format_quote</span>
                 </span>
                 <p className="text-xl md:text-2xl font-serif italic text-trad-text-main opacity-80 mt-4">
-                    "Hương trầm là cầu nối tâm linh, là nét đẹp văn hóa ngàn đời của người Việt. Chúng tôi gìn giữ và lan tỏa giá trị ấy qua từng sản phẩm."
+                    &quot;Hương trầm là cầu nối tâm linh, là nét đẹp văn hóa ngàn đời của người Việt. Chúng tôi gìn giữ và lan tỏa giá trị ấy qua từng sản phẩm.&quot;
                 </p>
                 <div className="mt-4 font-bold text-trad-amber-700 font-display uppercase tracking-widest text-sm">— Trầm Hương Việt</div>
             </div>

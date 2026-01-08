@@ -6,13 +6,13 @@ import { useRouter } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { checkSession, updatePassword } from '@/app/actions/auth'; // Import server actions
 
 export default function VerifyPage() {
     const [loading, setLoading] = useState(true);
-    const [verified, setVerified] = useState(false);
+    const [, setVerified] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,12 +23,12 @@ export default function VerifyPage() {
 
     useEffect(() => {
         let mounted = true;
-        let safetyTimer: NodeJS.Timeout;
+        const safetyTimer: { current: NodeJS.Timeout | null } = { current: null };
 
         const handleSuccess = () => {
             if (mounted) {
                 console.log('[Verify] Verification successful, clearing timer.');
-                clearTimeout(safetyTimer);
+                if (safetyTimer.current) clearTimeout(safetyTimer.current);
                 setVerified(true);
                 setLoading(false);
             }
@@ -36,14 +36,14 @@ export default function VerifyPage() {
 
         const handleFailure = (msg: string) => {
             if (mounted) {
-                clearTimeout(safetyTimer); // Ensure timer doesn't fire later
+                if (safetyTimer.current) clearTimeout(safetyTimer.current); // Ensure timer doesn't fire later
                 setError(msg);
                 setLoading(false);
             }
         };
 
         // Safety timeout: Extended to 30s to allow for session propagation
-        safetyTimer = setTimeout(() => {
+        safetyTimer.current = setTimeout(() => {
             if (mounted) {
                 console.warn('[Verify] Safety timeout triggered after 30s');
                 // If this runs, it means success hasn't cancelled it yet
@@ -100,7 +100,7 @@ export default function VerifyPage() {
                             handleSuccess();
                             return;
                         }
-                    } catch (otpError: any) {
+                    } catch (otpError: unknown) {
                         console.error('[Verify] Exchange reported error:', otpError);
 
                         // Double check session one last time before failing
@@ -123,7 +123,6 @@ export default function VerifyPage() {
                 // Fallback: Check BOTH client and server session with retry polling
                 console.log('[Verify] Checking sessions with polling...');
 
-                let sessionConfirmed = false;
                 for (let attempt = 0; attempt < 10; attempt++) {
                     if (!mounted) break;
 
@@ -149,7 +148,6 @@ export default function VerifyPage() {
                     }
 
                     if (serverSuccess || clientSuccess) {
-                        sessionConfirmed = true;
                         handleSuccess();
                         return;
                     }
@@ -165,9 +163,9 @@ export default function VerifyPage() {
                 console.warn('[Verify] No session found after 10 attempts.');
                 handleFailure('Invalid or expired verification link');
 
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('[Verify] Verification error:', err);
-                handleFailure(err.message || 'Verification failed');
+                handleFailure(err instanceof Error ? err.message : 'Verification failed');
             }
         };
 
@@ -175,7 +173,7 @@ export default function VerifyPage() {
 
         return () => {
             mounted = false;
-            clearTimeout(safetyTimer);
+            if (safetyTimer.current) clearTimeout(safetyTimer.current);
         };
     }, []);
 
@@ -245,9 +243,9 @@ export default function VerifyPage() {
             // Success! Redirect to home
             console.log('[Verify] Success! Redirecting...');
             router.push('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[Verify] Error in handlePasswordCreation:', err);
-            setPasswordError(err.message || 'Failed to create password');
+            setPasswordError(err instanceof Error ? err.message : 'Failed to create password');
             setSubmitting(false);
         }
     };

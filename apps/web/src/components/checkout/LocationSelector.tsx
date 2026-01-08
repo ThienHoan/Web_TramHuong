@@ -113,7 +113,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
             }
         };
         init();
-    }, []); // Run once
+    }, [fetchDistricts, initialDistrict, initialProvince, initialWard]); // Run once or when initials change
 
     const handleProvinceChange = (code: number) => {
         const province = provinces.find(p => p.code === code) || null;

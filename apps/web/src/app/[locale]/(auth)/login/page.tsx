@@ -102,7 +102,7 @@ export default function LoginPage() {
                 }
             } else if (mode === 'SIGNUP') {
                 // SIGNUP mode - check if email already exists first
-                const { data: existingUser, error: checkError } = await supabase
+                const { data: existingUser } = await supabase
                     .from('users')
                     .select('email')
                     .eq('email', email.trim())
@@ -137,24 +137,25 @@ export default function LoginPage() {
                 // Show check email message
                 setShowCheckEmail(true);
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             // Improve error messages for better UX
-            let errorMessage = err.message;
+            const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+            let errorMessage = errorMsg;
 
             // Map common Supabase auth errors to Vietnamese-friendly messages
-            if (err.message === 'EMAIL_ALREADY_EXISTS') {
+            if (errorMsg === 'EMAIL_ALREADY_EXISTS') {
                 errorMessage = 'EMAIL_EXISTS';
-            } else if (err.message?.includes('Invalid login credentials')) {
+            } else if (errorMsg.includes('Invalid login credentials')) {
                 errorMessage = 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
-            } else if (err.message?.includes('Email not confirmed')) {
+            } else if (errorMsg.includes('Email not confirmed')) {
                 errorMessage = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.';
-            } else if (err.message?.includes('User not found') || err.message?.includes('No user found')) {
+            } else if (errorMsg.includes('User not found') || errorMsg.includes('No user found')) {
                 errorMessage = 'Không tìm thấy tài khoản với email này.';
-            } else if (err.message?.includes('Invalid email')) {
+            } else if (errorMsg.includes('Invalid email')) {
                 errorMessage = 'Email không hợp lệ. Vui lòng kiểm tra lại.';
-            } else if (err.message?.includes('Password should be')) {
+            } else if (errorMsg.includes('Password should be')) {
                 errorMessage = 'Mật khẩu phải có ít nhất 8 ký tự.';
-            } else if (err.message?.includes('Too many requests')) {
+            } else if (errorMsg.includes('Too many requests')) {
                 errorMessage = 'Quá nhiều lần thử. Vui lòng đợi một lúc rồi thử lại.';
             }
 

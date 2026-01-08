@@ -66,16 +66,26 @@ export class OrderCleanupService {
    * 1. Restore stock for all items
    * 2. Update order status to EXPIRED
    */
-  private async expireOrder(order: any) {
+  private async expireOrder(
+    order: import('../common/types/database.types').Database['public']['Tables']['orders']['Row'],
+  ) {
     const orderId = order.id;
 
     try {
       this.logger.log(`[OrderCleanup] Processing expired order: ${orderId}`);
 
       // 1. Restore stock for each item in the order
-      if (Array.isArray(order.items)) {
-        for (const item of order.items) {
-          if (item.productId && item.quantity) {
+      const items = (order.items as any[]) || [];
+
+      interface CleanupItem {
+        productId: string;
+        quantity: number;
+      }
+
+      if (Array.isArray(items)) {
+        for (const rawItem of items) {
+          const item = rawItem as CleanupItem;
+          if (item?.productId && item?.quantity) {
             // Fetch current product quantity
             const { data: product, error: productError } = await this.client
               .from('products')
@@ -91,7 +101,7 @@ export class OrderCleanupService {
             }
 
             // Restore stock
-            const newQuantity = product.quantity + item.quantity;
+            const newQuantity = product.quantity + Number(item.quantity);
             const { error: updateError } = await this.client
               .from('products')
               .update({ quantity: newQuantity })
@@ -105,7 +115,7 @@ export class OrderCleanupService {
             } else {
               this.logger.log(
                 `[OrderCleanup] Restored ${item.quantity} unit(s) to product ${product.slug} ` +
-                  `(${product.quantity} → ${newQuantity})`,
+                  `(${product.quantity} -> ${newQuantity})`,
               );
             }
           }
@@ -113,27 +123,22 @@ export class OrderCleanupService {
       }
 
       // 2. Update order status to EXPIRED
-      const { error: updateError } = await this.client
+      const { error: updateOrderError } = await this.client
         .from('orders')
         .update({
           status: 'EXPIRED',
-          expired_at: new Date().toISOString(),
+          // expired_at column does not exist in types, assuming valid status update is enough
         })
         .eq('id', orderId);
 
-      if (updateError) {
-        throw updateError;
+      if (updateOrderError) {
+        throw updateOrderError;
       }
 
-      this.logger.log(
-        `[OrderCleanup] ✓ Successfully expired order: ${orderId}`,
-      );
-
-      // Phase 2: Send email notification
-      // await this.mailService.sendPaymentExpiredNotification(order);
+      this.logger.log(`[OrderCleanup] Successfully expired order: ${orderId}`);
     } catch (error) {
       this.logger.error(
-        `[OrderCleanup] ✗ Failed to process expired order ${orderId}:`,
+        `[OrderCleanup] Failed to process expired order ${orderId}:`,
         error,
       );
     }

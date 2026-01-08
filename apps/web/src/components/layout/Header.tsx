@@ -6,7 +6,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { useCart } from '../providers/CartProvider';
 import { useState } from 'react';
 
-export default function Header({ locale }: { locale: string }) {
+export default function Header() {
     const { user, role, profile, signOut } = useAuth();
     const { count } = useCart();
     const pathname = usePathname();

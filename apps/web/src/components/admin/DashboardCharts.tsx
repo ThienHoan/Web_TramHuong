@@ -8,6 +8,7 @@ import { useCurrency } from '../../hooks/useCurrency';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
 export default function DashboardCharts({ data }: { data: any }) {
     const { formatPrice } = useCurrency();
 
@@ -60,6 +61,7 @@ export default function DashboardCharts({ data }: { data: any }) {
                                 paddingAngle={5}
                                 dataKey="value"
                             >
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type */}
                                 {data.statusChart.map((entry: any, index: number) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}

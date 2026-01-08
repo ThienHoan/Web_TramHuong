@@ -31,8 +31,9 @@ export default function TraditionalOrderLookup() {
             const data = await lookupOrder(orderCode, emailOrPhone);
             setResult(data);
             setShowModal(true);
-        } catch (err: any) {
-            setError(err.message || 'Không tìm thấy đơn hàng. Vui lòng kiểm tra lại thông tin.');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Không tìm thấy đơn hàng. Vui lòng kiểm tra lại thông tin.';
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -226,7 +227,7 @@ export default function TraditionalOrderLookup() {
                             <div className="relative z-10 px-6 py-6 md:px-8 border-b border-[#e7cfd0]/50 flex justify-between items-start bg-white/40">
                                 <div>
                                     <h3 className="text-2xl md:text-3xl font-black text-[#b45309] font-serif tracking-tight">Hành Trình Hương Trầm</h3>
-                                    <p className="mt-1 text-[#5c3a3c] text-sm font-medium italic">"Mỗi đơn hàng là một duyên lành"</p>
+                                    <p className="mt-1 text-[#5c3a3c] text-sm font-medium italic">&quot;Mỗi đơn hàng là một duyên lành&quot;</p>
                                 </div>
                                 <button
                                     onClick={() => setShowModal(false)}
@@ -261,7 +262,7 @@ export default function TraditionalOrderLookup() {
                                         Vật Phẩm
                                     </h5>
                                     <div className="space-y-3">
-                                        {result.items.map((item: any, idx: number) => (
+                                        {result.items.map((item, idx) => (
                                             <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-[#e7cfd0]/60 shadow-sm hover:shadow-md transition-shadow">
                                                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-[#e7cfd0]/30 bg-[#f9f5f5] flex items-center justify-center text-[#e7cfd0]">
                                                     {item.image ? (
@@ -309,14 +310,14 @@ export default function TraditionalOrderLookup() {
                                                 {/* Price Breakdown */}
                                                 {(() => {
                                                     // Calculate subtotal from items (original prices * quantity)
-                                                    const subtotal = result.items?.reduce((sum: number, item: any) => {
-                                                        const price = Number(item.original_price || item.price || 0);
+                                                    const subtotal = result.items?.reduce((sum, item) => {
+                                                        const price = Number((item as { original_price?: number | string }).original_price || item.price || 0);
                                                         return sum + (price * Number(item.quantity || 1));
                                                     }, 0) || 0;
 
                                                     // Calculate product discount savings
-                                                    const productDiscount = result.items?.reduce((sum: number, item: any) => {
-                                                        const discountAmount = Number(item.discount_amount || 0);
+                                                    const productDiscount = result.items?.reduce((sum, item) => {
+                                                        const discountAmount = Number((item as { discount_amount?: number | string }).discount_amount || 0);
                                                         return sum + (discountAmount * Number(item.quantity || 1));
                                                     }, 0) || 0;
 

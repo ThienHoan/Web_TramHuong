@@ -57,9 +57,11 @@ export default function NewVoucherPage() {
                 max_discount_amount: formData.discount_type === 'PERCENTAGE' ? formData.max_discount_amount : undefined // Send only if percentage? Or backend handles? Backend allows null.
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
             await createVoucher(payload as any);
             toast.success('Tạo mã giảm giá thành công!');
             router.push('/admin/vouchers');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         } catch (error: any) {
             console.error(error);
             toast.error(error.message || 'Có lỗi xảy ra khi tạo mã.');

@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import { Database } from '../common/types/database.types';
 
 @Injectable()
 export class StorageService {
-  private supabase: SupabaseClient;
+  private supabase: SupabaseClient<Database>;
   private readonly BUCKET_NAME = 'product-images';
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   private readonly ALLOWED_TYPES = [
@@ -29,7 +30,7 @@ export class StorageService {
       throw new Error('Supabase credentials not configured');
     }
 
-    this.supabase = createClient(supabaseUrl, serviceRoleKey, {
+    this.supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,

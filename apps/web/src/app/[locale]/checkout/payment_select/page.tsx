@@ -13,7 +13,7 @@ import { ProcessingOrderOverlay } from '@/components/ui/ProcessingOrderOverlay';
 
 export default function PaymentSelectPage() {
     const { items, total, clearCart } = useCart();
-    const { user, session } = useAuth();
+    const { session } = useAuth();
     const { formatPrice } = useCurrency();
     const [loading, setLoading] = useState(false);
     const router = useRouter();

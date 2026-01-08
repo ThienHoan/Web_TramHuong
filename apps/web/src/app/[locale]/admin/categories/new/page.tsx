@@ -47,8 +47,8 @@ export default function NewCategoryPage() {
 
             router.push('/admin/categories');
             router.refresh();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : 'An error occurred');
         } finally {
             setSubmitting(false);
         }

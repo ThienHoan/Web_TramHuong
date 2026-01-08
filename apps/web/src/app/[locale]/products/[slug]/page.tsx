@@ -1,7 +1,7 @@
 import { getProduct, getProducts } from '@/lib/api-client';
 import ZenProductDetail from '@/components/zen/ZenProductDetail';
 import TraditionalProductDetail from '@/components/traditional/TraditionalProductDetail';
-import ReviewsSection from '@/components/reviews/ReviewsSection';
+// import ReviewsSection from '@/components/reviews/ReviewsSection';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -46,6 +46,7 @@ export default async function ProductPage({
     }
 
     // Fetch related products for Zen layout (Other Treasures)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     let relatedProducts: any[] = [];
 
     // Try fetching by category first

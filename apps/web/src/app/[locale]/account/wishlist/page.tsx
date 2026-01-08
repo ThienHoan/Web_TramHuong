@@ -11,18 +11,29 @@ import { useCurrency } from '@/hooks/useCurrency';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { motion } from 'framer-motion';
+import { Product } from '@/types/product';
+
+interface WishlistItem {
+    id: string;
+    product_id: string;
+    product_title: string;
+    created_at: string;
+    product?: Product;
+}
 
 export default function WishlistPage() {
     const { session, loading: authLoading } = useAuth();
     const { items: likedItems } = useWishlist();
-    const [wishlistProducts, setWishlistProducts] = useState<any[]>([]);
-    const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
+    const [wishlistProducts, setWishlistProducts] = useState<WishlistItem[]>([]);
+    const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const { formatPrice } = useCurrency();
 
     useEffect(() => {
-        if (!session && !authLoading) {
-            setLoading(false);
+        // Handle unauthenticated state without synchronous setState
+        if (!authLoading && !session) {
+            // Set loading to false in a callback to avoid synchronous setState
+            Promise.resolve().then(() => setLoading(false));
             return;
         }
 
@@ -36,10 +47,9 @@ export default function WishlistPage() {
                     const wishlist = Array.isArray(wishlistData) ? wishlistData : [];
                     setWishlistProducts(wishlist);
 
-                    // Filter suggestions: Exclude items already in wishlist
-                    const wishlistIds = new Set(wishlist.map((item: any) => item.product_id));
-                    const filteredSuggestions = productsData
-                        .filter((p: any) => !wishlistIds.has(p.id))
+                    const wishlistIds = new Set(wishlist.map((item: WishlistItem) => item.product_id));
+                    const filteredSuggestions = (productsData as Product[])
+                        .filter((p: Product) => !wishlistIds.has(p.id))
                         .slice(0, 3); // Take top 3
 
                     setSuggestedProducts(filteredSuggestions);
@@ -80,7 +90,7 @@ export default function WishlistPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold text-trad-red-900 mb-2 font-display">Đăng nhập để lưu giữ</h1>
-                            <p className="text-trad-text-muted text-lg font-serif italic">"Để những món quà tinh thần không bị lãng quên."</p>
+                            <p className="text-trad-text-muted text-lg font-serif italic">&quot;Để những món quà tinh thần không bị lãng quên.&quot;</p>
                         </div>
                         <Link href="/login?redirect=/account/wishlist" className="inline-flex items-center justify-center bg-trad-primary hover:bg-trad-red-900 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
                             Đăng nhập ngay
@@ -120,7 +130,8 @@ export default function WishlistPage() {
                                 <div className="h-px w-12 bg-current"></div>
                             </div>
                             <p className="font-serif text-lg md:text-xl text-trad-text-muted max-w-2xl mx-auto leading-relaxed italic">
-                                "Nơi cất giữ những rung động đầu tiên,<br className="hidden md:block" /> chờ ngày hữu duyên được sở hữu."
+                                &quot;Nơi cất giữ những rung động đầu tiên,<br className="hidden md:block" />
+                                chờ ngày hữu duyên được sở hữu.&quot;
                             </p>
                         </motion.div>
                     </div>
@@ -220,7 +231,7 @@ export default function WishlistPage() {
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="text-center mb-12">
                             <h3 className="font-serif text-3xl text-trad-red-900 mb-3">Gợi ý dành riêng cho bạn</h3>
-                            <p className="text-trad-text-muted italic">"Những tuyệt phẩm có thể bạn sẽ thích"</p>
+                            <p className="text-trad-text-muted italic">&quot;Những tuyệt phẩm có thể bạn sẽ thích&quot;</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -229,7 +240,7 @@ export default function WishlistPage() {
                                     <div className="relative aspect-square overflow-hidden rounded-full border border-trad-border-warm mx-auto w-4/5 md:w-full mb-6 bg-trad-bg-warm">
                                         <ProductImage
                                             src={product.images?.[0]}
-                                            alt={product.name}
+                                            alt={product.title || product.translation?.title || 'Product'}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10" />
@@ -247,7 +258,7 @@ export default function WishlistPage() {
                                     </div>
                                     <div className="text-center">
                                         <h4 className="font-display font-bold text-lg text-trad-text-main mb-1 group-hover:text-trad-primary transition-colors">
-                                            <Link href={`/products/${product.slug}`}>{product.name}</Link>
+                                            <Link href={`/products/${product.slug}`}>{product.title || product.translation?.title || 'Product'}</Link>
                                         </h4>
                                         <p className="font-serif text-trad-red-900">{formatPrice(product.price)}</p>
                                     </div>

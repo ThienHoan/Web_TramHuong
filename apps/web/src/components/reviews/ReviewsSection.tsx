@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getReviews, setAccessToken } from '@/lib/api-client';
 import ReviewStats from './ReviewStats';
 import ReviewList from './ReviewList';
@@ -8,7 +8,9 @@ import ReviewForm from './ReviewForm';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function ReviewsSection({ productId }: { productId: string }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [reviews, setReviews] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [meta, setMeta] = useState<any>({ total: 0, average: 0, distribution: {} });
     const [loading, setLoading] = useState(true);
     const { session } = useAuth();
@@ -19,7 +21,7 @@ export default function ReviewsSection({ productId }: { productId: string }) {
         }
     }, [session]);
 
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback(async () => {
         try {
             const res = await getReviews(productId);
             // Ensure data is array and cast to any to satisfy the state type
@@ -32,11 +34,11 @@ export default function ReviewsSection({ productId }: { productId: string }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [productId]);
 
     useEffect(() => {
         fetchReviews();
-    }, [productId]);
+    }, [productId, fetchReviews]);
 
     if (loading && reviews.length === 0) return <div className="py-8 text-center text-gray-400">Loading reviews...</div>;
 

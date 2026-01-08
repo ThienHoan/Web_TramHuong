@@ -86,8 +86,10 @@ function Alert({
   const isSmall = size === 'sm';
   // Safe fallback
   const currentVariant = variant || "default";
-  // @ts-ignore
-  let { icon, title: defaultTitle, iconWrapper, iconColor, bloom, bar, blob, titleDecoration } = config[currentVariant] || config.default;
+
+  const configParams = config[currentVariant] || config.default;
+  const { icon, title: defaultTitle, iconWrapper, iconColor, bar, titleDecoration } = configParams;
+  let { bloom, blob } = configParams;
   const displayTitle = title || defaultTitle;
 
   // Minimal tweaks

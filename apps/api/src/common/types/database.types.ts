@@ -24,7 +24,7 @@ export type Database = {
           is_active: boolean;
           is_featured: boolean;
           featured_section: string | null;
-          variants: any | null;
+          variants: Json | null;
           discount_percentage: number;
           discount_start_date: string | null;
           discount_end_date: string | null;
@@ -43,7 +43,7 @@ export type Database = {
           is_active?: boolean;
           is_featured?: boolean;
           featured_section?: string | null;
-          variants?: any | null;
+          variants?: Json | null;
           discount_percentage?: number;
           discount_start_date?: string | null;
           discount_end_date?: string | null;
@@ -62,7 +62,7 @@ export type Database = {
           is_active?: boolean;
           is_featured?: boolean;
           featured_section?: string | null;
-          variants?: any | null;
+          variants?: Json | null;
           discount_percentage?: number;
           discount_start_date?: string | null;
           discount_end_date?: string | null;
@@ -180,8 +180,8 @@ export type Database = {
           payment_method: string;
           total: number;
           user_id: string | null;
-          shipping_info: any | null;
-          items: any | null;
+          shipping_info: Json | null;
+          items: Json | null;
           payment_deadline: string | null;
           tracking_code: string | null;
           voucher_code: string | null;
@@ -195,8 +195,8 @@ export type Database = {
           payment_method: string;
           total: number;
           user_id?: string | null;
-          shipping_info?: any | null;
-          items: any | null;
+          shipping_info?: Json | null;
+          items: Json | null;
           payment_deadline?: string | null;
           tracking_code?: string | null;
           voucher_code?: string | null;
@@ -210,8 +210,8 @@ export type Database = {
           payment_method?: string;
           total?: number;
           user_id?: string | null;
-          shipping_info?: any | null;
-          items?: any | null;
+          shipping_info?: Json | null;
+          items?: Json | null;
           payment_deadline?: string | null;
           tracking_code?: string | null;
           voucher_code?: string | null;
@@ -488,6 +488,12 @@ export type Database = {
           discount_amount: number;
           created_at: string;
           is_active: boolean;
+          description: string | null;
+          discount_type: string;
+          min_order_value: number;
+          max_discount_amount: number | null;
+          start_date: string;
+          end_date: string;
         };
         Insert: {
           id?: string;
@@ -497,6 +503,12 @@ export type Database = {
           discount_amount: number;
           created_at?: string;
           is_active?: boolean;
+          description?: string | null;
+          discount_type?: string;
+          min_order_value?: number;
+          max_discount_amount?: number | null;
+          start_date?: string;
+          end_date?: string;
         };
         Update: {
           id?: string;
@@ -506,6 +518,12 @@ export type Database = {
           discount_amount?: number;
           created_at?: string;
           is_active?: boolean;
+          description?: string | null;
+          discount_type?: string;
+          min_order_value?: number;
+          max_discount_amount?: number | null;
+          start_date?: string;
+          end_date?: string;
         };
         Relationships: [];
       };

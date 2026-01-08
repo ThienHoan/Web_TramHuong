@@ -168,7 +168,7 @@ QUY TẮC TƯ VẤN:
       });
 
       const result = await chat.sendMessage(userMessage);
-      const response = await result.response;
+      const response = result.response;
       const text = response.text();
 
       // Log finish reason for monitoring truncation
@@ -176,7 +176,10 @@ QUY TẮC TƯ VẤN:
       const promptTokens = response.usageMetadata?.promptTokenCount || 0;
       const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
 
-      if (finishReason === 'MAX_TOKENS') {
+      if (
+        finishReason &&
+        (finishReason as unknown as string) === 'MAX_TOKENS'
+      ) {
         this.logger.warn(
           `⚠️ Response truncated! Finish: ${finishReason}, Prompt: ${promptTokens}, Output: ${outputTokens}`,
         );
@@ -279,7 +282,10 @@ QUY TẮC TƯ VẤN:
       );
 
       // Send warning if truncated
-      if (finishReason === 'MAX_TOKENS') {
+      if (
+        finishReason &&
+        (finishReason as unknown as string) === 'MAX_TOKENS'
+      ) {
         this.logger.warn(`⚠️ Stream truncated!`);
         yield `data: ${JSON.stringify({ type: 'warning', content: 'Câu trả lời có thể bị rút gọn do giới hạn độ dài.' })}\n\n`;
       }

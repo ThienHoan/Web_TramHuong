@@ -41,4 +41,4 @@ async function bootstrap() {
   const logger = app.get(Logger);
   logger.log(`Application is running on: http://localhost:${port}`);
 }
-bootstrap();
+void bootstrap();

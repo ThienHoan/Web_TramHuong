@@ -28,7 +28,15 @@ export class CartController {
   @UseGuards(AuthGuard)
   async mergeCart(
     @Req() req: Request & { user: { id: string } },
-    @Body() body: { items: any[] },
+    @Body()
+    body: {
+      items: {
+        id: string;
+        quantity: number;
+        variantId?: string;
+        variantName?: string;
+      }[];
+    },
   ) {
     return this.cartService.mergeCart(req.user.id, body.items);
   }

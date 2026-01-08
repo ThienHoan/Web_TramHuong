@@ -59,7 +59,7 @@ export default function TraditionalNotFound() {
                                 Đừng lo, những tinh hoa vẫn đang chờ bạn khám phá. Hãy để hương thơm dẫn lối bạn về lại chốn an yên.
                             </p>
                             <p className="text-sm text-trad-text-muted italic">
-                                "Con đường hương thơm tạm thời không tìm thấy..."
+                                &quot;Con đường hương thơm tạm thời không tìm thấy...&quot;
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">

@@ -6,7 +6,7 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import { NetworkStatusProvider } from '@/components/providers/NetworkStatusProvider';
-import Header from '@/components/layout/Header';
+// import Header from '@/components/layout/Header';
 import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
 import SmoothScroll from '@/components/ui/SmoothScroll';

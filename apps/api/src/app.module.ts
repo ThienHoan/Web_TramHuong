@@ -52,7 +52,7 @@ import { ChatModule } from './chat/chat.module';
           return 'info';
         },
         // Capture client IP
-        customProps: (req, _res) => ({
+        customProps: (req) => ({
           ip: req.headers['x-forwarded-for'] || req.socket?.remoteAddress,
         }),
       },

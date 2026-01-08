@@ -10,49 +10,69 @@ import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { motion } from 'framer-motion';
 
-// Custom colors from Order_test.tsx
-const COLORS = {
-    primary: '#9A3412',
-    primaryHover: '#7C2D12',
-    bgEarth: '#E7E5DE',
-    bgPaper: '#F5F2EA',
-    bgDark: '#1C1917',
-    surfaceLight: '#FFFFFF',
-    surfaceDark: '#292524',
-    accentGold: '#B45309',
-    storyLine: '#A8A29E',
-};
+interface OrderItem {
+    title?: string;
+    product?: {
+        title?: string;
+        images?: string[];
+    };
+    image?: string;
+    price: number;
+    quantity: number;
+}
+
+interface Order {
+    id: string;
+    status: string;
+    created_at: string;
+    total_amount?: number;
+    total?: number;
+    items?: OrderItem[];
+}
+
+interface PaginationMeta {
+    total: number;
+    page: number;
+    limit: number;
+    last_page: number;
+}
 
 export default function MyOrdersPage() {
     const { session, user, loading: authLoading } = useAuth();
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
     const [page, setPage] = useState(1);
-    const [meta, setMeta] = useState<any>({ total: 0, page: 1, limit: 10, last_page: 1 });
+    const [meta, setMeta] = useState<PaginationMeta>({ total: 0, page: 1, limit: 10, last_page: 1 });
     const router = useRouter();
     const { formatPrice } = useCurrency();
 
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (authLoading) return;
+
+        if (!user) {
             router.push('/login');
-        } else if (session) {
-            setAccessToken(session.access_token);
-            setLoading(true);
-            getMyOrders(page).then(response => {
-                // response is now { data: [], meta: {} }
-                const data = response.data || [];
-                // Sort orders by date descending (though backend already sorts, safe to keep or rely on backend)
-                // Backend sends them sorted by created_at desc, so no need to resort if we trust backend.
-                // But let's keep it if we want to be sure locally? 
-                // Actually, resorting a paginated chunk might look weird if not fully sorted. 
-                // Let's rely on backend sort order.
-                setOrders(data);
-                if (response.meta) setMeta(response.meta);
-                setLoading(false);
-            });
+            return;
         }
-    }, [user, session, authLoading, router, page]);
+
+        if (!session) return;
+
+        // Set access token and then fetch orders (don't call setLoading(true) synchronously)
+        setAccessToken(session.access_token);
+
+        // Use a flag to track if this is the first render to avoid duplicate loading state
+        const shouldSetLoading = orders.length === 0 || page > 1;
+        if (!shouldSetLoading) {
+            // If we already have orders, just fetch without resetting loading
+        }
+
+        getMyOrders(page).then(response => {
+            const data = response.data || [];
+            setOrders(data);
+            if (response.meta) setMeta(response.meta as PaginationMeta);
+            setLoading(false);
+        });
+    }, [user, session, authLoading, router, page, orders.length]);
 
     const filteredOrders = orders.filter(order => {
         if (filter === 'ALL') return true;

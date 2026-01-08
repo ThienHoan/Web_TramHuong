@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     const fetchProfile = async (userId: string) => {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('users')
             .select('id, role, full_name, avatar_url, email')
             .eq('id', userId)

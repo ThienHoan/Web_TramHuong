@@ -13,7 +13,7 @@ export default function AdminBlogPage() {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const res = await getPosts({ limit: 100, status: 'all' as any }); // Need to update API types to allow fetching all status
+            const res = await getPosts({ limit: 100, status: 'all' }); // Fetch all statuses
             setPosts(res.data || []);
         } catch (error) {
             console.error(error);
@@ -33,7 +33,7 @@ export default function AdminBlogPage() {
             await deletePost(id);
             toast.success('Post deleted successfully');
             fetchPosts();
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete post');
         }
     };
@@ -76,8 +76,8 @@ export default function AdminBlogPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${post.status === 'published'
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-yellow-100 text-yellow-700'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {post.status}
                                         </span>

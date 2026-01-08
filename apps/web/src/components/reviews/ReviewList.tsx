@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface ReviewListProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     reviews: any[];
 }
 
@@ -18,7 +20,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                             {/* Avatar */}
                             <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-bold overflow-hidden">
                                 {review.user?.avatar_url ? (
-                                    <img src={review.user.avatar_url} alt={review.user.full_name} className="w-full h-full object-cover" />
+                                    <Image src={review.user.avatar_url} alt={review.user.full_name} width={40} height={40} className="w-full h-full object-cover" />
                                 ) : (
                                     (review.user?.full_name || 'U')[0].toUpperCase()
                                 )}

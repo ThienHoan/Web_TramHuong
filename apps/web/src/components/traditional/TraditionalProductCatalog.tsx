@@ -1,20 +1,12 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
-import ProductImage from '../ui/ProductImage';
-import { ProductPrice } from '@/components/ui/ProductPrice';
-import { useCurrency } from '@/hooks/useCurrency';
-import { useProductDiscount } from '@/hooks/useProductDiscount';
-import { useCart } from '@/components/providers/CartProvider';
-import { useWishlist } from '@/components/providers/WishlistProvider';
 import { useState, useEffect } from 'react';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
 import { getCategories } from '@/lib/api-client';
-import { toast } from 'sonner';
-import { Alert } from '@/components/ui/alert';
 import {
     Sheet,
     SheetContent,
@@ -23,16 +15,16 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { Product, Category } from '@/types/product';
+import TraditionalProductGridItem from '@/components/traditional/TraditionalProductGridItem';
+import TraditionalProductFilter from './TraditionalProductFilter';
 
 interface TraditionalProductCatalogProps {
-    products: any[];
+    products: Product[];
 }
 
 export default function TraditionalProductCatalog({ products }: TraditionalProductCatalogProps) {
     const locale = useLocale();
-    const { formatPrice } = useCurrency();
-    const { addItem } = useCart();
-    const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -44,38 +36,17 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
     const maxPriceParam = searchParams.get('max_price') || '';
 
     // Local State for UI
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [priceInputs, setPriceInputs] = useState({ min: minPriceParam, max: maxPriceParam });
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // Sync local input with URL param if it changes externally
     useEffect(() => {
-        setPriceInputs({ min: minPriceParam, max: maxPriceParam });
+        if (minPriceParam !== priceInputs.min || maxPriceParam !== priceInputs.max) {
+            setPriceInputs({ min: minPriceParam, max: maxPriceParam });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: syncing local state with URL params, avoiding infinite loop
     }, [minPriceParam, maxPriceParam]);
-
-    const handleAddToCart = (product: any, finalPrice: number, originalPrice: number, discountAmount: number) => {
-        addItem({
-            id: product.id,
-            slug: product.slug,
-            title: product.translation.title,
-            price: finalPrice,  // ✅ Already receiving finalPrice from caller
-            original_price: originalPrice,  // For discount display in checkout
-            discount_amount: discountAmount,  // For discount display in checkout
-            image: product.images?.[0] || 'placeholder',
-            quantity: 1
-        });
-        toast.custom((t) => (
-            <Alert
-                variant="success"
-                size="sm"
-                title="Thành Công"
-                className="w-[300px] bg-white border-none shadow-xl"
-                onClose={() => toast.dismiss(t)}
-            >
-                Đã thêm sản phẩm vào giỏ hàng!
-            </Alert>
-        ));
-    };
 
     const updateFilters = (newParams: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -118,74 +89,7 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
         fetchCats();
     }, [locale]);
 
-    // Reusable Filter Content
-    const FilterContent = ({ prefix, isMobile = false }: { prefix: string, isMobile?: boolean }) => (
-        <div className={`space-y-8 ${isMobile ? 'pb-20' : ''}`}>
-            {/* Categories */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-bold text-trad-text-main font-display border-b border-trad-border-warm pb-2">Danh mục</h3>
-                <div className="space-y-3">
-                    <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(null)}>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === null ? 'border-trad-primary bg-trad-primary' : 'border-trad-text-muted group-hover:border-trad-primary'}`}>
-                            {selectedCategory === null && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
-                        </div>
-                        <label className="text-sm font-medium leading-none cursor-pointer text-trad-text-main group-hover:text-trad-primary transition-colors">Tất cả</label>
-                    </div>
-                    {categories.map((cat) => (
-                        <div key={cat.id} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(String(cat.id))}>
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === String(cat.id) ? 'border-trad-primary bg-trad-primary' : 'border-trad-text-muted group-hover:border-trad-primary'}`}>
-                                {selectedCategory === String(cat.id) && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
-                            </div>
-                            <label className="text-sm font-medium leading-none cursor-pointer text-trad-text-main group-hover:text-trad-primary transition-colors">
-                                {cat.translation?.name || cat.name}
-                            </label>
-                        </div>
-                    ))}
-                </div>
-            </div>
 
-            {/* Price Range */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-bold text-trad-text-main font-display border-b border-trad-border-warm pb-2">Khoảng giá</h3>
-                <div className="pt-2">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="grid w-full gap-2">
-                            <label htmlFor={`${prefix}-min-price`} className="text-xs font-semibold text-trad-text-muted uppercase">Từ (đ)</label>
-                            <input
-                                id={`${prefix}-min-price`}
-                                className="flex h-10 w-full rounded-lg border border-trad-border-warm bg-white px-3 py-2 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:border-trad-primary focus-visible:ring-1 focus-visible:ring-trad-primary"
-                                placeholder="0"
-                                type="number"
-                                value={priceInputs.min}
-                                onChange={(e) => setPriceInputs(prev => ({ ...prev, min: e.target.value }))}
-                            />
-                        </div>
-                        <div className="grid w-full gap-2">
-                            <label htmlFor={`${prefix}-max-price`} className="text-xs font-semibold text-trad-text-muted uppercase">Đến (đ)</label>
-                            <input
-                                id={`${prefix}-max-price`}
-                                className="flex h-10 w-full rounded-lg border border-trad-border-warm bg-white px-3 py-2 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:border-trad-primary focus-visible:ring-1 focus-visible:ring-trad-primary"
-                                placeholder="Tối đa"
-                                type="number"
-                                value={priceInputs.max}
-                                onChange={(e) => setPriceInputs(prev => ({ ...prev, max: e.target.value }))}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Apply Button */}
-            <div className={isMobile ? "absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-trad-border-warm" : "mt-2"}>
-                <button
-                    onClick={handleApplyPriceFilter}
-                    className={`w-full inline-flex items-center justify-center rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 bg-trad-primary text-white shadow hover:bg-trad-primary-dark active:scale-[0.98] uppercase tracking-wide ${isMobile ? 'h-12 px-6' : 'h-10 px-4 py-2'}`}
-                >
-                    Áp dụng
-                </button>
-            </div>
-        </div>
-    );
 
     return (
         <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col bg-pattern-lotus selection:bg-trad-primary selection:text-white">
@@ -222,7 +126,16 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                                         Tìm kiếm sản phẩm phù hợp với nhu cầu của bạn
                                     </SheetDescription>
                                 </SheetHeader>
-                                <FilterContent prefix="mobile" isMobile={true} />
+                                <TraditionalProductFilter
+                                    prefix="mobile"
+                                    isMobile={true}
+                                    categories={categories}
+                                    selectedCategory={selectedCategory}
+                                    priceInputs={priceInputs}
+                                    setPriceInputs={setPriceInputs}
+                                    onCategoryChange={handleCategoryChange}
+                                    onApplyPriceFilter={handleApplyPriceFilter}
+                                />
                             </SheetContent>
                         </Sheet>
 
@@ -246,7 +159,7 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                                         : 'bg-white text-trad-text-main border-trad-border-warm hover:border-trad-primary'
                                         }`}
                                 >
-                                    {cat.translation?.name || cat.name}
+                                    {cat.translation?.name || 'Danh mục'}
                                 </button>
                             ))}
                         </div>
@@ -260,7 +173,15 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                             <div className="absolute top-0 right-0 w-16 h-16 opacity-10 pointer-events-none">
                                 <span className="material-symbols-outlined text-6xl text-trad-primary">spa</span>
                             </div>
-                            <FilterContent prefix="desktop" />
+                            <TraditionalProductFilter
+                                prefix="desktop"
+                                categories={categories}
+                                selectedCategory={selectedCategory}
+                                priceInputs={priceInputs}
+                                setPriceInputs={setPriceInputs}
+                                onCategoryChange={handleCategoryChange}
+                                onApplyPriceFilter={handleApplyPriceFilter}
+                            />
                         </div>
                     </aside>
 
@@ -285,85 +206,9 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                             </div>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6 relative">
-                            {products.length > 0 ? products.map((product) => {
-                                // Use hook for discount calculation
-                                const { finalPrice, originalPrice, isActive, discountPercent } = useProductDiscount(product);
-
-                                return (
-                                    <div key={product.id} className="rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
-                                        <div className="relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
-                                            {isActive && (
-                                                <span className="absolute left-2 top-2 z-10 rounded bg-trad-red-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
-                                                    -{discountPercent}%
-                                                </span>
-                                            )}
-                                            <ProductImage
-                                                src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
-                                                alt={product.translation?.title}
-                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                            />
-                                            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                                                <Link href={`/products/${product.slug}`}>
-                                                    <button className="h-10 w-10 rounded-full bg-white text-trad-text-main hover:text-trad-primary hover:bg-trad-bg-warm shadow-lg flex items-center justify-center transition-colors" title="Xem chi tiết">
-                                                        <span className="material-symbols-outlined text-[20px]">visibility</span>
-                                                    </button>
-                                                </Link>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        const isAdding = !wishlistItems.has(product.id);
-                                                        toggleWishlist(product.id);
-                                                        if (isAdding) {
-                                                            toast.custom((t) => (
-                                                                <Alert
-                                                                    variant="success"
-                                                                    size="sm"
-                                                                    title="Yêu Thích"
-                                                                    className="w-[300px] bg-white border-none shadow-xl"
-                                                                    onClose={() => toast.dismiss(t)}
-                                                                >
-                                                                    Đã thêm vào danh sách yêu thích!
-                                                                </Alert>
-                                                            ));
-                                                        } else {
-                                                            toast.info("Đã xóa khỏi danh sách yêu thích");
-                                                        }
-                                                    }}
-                                                    className={`h-10 w-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-colors ${wishlistItems.has(product.id) ? 'text-trad-red-900' : 'text-trad-text-main hover:text-trad-primary hover:bg-trad-bg-warm'}`}
-                                                    title="Yêu thích"
-                                                >
-                                                    <span className={`material-symbols-outlined text-[20px] ${wishlistItems.has(product.id) ? 'filled' : ''}`}>favorite</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-1 flex-col p-3 md:p-5">
-                                            <div className="mb-1 md:mb-2 flex text-trad-primary text-[12px] md:text-[14px]">
-                                                {[1, 2, 3, 4, 5].map(i => (
-                                                    <span key={i} className="material-symbols-outlined filled text-[14px] md:text-[16px]">star</span>
-                                                ))}
-                                            </div>
-                                            <h3 className="mb-1 md:mb-2 text-sm md:text-lg font-bold font-display leading-tight text-trad-text-main group-hover:text-trad-primary transition-colors line-clamp-2">
-                                                <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
-                                            </h3>
-                                            <div className="mt-auto pt-2 md:pt-3 flex flex-col gap-2 md:gap-3">
-                                                <ProductPrice product={product} size="md" theme="traditional" />
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const discountAmount = isActive ? (originalPrice - finalPrice) : 0;
-                                                        handleAddToCart(product, finalPrice, originalPrice, discountAmount);
-                                                    }}
-                                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-trad-primary text-white shadow bg-trad-primary hover:bg-trad-primary-dark h-11 px-4 py-2 uppercase tracking-wide w-full gap-2 group-hover:bg-trad-bg-warm group-hover:text-trad-primary border border-transparent group-hover:border-trad-primary"
-                                                >
-                                                    <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-                                                    Thêm vào giỏ
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            }) : (
+                            {products.length > 0 ? products.map((product) => (
+                                <TraditionalProductGridItem key={product.id} product={product} />
+                            )) : (
                                 <div className="col-span-full py-20 text-center bg-white rounded-xl border border-trad-border-warm">
                                     <div className="mb-4 text-trad-text-muted opacity-50">
                                         <span className="material-symbols-outlined text-6xl">inventory_2</span>

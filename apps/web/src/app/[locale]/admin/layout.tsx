@@ -11,7 +11,7 @@ export default function AdminLayout({
     children: React.ReactNode;
     params: Promise<{ locale: string }>;
 }) {
-    const { locale } = use(params);
+    use(params);
     const pathname = usePathname();
 
     const tabs = [

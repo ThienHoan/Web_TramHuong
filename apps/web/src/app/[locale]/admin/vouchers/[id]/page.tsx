@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { getVoucher, updateVoucher } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -23,14 +23,7 @@ export default function EditVoucherPage({ params }: { params: Promise<{ id: stri
         is_active: true
     });
 
-    useEffect(() => {
-        params.then(p => {
-            setVoucherId(p.id);
-            fetchVoucher(p.id);
-        });
-    }, [params]);
-
-    const fetchVoucher = async (id: string) => {
+    const fetchVoucher = useCallback(async (id: string) => {
         try {
             const data = await getVoucher(id);
             if (!data) {
@@ -60,7 +53,14 @@ export default function EditVoucherPage({ params }: { params: Promise<{ id: stri
         } finally {
             setFetching(false);
         }
-    };
+    }, [router]);
+
+    useEffect(() => {
+        params.then(p => {
+            setVoucherId(p.id);
+            fetchVoucher(p.id);
+        });
+    }, [params, fetchVoucher]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -93,9 +93,11 @@ export default function EditVoucherPage({ params }: { params: Promise<{ id: stri
                 max_discount_amount: formData.discount_type === 'PERCENTAGE' ? formData.max_discount_amount : undefined
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
             await updateVoucher(voucherId, payload as any);
             toast.success('Cập nhật mã giảm giá thành công!');
             router.push('/admin/vouchers');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
         } catch (error: any) {
             console.error(error);
             toast.error(error.message || 'Có lỗi xảy ra khi cập nhật.');

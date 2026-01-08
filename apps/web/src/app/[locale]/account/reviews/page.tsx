@@ -7,10 +7,26 @@ import ProductImage from '@/components/ui/ProductImage';
 import { useRouter } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 
+// Extended Review interface that includes joined product data from the API
+interface MyReview {
+    id: string;
+    product_id: string;
+    user_id: string;
+    rating: number;
+    comment?: string;
+    created_at: string;
+    product_title?: string;
+    product?: {
+        slug?: string;
+        images?: string[];
+        image?: string;
+    };
+}
+
 export default function MyReviewsPage() {
     const { session } = useAuth();
     const router = useRouter();
-    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<MyReview[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -22,10 +38,10 @@ export default function MyReviewsPage() {
         setAccessToken(session.access_token);
         getMyReviews()
             .then(data => {
-                setReviews(Array.isArray(data) ? data : []);
+                setReviews(Array.isArray(data) ? data as MyReview[] : []);
                 setLoading(false);
             })
-            .catch(err => {
+            .catch((err: unknown) => {
                 console.error(err);
                 setLoading(false);
             });
@@ -39,7 +55,7 @@ export default function MyReviewsPage() {
 
             {reviews.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded">
-                    <p className="text-gray-500 mb-4">You haven't reviewed any products yet.</p>
+                    <p className="text-gray-500 mb-4">You haven&apos;t reviewed any products yet.</p>
                     <Link href="/products" className="text-black underline font-medium">Start Shopping</Link>
                 </div>
             ) : (
@@ -51,7 +67,7 @@ export default function MyReviewsPage() {
                                 {review.product && (
                                     <ProductImage
                                         src={review.product.images?.[0] || review.product.image}
-                                        alt={review.product_title}
+                                        alt={review.product_title || 'Product Image'}
                                     />
                                 )}
                             </div>
@@ -75,7 +91,7 @@ export default function MyReviewsPage() {
                                     ))}
                                 </div>
 
-                                <p className="text-gray-700">{review.comment}</p>
+                                <p className="text-gray-700">{review.comment || ''}</p>
                             </div>
                         </div>
                     ))}

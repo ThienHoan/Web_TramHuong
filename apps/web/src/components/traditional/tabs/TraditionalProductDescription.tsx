@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import { Product } from '@/types/product';
 
 interface TraditionalProductDescriptionProps {
-    product: any;
+    product: Product;
 }
 
 export default function TraditionalProductDescription({ product }: TraditionalProductDescriptionProps) {
@@ -30,7 +30,7 @@ export default function TraditionalProductDescription({ product }: TraditionalPr
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="prose prose-lg text-trad-text-main/90 font-serif leading-loose">
                     <p className="first-letter:text-5xl first-letter:font-bold first-letter:text-trad-red-900 first-letter:mr-3 first-letter:float-left">
-                        {product.translation.description}
+                        {product.translation?.description}
                     </p>
                     <p className="mt-4">
                         Mỗi nén nhang là sự kết tinh của trời đất, qua bàn tay tỉ mỉ của những nghệ nhân lành nghề. Chúng tôi cam kết sử dụng 100% bột trầm hương tự nhiên, không hóa chất độc hại, giữ trọn vẹn mùi hương nguyên bản mộc mạc mà quyến rũ.

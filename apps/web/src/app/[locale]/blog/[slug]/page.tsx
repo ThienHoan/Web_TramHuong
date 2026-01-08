@@ -140,7 +140,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 <article className="container mx-auto px-4 max-w-3xl prose prose-base md:prose-lg prose-headings:text-trad-red-900 prose-headings:font-display prose-headings:font-bold prose-a:text-trad-primary hover:prose-a:text-trad-primary-dark prose-img:shadow-lg prose-img:rounded-xl">
                     {post.excerpt && (
                         <p className="lead text-lg md:text-2xl text-trad-gray italic font-light leading-relaxed mb-8 border-l-4 border-trad-primary pl-4 md:pl-6">
-                            "{post.excerpt}"
+                            &quot;{post.excerpt}&quot;
                         </p>
                     )}
 

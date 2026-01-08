@@ -1,24 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Patch,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
 import {
   CreateVoucherDto,
   UpdateVoucherDto,
   ValidateVoucherDto,
 } from './dto/voucher.dto';
-
-interface ListVouchersQuery {
-  active?: string;
-  page?: string;
-  limit?: string;
-}
 
 @Controller('vouchers')
 export class VouchersController {

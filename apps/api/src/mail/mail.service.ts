@@ -25,7 +25,11 @@ export class MailService {
     try {
       await this.mailerService.sendMail(options);
     } catch (error) {
-      console.error(`Failed to send email to ${options.to}:`, error);
+      const to =
+        typeof options.to === 'string'
+          ? options.to
+          : JSON.stringify(options.to);
+      console.error(`Failed to send email to ${to}:`, error);
       // Non-blocking: Do not re-throw error to prevent stopping the order flow
     }
   }
@@ -37,7 +41,7 @@ export class MailService {
         currency: 'VND',
       }).format(amount);
       return vnd;
-    } catch (e) {
+    } catch {
       return `${amount} VND`;
     }
   }
@@ -63,7 +67,7 @@ export class MailService {
   }
 
   async sendAdminAlert(order: IOrderForMail) {
-    const adminEmail = this.configService.get('MAIL_ADMIN_ADDRESS');
+    const adminEmail = this.configService.get<string>('MAIL_ADMIN_ADDRESS');
     if (!adminEmail) return;
 
     await this.sendSafe({

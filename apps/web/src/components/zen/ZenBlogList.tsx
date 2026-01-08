@@ -30,7 +30,7 @@ const CATEGORIES = [
 export default function ZenBlogList({ posts, meta, featuredPost, searchParams }: ZenBlogListProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
     const [searchValue, setSearchValue] = useState(searchParams.search || '');
 
     const handleSearch = (e: React.FormEvent) => {

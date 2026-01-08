@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
 
@@ -20,7 +20,7 @@ interface User {
 export default function AdminUsersPage() {
     const { session, role, loading: authLoading } = useAuth();
     const router = useRouter();
-    const t = useTranslations('Admin'); // Improve translation scope later
+    // const t = useTranslations('Admin'); // Improve translation scope later
 
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,6 +28,7 @@ export default function AdminUsersPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
     const [page, setPage] = useState(1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, last_page: 1, limit: ADMIN_PAGE_LIMIT });
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 

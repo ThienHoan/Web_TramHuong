@@ -14,6 +14,14 @@ import {
 import type { Request as ExpressRequest } from 'express';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from '../auth/auth.guard';
+
+interface RequestWithUser extends ExpressRequest {
+  user: {
+    id: string;
+    role: string;
+    email: string;
+  };
+}
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
@@ -37,10 +45,7 @@ export class OrdersController {
   @Post()
   @Public()
   @UseGuards(ThrottlerGuard)
-  async create(
-    @Request() req: ExpressRequest & { user: any },
-    @Body() body: CreateOrderDto,
-  ) {
+  async create(@Request() req: RequestWithUser, @Body() body: CreateOrderDto) {
     const userId = req.user?.id || null;
     const { items, shipping_info, paymentMethod, voucherCode } =
       body as CreateOrderDto & { voucherCode?: string };
@@ -79,23 +84,22 @@ export class OrdersController {
     }
 
     // SePay body structure: { id, gateway, transactionDate, accountNumber, subAccount, content, transferType, transferAmount, ... }
-    const { content, transferAmount, transactionDate, id } = body;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { content, transferAmount, id } = body;
 
     if (!content) return { success: false, reason: 'No content' };
 
-    const result = await this.ordersService.verifyPayment(
+    const { success, reason } = await this.ordersService.verifyPayment(
       content,
       Number(transferAmount),
       String(id),
     );
 
-    if (!result.success) {
-      throw new BadRequestException(
-        result.reason || 'Payment verification failed',
-      );
+    if (!success) {
+      throw new BadRequestException(reason || 'Payment verification failed');
     }
 
-    return result;
+    return { success, reason };
   }
 
   @Get()
@@ -117,7 +121,7 @@ export class OrdersController {
   @Get('me')
   @Roles(Role.CUSTOMER, Role.ADMIN, Role.STAFF)
   async findMyOrders(
-    @Request() req: ExpressRequest & { user: any },
+    @Request() req: RequestWithUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -128,6 +132,7 @@ export class OrdersController {
       limit: limit ? parseInt(limit) : 20,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (user.role === Role.CUSTOMER) {
       return this.ordersService.findAllForUser(user.id, options);
     }
@@ -159,7 +164,7 @@ export class OrdersController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.STAFF, Role.CUSTOMER)
-  async findOne(@Request() _req: any, @Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     // TODO: Enforce ownership if Customer
     return this.ordersService.findOne(id);
   }
