@@ -87,6 +87,9 @@ jobs:
             chmod 600 .env
 
             # 2. Write docker-compose.prod.yml (Nginx + Apps)
+            # Calculate lowercase owner name for Docker image tags
+            OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
             cat <<YAML > docker-compose.prod.yml
             version: '3.8'
             
@@ -112,7 +115,7 @@ jobs:
                   - tramhuong-network
 
               api:
-                image: ghcr.io/$(echo ${{ env.OWNER_LC }})/tramhuong-api:latest
+                image: ghcr.io/${OWNER_LC}/tramhuong-api:latest
                 container_name: tramhuong-api
                 restart: always
                 # Internal ports only
@@ -129,7 +132,7 @@ jobs:
                   - tramhuong-network
             
               web:
-                image: ghcr.io/$(echo ${{ env.OWNER_LC }})/tramhuong-web:latest
+                image: ghcr.io/${OWNER_LC}/tramhuong-web:latest
                 container_name: tramhuong-web
                 restart: always
                 # Internal ports only
