@@ -53,7 +53,7 @@ export async function GET(request: Request) {
             const forwardedProto = request.headers.get('x-forwarded-proto');
             const isLocalEnv = process.env.NODE_ENV === 'development';
 
-            let protocol = forwardedProto || 'http'; // Default to http if not specified
+            const protocol = forwardedProto || 'http'; // Default to http if not specified
 
             // If running on local, always use http (unless specified otherwise)
             // But here we rely on what Nginx tells us via x-forwarded-proto
