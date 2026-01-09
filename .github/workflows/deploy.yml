@@ -140,6 +140,8 @@ jobs:
                   - "3000"
                 env_file:
                   - .env
+                environment:
+                  - PORT=3000
                 depends_on:
                   - api
                 logging:
