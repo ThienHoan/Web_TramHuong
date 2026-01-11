@@ -1,4 +1,11 @@
-const API_URL = typeof window !== 'undefined' ? '/api' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000');
+const getBaseApiUrl = () => {
+    if (typeof window !== 'undefined') return '/api';
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+}
+
+const API_URL = getBaseApiUrl();
 
 let accessToken = '';
 

@@ -14,7 +14,7 @@ export * from '../services/base-http';
 export const setAccessToken = setBaseToken;
 
 // Products
-export const getProducts = productService.getProducts;
+export const getProducts = productService.getProducts.bind(productService);
 export const getProductsPaginated = productService.getProductsPaginated;
 export const getProduct = productService.getProduct;
 export const getCategories = productService.getCategories;
