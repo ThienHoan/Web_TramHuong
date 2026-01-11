@@ -21,6 +21,8 @@ export interface Product {
     slug: string;
     price: number;
     sale_price?: number;
+    rating_average?: number;
+    review_count?: number;
     images: string[];
     thumbnail?: string;
     stock: number;

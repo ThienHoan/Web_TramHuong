@@ -21,6 +21,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { StorageModule } from './storage/storage.module';
 import { ChatModule } from './chat/chat.module';
+import { MerchantModule } from './merchant/merchant.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { ChatModule } from './chat/chat.module';
     VouchersModule,
     StorageModule,
     ChatModule,
+    MerchantModule,
   ],
   controllers: [AppController],
   providers: [

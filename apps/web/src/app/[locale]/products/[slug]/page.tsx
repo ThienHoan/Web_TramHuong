@@ -33,6 +33,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     };
 }
 
+import ProductJsonLd from '@/components/seo/ProductJsonLd';
+
 export default async function ProductPage({
     params
 }: {
@@ -73,6 +75,7 @@ export default async function ProductPage({
     if (locale === 'vi') {
         return (
             <>
+                <ProductJsonLd product={product} />
                 <TraditionalProductDetail product={product} />
                 {/* <ReviewsSection productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
             </>
@@ -80,6 +83,9 @@ export default async function ProductPage({
     }
 
     return (
-        <ZenProductDetail product={product} relatedProducts={relatedProducts} />
+        <>
+            <ProductJsonLd product={product} />
+            <ZenProductDetail product={product} relatedProducts={relatedProducts} />
+        </>
     );
 }

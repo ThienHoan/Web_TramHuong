@@ -100,9 +100,9 @@ export default function TraditionalHome({ products, posts = [] }: { products: Pr
                                                         <div className="h-[1px] w-8 bg-accent-gold"></div>
                                                         <span className="text-accent-gold uppercase tracking-[0.3em] text-xs font-bold">{slide.subtitle}</span>
                                                     </div>
-                                                    <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-white mt-4">
+                                                    <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-white mt-4">
                                                         {slide.title}
-                                                    </h2>
+                                                    </h1>
                                                     <p className="text-lg text-white/90 font-normal leading-relaxed mt-6">
                                                         {slide.description}
                                                     </p>
@@ -125,7 +125,7 @@ export default function TraditionalHome({ products, posts = [] }: { products: Pr
                                                         <div className="absolute -inset-4 bg-accent-gold/20 blur-3xl rounded-full opacity-50"></div>
                                                         <Image
                                                             src={slide.rightImage}
-                                                            alt={typeof slide.title === 'string' ? slide.title : 'Banner Image'}
+                                                            alt={typeof slide.title === 'string' ? slide.title : `Trầm Hương Thiên Phúc - ${slide.subtitle || 'Tinh Hoa'}`}
                                                             fill
                                                             className="relative z-10 object-cover drop-shadow-2xl"
                                                             priority={index === 0}

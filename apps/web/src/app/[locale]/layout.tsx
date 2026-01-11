@@ -65,8 +65,8 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
 
-  const siteName = locale === 'vi' ? 'Trầm Hương Web' : 'Agarwood Web';
-  const defaultTitle = locale === 'vi' ? 'Trầm Hương Web - Tinh Hoa Đất Trời' : 'Agarwood Web - Zen & Traditional';
+  const siteName = locale === 'vi' ? 'Trầm Hương Thiên Phúc' : 'Thien Phuc Agarwood';
+  const defaultTitle = locale === 'vi' ? 'Trầm Hương Thiên Phúc - Tinh Hoa Đất Trời' : 'Thien Phuc Agarwood - Zen & Traditional';
   const description = locale === 'vi'
     ? 'Trải nghiệm sự giao thoa giữa Thiền và Truyền Thống. Tinh hoa trầm hương Việt Nam.'
     : 'Experience the dual sensation of Agarwood. Zen minimalism meets Traditional heritage.';
@@ -78,6 +78,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       default: defaultTitle,
     },
     description: description,
+    keywords: locale === 'vi'
+      ? ['trầm hương', 'nhang trầm', 'thưởng trầm', 'thiền', 'quà tặng trầm hương', 'vòng tay trầm hương', 'trầm hương thiên phúc']
+      : ['agarwood', 'oud', 'incense', 'zen', 'meditation', 'luxury incense', 'thien phuc agarwood'],
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
     alternates: {
       canonical: `/${locale}`,
       languages: {
@@ -87,12 +95,52 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       },
     },
     openGraph: {
+      title: defaultTitle,
+      description: description,
+      url: baseUrl,
       siteName: siteName,
       locale: locale,
       type: 'website',
+      images: [
+        {
+          url: '/og-image.jpg', // Ensure you have a default OG image at public/og-image.jpg or similar
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: defaultTitle,
+      description: description,
+      // images: ['/twitter-image.jpg'], // Optional
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.ico' },
+        { url: '/icon.png', type: 'image/png' },
+      ],
+      apple: [
+        { url: '/apple-icon.png' },
+      ],
     },
   };
 }
+
+// Import JsonLd component
+import JsonLd from '@/components/seo/JsonLd';
 
 export default async function RootLayout({
   children,
@@ -123,6 +171,7 @@ export default async function RootLayout({
               <WishlistProvider>
                 <NetworkStatusProvider>
                   <ErrorBoundary>
+                    <JsonLd />
                     {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
                     <SmoothScroll />
                     {children}
