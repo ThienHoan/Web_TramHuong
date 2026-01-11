@@ -15,6 +15,7 @@ export const setAccessToken = setBaseToken;
 
 // Products
 export const getProducts = productService.getProducts;
+export const getProductsPaginated = productService.getProductsPaginated;
 export const getProduct = productService.getProduct;
 export const getCategories = productService.getCategories;
 

@@ -3,15 +3,16 @@
 import { useState, useEffect } from 'react';
 import { getCategories } from '@/lib/api-client';
 import { useLocale } from 'next-intl';
-import { Category } from '@/types/product';
+import { Category, Product } from '@/types/product';
 import ZenFooter from './ZenFooter';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import ZenProductCard from './ZenProductCard';
-import { Product } from '@/types/product';
 
-export default function ZenProductList({ products }: { products: Product[] }) {
+import { PaginationMeta } from '@/services/product-service';
+
+export default function ZenProductList({ products, pagination }: { products: Product[]; pagination?: PaginationMeta }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -29,6 +30,9 @@ export default function ZenProductList({ products }: { products: Product[] }) {
 
     const handleCategoryChange = (category: string) => {
         const params = new URLSearchParams(searchParams.toString());
+        // Reset page when category changes
+        params.delete('page');
+
         if (category === 'all') {
             params.delete('category');
         } else {
@@ -39,8 +43,16 @@ export default function ZenProductList({ products }: { products: Product[] }) {
 
     const handleSortChange = (sort: string) => {
         const params = new URLSearchParams(searchParams.toString());
+        params.delete('page'); // Reset page
         params.set('sort', sort);
         router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', String(newPage));
+        router.push(`${pathname}?${params.toString()}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -92,7 +104,7 @@ export default function ZenProductList({ products }: { products: Product[] }) {
                                 <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-zen-green-text/40">Scent Profile</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {['Woody', 'Sweet', 'Floral', 'Spicy'].map(scent => (
-                                        <button key={scent} className="px-3 py-1.5 border border-zen-green-200 rounded-sm text-[10px] uppercase tracking-widest hover:border-zen-green-accent hover:text-zen-green-accent transition-colors text-zen-green-text/70">
+                                        <button key={scent} className="text-xs border border-zen-green-text/20 rounded-full px-3 py-1 hover:bg-zen-green-text/5 transition-colors">
                                             {scent}
                                         </button>
                                     ))}
@@ -114,22 +126,23 @@ export default function ZenProductList({ products }: { products: Product[] }) {
                         </div>
                     </aside>
 
-                    {/* Product Grid Area */}
+                    {/* Product Grid & Controls */}
                     <div className="flex-1 animate-[fadeInUp_0.8s_ease-out_forwards] delay-200">
-                        {/* Toolbar */}
-                        <div className="flex flex-wrap items-center justify-between mb-8 pb-4 border-b border-zen-green-100 gap-4">
-                            <p className="text-xs font-medium tracking-[0.1em] text-zen-green-text/60">SHOWING {products.length} PRODUCTS</p>
+                        {/* Sort & Count */}
+                        <div className="flex items-center justify-between mb-8 border-b border-zen-green-text/10 pb-4">
+                            <span className="text-xs tracking-widest text-zen-green-text/60">{pagination?.total || products.length} ARTIFACTS</span>
                             <div className="flex items-center gap-4">
+                                <span className="text-xs tracking-widest text-zen-green-text/60">SORT BY</span>
                                 <div className="relative group">
                                     <select
                                         value={activeSort}
                                         onChange={(e) => handleSortChange(e.target.value)}
-                                        className="appearance-none bg-transparent text-xs font-bold tracking-[0.1em] uppercase hover:text-zen-green-primary transition-colors cursor-pointer border-none focus:ring-0 pr-8 text-left"
+                                        className="appearance-none bg-transparent text-xs tracking-widest border-none focus:ring-0 cursor-pointer text-zen-green-text uppercase pr-6"
                                     >
-                                        <option value="recommended">Sort By: Recommended</option>
+                                        <option value="recommended">Recommended</option>
+                                        <option value="newest">New Arrivals</option>
                                         <option value="price-asc">Price: Low to High</option>
                                         <option value="price-desc">Price: High to Low</option>
-                                        <option value="newest">Newest Arrivals</option>
                                     </select>
                                     <span className="material-symbols-outlined text-[16px] absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zen-green-text">expand_more</span>
                                 </div>
@@ -137,33 +150,49 @@ export default function ZenProductList({ products }: { products: Product[] }) {
                         </div>
 
                         {/* Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
                             {products.map((product) => (
                                 <ZenProductCard key={product.id} product={product} />
                             ))}
-
-                            {products.length === 0 && (
-                                <div className="col-span-full py-20 text-center">
-                                    <p className="text-lg font-light text-zen-green-text/60">No products found matching your criteria.</p>
-                                    <button onClick={() => handleCategoryChange('all')} className="mt-4 text-sm underline text-zen-green-primary hover:text-zen-green-text">Clear Filters</button>
-                                </div>
-                            )}
                         </div>
 
-                        {/* Minimal Pagination (Visual only, dependent on backend paging which is not yet passed as prop) */}
-                        {/* 
-                        <div className="mt-20 flex justify-center items-center gap-8">
-                            <button className="text-xs font-bold tracking-[0.2em] uppercase text-zen-green-text/40 hover:text-zen-green-text transition-colors disabled:opacity-20" disabled>Prev</button>
-                            <div className="flex items-center gap-4">
-                                <a className="w-8 h-8 flex items-center justify-center rounded-full bg-zen-green-text text-zen-green-50 text-xs font-bold" href="#">1</a>
+                        {/* Pagination UI */}
+                        {pagination && pagination.last_page > 1 && (
+                            <div className="mt-20 flex justify-center items-center gap-8 border-t border-zen-green-text/10 pt-10">
+                                <button
+                                    onClick={() => handlePageChange(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                    className="text-xs tracking-[0.2em] uppercase hover:text-zen-green-primary disabled:opacity-30 disabled:hover:text-zen-green-text transition-colors"
+                                >
+                                    Previous
+                                </button>
+
+                                <span className="text-sm font-light tracking-widest text-zen-green-text/60">
+                                    PAGE {pagination.page} / {pagination.last_page}
+                                </span>
+
+                                <button
+                                    onClick={() => handlePageChange(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.last_page}
+                                    className="text-xs tracking-[0.2em] uppercase hover:text-zen-green-primary disabled:opacity-30 disabled:hover:text-zen-green-text transition-colors"
+                                >
+                                    Next
+                                </button>
                             </div>
-                            <button className="text-xs font-bold tracking-[0.2em] uppercase text-zen-green-text hover:text-zen-green-primary transition-colors">Next</button>
-                        </div> 
-                        */}
+                        )}
+
+                        {/* Empty State */}
+                        {products.length === 0 && (
+                            <div className="py-20 text-center">
+                                <p className="text-lg font-light">No artifacts found matching your criteria.</p>
+                                <button onClick={() => handleCategoryChange('all')} className="mt-4 text-sm underline hover:text-zen-green-primary">View all collection</button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
             <ZenFooter />
         </div>
+
     );
 }

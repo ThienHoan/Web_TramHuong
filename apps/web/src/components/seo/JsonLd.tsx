@@ -33,7 +33,7 @@ const JsonLd = () => {
                 ],
                 'logo': {
                     '@type': 'ImageObject',
-                    'url': `${baseUrl}/favicon.ico`,
+                    'url': `${baseUrl}/icon.png`,
                     'width': 512,
                     'height': 512
                 },

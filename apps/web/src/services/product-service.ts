@@ -1,8 +1,16 @@
 import { buildUrl, fetchWithAuth } from './base-http';
 import { Product, Category } from '../types/product';
 
+export interface PaginationMeta {
+    total: number;
+    page: number;
+    limit: number;
+    last_page: number;
+}
+
 interface ProductApiResponse {
     data?: Product[];
+    meta?: PaginationMeta;
 }
 
 export const productService = {
@@ -17,24 +25,55 @@ export const productService = {
         max_price?: number;
         stock_status?: string;
         is_featured?: boolean;
+        page?: number;
     }): Promise<Product[]> {
+        const { data } = await this.getProductsPaginated(locale, options);
+        return data;
+    },
+
+    async getProductsPaginated(locale: string, options?: {
+        category?: string;
+        categoryId?: string | number;
+        search?: string;
+        sort?: string;
+        limit?: number;
+        include_inactive?: boolean;
+        min_price?: number;
+        max_price?: number;
+        stock_status?: string;
+        is_featured?: boolean;
+        page?: number;
+    }): Promise<{ data: Product[]; meta?: PaginationMeta }> {
         try {
             const params: Record<string, string | number | boolean | undefined> = { locale, ...options };
             if (options?.include_inactive) params.include_inactive = 'true';
             if (options?.is_featured !== undefined) params.is_featured = String(options.is_featured);
-            if (options?.categoryId) params.category_id = options.categoryId; // Map camelCase to snake_case
+            if (options?.categoryId) params.category_id = options.categoryId;
 
             const url = buildUrl('/products', params);
 
-            // Cache for 2 minutes, use revalidateTag('products') to clear when admin updates
+            // varying cache based on page number might be tricky for static gen, 
+            // but for dynamic search params Next.js usually handles it.
             const data = await fetchWithAuth<Product[] | ProductApiResponse>(url, { next: { revalidate: 120, tags: ['products'] } });
 
-            const items: Product[] = Array.isArray(data) ? data : (data.data || []);
-            // Map quantity to stock to match frontend Type
-            return items.map((p: Product) => ({ ...p, stock: p.quantity ?? 0 }));
+            if (Array.isArray(data)) {
+                // Should not happen if backend returns meta, but for safety
+                return {
+                    data: data.map((p: Product) => ({ ...p, stock: p.quantity ?? 0 })),
+                    meta: undefined
+                };
+            }
+
+            const items: Product[] = data.data || [];
+            const mappedItems = items.map((p: Product) => ({ ...p, stock: p.quantity ?? 0 }));
+
+            return {
+                data: mappedItems,
+                meta: data.meta
+            };
         } catch (e) {
             console.error("Fetch Error:", e);
-            return [];
+            return { data: [], meta: undefined };
         }
     },
 

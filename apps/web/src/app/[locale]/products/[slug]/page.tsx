@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 import ProductJsonLd from '@/components/seo/ProductJsonLd';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 
 export default async function ProductPage({
     params
@@ -76,6 +77,13 @@ export default async function ProductPage({
         return (
             <>
                 <ProductJsonLd product={product} />
+                <BreadcrumbJsonLd
+                    items={[
+                        { name: locale === 'vi' ? 'Trang chủ' : 'Home', item: '/' },
+                        { name: locale === 'vi' ? 'Sản phẩm' : 'Products', item: '/products' },
+                        { name: product.translation?.title || product.title || 'Sản phẩm', item: `/products/${product.slug}` }
+                    ]}
+                />
                 <TraditionalProductDetail product={product} />
                 {/* <ReviewsSection productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
             </>
@@ -85,6 +93,13 @@ export default async function ProductPage({
     return (
         <>
             <ProductJsonLd product={product} />
+            <BreadcrumbJsonLd
+                items={[
+                    { name: locale === 'vi' ? 'Trang chủ' : 'Home', item: '/' },
+                    { name: locale === 'vi' ? 'Sản phẩm' : 'Products', item: '/products' },
+                    { name: product.translation?.title || product.title || 'Product', item: `/products/${product.slug}` }
+                ]}
+            />
             <ZenProductDetail product={product} relatedProducts={relatedProducts} />
         </>
     );

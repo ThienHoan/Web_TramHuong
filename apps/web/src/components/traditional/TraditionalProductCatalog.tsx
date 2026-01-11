@@ -19,11 +19,14 @@ import { Product, Category } from '@/types/product';
 import TraditionalProductGridItem from '@/components/traditional/TraditionalProductGridItem';
 import TraditionalProductFilter from './TraditionalProductFilter';
 
+import { PaginationMeta } from '@/services/product-service';
+
 interface TraditionalProductCatalogProps {
     products: Product[];
+    pagination?: PaginationMeta;
 }
 
-export default function TraditionalProductCatalog({ products }: TraditionalProductCatalogProps) {
+export default function TraditionalProductCatalog({ products, pagination }: TraditionalProductCatalogProps) {
     const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
@@ -34,6 +37,7 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
     const sortOption = searchParams.get('sort') || 'newest';
     const minPriceParam = searchParams.get('min_price') || '';
     const maxPriceParam = searchParams.get('max_price') || '';
+    const currentPage = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
 
     // Local State for UI
     const [categories, setCategories] = useState<Category[]>([]);
@@ -50,6 +54,12 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
 
     const updateFilters = (newParams: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
+
+        // Reset page to 1 if filters change (category, price, sort), unless page is explicitly set
+        if (!newParams.page) {
+            params.delete('page');
+        }
+
         Object.entries(newParams).forEach(([key, value]) => {
             if (value === null) {
                 params.delete(key);
@@ -61,19 +71,26 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
     };
 
     const handleCategoryChange = (categoryId: string | null) => {
-        updateFilters({ category: categoryId });
+        updateFilters({ category: categoryId, page: null }); // Reset page on filter change
     };
 
     const handleSortChange = (sort: string) => {
-        updateFilters({ sort });
+        updateFilters({ sort, page: null });
     };
 
     const handleApplyPriceFilter = () => {
         updateFilters({
             min_price: priceInputs.min || null,
-            max_price: priceInputs.max || null
+            max_price: priceInputs.max || null,
+            page: null
         });
         setIsFilterOpen(false);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        updateFilters({ page: String(newPage) });
+        // Scroll to top of grid
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Fetch Categories
@@ -103,6 +120,7 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                         <Link className="hover:text-trad-primary transition-colors" href="/">Trang chủ</Link>
                         <span className="mx-2 text-trad-border-warm">•</span>
                         <span className="font-medium text-trad-primary">Sản phẩm</span>
+                        {currentPage > 1 && <span className="ml-1 text-trad-text-muted"> (Trang {currentPage})</span>}
                     </nav>
                 </div>
             </div>
@@ -224,6 +242,42 @@ export default function TraditionalProductCatalog({ products }: TraditionalProdu
                                 </div>
                             )}
                         </div>
+
+                        {/* Pagination */}
+                        {pagination && pagination.last_page > 1 && (
+                            <div className="mt-12 flex justify-center items-center gap-2 font-display">
+                                <button
+                                    onClick={() => handlePageChange(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                    className="p-2 border border-trad-border-warm rounded-full hover:bg-white hover:text-trad-primary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                    aria-label="Trang trước"
+                                >
+                                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                </button>
+
+                                {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map((pageNum) => (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => handlePageChange(pageNum)}
+                                        className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium transition-all ${pageNum === pagination.page
+                                                ? 'bg-trad-primary text-white shadow-md'
+                                                : 'bg-white text-trad-text-main border border-trad-border-warm hover:border-trad-primary'
+                                            }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => handlePageChange(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.last_page}
+                                    className="p-2 border border-trad-border-warm rounded-full hover:bg-white hover:text-trad-primary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                    aria-label="Trang tiếp"
+                                >
+                                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
