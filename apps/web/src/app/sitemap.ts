@@ -4,6 +4,20 @@ import { getProducts, getPosts } from '@/lib/api-client';
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tramhuongthienphuchue.com';
 const locales = ['vi', 'en'];
 
+// Helper to escape XML special characters
+function escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
@@ -47,12 +61,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             const products = await getProducts(locale).catch(() => []);
             if (Array.isArray(products)) {
                 products.forEach((product) => {
+                    const productImages = product.images ? product.images.map(img => {
+                        const imgUrl = img.startsWith('http') ? img : `${baseUrl}${img}`;
+                        return escapeXml(imgUrl);
+                    }) : undefined;
+
                     sitemapEntries.push({
                         url: `${baseUrl}/${locale}/products/${product.slug}`,
                         lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
                         changeFrequency: 'weekly',
                         priority: 0.9,
-                        images: product.images ? product.images.map(img => img.startsWith('http') ? img : `${baseUrl}${img}`) : undefined
+                        images: productImages
                     });
                 });
             }
