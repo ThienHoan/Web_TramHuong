@@ -6,8 +6,13 @@ import { routing } from './i18n/routing';
 const handleI18nRouting = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-pathname', request.nextUrl.pathname);
+
     let supabaseResponse = NextResponse.next({
-        request,
+        request: {
+            headers: requestHeaders,
+        },
     });
 
     const supabase = createServerClient(
@@ -21,8 +26,12 @@ export async function middleware(request: NextRequest) {
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
                     supabaseResponse = NextResponse.next({
-                        request,
+                        request: {
+                            headers: request.headers,
+                        },
                     });
+                    supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
+
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)
                     );

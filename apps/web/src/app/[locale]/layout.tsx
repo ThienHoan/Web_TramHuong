@@ -9,6 +9,7 @@ import { NetworkStatusProvider } from '@/components/providers/NetworkStatusProvi
 // import Header from '@/components/layout/Header';
 import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
+import { headers } from 'next/headers';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
@@ -64,6 +65,18 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') || `/${locale}`;
+
+  // Clean pathname to remove locale prefix for easier manipulation if needed, 
+  // but for canonical we want the full current path.
+  // Ensure we have the full URL including domain
+
+  // Logic to generate alternates
+  const safePathname = pathname.startsWith('/') ? pathname : `/${pathname}`;
+
+  // Remove existing locale prefix to generate alternates
+  const pathWithoutLocale = safePathname.replace(new RegExp(`^/${locale}`), '') || '/';
 
   const siteName = locale === 'vi' ? 'Trầm Hương Thiên Phúc' : 'Thien Phuc Agarwood';
   const defaultTitle = locale === 'vi' ? 'Trầm Hương Thiên Phúc - Tinh Hoa Đất Trời' : 'Thien Phuc Agarwood - Zen & Traditional';
@@ -87,11 +100,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       telephone: false,
     },
     alternates: {
-      canonical: `/${locale}`,
+      canonical: safePathname,
       languages: {
-        'en': '/en',
-        'vi': '/vi',
-        'x-default': '/en',
+        'en': `/en${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
+        'vi': `/vi${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
       },
     },
     openGraph: {
