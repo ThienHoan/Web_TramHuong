@@ -7,8 +7,7 @@ import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { API_URL } from '@/services/base-http';
 
 export default function AdminProductsPage() {
     const { session, role, loading: authLoading } = useAuth();

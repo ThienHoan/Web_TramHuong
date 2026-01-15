@@ -8,8 +8,8 @@ import Pagination from '@/components/ui/Pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { API_URL } from '@/services/base-http';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const PAGE_LIMIT = 20;
 import { Order } from "@/types/order";
 

@@ -6,8 +6,7 @@ import { useRouter, Link } from '@/i18n/routing';
 import { Category } from '@/lib/types';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { API_URL } from '@/services/base-http';
 
 interface PaginationMeta {
     total: number;

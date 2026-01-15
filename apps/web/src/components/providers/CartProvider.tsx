@@ -31,11 +31,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+import { API_URL } from '@/services/base-http';
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const { user, session } = useAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [initialized, setInitialized] = useState(false);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     const fetchCart = useCallback(async () => {
         if (!user || !session) return;

@@ -4,8 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
 import { CategoryTranslation } from '@/lib/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { API_URL } from '@/services/base-http';
 
 export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);

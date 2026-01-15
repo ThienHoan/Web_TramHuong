@@ -1,7 +1,6 @@
 import useSWR from 'swr';
 import { useAuth } from '../components/providers/AuthProvider';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { API_URL } from '@/services/base-http';
 
 const fetcher = (url: string, token: string) =>
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })

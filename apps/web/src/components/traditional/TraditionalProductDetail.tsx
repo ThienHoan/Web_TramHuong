@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
 import { useWishlist } from '../providers/WishlistProvider';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
+import { useProductTracking } from '@/hooks/useProductTracking'; // [NEW] Tracking Hook
 import { ProductPrice } from '@/components/ui/ProductPrice';
 import Image from 'next/image';
 import TraditionalHeader from './TraditionalHeader';
@@ -26,6 +27,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
     const { addItem } = useCart();
     const { items: wishlistItems, toggle: toggleWishlist } = useWishlist();
     const locale = useLocale();
+    const { trackEvent } = useProductTracking(); // [NEW]
 
     // Calculate discount at component level (not inside functions!)
     const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
@@ -62,6 +64,13 @@ export default function TraditionalProductDetail({ product }: { product: Product
 
     useEffect(() => {
         const loadData = async () => {
+            // [NEW] Track View Event
+            trackEvent('view', product.id, {
+                category: product.category_id,
+                price: finalPrice,
+                title: product.translation.title
+            });
+
             // 1. Fetch Related Products
             // Safe category slug retrieval
             const catSlug = product.category?.slug || (typeof product.category === 'string' ? product.category : undefined);
@@ -79,7 +88,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
             }
         };
         loadData();
-    }, [product.id, locale, product.category]);
+    }, [product.id, locale, product.category, trackEvent, finalPrice, product.category_id, product.translation.title]);
 
     const handleAddToCart = async () => {
         if (isAdding) return;
@@ -87,6 +96,13 @@ export default function TraditionalProductDetail({ product }: { product: Product
         try {
             // Calculate discount amount for cart
             const discountAmount = isDiscountActive ? (originalPrice - finalPrice) : 0;
+
+            // [NEW] Track Add to Cart
+            trackEvent('add_to_cart', product.id, {
+                quantity,
+                variant: selectedVariant?.id,
+                price: finalPrice
+            });
 
             // Use finalPrice calculated at component top level (line 31)
             await addItem({

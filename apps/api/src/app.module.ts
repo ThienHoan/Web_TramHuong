@@ -22,6 +22,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { StorageModule } from './storage/storage.module';
 import { ChatModule } from './chat/chat.module';
 import { MerchantModule } from './merchant/merchant.module';
+import { UserEventsModule } from './user-events/user-events.module';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { MerchantModule } from './merchant/merchant.module';
     StorageModule,
     ChatModule,
     MerchantModule,
+    UserEventsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -97,4 +99,4 @@ import { MerchantModule } from './merchant/merchant.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -7,8 +7,7 @@ import { Category } from '@/lib/types';
 import { getCategories, setAccessToken } from '@/lib/api-client';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import { toast } from 'sonner';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { API_URL } from '@/services/base-http';
 
 export default function NewProductPage() {
     const { session } = useAuth();

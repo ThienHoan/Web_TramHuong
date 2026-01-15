@@ -6,6 +6,7 @@ import { useRouter, Link } from '@/i18n/routing';
 
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
+import { API_URL } from '@/services/base-http';
 
 interface User {
     id: string;
@@ -30,7 +31,6 @@ export default function AdminUsersPage() {
     const [page, setPage] = useState(1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
     const [meta, setMeta] = useState<any>({ total: 0, page: 1, last_page: 1, limit: ADMIN_PAGE_LIMIT });
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     // Debounce Search
     useEffect(() => {
