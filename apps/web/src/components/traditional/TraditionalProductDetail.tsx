@@ -68,7 +68,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
             trackEvent('view', product.id, {
                 category: product.category_id,
                 price: finalPrice,
-                title: product.translation.title
+                title: product.translation?.title
             });
 
             // 1. Fetch Related Products
@@ -88,7 +88,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
             }
         };
         loadData();
-    }, [product.id, locale, product.category, trackEvent, finalPrice, product.category_id, product.translation.title]);
+    }, [product.id, locale, product.category, trackEvent, finalPrice, product.category_id, product.translation?.title]);
 
     const handleAddToCart = async () => {
         if (isAdding) return;
