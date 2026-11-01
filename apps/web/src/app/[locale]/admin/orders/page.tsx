@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const PAGE_LIMIT = 20;
 import { Order } from "@/types/order";
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function AdminOrdersPage() {
     const { session, user, role, loading: authLoading } = useAuth();
@@ -140,7 +141,7 @@ export default function AdminOrdersPage() {
                     <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
                         <form onSubmit={handleSearch} className="flex items-center gap-2">
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[18px]">search</span>
+                                <AppIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]" />
                                 <input
                                     type="text"
                                     placeholder="Search by Order ID..."

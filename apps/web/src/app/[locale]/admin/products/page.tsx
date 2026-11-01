@@ -7,6 +7,7 @@ import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -371,12 +372,12 @@ export default function AdminProductsPage() {
                                                             <div className="font-medium text-gray-900 flex items-center gap-1">
                                                                 {product.translation?.title || product.slug}
                                                                 {/* Featured Icons */}
-                                                                {product.featured_section === 'chapter_1' && <span className="material-symbols-outlined text-amber-500 text-[18px] filled-icon" title="Chapter I: Featured">star</span>}
-                                                                {product.featured_section === 'chapter_2' && <span className="material-symbols-outlined text-green-600 text-[18px] filled-icon" title="Chapter II: Ritual">spa</span>}
-                                                                {product.featured_section === 'chapter_3' && <span className="material-symbols-outlined text-red-500 text-[18px] filled-icon" title="Chapter III: Gift">redeem</span>}
+                                                                {product.featured_section === 'chapter_1' && <AppIcon name="star" className="text-amber-500 text-[18px] filled-icon" title="Chapter I: Featured" />}
+                                                                {product.featured_section === 'chapter_2' && <AppIcon name="spa" className="text-green-600 text-[18px] filled-icon" title="Chapter II: Ritual" />}
+                                                                {product.featured_section === 'chapter_3' && <AppIcon name="redeem" className="text-red-500 text-[18px] filled-icon" title="Chapter III: Gift" />}
                                                                 {/* Fallback Legacy */}
                                                                 {product.is_featured && !product.featured_section && (
-                                                                    <span className="material-symbols-outlined text-gray-400 text-[16px] filled-icon" title="Legacy Featured">star_half</span>
+                                                                    <AppIcon name="star_half" className="text-gray-400 text-[16px] filled-icon" title="Legacy Featured" />
                                                                 )}
                                                             </div>
                                                             <div className="text-xs text-gray-500 font-mono">{product.slug}</div>

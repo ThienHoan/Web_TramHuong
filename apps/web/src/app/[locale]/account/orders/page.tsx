@@ -6,9 +6,11 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
+import AccountNavigation from '@/components/layout/AccountNavigation';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { motion } from 'framer-motion';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface OrderItem {
     title?: string;
@@ -82,7 +84,7 @@ export default function MyOrdersPage() {
     });
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#ECEAE4]">
+        <div className="atelier-page min-h-screen flex items-center justify-center bg-[#ECEAE4]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9A3412]"></div>
         </div>
     );
@@ -98,6 +100,7 @@ export default function MyOrdersPage() {
             </div>
 
             <TraditionalHeader />
+            <AccountNavigation />
 
             <main className="flex-grow py-12 px-4 sm:px-6 relative z-10">
                 <div className="max-w-4xl mx-auto">
@@ -206,7 +209,7 @@ export default function MyOrdersPage() {
                                         <div className={`w-full md:w-5/12 ${isEven ? 'text-center md:text-right md:pr-12 order-2 md:order-1' : 'text-center md:text-left md:pl-12 order-2 md:order-2'}`}>
                                             <div className={`inline-flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'}`}>
                                                 <div className={`flex items-center gap-2 ${statusConfig.colorClass} mb-1`}>
-                                                    <span className={`material-symbols-outlined text-sm ${status === 'AWAITING_PAYMENT' ? 'animate-pulse' : ''}`}>{statusConfig.icon}</span>
+                                                    <AppIcon name={statusConfig.icon} className={`text-sm ${status === 'AWAITING_PAYMENT' ? 'animate-pulse' : ''}`} />
                                                     <span className="text-xs font-bold tracking-widest uppercase">{statusConfig.label}</span>
                                                 </div>
                                                 <h3 className="font-serif text-3xl text-stone-800 font-bold mb-1">#{order.id.slice(0, 8).toUpperCase()}</h3>
@@ -246,7 +249,7 @@ export default function MyOrdersPage() {
                                                     <Link href={status === 'AWAITING_PAYMENT' ? `/checkout/payment?id=${order.id}` : `/account/orders/${order.id}`}>
                                                         <button className="flex items-center gap-1 text-[#9A3412] hover:text-[#7C2D12] transition-colors text-sm font-medium group/btn">
                                                             <span className="font-serif">{['COMPLETED', 'PAID', 'SHIPPED', 'DELIVERED'].includes(status) ? 'Xem lại đơn' : (status === 'AWAITING_PAYMENT' ? 'Thanh toán ngay' : 'Xem chi tiết')}</span>
-                                                            <span className="material-symbols-outlined text-base transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                                                            <AppIcon name="arrow_forward" className="text-base transform group-hover/btn:translate-x-1 transition-transform" />
                                                         </button>
                                                     </Link>
                                                 </div>
@@ -272,7 +275,7 @@ export default function MyOrdersPage() {
                                     disabled={page === 1}
                                     className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
                                 >
-                                    <span className="material-symbols-outlined text-sm">arrow_back_ios</span>
+                                    <AppIcon name="arrow_back_ios" className="text-sm" />
                                 </button>
 
                                 {Array.from({ length: meta.last_page }, (_, i) => i + 1).map(p => (
@@ -293,7 +296,7 @@ export default function MyOrdersPage() {
                                     disabled={page === meta.last_page}
                                     className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
                                 >
-                                    <span className="material-symbols-outlined text-sm">arrow_forward_ios</span>
+                                    <AppIcon name="arrow_forward_ios" className="text-sm" />
                                 </button>
                             </div>
                         )}

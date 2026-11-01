@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing';
+import { sanitizePostHtml } from '@/lib/sanitize-post';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { getPostBySlug, getPosts } from '@/lib/api-client';
@@ -8,6 +9,7 @@ import { Metadata } from 'next';
 import { BlogPost } from '@/types/blog';
 import ZenBlogDetail from '@/components/zen/ZenBlogDetail';
 import ZenFooter from '@/components/zen/ZenFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface PageProps {
     params: Promise<{
@@ -85,7 +87,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 {/* Breadcrumb & Back Link */}
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     <Link className="inline-flex items-center text-trad-primary hover:text-trad-primary-dark transition-colors group mb-6" href="/blog">
-                        <span className="material-symbols-outlined text-xl mr-1 group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                        <AppIcon name="arrow_back" className="text-xl mr-1 group-hover:-translate-x-1 transition-transform" />
                         <span className="font-medium italic">Quay lại Thư Viện</span>
                     </Link>
 
@@ -102,17 +104,17 @@ export default async function BlogDetailPage({ params }: PageProps) {
                         {/* Meta Info Strip */}
                         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-trad-text-muted border-t border-b border-trad-primary/20 py-4 mx-auto max-w-2xl">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-trad-primary text-lg">edit</span>
+                                <AppIcon name="edit" className="text-trad-primary text-lg" />
                                 <span>Viết bởi: <span className="font-bold text-trad-text-main">Nghệ nhân Thiên Phúc</span></span>
                             </div>
                             <div className="hidden sm:block w-1 h-1 bg-trad-primary rounded-full"></div>
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-trad-primary text-lg">calendar_today</span>
+                                <AppIcon name="calendar_today" className="text-trad-primary text-lg" />
                                 <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
                             </div>
                             <div className="hidden sm:block w-1 h-1 bg-trad-primary rounded-full"></div>
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-trad-primary text-lg">timer</span>
+                                <AppIcon name="timer" className="text-trad-primary text-lg" />
                                 <span>5 phút đọc</span>
                             </div>
                         </div>
@@ -144,7 +146,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                         </p>
                     )}
 
-                    <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />
+                    <div dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content || '') }} />
 
                     {/* Author Bio */}
                     <div className="mt-12 bg-white p-8 rounded-xl shadow-sm border border-trad-primary/10 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
@@ -175,7 +177,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                                 Những Chương Tiếp Theo
                             </h2>
                             <Link className="hidden md:flex items-center text-trad-primary font-bold hover:underline" href="/blog">
-                                Xem tất cả <span className="material-symbols-outlined ml-1">arrow_forward</span>
+                                Xem tất cả <AppIcon name="arrow_forward" className="ml-1" />
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -202,7 +204,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                                                 {rel.excerpt}
                                             </p>
                                             <div className="text-xs text-black/40 mt-auto flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-sm">schedule</span> {new Date(rel.created_at).toLocaleDateString('vi-VN')}
+                                                <AppIcon name="schedule" className="text-sm" /> {new Date(rel.created_at).toLocaleDateString('vi-VN')}
                                             </div>
                                         </div>
                                     </article>

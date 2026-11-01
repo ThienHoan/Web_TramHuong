@@ -25,7 +25,7 @@ import { MerchantModule } from './merchant/merchant.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../../.env' }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     // Structured Logging with Pino
     LoggerModule.forRoot({
       pinoHttp: {

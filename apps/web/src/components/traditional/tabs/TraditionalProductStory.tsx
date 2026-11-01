@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface TraditionalProductStoryProps {
     product: Product;
@@ -51,13 +52,13 @@ export default function TraditionalProductStory({ product }: TraditionalProductS
                 <div className="lg:col-span-5 flex flex-col gap-6">
                     <div className="relative aspect-[3/4] rounded-t-full rounded-b-lg overflow-hidden border-2 border-trad-amber-700/20 shadow-xl bg-trad-bg-warm">
                         <div className="absolute inset-0 flex items-center justify-center flex-col text-trad-amber-800/40">
-                            <span className="material-symbols-outlined text-6xl mb-2">forest</span>
+                            <AppIcon name="forest" className="text-6xl mb-2" />
                             <span className="font-serif italic">Rừng thiêng</span>
                         </div>
                     </div>
                     <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-trad-amber-700/20 shadow-lg bg-white rotate-2 hover:rotate-0 transition-transform duration-500">
                         <div className="absolute inset-0 flex items-center justify-center flex-col text-trad-amber-800/40">
-                            <span className="material-symbols-outlined text-6xl mb-2">handyman</span>
+                            <AppIcon name="handyman" className="text-6xl mb-2" />
                             <span className="font-serif italic">Chế tác thủ công</span>
                         </div>
                     </div>

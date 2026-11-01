@@ -7,6 +7,7 @@ import { getOrder } from '@/lib/api-client';
 import { Order } from '@/types/order';
 import ZenOrderSuccess from '@/components/zen/ZenOrderSuccess';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function OrderConfirmationPage() {
     const params = useParams();
@@ -58,9 +59,9 @@ export default function OrderConfirmationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-text-main dark:text-white">
+            <div className="atelier-page min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-text-main dark:text-white">
                 <div className="flex flex-col items-center gap-4">
-                    <span className="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>
+                    <AppIcon name="progress_activity" className="text-4xl animate-spin text-primary" />
                     <p className="tracking-widest uppercase text-xs">Loading Order...</p>
                 </div>
             </div>
@@ -71,7 +72,7 @@ export default function OrderConfirmationPage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-text-main dark:text-white">
                 <div className="flex flex-col items-center gap-4">
-                    <span className="material-symbols-outlined text-4xl text-red-500">error</span>
+                    <AppIcon name="error" className="text-4xl text-red-500" />
                     <p className="tracking-widest uppercase text-xs">{error || 'Order not found'}</p>
                     <Link href="/" className="text-primary hover:underline text-xs tracking-widest uppercase mt-4">Return Home</Link>
                 </div>

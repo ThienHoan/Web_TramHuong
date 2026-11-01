@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Contact } from "@/types/contact";
+import { AppIcon } from "@/components/icons/AppIcon";
 
 const StatusBadge = ({ status }: { status: string }) => {
     if (status === 'new') return <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Mới</span>;
@@ -167,7 +168,7 @@ export default function AdminContactsPage() {
                                         variant="outline"
                                         className="w-full sm:w-auto"
                                     >
-                                        <span className="material-symbols-outlined text-[18px] mr-2">check</span>
+                                        <AppIcon name="check" className="text-[18px] mr-2" />
                                         Đánh dấu đã đọc
                                     </Button>
                                 )}
@@ -175,7 +176,7 @@ export default function AdminContactsPage() {
                                     className="w-full ml-3 sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
                                     onClick={() => window.location.href = `mailto:${selectedContact.email}?subject=Phản hồi: ${selectedContact.topic}`}
                                 >
-                                    <span className="material-symbols-outlined text-[18px] mr-2">reply</span>
+                                    <AppIcon name="reply" className="text-[18px] mr-2" />
                                     Phản hồi qua Email
                                 </Button>
                             </DialogFooter>

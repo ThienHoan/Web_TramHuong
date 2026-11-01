@@ -50,7 +50,7 @@ export default function MyReviewsPage() {
     if (loading) return <div className="p-8 text-center">Loading reviews...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="atelier-page max-w-4xl mx-auto p-6">
             <h1 className="text-3xl font-bold mb-8">My Reviews</h1>
 
             {reviews.length === 0 ? (

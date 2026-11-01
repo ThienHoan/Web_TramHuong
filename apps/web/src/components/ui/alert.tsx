@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { AppIcon } from "@/components/icons/AppIcon";
 
 const alertVariants = cva(
   "group relative overflow-hidden rounded-xl border flex flex-col sm:flex-row items-start sm:items-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]",
@@ -131,7 +132,7 @@ function Alert({
             type="button"
             title="Đóng"
           >
-            <span className="material-symbols-outlined text-[16px] font-bold leading-none block">close</span>
+            <AppIcon name="close" className="text-[16px] font-bold leading-none block" />
           </button>
         )}
 
@@ -142,9 +143,7 @@ function Alert({
             isSmall ? "w-8 h-8" : "w-14 h-14",
             iconWrapper
           )}>
-            <span className={cn("material-symbols-outlined", iconColor, isSmall ? "text-[18px]" : "text-3xl")} style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }}>
-              {icon}
-            </span>
+            <AppIcon name={icon} className={cn("", iconColor, isSmall ? "text-[18px]" : "text-3xl")} style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }} />
           </div>
           {/* Bloom Effect */}
           {bloom && (

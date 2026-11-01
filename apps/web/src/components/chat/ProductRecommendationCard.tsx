@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useCurrency } from '@/hooks/useCurrency';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ProductCardProps {
     product: {
@@ -26,7 +27,7 @@ export default function ProductRecommendationCard({ product }: ProductCardProps)
                     For now, use a generic placeholder or try to infer from slug if possible.
                 */}
                 <div className="w-full h-full bg-zen-50 flex items-center justify-center text-zen-400">
-                    <span className="material-symbols-outlined !text-[24px]">spa</span>
+                    <AppIcon name="spa" className="!text-[24px]" />
                 </div>
             </div>
             <div className="flex flex-col flex-1 min-w-0 justify-between">

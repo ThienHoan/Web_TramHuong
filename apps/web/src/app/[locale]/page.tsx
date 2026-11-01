@@ -11,13 +11,11 @@ export default async function Home({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const products = await getProducts(locale);
-  // Fetch blog posts (only published ones ideally, but admin API might return all, filtering if needed)
-  const blogResponse = await getPosts({ limit: 4 });
+  const [products, blogResponse] = await Promise.all([
+    getProducts(locale),
+    locale === 'vi' ? getPosts({ limit: 3, status: 'published' }) : Promise.resolve(null),
+  ]);
   const posts = blogResponse?.data || [];
-
-  // Basic filtering for "Featured" could happen here or inside components
-  // For now, passing all products allows the components to decide layout.
 
   if (locale === 'vi') {
     return <TraditionalHome products={products} posts={posts} />;

@@ -23,16 +23,16 @@ const MessageSet = () => (
 
 export default function TopBar() {
     return (
-        <div className="bg-trad-red-900 text-white text-xs py-2 overflow-hidden relative">
+        <div className="tp-announcement bg-trad-red-900 text-white text-xs py-2 overflow-hidden relative">
             <div className="flex items-center gap-0 animate-scroll hover:[animation-play-state:paused]">
                 {/* Triple the content for truly seamless loop */}
                 <div className="flex items-center shrink-0">
                     <MessageSet />
                 </div>
-                <div className="flex items-center shrink-0">
+                <div className="tp-announcement-copy flex items-center shrink-0" aria-hidden="true">
                     <MessageSet />
                 </div>
-                <div className="flex items-center shrink-0">
+                <div className="tp-announcement-copy flex items-center shrink-0" aria-hidden="true">
                     <MessageSet />
                 </div>
             </div>

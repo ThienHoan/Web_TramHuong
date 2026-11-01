@@ -18,6 +18,7 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel"
 import EmptyState from '../ui/empty-state';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function TraditionalProductList({ products }: { products: Product[] }) {
     const { formatPrice } = useCurrency();
@@ -84,30 +85,12 @@ export default function TraditionalProductList({ products }: { products: Product
     };
 
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary selection:text-white">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary selection:text-white">
             <TraditionalHeader />
 
-            {/* Hero Section */}
-            <section className="relative overflow-hidden bg-trad-bg-warm py-20 lg:py-28 border-b border-trad-border-warm">
-                <div className="absolute top-0 left-0 right-0 h-48 z-0 opacity-40 bg-pattern-lotus"></div>
-                <div className="container relative z-10 mx-auto px-4 text-center md:px-8 xl:px-20">
-                    <div className="mx-auto max-w-4xl">
-                        <div className="mb-4 flex items-center justify-center gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="h-px w-12 bg-trad-primary"></div>
-                            <span className="text-xs font-bold uppercase tracking-[0.25em] text-trad-primary">Tinh Hoa Đất Trời</span>
-                            <div className="h-px w-12 bg-trad-primary"></div>
-                        </div>
-                        <h1 className="mb-8 font-display text-4xl font-bold leading-tight text-trad-red-900 md:text-6xl lg:text-7xl opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                            Hành Trình Hương Trầm
-                        </h1>
-                        <p className="mx-auto max-w-2xl text-lg italic leading-relaxed text-trad-text-main/80 md:text-xl opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-                            &quot;Từ những vết thương của cây dó bầu nơi rừng già, thời gian và linh khí đất trời đã hun đúc nên trầm hương quý giá. Mỗi nén hương Thiên Phúc là một câu chuyện về sự chữa lành và an yên.&quot;
-                        </p>
-                        <div className="mt-10 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-                            <span className="material-symbols-outlined animate-bounce text-3xl text-trad-primary/50">keyboard_arrow_down</span>
-                        </div>
-                    </div>
-                </div>
+            <section className="atelier-catalog-intro">
+                <div><p>Phẩm vật từ thiên nhiên</p><h1>Chọn một làn hương.<br /><em>Giữ một khoảng yên.</em></h1></div>
+                <p>Vòng trầm để mang theo, hương trầm cho góc nhà, hay một món quà gửi người thương. Khám phá từng bộ sưu tập theo cách của bạn.</p>
             </section>
 
             {/* Sticky Chapter Nav - Adjustment for new header height (80px) */}
@@ -144,7 +127,7 @@ export default function TraditionalProductList({ products }: { products: Product
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
                             <div className="lg:col-span-5 lg:sticky lg:top-48 h-fit">
                                 <div className="mb-6 flex items-center gap-2 text-trad-primary">
-                                    <span className="material-symbols-outlined">filter_vintage</span>
+                                    <AppIcon name="filter_vintage" className="" />
                                     <span className="text-sm font-bold uppercase tracking-widest">Cao Cấp Nhất</span>
                                 </div>
                                 <h2 className="mb-6 text-4xl font-bold text-trad-text-main lg:text-5xl">
@@ -214,7 +197,7 @@ export default function TraditionalProductList({ products }: { products: Product
                         <div className="mt-10 flex justify-center">
                             <Link className="inline-flex items-center justify-center rounded-sm border border-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-trad-primary transition-all hover:bg-trad-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 group" href="/products/catalog">
                                 Xem tất cả sản phẩm
-                                <span className="material-symbols-outlined ml-2 text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+                                <AppIcon name="arrow_forward" className="ml-2 text-lg transition-transform group-hover:translate-x-1" />
                             </Link>
                         </div>
                     </div>
@@ -226,7 +209,7 @@ export default function TraditionalProductList({ products }: { products: Product
                 }>
                     <div className="absolute inset-0 bg-black/40"></div>
                     <div className="relative z-10 text-center text-white px-4">
-                        <span className="material-symbols-outlined text-4xl mb-2 opacity-80">self_improvement</span>
+                        <AppIcon name="self_improvement" className="text-4xl mb-2 opacity-80" />
                         <p className="font-display text-2xl md:text-3xl italic font-medium">&quot;Hương trầm tỏa ra, phiền muộn tan biến.&quot;</p>
                     </div>
                 </div >
@@ -247,7 +230,7 @@ export default function TraditionalProductList({ products }: { products: Product
                             <div className="col-span-1 md:col-span-2 relative overflow-hidden rounded-lg bg-trad-red-900 p-8 text-white shadow-md flex flex-col justify-center min-h-[300px]">
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
                                 <div className="absolute -right-10 -bottom-10 opacity-20">
-                                    <span className="material-symbols-outlined text-[200px]">spa</span>
+                                    <AppIcon name="spa" className="text-[200px]" />
                                 </div>
                                 <div className="relative z-10">
                                     <h3 className="mb-3 font-display text-2xl font-bold">Lựa chọn cho gia đình</h3>
@@ -255,8 +238,8 @@ export default function TraditionalProductList({ products }: { products: Product
                                         100% Nguyên liệu tự nhiên, không hóa chất tạo mùi. An toàn cho người già, trẻ nhỏ và phụ nữ mang thai. Kiểm định bởi CASE.
                                     </p>
                                     <ul className="space-y-2 mb-6 text-sm">
-                                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-trad-gold">check_circle</span> Hương dịu, không gây đau đầu</li>
-                                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-trad-gold">check_circle</span> Ít khói, phù hợp chung cư</li>
+                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Hương dịu, không gây đau đầu</li>
+                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Ít khói, phù hợp chung cư</li>
                                     </ul>
                                     <a className="inline-block border-b border-white pb-1 font-bold hover:text-trad-gold hover:border-trad-gold transition-colors" href="#">Xem chứng nhận chất lượng</a>
                                 </div>
@@ -283,8 +266,8 @@ export default function TraditionalProductList({ products }: { products: Product
                                             {/* Use hook for discount */}
                                             <ProductPrice product={product} size="sm" theme="traditional" />
                                             <Link href={`/products/${product.slug}`}>
-                                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                    <span className="material-symbols-outlined text-sm">add</span>
+                                                <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
+                                                    <AppIcon name="add" className="text-sm" />
                                                 </button>
                                             </Link>
                                         </div>
@@ -306,8 +289,8 @@ export default function TraditionalProductList({ products }: { products: Product
                                         <p className="text-xs text-trad-text-muted mt-1 mb-3">Gói 100g (~60 viên)</p>
                                         <div className="flex items-center justify-between">
                                             <span className="font-bold text-trad-red-900">180.000 ₫</span>
-                                            <button className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                <span className="material-symbols-outlined text-sm">add</span>
+                                            <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
+                                                <AppIcon name="add" className="text-sm" />
                                             </button>
                                         </div>
                                     </div>
@@ -325,8 +308,8 @@ export default function TraditionalProductList({ products }: { products: Product
                                         <p className="text-xs text-trad-text-muted mt-1 mb-3">3 loại nụ hương</p>
                                         <div className="flex items-center justify-between">
                                             <span className="font-bold text-trad-red-900">120.000 ₫</span>
-                                            <button className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                <span className="material-symbols-outlined text-sm">add</span>
+                                            <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
+                                                <AppIcon name="add" className="text-sm" />
                                             </button>
                                         </div>
                                     </div>
@@ -413,7 +396,7 @@ export default function TraditionalProductList({ products }: { products: Product
                 < section className="relative overflow-hidden bg-trad-red-900 py-16 text-center text-white" >
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
                     <div className="container relative z-10 mx-auto px-4">
-                        <span className="material-symbols-outlined mb-4 text-5xl opacity-80">mark_email_unread</span>
+                        <AppIcon name="mark_email_unread" className="mb-4 text-5xl opacity-80" />
                         <h2 className="mb-4 font-display text-3xl font-bold">Thư Hương Từ Thiên Phúc</h2>
                         <p className="mx-auto mb-8 max-w-lg text-trad-bg-light/80">
                             Đăng ký để nhận những câu chuyện về Trầm Hương và ưu đãi dành riêng cho khách hàng thân thiết.

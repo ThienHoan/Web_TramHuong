@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat, Manrope } from "next/font/google";
 import "./../globals.css";
+import "./../atelier.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
@@ -11,6 +12,7 @@ import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import SmoothScroll from '@/components/ui/SmoothScroll';
+import MotionProvider from '@/components/providers/MotionProvider';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
 import ChatWidget from '@/components/chat/ChatWidget';
@@ -183,12 +185,14 @@ export default async function RootLayout({
               <WishlistProvider>
                 <NetworkStatusProvider>
                   <ErrorBoundary>
+                    <MotionProvider>
                     <JsonLd />
                     {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
                     <SmoothScroll />
                     {children}
                     <ChatWidget />
                     <ScrollToTop />
+                    </MotionProvider>
                   </ErrorBoundary>
                 </NetworkStatusProvider>
                 <Toaster position="top-center" toastOptions={{

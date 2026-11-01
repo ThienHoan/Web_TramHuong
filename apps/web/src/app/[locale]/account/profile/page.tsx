@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getProfile, updateProfile, setAccessToken } from '@/lib/api-client';
 import { useRouter } from '@/i18n/routing';
+import AccountNavigation from '@/components/layout/AccountNavigation';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 
@@ -16,6 +17,7 @@ interface Division {
 
 import { Alert } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ProfilePage() {
     const { session, refreshProfile, loading: authLoading } = useAuth();
@@ -181,8 +183,9 @@ export default function ProfilePage() {
     };
 
     if (authLoading || dataLoading) return (
-        <div className="bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
+        <div className="atelier-page bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
             <TraditionalHeader />
+            <AccountNavigation />
             <main className="flex-grow flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-trad-primary border-t-transparent rounded-full animate-spin"></div>
             </main>
@@ -196,6 +199,7 @@ export default function ProfilePage() {
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] mix-blend-multiply z-0"></div>
 
             <TraditionalHeader />
+            <AccountNavigation />
 
             <main className="relative z-10 container mx-auto px-4 py-12 max-w-6xl flex-grow">
                 <header className="mb-12 text-center">
@@ -231,8 +235,8 @@ export default function ProfilePage() {
                                             </div>
                                         )}
                                     </div>
-                                    <button type="button" className="absolute bottom-2 right-2 bg-trad-primary text-white p-2 rounded-full shadow-lg hover:bg-trad-red-900 transition-colors">
-                                        <span className="material-symbols-outlined text-sm">edit</span>
+                                    <button aria-label="Chỉnh sửa" type="button" className="absolute bottom-2 right-2 bg-trad-primary text-white p-2 rounded-full shadow-lg hover:bg-trad-red-900 transition-colors">
+                                        <AppIcon name="edit" className="text-sm" />
                                     </button>
                                 </div>
 
@@ -252,7 +256,7 @@ export default function ProfilePage() {
 
                         <div className="bg-white dark:bg-stone-900 rounded-xl shadow-soft p-8 border border-trad-border-warm">
                             <h3 className="font-display text-xl font-bold mb-6 flex items-center gap-2 text-trad-text-main">
-                                <span className="material-symbols-outlined text-trad-gold">person</span>
+                                <AppIcon name="person" className="text-trad-gold" />
                                 Thông tin cá nhân
                             </h3>
                             <div className="space-y-5">
@@ -315,7 +319,7 @@ export default function ProfilePage() {
                                                     <option key={p.code} value={p.code}>{p.name}</option>
                                                 ))}
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-3 top-3 text-stone-400 pointer-events-none">expand_more</span>
+                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
                                         </div>
                                     </div>
                                     <div className="col-span-1">
@@ -332,7 +336,7 @@ export default function ProfilePage() {
                                                     <option key={d.code} value={d.code}>{d.name}</option>
                                                 ))}
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-3 top-3 text-stone-400 pointer-events-none">expand_more</span>
+                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
                                         </div>
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
@@ -349,13 +353,13 @@ export default function ProfilePage() {
                                                     <option key={w.code} value={w.code}>{w.name}</option>
                                                 ))}
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-3 top-3 text-stone-400 pointer-events-none">expand_more</span>
+                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
                                         </div>
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
                                         <label className="block text-sm font-semibold text-trad-text-muted mb-2">Địa chỉ cụ thể</label>
                                         <div className="relative group">
-                                            <span className="material-symbols-outlined absolute left-3 top-3 text-stone-400 group-focus-within:text-trad-primary transition-colors">home</span>
+                                            <AppIcon name="home" className="absolute left-3 top-3 text-stone-400 group-focus-within:text-trad-primary transition-colors" />
                                             <input
                                                 name="street_address"
                                                 value={formData.street_address}
@@ -369,7 +373,7 @@ export default function ProfilePage() {
                                 </div>
 
                                 <div className="bg-trad-amber-50 border-l-4 border-trad-gold p-4 rounded-r-md mb-8 flex items-start gap-3">
-                                    <span className="material-symbols-outlined text-trad-gold mt-0.5">place</span>
+                                    <AppIcon name="place" className="text-trad-gold mt-0.5" />
                                     <div>
                                         <p className="text-sm font-medium text-trad-text-main">Địa chỉ hiện tại:</p>
                                         <p className="text-sm text-trad-text-main/80">
@@ -391,7 +395,7 @@ export default function ProfilePage() {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="material-symbols-outlined">save</span>
+                                                <AppIcon name="save" className="" />
                                                 Lưu Thay Đổi
                                             </>
                                         )}

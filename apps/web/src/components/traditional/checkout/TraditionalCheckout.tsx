@@ -11,6 +11,7 @@ import GuestCheckoutForm from '@/components/traditional/checkout/GuestCheckoutFo
 import ProductImage from '@/components/ui/ProductImage';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface GuestShippingInfo {
     name: string;
@@ -246,13 +247,13 @@ export default function TraditionalCheckout() {
                 {/* Breadcrumbs */}
                 <nav className="mb-8 flex items-center gap-2 text-sm md:text-base">
                     <span className="text-trad-red-900 font-bold border-b-2 border-trad-primary">Thông tin</span>
-                    <span className="material-symbols-outlined text-trad-border-warm text-sm">chevron_right</span>
+                    <AppIcon name="chevron_right" className="text-trad-border-warm text-sm" />
                     <span className="text-gray-400 font-medium">Thanh toán</span>
                 </nav>
 
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-center gap-3">
-                        <span className="material-symbols-outlined">error</span>
+                        <AppIcon name="error" className="" />
                         <p>{error}</p>
                     </div>
                 )}
@@ -266,7 +267,7 @@ export default function TraditionalCheckout() {
                             <section className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
                                 <div className="bg-white rounded-xl border border-trad-border-warm shadow-md p-8 text-center flex flex-col items-center gap-6">
                                     <div className="w-16 h-16 rounded-full bg-trad-bg-warm flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-3xl text-trad-primary">rocket_launch</span>
+                                        <AppIcon name="rocket_launch" className="text-3xl text-trad-primary" />
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-bold text-trad-red-900 mb-2">Thanh toán ngay</h2>
@@ -288,7 +289,7 @@ export default function TraditionalCheckout() {
 
                                 <div className="bg-trad-bg-warm/30 rounded-xl border border-trad-border-warm/50 p-6 flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-trad-text-muted text-2xl">account_circle</span>
+                                        <AppIcon name="account_circle" className="text-trad-text-muted text-2xl" />
                                         <div className="text-left">
                                             <p className="font-bold text-trad-text-main">Đã có tài khoản?</p>
                                             <p className="text-xs text-trad-text-muted">Đăng nhập để tích điểm và lưu địa chỉ</p>
@@ -308,7 +309,7 @@ export default function TraditionalCheckout() {
                                 <section className="rounded-xl overflow-hidden border-2 border-trad-border-warm shadow-md bg-white">
                                     <div className="px-6 py-4 border-b-2 border-trad-border-warm bg-trad-bg-warm flex justify-between items-center">
                                         <h2 className="font-bold flex items-center gap-2 text-trad-red-900 text-lg">
-                                            <span className="material-symbols-outlined text-trad-primary">shopping_bag</span>
+                                            <AppIcon name="shopping_bag" className="text-trad-primary" />
                                             Giỏ hàng ({items.length})
                                         </h2>
                                     </div>
@@ -336,7 +337,7 @@ export default function TraditionalCheckout() {
                                                             className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-all"
                                                             title="Xóa"
                                                         >
-                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                            <AppIcon name="delete" className="text-[20px]" />
                                                         </button>
                                                     </div>
 
@@ -344,7 +345,7 @@ export default function TraditionalCheckout() {
                                                     <div className="flex justify-between items-center">
                                                         {/* Quantity Controls */}
                                                         <div className="flex items-center gap-0 border-2 border-trad-border-warm rounded-lg overflow-hidden bg-white">
-                                                            <button
+                                                            <button aria-label="Giảm số lượng"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     const newQty = item.quantity - 1;
@@ -355,12 +356,12 @@ export default function TraditionalCheckout() {
                                                                 disabled={item.quantity <= 1}
                                                                 className="px-3 py-2 hover:bg-trad-bg-warm active:bg-trad-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                                             >
-                                                                <span className="material-symbols-outlined text-[18px] text-trad-text-main font-bold">remove</span>
+                                                                <AppIcon name="remove" className="text-[18px] text-trad-text-main font-bold" />
                                                             </button>
                                                             <span className="px-4 py-2 min-w-[3ch] text-center text-sm font-bold text-trad-text-main border-x-2 border-trad-border-warm bg-trad-bg-warm/30">
                                                                 {item.quantity}
                                                             </span>
-                                                            <button
+                                                            <button aria-label="Tăng số lượng"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     const newQty = item.quantity + 1;
@@ -368,7 +369,7 @@ export default function TraditionalCheckout() {
                                                                 }}
                                                                 className="px-3 py-2 hover:bg-trad-bg-warm active:bg-trad-primary/10 transition-colors"
                                                             >
-                                                                <span className="material-symbols-outlined text-[18px] text-trad-text-main font-bold">add</span>
+                                                                <AppIcon name="add" className="text-[18px] text-trad-text-main font-bold" />
                                                             </button>
                                                         </div>
 
@@ -384,7 +385,7 @@ export default function TraditionalCheckout() {
 
                                         {items.length === 0 && (
                                             <div className="text-center py-12 text-trad-text-muted">
-                                                <span className="material-symbols-outlined text-5xl mb-3 opacity-30">shopping_cart</span>
+                                                <AppIcon name="shopping_cart" className="text-5xl mb-3 opacity-30" />
                                                 <p className="font-medium">Giỏ hàng trống</p>
                                             </div>
                                         )}
@@ -395,7 +396,7 @@ export default function TraditionalCheckout() {
                                 <section className="rounded-xl overflow-hidden border border-trad-border-warm shadow-md bg-white text-trad-text-main relative">
                                     <div className="px-6 py-4 border-b border-trad-border-warm bg-trad-bg-warm/50">
                                         <h2 className="text-xl font-bold flex items-center gap-2 text-trad-red-900">
-                                            <span className="material-symbols-outlined text-trad-primary">local_shipping</span>
+                                            <AppIcon name="local_shipping" className="text-trad-primary" />
                                             Thông tin giao hàng
                                         </h2>
                                     </div>
@@ -473,7 +474,7 @@ export default function TraditionalCheckout() {
                                                         {totalSavings > 0 && (
                                                             <div className="flex justify-between items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="material-symbols-outlined text-green-600 text-[20px]">local_offer</span>
+                                                                    <AppIcon name="local_offer" className="text-green-600 text-[20px]" />
                                                                     <span className="text-sm font-medium text-green-700">Tiết kiệm (Sản phẩm)</span>
                                                                 </div>
                                                                 <span className="font-bold text-green-600">-{formatPrice(totalSavings)}</span>
@@ -500,7 +501,7 @@ export default function TraditionalCheckout() {
                                                     <div className="flex flex-col gap-2 mb-2">
                                                         <div className="flex justify-between items-center px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="material-symbols-outlined text-purple-600 text-[20px]">confirmation_number</span>
+                                                                <AppIcon name="confirmation_number" className="text-purple-600 text-[20px]" />
                                                                 <div className="flex flex-col">
                                                                     <span className="text-sm font-medium text-purple-700">Mã giảm giá</span>
                                                                     <span className="text-[10px] text-purple-600 font-mono tracking-wider">{appliedVoucher.code}</span>
@@ -528,7 +529,7 @@ export default function TraditionalCheckout() {
                                             className="mt-4 w-full bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3.5 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 group disabled:opacity-50"
                                         >
                                             {loading ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
-                                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                            <AppIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
                                         </button>
                                     )}
                                 </div>
@@ -537,7 +538,7 @@ export default function TraditionalCheckout() {
                             {/* VOUCHER INPUT SECTION */}
                             <div className="rounded-xl overflow-hidden border border-trad-border-warm shadow-md bg-white text-trad-text-main">
                                 <div className="px-6 py-4 border-b border-trad-border-warm bg-trad-bg-warm/50 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-trad-gold">confirmation_number</span>
+                                    <AppIcon name="confirmation_number" className="text-trad-gold" />
                                     <h3 className="font-bold text-trad-red-900">Mã giảm giá</h3>
                                 </div>
                                 <div className="p-6">
@@ -548,7 +549,7 @@ export default function TraditionalCheckout() {
                                             value={voucherCode}
                                             onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                                             disabled={!!appliedVoucher}
-                                            className="flex-1 bg-white border border-trad-border-warm rounded-lg px-4 py-2.5 text-trad-text-main focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none disabled:bg-gray-100 disabled:text-gray-500 uppercase font-mono"
+                                            className="min-w-0 flex-1 bg-white border border-trad-border-warm rounded-lg px-4 py-2.5 text-trad-text-main focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none disabled:bg-gray-100 disabled:text-gray-500 uppercase font-mono"
                                         />
                                         {appliedVoucher ? (
                                             <button
@@ -565,7 +566,7 @@ export default function TraditionalCheckout() {
                                             <button
                                                 onClick={handleApplyVoucher}
                                                 disabled={!voucherCode || verifyingVoucher}
-                                                className="bg-trad-text-main hover:bg-black text-[#fef3c7] font-bold px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-trad-text-main shadow-sm"
+                                                className="shrink-0 whitespace-nowrap bg-trad-text-main hover:bg-black text-[#fef3c7] font-bold px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-trad-text-main shadow-sm"
                                             >
                                                 {verifyingVoucher ? '...' : 'Áp dụng'}
                                             </button>
@@ -575,13 +576,13 @@ export default function TraditionalCheckout() {
                                     {/* Messages */}
                                     {voucherError && (
                                         <p className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-[14px]">error</span>
+                                            <AppIcon name="error" className="text-[14px]" />
                                             {voucherError}
                                         </p>
                                     )}
                                     {appliedVoucher && (
                                         <p className="mt-2 text-xs text-green-600 font-bold flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                                            <AppIcon name="check_circle" className="text-[14px]" />
                                             Đã áp dụng mã: {appliedVoucher.code} (-{formatPrice(appliedVoucher.discountAmount)})
                                         </p>
                                     )}
@@ -606,7 +607,7 @@ export default function TraditionalCheckout() {
                                 className="bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md flex items-center gap-2 disabled:opacity-50"
                             >
                                 {loading ? 'Xử lý...' : 'Thanh toán'}
-                                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                <AppIcon name="arrow_forward" className="text-[18px]" />
                             </button>
                         </div>
                     </div>

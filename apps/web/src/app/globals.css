@@ -1,34 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./editorial.css";
 
-/* Self-hosted Material Icons for Performance */
-@font-face {
-  font-family: 'Material Symbols Outlined';
-  font-style: normal;
-  font-weight: 100 700;
-  font-display: block;
-  src: url('/fonts/material-icons/material-symbols-outlined.woff2') format('woff2');
+/* SVG icon defaults; utility text sizes still control the migrated icons. */
+@layer components {
+  .app-icon { display: inline-block; flex-shrink: 0; vertical-align: -0.125em; font-size: 24px; }
 }
-
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: 'liga';
-}
-
-
+.lucide, .brand-icon { stroke-width: 1.65; }
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -44,33 +22,33 @@
   --color-zen-900: #1c1917;
 
   /* Traditional Theme (Agarwood Red, Amber, Trust) */
-  --color-trad-red-900: #450a0a;
-  --color-trad-red-950: #450a0a;
+  --color-trad-red-900: #29352e;
+  --color-trad-red-950: #29352e;
   --color-trad-amber-50: #fffbeb;
   --color-trad-amber-100: #fef3c7;
   --color-trad-amber-600: #d97706;
   --color-trad-amber-700: #b45309;
 
   /* New Traditional Design Colors */
-  --color-trad-red: #541e1b;
+  --color-trad-red: #3b3028;
   /* Deep traditional red from Success Page */
-  --color-trad-gold: #f4c025;
+  --color-trad-gold: #b99863;
   --color-trad-cream: #f4f0e7;
-  --color-trad-primary: #b35309;
-  --color-trad-primary-dark: #8a3e05;
-  --color-trad-bg-light: #fcfaf8;
-  --color-trad-bg-warm: #fdf6ed;
+  --color-trad-primary: #785538;
+  --color-trad-primary-dark: #59402e;
+  --color-trad-bg-light: #f8f5ee;
+  --color-trad-bg-warm: #f0ebe1;
   --color-trad-bg-dark: #221810;
-  --color-trad-text-main: #1c130d;
-  --color-trad-text-muted: #9c6d49;
-  --color-trad-border-warm: #e8dace;
-  --color-trad-border-subtle: #f4ece7;
+  --color-trad-text-main: #302e28;
+  --color-trad-text-muted: #756c5e;
+  --color-trad-border-warm: #ddd5c7;
+  --color-trad-border-subtle: #eae4d9;
 
   /* TestHome.tsx Palette (Exact Match) */
-  --color-primary: #c99c48;
-  --color-primary-dark: #991B1B;
-  --color-accent-gold: #D4AF37;
-  --color-accent-gold-dark: #B8860B;
+  --color-primary: #785538;
+  --color-primary-dark: #35392e;
+  --color-accent-gold: #ad8954;
+  --color-accent-gold-dark: #886a3d;
   --color-background-light: #f8f7f6;
   --color-background-dark: #1f1b13;
   --color-text-main: #2D1810;
@@ -82,14 +60,14 @@
   --font-serif: "Playfair Display", serif;
 
   /* Traditional Product List Brand Colors */
-  --color-brand-red: #8B2323;
-  --color-brand-red-light: #A52A2A;
-  --color-brand-amber: #B8860B;
-  --color-brand-gold: #D4AF37;
+  --color-brand-red: #3d4b3e;
+  --color-brand-red-light: #52644e;
+  --color-brand-amber: #886a3d;
+  --color-brand-gold: #ad8954;
   --color-brand-yellow: #FFFDF5;
   --color-brand-cream: #F5F0E6;
-  --color-brand-text: #3E2723;
-  --color-brand-muted: #8D6E63;
+  --color-brand-text: #302e28;
+  --color-brand-muted: #756c5e;
   --color-brand-border: #E6DCCA;
 
   --background-image-pattern-lotus: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232D1810' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -207,7 +185,7 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
@@ -230,7 +208,7 @@
   content: "";
   height: 1px;
   width: 100px;
-  background: #B8860B;
+  background: #886a3d;
   margin: 0 1rem;
   opacity: 0.6;
 }

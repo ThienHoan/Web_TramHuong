@@ -11,6 +11,7 @@ import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function CheckoutSuccessPage() {
     const searchParams = useSearchParams();
@@ -74,7 +75,7 @@ export default function CheckoutSuccessPage() {
     if (!orderId) return null;
 
     return (
-        <div className="bg-trad-bg-light font-display antialiased min-h-screen flex flex-col" style={{
+        <div className="atelier-page bg-trad-bg-light font-display antialiased min-h-screen flex flex-col" style={{
             backgroundImage: 'radial-gradient(var(--color-trad-border-warm) 1px, transparent 1px)',
             backgroundSize: '24px 24px'
         }}>
@@ -101,9 +102,7 @@ export default function CheckoutSuccessPage() {
                                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                                 className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-trad-gold/15 ring-1 ring-trad-gold/40"
                             >
-                                <span className="material-symbols-outlined text-6xl text-trad-gold leading-none">
-                                    check_circle
-                                </span>
+                                <AppIcon name="check_circle" className="text-6xl text-trad-gold leading-none" />
                             </motion.div>
 
                             {/* Main Headlines */}
@@ -116,7 +115,7 @@ export default function CheckoutSuccessPage() {
                             {!session && (
                                 <div className="mt-8 w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-500">
                                     <div className="flex items-center gap-2 text-amber-500 font-bold uppercase tracking-wider text-sm">
-                                        <span className="material-symbols-outlined">warning</span>
+                                        <AppIcon name="warning" className="" />
                                         Lưu ý quan trọng
                                     </div>
                                     <p className="text-[#e8e2ce] text-sm md:text-base max-w-lg">
@@ -129,7 +128,7 @@ export default function CheckoutSuccessPage() {
                             {/* Divider */}
                             <div className="w-full h-px bg-[#7a3e3b] my-8 relative">
                                 <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#421614] px-2">
-                                    <span className="material-symbols-outlined text-[#f4c025] text-xl">local_shipping</span>
+                                    <AppIcon name="local_shipping" className="text-[#f4c025] text-xl" />
                                 </div>
                             </div>
 
@@ -144,9 +143,7 @@ export default function CheckoutSuccessPage() {
                                             className="p-1.5 rounded-full hover:bg-white/10 text-trad-gold/70 hover:text-trad-gold transition-colors"
                                             title="Sao chép mã đơn hàng"
                                         >
-                                            <span className="material-symbols-outlined text-lg">
-                                                {copied ? 'check' : 'content_copy'}
-                                            </span>
+                                            <AppIcon name={copied ? 'check' : 'content_copy'} className="text-lg" />
                                         </button>
                                     </div>
                                     {copied && (
@@ -236,7 +233,7 @@ export default function CheckoutSuccessPage() {
                                                     {totalSavings > 0 && (
                                                         <div className="flex justify-between items-center text-[#9c8749] text-sm">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="material-symbols-outlined text-base">savings</span>
+                                                                <AppIcon name="savings" className="text-base" />
                                                                 <span>Đã tiết kiệm</span>
                                                             </div>
                                                             <span>-{formatPrice(totalSavings)}</span>
@@ -246,7 +243,7 @@ export default function CheckoutSuccessPage() {
                                                     {Number(order.voucher_discount_amount) > 0 && (
                                                         <div className="flex justify-between items-center text-[#9c8749] text-sm mt-1">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="material-symbols-outlined text-base text-purple-400">confirmation_number</span>
+                                                                <AppIcon name="confirmation_number" className="text-base text-purple-400" />
                                                                 <span>Voucher ({order.voucher_code})</span>
                                                             </div>
                                                             <span className="text-purple-400">-{formatPrice(Number(order.voucher_discount_amount))}</span>
@@ -289,18 +286,18 @@ export default function CheckoutSuccessPage() {
                             {/* Action Buttons */}
                             <div className="flex flex-col sm:flex-row w-full justify-center gap-4">
                                 <Link href="/" className="flex items-center justify-center rounded-lg h-12 px-8 bg-trad-gold hover:bg-[#e0b020] text-[#1c180d] text-base font-bold transition-all shadow-lg hover:shadow-trad-gold/20">
-                                    <span className="material-symbols-outlined mr-2 text-[20px]">storefront</span>
+                                    <AppIcon name="storefront" className="mr-2 text-[20px]" />
                                     Tiếp tục mua sắm
                                 </Link>
 
                                 {session ? (
                                     <Link href={`/account/orders/${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
-                                        <span className="material-symbols-outlined mr-2 text-[20px]">receipt_long</span>
+                                        <AppIcon name="receipt_long" className="mr-2 text-[20px]" />
                                         Xem đơn hàng
                                     </Link>
                                 ) : (
                                     <Link href={`/order-lookup?code=${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
-                                        <span className="material-symbols-outlined mr-2 text-[20px]">search</span>
+                                        <AppIcon name="search" className="mr-2 text-[20px]" />
                                         Thử tra cứu ngay
                                     </Link>
                                 )}
@@ -311,7 +308,7 @@ export default function CheckoutSuccessPage() {
                                 <div className="mt-8 pt-8 border-t border-[#7a3e3b] w-full animate-in fade-in slide-in-from-bottom-4">
                                     <div className="bg-[#2a0f0e]/50 rounded-xl p-6 border border-[#7a3e3b] flex flex-col md:flex-row items-center gap-6 text-left">
                                         <div className="flex-shrink-0 h-12 w-12 rounded-full bg-trad-gold/20 flex items-center justify-center text-trad-gold animate-pulse">
-                                            <span className="material-symbols-outlined text-2xl">person_add</span>
+                                            <AppIcon name="person_add" className="text-2xl" />
                                         </div>
                                         <div className="flex-1">
                                             <h4 className="text-[#fef3c7] font-bold text-lg font-serif">Tạo tài khoản ngay</h4>

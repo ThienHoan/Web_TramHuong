@@ -3,10 +3,11 @@
 import { Link } from '@/i18n/routing';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function TraditionalNotFound() {
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white overflow-hidden transition-colors duration-300">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white overflow-hidden transition-colors duration-300">
             <TraditionalHeader />
 
             <main className="flex-grow flex items-center justify-center relative p-4 md:p-8">
@@ -65,10 +66,10 @@ export default function TraditionalNotFound() {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
                             <Link href="/" className="inline-flex items-center justify-center h-12 px-8 rounded-xl bg-trad-primary text-white text-base font-bold transition-all hover:bg-trad-red-900 hover:shadow-lg hover:shadow-trad-primary/30 active:scale-95 group">
                                 <span>Quay về Trang chủ</span>
-                                <span className="material-symbols-outlined ml-2 text-[20px] transition-transform group-hover:-translate-x-1">west</span>
+                                <AppIcon name="west" className="ml-2 text-[20px] transition-transform group-hover:-translate-x-1" />
                             </Link>
                             <Link href="/products" className="inline-flex items-center justify-center h-12 px-8 rounded-xl bg-transparent border-2 border-trad-primary/30 text-trad-text-main text-base font-bold transition-all hover:border-trad-primary hover:bg-trad-primary/5 active:scale-95 group">
-                                <span className="material-symbols-outlined mr-2 text-[20px] text-trad-primary transition-transform group-hover:rotate-12">spa</span>
+                                <AppIcon name="spa" className="mr-2 text-[20px] text-trad-primary transition-transform group-hover:rotate-12" />
                                 <span>Khám phá Sản phẩm</span>
                             </Link>
                         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { BlogPost } from '@/types/blog';
+import { sanitizePostHtml } from '@/lib/sanitize-post';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -91,7 +92,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                 {/* Main Content */}
                 <div
                     className="prose prose-lg dark:prose-invert prose-headings:font-light prose-headings:uppercase prose-headings:tracking-widest prose-p:font-light prose-p:leading-loose prose-a:text-primary hover:prose-a:text-[#5bc115] prose-img:rounded-lg prose-img:shadow-sm"
-                    dangerouslySetInnerHTML={{ __html: post.content || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content || '') }}
                 />
 
                 {/* Tags */}

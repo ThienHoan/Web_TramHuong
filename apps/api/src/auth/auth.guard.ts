@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
@@ -58,10 +59,13 @@ export class AuthGuard implements CanActivate {
       // Fetch role from public.users to ensure up-to-date permissions
       const { data: userData, error: roleError } = await client
         .from('users')
-        .select('role')
+        .select('role, is_banned')
         .eq('id', user.id)
         .single();
 
+      if (userData?.is_banned) {
+        throw new ForbiddenException('Account is banned');
+      }
       if (roleError || !userData) {
         // Fallback or treat as customer
         request.user = { ...user, role: 'CUSTOMER' };
@@ -70,7 +74,8 @@ export class AuthGuard implements CanActivate {
       }
 
       return true;
-    } catch {
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
       if (isPublic) return true; // Fail safe for public routes
       throw new UnauthorizedException();
     }

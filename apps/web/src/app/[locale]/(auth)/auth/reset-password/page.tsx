@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { updatePassword } from '@/app/actions/auth';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ResetPasswordPage() {
     useLocale(); // Ensure locale context is available
@@ -121,7 +122,7 @@ export default function ResetPasswordPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="atelier-page min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
             </div>
         );
@@ -170,14 +171,12 @@ export default function ResetPasswordPage() {
                                 placeholder="Min. 8 characters"
                                 className="pr-10"
                             />
-                            <button
+                            <button aria-label="Hiện hoặc ẩn mật khẩu"
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
-                                <span className="material-symbols-outlined text-xl">
-                                    {showPassword ? 'visibility_off' : 'visibility'}
-                                </span>
+                                <AppIcon name={showPassword ? 'visibility_off' : 'visibility'} className="text-xl" />
                             </button>
                         </div>
                     </div>
@@ -194,14 +193,12 @@ export default function ResetPasswordPage() {
                                 placeholder="Confirm new password"
                                 className="pr-10"
                             />
-                            <button
+                            <button aria-label="Hiện hoặc ẩn mật khẩu"
                                 type="button"
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
-                                <span className="material-symbols-outlined text-xl">
-                                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
-                                </span>
+                                <AppIcon name={showConfirmPassword ? 'visibility_off' : 'visibility'} className="text-xl" />
                             </button>
                         </div>
                     </div>

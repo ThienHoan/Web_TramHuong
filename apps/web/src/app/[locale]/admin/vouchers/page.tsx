@@ -7,6 +7,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
 import { getVouchers, updateVoucher, deleteVoucher } from '@/lib/api-client';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function AdminVouchersPage() {
     const { session, role, loading: authLoading } = useAuth();
@@ -117,7 +118,7 @@ export default function AdminVouchersPage() {
                     href="/admin/vouchers/new"
                     className="bg-purple-600 text-white px-6 py-2.5 rounded hover:bg-purple-700 text-sm font-medium transition-colors shadow-lg shadow-purple-200 flex items-center gap-2"
                 >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
+                    <AppIcon name="add" className="text-[20px]" />
                     Tạo Mã Mới
                 </Link>
             </div>
@@ -125,7 +126,7 @@ export default function AdminVouchersPage() {
             {/* Toolbar */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center">
                 <div className="flex-1 w-full relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">search</span>
+                    <AppIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]" />
                     <input
                         type="text"
                         placeholder="Tìm kiếm theo mã..."
@@ -238,7 +239,7 @@ export default function AdminVouchersPage() {
                                                     className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-colors"
                                                     title="Chỉnh sửa"
                                                 >
-                                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                    <AppIcon name="edit" className="text-[20px]" />
                                                 </Link>
                                                 {/* Delete Button */}
                                                 <button
@@ -246,7 +247,7 @@ export default function AdminVouchersPage() {
                                                     className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                                                     title="Xóa"
                                                 >
-                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                    <AppIcon name="delete" className="text-[20px]" />
                                                 </button>
                                             </td>
                                         </tr>

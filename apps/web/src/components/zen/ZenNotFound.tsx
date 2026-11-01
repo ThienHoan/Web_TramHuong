@@ -1,6 +1,7 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenNotFound() {
     return (
@@ -9,7 +10,7 @@ export default function ZenNotFound() {
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center gap-4 text-text-main dark:text-white group transition-opacity hover:opacity-80">
                         <div className="size-6 text-primary">
-                            <span className="material-symbols-outlined !text-[24px]">spa</span>
+                            <AppIcon name="spa" className="!text-[24px]" />
                         </div>
                         <h2 className="text-base font-bold tracking-widest text-text-main dark:text-white">ZEN INCENSE</h2>
                     </Link>
@@ -20,11 +21,11 @@ export default function ZenNotFound() {
                     <Link href="/" className="text-text-main dark:text-gray-300 text-xs tracking-[0.2em] font-medium hover:text-primary transition-colors">JOURNAL</Link>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button className="text-text-main dark:text-white hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-2xl">search</span>
+                    <button aria-label="Search" className="text-text-main dark:text-white hover:text-primary transition-colors">
+                        <AppIcon name="search" className="text-2xl" />
                     </button>
-                    <button className="text-text-main dark:text-white hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-2xl">shopping_bag</span>
+                    <button aria-label="Shopping bag" className="text-text-main dark:text-white hover:text-primary transition-colors">
+                        <AppIcon name="shopping_bag" className="text-2xl" />
                     </button>
                 </div>
             </header>

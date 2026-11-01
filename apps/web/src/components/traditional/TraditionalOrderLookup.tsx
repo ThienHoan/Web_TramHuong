@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function TraditionalOrderLookup() {
     const searchParams = useSearchParams();
@@ -97,11 +98,11 @@ export default function TraditionalOrderLookup() {
                             <div className="relative z-10 w-full h-full flex flex-col p-8 md:p-12 justify-between">
                                 <div className="space-y-4">
                                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff7e6] border border-[#e7cfd0] text-[#9a4c50] text-xs font-bold uppercase tracking-wider">
-                                        <span className="material-symbols-outlined text-sm">history_edu</span>
+                                        <AppIcon name="history_edu" className="text-sm" />
                                         <span>Câu Chuyện Của Trầm</span>
                                     </div>
                                     <h1 className="text-[#1b0d0e] text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-[-0.02em] font-serif">
-                                        Hành trình của tinh hoa đang chờ bạn khám phá
+                                        Theo dõi đơn hàng của bạn
                                     </h1>
                                     <p className="text-[#5c3a3c] text-lg font-medium leading-relaxed max-w-md">
                                         Từ rừng già linh thiêng đến không gian an yên của bạn. Mỗi nén trầm là một câu chuyện về thời gian và sự tận tụy.
@@ -123,7 +124,7 @@ export default function TraditionalOrderLookup() {
                         {/* Lookup Form (Right) */}
                         <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white relative">
                             <div className="absolute top-0 right-0 p-6 pointer-events-none opacity-20">
-                                <span className="material-symbols-outlined text-6xl text-[#ec131e]">local_florist</span>
+                                <AppIcon name="local_florist" className="text-6xl text-[#ec131e]" />
                             </div>
                             <div className="max-w-md mx-auto w-full">
                                 <div className="mb-10 text-center lg:text-left">
@@ -141,7 +142,7 @@ export default function TraditionalOrderLookup() {
 
                                     <label className="flex flex-col w-full group">
                                         <span className="text-[#1b0d0e] text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-base text-[#9a4c50]">receipt_long</span>
+                                            <AppIcon name="receipt_long" className="text-base text-[#9a4c50]" />
                                             Mã Đơn Hàng
                                         </span>
                                         <input
@@ -155,7 +156,7 @@ export default function TraditionalOrderLookup() {
 
                                     <label className="flex flex-col w-full group">
                                         <span className="text-[#1b0d0e] text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-base text-[#9a4c50]">contact_mail</span>
+                                            <AppIcon name="contact_mail" className="text-base text-[#9a4c50]" />
                                             Số Điện Thoại hoặc Email
                                         </span>
                                         <input
@@ -177,7 +178,7 @@ export default function TraditionalOrderLookup() {
                                         ) : (
                                             <>
                                                 <span>Tra Cứu Hành Trình</span>
-                                                <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                                                <AppIcon name="arrow_forward" className="text-xl" />
                                             </>
                                         )}
                                     </button>
@@ -198,15 +199,15 @@ export default function TraditionalOrderLookup() {
                     {/* Bottom Trust Indicators */}
                     <div className="mt-8 flex justify-center gap-8 opacity-60">
                         <div className="flex items-center gap-2 text-[#5c3a3c] text-xs font-semibold uppercase tracking-widest">
-                            <span className="material-symbols-outlined text-lg">verified</span>
+                            <AppIcon name="verified" className="text-lg" />
                             <span>Chính Hãng</span>
                         </div>
                         <div className="flex items-center gap-2 text-[#5c3a3c] text-xs font-semibold uppercase tracking-widest">
-                            <span className="material-symbols-outlined text-lg">local_shipping</span>
+                            <AppIcon name="local_shipping" className="text-lg" />
                             <span>Giao Nhanh</span>
                         </div>
                         <div className="flex items-center gap-2 text-[#5c3a3c] text-xs font-semibold uppercase tracking-widest">
-                            <span className="material-symbols-outlined text-lg">support_agent</span>
+                            <AppIcon name="support_agent" className="text-lg" />
                             <span>Hỗ Trợ 24/7</span>
                         </div>
                     </div>
@@ -221,7 +222,7 @@ export default function TraditionalOrderLookup() {
                         <div className="relative w-full max-w-2xl transform overflow-hidden rounded-[2rem] bg-[#fffbf2] text-left shadow-2xl transition-all flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-300">
                             <div className="absolute inset-0 pointer-events-none z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNlYzEzMWUiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0di00aC0ydjRoLTR2Mmg0djRoMnYtNGg0dj0yaC00em0wLTMwVjBoLTJ2NGgtNHYyaDR2NGgyVjZoNFY0aC00ek02IDM0di00SDR2NEgwdjJoNHY0aDJ2LTRoNHYtMkg2ek02IDRWMEg0djRIMHYyaDR2NGgyVjZoNFY0SDZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20 mix-blend-multiply"></div>
                             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                                <span className="material-symbols-outlined text-9xl text-[#b45309]">spa</span>
+                                <AppIcon name="spa" className="text-9xl text-[#b45309]" />
                             </div>
 
                             <div className="relative z-10 px-6 py-6 md:px-8 border-b border-[#e7cfd0]/50 flex justify-between items-start bg-white/40">
@@ -229,11 +230,11 @@ export default function TraditionalOrderLookup() {
                                     <h3 className="text-2xl md:text-3xl font-black text-[#b45309] font-serif tracking-tight">Hành Trình Hương Trầm</h3>
                                     <p className="mt-1 text-[#5c3a3c] text-sm font-medium italic">&quot;Mỗi đơn hàng là một duyên lành&quot;</p>
                                 </div>
-                                <button
+                                <button aria-label="Đóng"
                                     onClick={() => setShowModal(false)}
                                     className="group -mr-2 -mt-2 p-2 rounded-full hover:bg-[#e7cfd0]/30 transition-colors cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[#9a4c50] group-hover:text-[#ec131e]">close</span>
+                                    <AppIcon name="close" className="text-[#9a4c50] group-hover:text-[#ec131e]" />
                                 </button>
                             </div>
 
@@ -242,7 +243,7 @@ export default function TraditionalOrderLookup() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-[#e7cfd0]/50 border-dashed">
                                     <div>
                                         <span className="text-[#9a4c50] text-xs font-bold uppercase tracking-widest mb-1 block flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-sm">bookmark</span>
+                                            <AppIcon name="bookmark" className="text-sm" />
                                             Mã Đơn
                                         </span>
                                         <h4 className="text-xl font-bold text-[#1b0d0e] font-serif truncate max-w-[200px]" title={result.id}>
@@ -258,7 +259,7 @@ export default function TraditionalOrderLookup() {
                                 {/* Items */}
                                 <div className="mb-8">
                                     <h5 className="text-[#1b0d0e] font-bold text-lg font-serif mb-4 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[#9a4c50]">deployed_code</span>
+                                        <AppIcon name="deployed_code" className="text-[#9a4c50]" />
                                         Vật Phẩm
                                     </h5>
                                     <div className="space-y-3">
@@ -268,7 +269,7 @@ export default function TraditionalOrderLookup() {
                                                     {item.image ? (
                                                         <Image src={item.image} alt={item.title} width={64} height={64} className="object-cover w-full h-full" />
                                                     ) : (
-                                                        <span className="material-symbols-outlined text-3xl">image</span>
+                                                        <AppIcon name="image" className="text-3xl" />
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -289,7 +290,7 @@ export default function TraditionalOrderLookup() {
                                     <div className="p-5 rounded-2xl bg-[#fffaf5] border border-[#fed7aa]/50 relative group">
                                         <div className="flex items-start gap-3 relative z-10">
                                             <div className="mt-1 p-2 bg-white rounded-full text-[#ea580c] shadow-sm border border-[#fed7aa]/30">
-                                                <span className="material-symbols-outlined text-xl">local_shipping</span>
+                                                <AppIcon name="local_shipping" className="text-xl" />
                                             </div>
                                             <div>
                                                 <h6 className="font-bold text-[#1b0d0e] mb-1">Giao đến</h6>
@@ -302,7 +303,7 @@ export default function TraditionalOrderLookup() {
                                     <div className="p-5 rounded-2xl bg-[#f0fdf4] border border-[#bbf7d0]/50 relative group">
                                         <div className="flex items-start gap-3 relative z-10">
                                             <div className="mt-1 p-2 bg-white rounded-full text-[#16a34a] shadow-sm border border-[#bbf7d0]/30">
-                                                <span className="material-symbols-outlined text-xl">payments</span>
+                                                <AppIcon name="payments" className="text-xl" />
                                             </div>
                                             <div className="w-full">
                                                 <h6 className="font-bold text-[#1b0d0e] mb-2">Thanh toán</h6>
@@ -396,7 +397,7 @@ export default function TraditionalOrderLookup() {
                                                 <div className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#15803d] bg-[#dcfce7] px-2 py-1 rounded-md border border-[#bbf7d0]">
                                                     {result.payment_status === 'paid' ? (
                                                         <>
-                                                            <span className="material-symbols-outlined text-[14px]">check</span>
+                                                            <AppIcon name="check" className="text-[14px]" />
                                                             ĐÃ THANH TOÁN
                                                         </>
                                                     ) : (

@@ -7,6 +7,7 @@ import { Product } from '@/types/product';
 import { BlogPost } from '@/types/blog'; // Verify type exists
 import { useRouter } from '@/i18n/routing'; // Use i18n routing
 import Image from 'next/image';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ZenSearchOverlayProps {
     isOpen: boolean;
@@ -95,7 +96,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
         <div className="fixed inset-0 z-[100] bg-white/95 dark:bg-zinc-950/98 backdrop-blur-md animate-fade-in flex flex-col">
             {/* Header / Search Input */}
             <div className="max-w-5xl w-full mx-auto px-6 lg:px-12 pt-8 pb-4 border-b border-zen-100 dark:border-white/10 flex items-center gap-6">
-                <span className="material-symbols-outlined text-3xl text-zen-400 dark:text-zinc-500">search</span>
+                <AppIcon name="search" className="text-3xl text-zen-400 dark:text-zinc-500" />
                 <input
                     ref={inputRef}
                     type="text"
@@ -113,11 +114,11 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                             Clear
                         </button>
                     )}
-                    <button
+                    <button aria-label="Close"
                         onClick={onClose}
                         className="size-10 flex items-center justify-center rounded-full hover:bg-zen-100 dark:hover:bg-zinc-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-3xl text-zen-900 dark:text-white">close</span>
+                        <AppIcon name="close" className="text-3xl text-zen-900 dark:text-white" />
                     </button>
                 </div>
             </div>
@@ -129,7 +130,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                     {/* Loading State */}
                     {results.loading && (
                         <div className="flex justify-center py-20">
-                            <span className="material-symbols-outlined animate-spin text-4xl text-zen-300">progress_activity</span>
+                            <AppIcon name="progress_activity" className="animate-spin text-4xl text-zen-300" />
                         </div>
                     )}
 
@@ -146,7 +147,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                                                 className="text-lg md:text-xl font-light text-zen-800 dark:text-zinc-300 hover:text-primary transition-colors hover:translate-x-2 duration-300 flex items-center gap-2"
                                             >
                                                 <span>{item}</span>
-                                                <span className="material-symbols-outlined text-sm opacity-0 hover:opacity-100 transition-opacity">arrow_forward</span>
+                                                <AppIcon name="arrow_forward" className="text-sm opacity-0 hover:opacity-100 transition-opacity" />
                                             </button>
                                         </li>
                                     ))}
@@ -187,7 +188,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                                                     {product.images?.[0] ? (
                                                         <Image src={product.images[0]} alt={product.translation?.title || product.title || 'Product'} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-zen-200"><span className="material-symbols-outlined">spa</span></div>
+                                                        <div className="w-full h-full flex items-center justify-center text-zen-200"><AppIcon name="spa" className="" /></div>
                                                     )}
                                                 </div>
                                                 <h4 className="text-sm font-medium text-zen-900 dark:text-white group-hover:text-primary transition-colors">{product.translation?.title || product.title}</h4>
@@ -212,7 +213,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                                                     {post.cover_image ? (
                                                         <Image src={post.cover_image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-zen-200"><span className="material-symbols-outlined">article</span></div>
+                                                        <div className="w-full h-full flex items-center justify-center text-zen-200"><AppIcon name="article" className="" /></div>
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col justify-center">

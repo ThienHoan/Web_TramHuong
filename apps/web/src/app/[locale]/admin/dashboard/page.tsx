@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/icons/AppIcon';
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -63,19 +64,19 @@ export default function AdminDashboard() {
                     <MetricCard
                         title="Total Revenue"
                         value={formatPrice(Number(data.summary.totalRevenue || 0))}
-                        icon="💰"
+                        icon="attach_money"
                         color="bg-emerald-50 text-emerald-700 border-emerald-100"
                     />
                     <MetricCard
                         title="Total Orders"
                         value={data.summary.totalOrders}
-                        icon="📦"
+                        icon="inventory_2"
                         color="bg-blue-50 text-blue-700 border-blue-100"
                     />
                     <MetricCard
                         title="Pending Orders"
                         value={data.summary.pendingOrders}
-                        icon="⏳"
+                        icon="pending"
                         color="bg-amber-50 text-amber-700 border-amber-100"
                     />
                 </div>
@@ -142,7 +143,7 @@ function MetricCard({ title, value, icon, color }: any) {
         <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <span className="text-4xl opacity-50">{icon}</span>
+                <AppIcon name={icon} className="text-3xl opacity-60" />
             </CardHeader>
             <CardContent>
                 <div className={`text-2xl font-bold ${textColor}`}>{value}</div>

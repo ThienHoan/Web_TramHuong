@@ -9,6 +9,7 @@ import { useLocale } from 'next-intl';
 
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -166,7 +167,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="bg-[#f8f7f5] dark:bg-[#221910] text-[#1c140d] dark:text-gray-100 font-display min-h-screen flex flex-col antialiased selection:bg-[#d56d0b]/20 selection:text-[#d56d0b]">
+        <div className="atelier-page bg-[#f8f7f5] dark:bg-[#221910] text-[#1c140d] dark:text-gray-100 font-display min-h-screen flex flex-col antialiased selection:bg-trad-red-900/20 selection:text-trad-primary">
             <style jsx global>{`
                 .lattice-pattern {
                     background-color: #f8f7f5;
@@ -184,15 +185,20 @@ export default function LoginPage() {
 
             <TraditionalHeader />
 
-            <main className="relative flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <main className="atelier-login relative flex-grow">
+                <aside className="atelier-login-story" aria-label="Thiên Phúc">
+                    <p>THIÊN PHÚC · TRẦM HƯƠNG VIỆT</p>
+                    <h2>Một nơi để trở về.<br /><em>Một hương để nhớ.</em></h2>
+                    <span>Lưu những phẩm vật yêu thích và theo dõi hành trình đơn hàng của bạn.</span>
+                </aside>
                 <div className="absolute inset-0 lattice-pattern pointer-events-none"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
-                <div className="relative w-full max-w-md">
+                <div className="atelier-login-form relative w-full max-w-md">
                     <div className="bg-white dark:bg-[#1e150f] rounded-xl shadow-xl border border-[#e8dbce] dark:border-[#3e2b1e] overflow-hidden">
                         <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH")' }}>
                             <div className="absolute bottom-4 left-6">
                                 <h1 className="text-2xl font-bold text-white tracking-wide shadow-black drop-shadow-md">
-                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng Nhập' : mode === 'SIGNUP' ? 'Đăng Ký' : 'Quên Mật Khẩu')}
+                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng nhập' : mode === 'SIGNUP' ? 'Đăng ký' : 'Quên mật khẩu')}
                                 </h1>
                                 <p className="text-orange-100 text-sm font-medium opacity-90">
                                     {showCheckEmail ? 'Vui lòng xác thực tài khoản' : mode === 'FORGOT_PASSWORD' ? 'Nhận link đặt lại mật khẩu' : 'Chào mừng quý khách quay trở lại'}
@@ -212,7 +218,7 @@ export default function LoginPage() {
                                             setMode('LOGIN');
                                             setEmail('');
                                         }}
-                                        className="text-[#d56d0b] text-sm underline font-bold"
+                                        className="text-trad-primary text-sm underline font-bold"
                                     >
                                         ← Quay lại Đăng nhập
                                     </button>
@@ -244,7 +250,7 @@ export default function LoginPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
-                                                            className="text-[#d56d0b] hover:underline font-medium text-sm"
+                                                            className="text-trad-primary hover:underline font-medium text-sm"
                                                         >
                                                             → Quên mật khẩu?
                                                         </button>
@@ -262,11 +268,11 @@ export default function LoginPage() {
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <span className="material-symbols-outlined text-gray-400 text-xl">person</span>
+                                                    <AppIcon name="person" className="text-gray-400 text-xl" />
                                                 </div>
                                                 <input
                                                     autoComplete="username"
-                                                    className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
+                                                    className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary/50 focus:border-trad-primary transition duration-150 ease-in-out sm:text-sm font-sans"
                                                     id="email"
                                                     name="email"
                                                     placeholder="Ví dụ: ten_dang_nhap"
@@ -285,11 +291,11 @@ export default function LoginPage() {
                                                 </label>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                        <span className="material-symbols-outlined text-gray-400 text-xl">lock</span>
+                                                        <AppIcon name="lock" className="text-gray-400 text-xl" />
                                                     </div>
                                                     <input
                                                         autoComplete="current-password"
-                                                        className="block w-full pl-10 pr-10 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 focus:border-[#d56d0b] transition duration-150 ease-in-out sm:text-sm font-sans"
+                                                        className="block w-full pl-10 pr-10 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary/50 focus:border-trad-primary transition duration-150 ease-in-out sm:text-sm font-sans"
                                                         id="password"
                                                         name="password"
                                                         placeholder="••••••••"
@@ -298,14 +304,12 @@ export default function LoginPage() {
                                                         value={password}
                                                         onChange={e => setPassword(e.target.value)}
                                                     />
-                                                    <button
+                                                    <button aria-label="Hiện hoặc ẩn mật khẩu"
                                                         type="button"
                                                         onClick={() => setShowPassword(!showPassword)}
                                                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                                     >
-                                                        <span className="material-symbols-outlined text-xl">
-                                                            {showPassword ? 'visibility_off' : 'visibility'}
-                                                        </span>
+                                                        <AppIcon name={showPassword ? 'visibility_off' : 'visibility'} className="text-xl" />
                                                     </button>
                                                 </div>
                                             </div>
@@ -315,7 +319,7 @@ export default function LoginPage() {
                                             {mode === 'LOGIN' && (
                                                 <div className="flex items-center">
                                                     <input
-                                                        className="h-4 w-4 text-[#d56d0b] focus:ring-[#d56d0b] border-gray-300 rounded cursor-pointer"
+                                                        className="h-4 w-4 text-trad-primary focus:ring-trad-primary border-gray-300 rounded cursor-pointer"
                                                         id="remember-me"
                                                         name="remember-me"
                                                         type="checkbox"
@@ -332,7 +336,7 @@ export default function LoginPage() {
                                                     <button
                                                         type="button"
                                                         onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
-                                                        className="font-medium text-[#d56d0b] hover:text-[#b05705] hover:underline transition-all"
+                                                        className="font-medium text-trad-primary hover:text-[#b05705] hover:underline transition-all"
                                                     >
                                                         Quên mật khẩu?
                                                     </button>
@@ -342,12 +346,12 @@ export default function LoginPage() {
 
                                         <div>
                                             <button
-                                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-[#d56d0b] hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d56d0b] transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-trad-red-900 hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-trad-primary transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                                                 type="submit"
                                                 disabled={loading}
                                             >
                                                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                                    <span className="material-symbols-outlined text-primary-200 group-hover:text-white">login</span>
+                                                    <AppIcon name="login" className="text-primary-200 group-hover:text-white" />
                                                 </span>
                                                 {loading ? 'Đang xử lý...' : (mode === 'LOGIN' ? 'Đăng nhập' : mode === 'SIGNUP' ? 'Đăng ký ngay' : 'Gửi link đặt lại')}
                                             </button>
@@ -366,7 +370,7 @@ export default function LoginPage() {
                                         </div>
                                         <div className="mt-6 grid grid-cols-2 gap-3">
                                             <button
-                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-[#d56d0b]/40 focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 transition-all duration-200"
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-trad-primary/40 focus:outline-none focus:ring-2 focus:ring-trad-primary/50 transition-all duration-200"
                                                 type="button"
                                                 onClick={() => {
                                                     supabase.auth.signInWithOAuth({
@@ -386,7 +390,7 @@ export default function LoginPage() {
                                                 Google
                                             </button>
                                             <button
-                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-[#d56d0b]/40 focus:outline-none focus:ring-2 focus:ring-[#d56d0b]/50 transition-all duration-200"
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8dbce] dark:border-[#5c402b] bg-white dark:bg-[#1a120b] px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-[#251a12] hover:border-trad-primary/40 focus:outline-none focus:ring-2 focus:ring-trad-primary/50 transition-all duration-200"
                                                 type="button"
                                                 onClick={() => {
                                                     supabase.auth.signInWithOAuth({
@@ -409,7 +413,7 @@ export default function LoginPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setMode('LOGIN'); setError(null); }}
-                                                    className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
+                                                    className="font-bold text-trad-primary hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
                                                 >
                                                     Đăng nhập ngay
                                                 </button>
@@ -420,7 +424,7 @@ export default function LoginPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN'); setError(null); }}
-                                                    className="font-bold text-[#d56d0b] hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
+                                                    className="font-bold text-trad-primary hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
                                                 >
                                                     {mode === 'LOGIN' ? 'Đăng ký tài khoản mới' : 'Đăng nhập ngay'}
                                                 </button>
@@ -430,7 +434,7 @@ export default function LoginPage() {
                                 </>
                             )}
                         </div>
-                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#d56d0b] to-transparent opacity-50"></div>
+
                     </div>
                 </div>
             </main>

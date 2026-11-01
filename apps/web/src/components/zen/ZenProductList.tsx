@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import ZenProductCard from './ZenProductCard';
 
 import { PaginationMeta } from '@/services/product-service';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenProductList({ products, pagination }: { products: Product[]; pagination?: PaginationMeta }) {
     const router = useRouter();
@@ -144,7 +145,7 @@ export default function ZenProductList({ products, pagination }: { products: Pro
                                         <option value="price-asc">Price: Low to High</option>
                                         <option value="price-desc">Price: High to Low</option>
                                     </select>
-                                    <span className="material-symbols-outlined text-[16px] absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zen-green-text">expand_more</span>
+                                    <AppIcon name="expand_more" className="text-[16px] absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zen-green-text" />
                                 </div>
                             </div>
                         </div>

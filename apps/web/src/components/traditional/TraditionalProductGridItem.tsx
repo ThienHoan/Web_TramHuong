@@ -9,6 +9,7 @@ import { useCart } from '@/components/providers/CartProvider';
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface TraditionalProductGridItemProps {
     product: Product;
@@ -44,8 +45,8 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
     };
 
     return (
-        <div className="rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
+        <div className="atelier-product rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
+            <div className="atelier-product-image relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
                 {isActive && (
                     <span className="absolute left-2 top-2 z-10 rounded bg-trad-red-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
                         -{discountPercent}%
@@ -59,7 +60,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     <Link href={`/products/${product.slug}`}>
                         <button className="h-10 w-10 rounded-full bg-white text-trad-text-main hover:text-trad-primary hover:bg-trad-bg-warm shadow-lg flex items-center justify-center transition-colors" title="Xem chi tiết">
-                            <span className="material-symbols-outlined text-[20px]">visibility</span>
+                            <AppIcon name="visibility" className="text-[20px]" />
                         </button>
                     </Link>
                     <button
@@ -87,16 +88,11 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                         className={`h-10 w-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-colors ${wishlistItems.has(product.id) ? 'text-trad-red-900' : 'text-trad-text-main hover:text-trad-primary hover:bg-trad-bg-warm'}`}
                         title="Yêu thích"
                     >
-                        <span className={`material-symbols-outlined text-[20px] ${wishlistItems.has(product.id) ? 'filled' : ''}`}>favorite</span>
+                        <AppIcon name="favorite" className={`text-[20px] ${wishlistItems.has(product.id) ? 'filled' : ''}`} />
                     </button>
                 </div>
             </div>
-            <div className="flex flex-1 flex-col p-3 md:p-5">
-                <div className="mb-1 md:mb-2 flex text-trad-primary text-[12px] md:text-[14px]">
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <span key={i} className="material-symbols-outlined filled text-[14px] md:text-[16px]">star</span>
-                    ))}
-                </div>
+            <div className="atelier-product-copy flex flex-1 flex-col">
                 <h3 className="mb-1 md:mb-2 text-sm md:text-lg font-bold font-display leading-tight text-trad-text-main group-hover:text-trad-primary transition-colors line-clamp-2">
                     <Link href={`/products/${product.slug}`}>{product.translation?.title || product.title || 'Product'}</Link>
                 </h3>
@@ -107,9 +103,9 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                             e.preventDefault();
                             handleAddToCart();
                         }}
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-trad-primary text-white shadow bg-trad-primary hover:bg-trad-primary-dark h-11 px-4 py-2 uppercase tracking-wide w-full gap-2 group-hover:bg-trad-bg-warm group-hover:text-trad-primary border border-transparent group-hover:border-trad-primary"
+                        className="atelier-product-button inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-trad-primary text-white shadow bg-trad-primary hover:bg-trad-primary-dark h-11 px-4 py-2 uppercase tracking-wide w-full gap-2 group-hover:bg-trad-bg-warm group-hover:text-trad-primary border border-transparent group-hover:border-trad-primary"
                     >
-                        <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                        <AppIcon name="add_shopping_cart" className="text-[18px]" />
                         Thêm vào giỏ
                     </button>
                 </div>

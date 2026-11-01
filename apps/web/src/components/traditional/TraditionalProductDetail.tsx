@@ -5,6 +5,8 @@ import { useCart } from '../providers/CartProvider';
 import { useWishlist } from '../providers/WishlistProvider';
 import { useProductDiscount } from '@/hooks/useProductDiscount';
 import { ProductPrice } from '@/components/ui/ProductPrice';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import TraditionalHeader from './TraditionalHeader';
 import TraditionalFooter from './TraditionalFooter';
@@ -21,6 +23,7 @@ import { getProducts, getReviews } from '@/lib/api-client';
 import { useLocale } from 'next-intl';
 
 import { Product, ProductVariant } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function TraditionalProductDetail({ product }: { product: Product }) {
     const { addItem } = useCart();
@@ -28,14 +31,15 @@ export default function TraditionalProductDetail({ product }: { product: Product
     const locale = useLocale();
 
     // Calculate discount at component level (not inside functions!)
-    const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
 
-    const [selectedImage, setSelectedImage] = useState(product.images[0]);
+    const [selectedImage, setSelectedImage] = useState(product.images[0] || '/placeholder.png');
+    const [zoomOpen, setZoomOpen] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product, selectedVariant ? Number(selectedVariant.price) : undefined);
     const [isAdding, setIsAdding] = useState(false);
 
     // Initialize variant
@@ -98,7 +102,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
                 discount_amount: discountAmount,  // For discount display in checkout
                 image: product.images[0],
                 quantity: quantity,
-                variantId: selectedVariant?.name || undefined,
+                variantId: selectedVariant?.id || undefined,
                 variantName: selectedVariant?.name || undefined
             });
 
@@ -145,18 +149,24 @@ export default function TraditionalProductDetail({ product }: { product: Product
     // Render stars helper using dynamic count
     const renderStars = (rating: number) => {
         return (
-            <div className="flex text-trad-primary">
+            <div className="atelier-page flex text-trad-primary">
                 {[...Array(5)].map((_, i) => (
-                    <span key={i} className={`material-symbols-outlined !text-[20px] ${i < Math.round(rating) ? 'filled' : ''}`}>
-                        {i < Math.round(rating) ? 'star' : 'star_border'}
-                    </span>
+                    <AppIcon name={i < Math.round(rating) ? 'star' : 'star_border'} key={i} className={`!text-[20px] ${i < Math.round(rating) ? 'filled' : ''}`} />
                 ))}
             </div>
         );
     };
 
     return (
-        <div className="bg-trad-bg-light min-h-screen font-display">
+        <div className="tp-product-detail bg-trad-bg-light min-h-screen font-display">
+            <Dialog open={zoomOpen} onOpenChange={setZoomOpen}>
+                <DialogContent className="tp-image-dialog" data-lenis-prevent>
+                    <DialogTitle className="sr-only">{product.translation?.title || 'Ảnh sản phẩm'}</DialogTitle>
+                    <DialogDescription className="sr-only">Ảnh phóng lớn. Dùng các nút để xem ảnh tiếp theo hoặc nhấn Escape để đóng.</DialogDescription>
+                    <div className="tp-image-zoom"><Image src={selectedImage || '/placeholder.png'} alt={product.translation?.title || 'Ảnh sản phẩm phóng lớn'} fill sizes="(max-width: 767px) 95vw, 900px" className="object-contain" /></div>
+                    {product.images.length > 1 && <div className="tp-image-controls"><button aria-label="Ảnh trước" onClick={() => setSelectedImage(product.images[(product.images.indexOf(selectedImage) - 1 + product.images.length) % product.images.length])}><ArrowLeft size={20} /></button><span>{product.images.indexOf(selectedImage) + 1} / {product.images.length}</span><button aria-label="Ảnh tiếp theo" onClick={() => setSelectedImage(product.images[(product.images.indexOf(selectedImage) + 1) % product.images.length])}><ArrowRight size={20} /></button></div>}
+                </DialogContent>
+            </Dialog>
             <TraditionalHeader />
 
             <main className="min-h-screen bg-pattern-lotus pb-20">
@@ -184,10 +194,10 @@ export default function TraditionalProductDetail({ product }: { product: Product
                         {/* Left Column: Gallery */}
                         <div className="lg:col-span-7 flex flex-col gap-4">
                             {/* Main Image */}
-                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-trad-bg-warm border border-trad-border-warm group shadow-sm">
+                            <div className="tp-detail-main-image relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-trad-bg-warm border border-trad-border-warm group shadow-sm">
                                 <div className="relative w-full h-full">
                                     <Image
-                                        src={selectedImage || product.images[0]}
+                                        src={selectedImage || '/placeholder.png'}
                                         alt={product.translation?.title || 'Sản phẩm'}
                                         fill
                                         priority
@@ -199,8 +209,8 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                 <div className="absolute top-4 left-4 bg-trad-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
                                     Bán chạy nhất
                                 </div>
-                                <button className="absolute bottom-4 right-4 bg-white/90 p-2 rounded-lg hover:bg-white text-trad-text-main shadow-sm transition-all z-10" title="Phóng to">
-                                    <span className="material-symbols-outlined">zoom_in</span>
+                                <button onClick={() => setZoomOpen(true)} className="absolute bottom-4 right-4 bg-white/90 p-2 rounded-lg hover:bg-white text-trad-text-main shadow-sm transition-all z-10 min-h-11 min-w-11" title="Phóng to" aria-label="Phóng to ảnh sản phẩm">
+                                    <AppIcon name="zoom_in" className="" />
                                 </button>
                             </div>
                             {/* Thumbnails */}
@@ -208,6 +218,8 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                 {product.images.map((img: string, idx: number) => (
                                     <button
                                         key={idx}
+                                        aria-label={`Xem ảnh sản phẩm ${idx + 1}`}
+                                        aria-pressed={selectedImage === img}
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative flex-none w-24 aspect-square rounded-lg overflow-hidden border transition-all snap-start ${selectedImage === img ? 'border-trad-primary ring-2 ring-trad-primary/20 ring-offset-2' : 'border-trad-border-warm hover:border-trad-primary opacity-70 hover:opacity-100'}`}
                                     >
@@ -281,8 +293,8 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                     {/* Quantity & Add to Cart */}
                                     <div className="flex flex-wrap gap-4 items-stretch pt-4">
                                         <div className="flex items-center border border-trad-border-warm rounded-lg bg-white h-12">
-                                            <button onClick={() => handleQuantityChange(-1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
-                                                <span className="material-symbols-outlined !text-[18px]">remove</span>
+                                            <button aria-label="Giảm số lượng" onClick={() => handleQuantityChange(-1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
+                                                <AppIcon name="remove" className="!text-[18px]" />
                                             </button>
                                             <input
                                                 className="w-12 text-center border-none focus:ring-0 text-trad-text-main font-bold p-0 bg-transparent h-full"
@@ -290,8 +302,8 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                                 value={quantity}
                                                 readOnly
                                             />
-                                            <button onClick={() => handleQuantityChange(1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
-                                                <span className="material-symbols-outlined !text-[18px]">add</span>
+                                            <button aria-label="Tăng số lượng" onClick={() => handleQuantityChange(1)} className="px-3 py-1 hover:text-trad-primary transition-colors h-full flex items-center justify-center w-12">
+                                                <AppIcon name="add" className="!text-[18px]" />
                                             </button>
                                         </div>
                                         <button
@@ -299,17 +311,17 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                             disabled={isAdding}
                                             className={`flex-1 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold rounded-lg px-4 md:px-8 h-12 flex items-center justify-center gap-2 transition-colors shadow-md shadow-trad-primary/20 text-sm md:text-base ${isAdding ? 'opacity-75 cursor-wait' : ''}`}
                                         >
-                                            <span className="material-symbols-outlined !text-[20px]">shopping_bag</span>
+                                            <AppIcon name="shopping_bag" className="!text-[20px]" />
                                             {isAdding ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}
                                         </button>
-                                        <button
+                                        <button aria-label="Yêu thích"
                                             onClick={handleWishlist}
                                             className={`h-12 w-12 rounded-lg border flex items-center justify-center transition-all ${wishlistItems.has(product.id)
                                                 ? 'border-trad-red-900 bg-red-50 text-trad-red-900'
                                                 : 'border-trad-border-warm bg-white text-trad-text-muted hover:text-trad-red-900 hover:border-trad-red-900'
                                                 }`}
                                         >
-                                            <span className={`material-symbols-outlined ${wishlistItems.has(product.id) ? 'filled' : ''}`}>favorite</span>
+                                            <AppIcon name="favorite" className={`${wishlistItems.has(product.id) ? 'filled' : ''}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -317,15 +329,15 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                 {/* Trust Badges */}
                                 <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-trad-border-warm">
                                     <div className="flex flex-col items-center text-center gap-2">
-                                        <span className="material-symbols-outlined text-trad-primary !text-[32px]">verified</span>
+                                        <AppIcon name="verified" className="text-trad-primary !text-[32px]" />
                                         <span className="text-xs font-medium text-trad-text-main">100% Tự nhiên</span>
                                     </div>
                                     <div className="flex flex-col items-center text-center gap-2">
-                                        <span className="material-symbols-outlined text-trad-primary !text-[32px]">local_shipping</span>
+                                        <AppIcon name="local_shipping" className="text-trad-primary !text-[32px]" />
                                         <span className="text-xs font-medium text-trad-text-main">Giao hàng nhanh</span>
                                     </div>
                                     <div className="flex flex-col items-center text-center gap-2">
-                                        <span className="material-symbols-outlined text-trad-primary !text-[32px]">security</span>
+                                        <AppIcon name="security" className="text-trad-primary !text-[32px]" />
                                         <span className="text-xs font-medium text-trad-text-main">Đổi trả 7 ngày</span>
                                     </div>
                                 </div>
@@ -381,7 +393,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
                             <div className="lg:col-span-1 hidden lg:block">
                                 <div className="bg-white p-6 rounded-xl border border-trad-border-warm shadow-sm sticky top-24">
                                     <h3 className="text-xl font-bold text-trad-text-main mb-6 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-trad-primary">analytics</span>
+                                        <AppIcon name="analytics" className="text-trad-primary" />
                                         Thông số kỹ thuật
                                     </h3>
                                     <div className="space-y-4">
@@ -420,7 +432,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
                         <div className="flex items-center justify-between mb-8">
                             <h2 className="text-2xl font-bold text-trad-text-main">Sản phẩm liên quan</h2>
                             <Link className="text-trad-primary hover:text-trad-primary-dark font-medium flex items-center gap-1" href="/products">
-                                Xem tất cả <span className="material-symbols-outlined">arrow_forward</span>
+                                Xem tất cả <AppIcon name="arrow_forward" className="" />
                             </Link>
                         </div>
                         {/* Related Products Grid */}

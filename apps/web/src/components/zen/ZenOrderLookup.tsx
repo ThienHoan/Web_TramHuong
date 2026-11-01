@@ -11,6 +11,7 @@ import { Order } from '@/types/order';
 import { useLocale } from 'next-intl';
 import ZenFooter from './ZenFooter';
 import { useSearchParams } from 'next/navigation';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenOrderLookup() {
     const locale = useLocale();
@@ -93,7 +94,7 @@ export default function ZenOrderLookup() {
                     {/* Visual Header */}
                     <div className="flex flex-col items-center text-center mb-10 space-y-4">
                         <div className="w-16 h-16 rounded-full bg-[#fafcf8] dark:bg-[#131b0e] flex items-center justify-center mb-2 border border-[#ecf3e7] dark:border-[#3d800e]/30">
-                            <span className="material-symbols-outlined text-[#54ae13] text-3xl opacity-80">explore</span>
+                            <AppIcon name="explore" className="text-[#54ae13] text-3xl opacity-80" />
                         </div>
                         <h1 className="text-3xl md:text-4xl font-light tracking-widest text-[#131b0e] dark:text-white uppercase">
                             Trace Your<br />Journey
@@ -122,7 +123,7 @@ export default function ZenOrderLookup() {
                                     required
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#5f6e58]/40">
-                                    <span className="material-symbols-outlined text-sm">tag</span>
+                                    <AppIcon name="tag" className="text-sm" />
                                 </div>
                             </div>
                         </div>
@@ -143,7 +144,7 @@ export default function ZenOrderLookup() {
                                     required
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#5f6e58]/40">
-                                    <span className="material-symbols-outlined text-sm">mail</span>
+                                    <AppIcon name="mail" className="text-sm" />
                                 </div>
                             </div>
                         </div>
@@ -157,7 +158,7 @@ export default function ZenOrderLookup() {
                             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></span>
                             <span className="text-sm font-bold tracking-[0.15em] uppercase flex items-center gap-2">
                                 {loading ? 'Searching...' : 'Lookup Journey'}
-                                {!loading && <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>}
+                                {!loading && <AppIcon name="arrow_forward" className="text-base transition-transform group-hover:translate-x-1" />}
                             </span>
                         </button>
                     </form>

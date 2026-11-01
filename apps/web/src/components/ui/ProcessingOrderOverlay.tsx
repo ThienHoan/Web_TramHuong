@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export function ProcessingOrderOverlay({ isVisible }: { isVisible: boolean }) {
     return (
@@ -25,7 +26,7 @@ export function ProcessingOrderOverlay({ isVisible }: { isVisible: boolean }) {
                             transition={{ duration: 1.5, repeat: Infinity }}
                             className="absolute inset-0 flex items-center justify-center"
                         >
-                            <span className="material-symbols-outlined text-4xl text-trad-primary">local_shipping</span>
+                            <AppIcon name="local_shipping" className="text-4xl text-trad-primary" />
                         </motion.div>
                     </div>
 

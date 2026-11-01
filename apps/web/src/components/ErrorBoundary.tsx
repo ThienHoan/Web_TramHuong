@@ -2,6 +2,7 @@
 
 import { Component, ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ErrorBoundaryProps {
     children: ReactNode;
@@ -58,7 +59,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     <div className="max-w-md w-full mx-4 p-8 bg-white rounded-2xl shadow-lg border border-amber-200 text-center">
                         {/* Error Icon */}
                         <div className="w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl text-red-500">error_outline</span>
+                            <AppIcon name="error_outline" className="text-4xl text-red-500" />
                         </div>
 
                         {/* Error Message */}
@@ -76,14 +77,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                                 onClick={this.handleReload}
                                 className="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
                             >
-                                <span className="material-symbols-outlined text-lg">refresh</span>
+                                <AppIcon name="refresh" className="text-lg" />
                                 Tải lại trang
                             </button>
                             <Link
                                 href="/"
                                 className="px-6 py-3 border border-amber-300 text-amber-700 font-bold rounded-xl hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
                             >
-                                <span className="material-symbols-outlined text-lg">home</span>
+                                <AppIcon name="home" className="text-lg" />
                                 Về trang chủ
                             </Link>
                         </div>

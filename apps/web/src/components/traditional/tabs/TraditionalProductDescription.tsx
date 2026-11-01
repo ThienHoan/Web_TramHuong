@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface TraditionalProductDescriptionProps {
     product: Product;
@@ -41,7 +42,7 @@ export default function TraditionalProductDescription({ product }: TraditionalPr
                     <div className="absolute inset-0 bg-trad-amber-900/10 mix-blend-multiply pointer-events-none z-10"></div>
                     {/* Placeholder for "Crafting" or "Burning" */}
                     <div className="w-full h-full bg-trad-bg-warm flex items-center justify-center">
-                        <span className="material-symbols-outlined text-6xl text-trad-amber-700/30">landscape</span>
+                        <AppIcon name="landscape" className="text-6xl text-trad-amber-700/30" />
                     </div>
                 </div>
             </div>
@@ -52,7 +53,7 @@ export default function TraditionalProductDescription({ product }: TraditionalPr
                     <div key={i} className="aspect-video relative rounded-lg overflow-hidden border border-trad-border-warm shadow-sm group">
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10"></div>
                         <div className="w-full h-full bg-trad-bg-warm flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl text-trad-text-muted/50">filter_hdr</span>
+                            <AppIcon name="filter_hdr" className="text-4xl text-trad-text-muted/50" />
                         </div>
                     </div>
                 ))}
@@ -65,7 +66,7 @@ export default function TraditionalProductDescription({ product }: TraditionalPr
                     {benefits.map((benefit, idx) => (
                         <div key={idx} className="group flex flex-col items-center text-center p-6 bg-white rounded-xl border border-trad-border-subtle hover:border-trad-primary hover:shadow-lg transition-all transform hover:-translate-y-1">
                             <div className="w-16 h-16 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-primary mb-4 group-hover:rotate-12 transition-transform">
-                                <span className="material-symbols-outlined text-3xl">{benefit.icon}</span>
+                                <AppIcon name={benefit.icon} className="text-3xl" />
                             </div>
                             <h4 className="font-bold text-trad-text-main text-lg mb-2">{benefit.title}</h4>
                             <p className="text-sm text-trad-text-muted leading-relaxed">{benefit.desc}</p>

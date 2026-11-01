@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { X, Send, Sparkles, MessageSquare, Trash2, Square, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
+import { usePathname } from 'next/navigation';
 
 interface Message {
     role: 'user' | 'model';
@@ -34,6 +35,9 @@ const WELCOME_SHOWN_KEY = 'chat_welcome_shown';
 const WELCOME_DELAY_MS = 8000; // 8 seconds
 
 export default function ChatWidget() {
+    const pathname = usePathname();
+    const isPreview = pathname.endsWith('/3d-lab');
+    const isLanding = /^\/(vi|en)?\/?$/.test(pathname);
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -50,6 +54,10 @@ export default function ChatWidget() {
 
     // Auto-welcome bubble (first visit only)
     useEffect(() => {
+        if (isPreview || isLanding) {
+            setShowWelcomeBubble(false);
+            return;
+        }
         if (isOpen) {
             setShowWelcomeBubble(false);
             return;
@@ -70,7 +78,7 @@ export default function ChatWidget() {
         }, WELCOME_DELAY_MS);
 
         return () => clearTimeout(timer);
-    }, [isOpen]);
+    }, [isOpen, isPreview, isLanding]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -228,8 +236,10 @@ export default function ChatWidget() {
         toast.success('Đã xóa lịch sử chat trên thiết bị này');
     };
 
+    if (isPreview) return null;
+
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div

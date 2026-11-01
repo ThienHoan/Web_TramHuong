@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { submitContact } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 const contactSchema = z.object({
     full_name: z.string().min(2, 'Vui lòng nhập tên của bạn'),
@@ -48,7 +49,7 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary/20 selection:text-trad-primary">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary/20 selection:text-trad-primary">
             <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-pattern">
                 {/* Navigation */}
                 <TraditionalHeader />
@@ -63,7 +64,7 @@ export default function ContactPage() {
                                     <div className="flex flex-col gap-4">
                                         <span className="text-trad-primary font-bold tracking-widest uppercase text-xs">Liên hệ với chúng tôi</span>
                                         <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight text-trad-text-main">
-                                            Gửi gắm tâm tình cùng <br /><span className="text-trad-primary italic">Thiên Phúc</span>
+                                            Cùng trò chuyện với <br /><span className="text-trad-primary italic">Thiên Phúc</span>
                                         </h1>
                                         <p className="text-lg text-stone-600 leading-relaxed max-w-lg">
                                             Hương trầm quyện tỏa, kết nối tâm giao. Chúng tôi ở đây để lắng nghe câu chuyện của bạn, như một người tri kỷ bên chén trà thơm.
@@ -84,7 +85,7 @@ export default function ContactPage() {
                                         <div className="grid gap-6 sm:grid-cols-2">
                                             <div className="flex items-start gap-4">
                                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <span className="material-symbols-outlined">storefront</span>
+                                                    <AppIcon name="storefront" className="" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Chốn đi về</p>
@@ -93,7 +94,7 @@ export default function ContactPage() {
                                             </div>
                                             <div className="flex items-start gap-4">
                                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <span className="material-symbols-outlined">call</span>
+                                                    <AppIcon name="call" className="" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Đường dây kết nối</p>
@@ -103,7 +104,7 @@ export default function ContactPage() {
                                             </div>
                                             <div className="flex items-start gap-4">
                                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <span className="material-symbols-outlined">mail</span>
+                                                    <AppIcon name="mail" className="" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Thư tín</p>
@@ -112,14 +113,14 @@ export default function ContactPage() {
                                             </div>
                                             <div className="flex items-start gap-4">
                                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <span className="material-symbols-outlined">share</span>
+                                                    <AppIcon name="share" className="" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Mạng xã hội</p>
                                                     <div className="flex gap-3 mt-2">
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><span className="material-symbols-outlined">public</span></a>
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><span className="material-symbols-outlined">chat_bubble</span></a>
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><span className="material-symbols-outlined">photo_camera</span></a>
+                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="public" className="" /></a>
+                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="chat_bubble" className="" /></a>
+                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="photo_camera" className="" /></a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -130,37 +131,37 @@ export default function ContactPage() {
                                 <div className="w-full lg:max-w-md xl:max-w-lg">
                                     <div className="sticky top-28 rounded-2xl bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-trad-border-warm">
                                         <div className="mb-8 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-4xl text-trad-primary/40">stylus</span>
+                                            <AppIcon name="stylus" className="text-4xl text-trad-primary/40" />
                                         </div>
-                                        <h2 className="mb-6 text-center text-2xl font-bold text-trad-text-main">Chia sẻ câu chuyện</h2>
+                                        <h2 className="mb-6 text-center text-2xl font-bold text-trad-text-main">Bạn cần tư vấn điều gì?</h2>
                                         <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
                                             {/* Name Field */}
                                             <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="full_name">Quý danh của bạn</label>
+                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="full_name">Họ và tên</label>
                                                 <div className="relative">
                                                     <input
                                                         {...register('full_name')}
                                                         className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.full_name ? 'border-red-500' : 'border-trad-border-warm'}`}
                                                         id="full_name"
-                                                        placeholder="Để chúng tôi tiện xưng hô"
+                                                        placeholder="Tên của bạn"
                                                         type="text"
                                                     />
-                                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary">person</span>
+                                                    <AppIcon name="person" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
                                                 </div>
                                                 {errors.full_name && <p className="text-red-500 text-xs mt-1 ml-1">{errors.full_name.message}</p>}
                                             </div>
                                             {/* Email Field */}
                                             <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="email">Nơi chúng tôi phản hồi</label>
+                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="email">Email liên hệ</label>
                                                 <div className="relative">
                                                     <input
                                                         {...register('email')}
                                                         className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.email ? 'border-red-500' : 'border-trad-border-warm'}`}
                                                         id="email"
-                                                        placeholder="Địa chỉ thư điện tử"
+                                                        placeholder="Email của bạn"
                                                         type="email"
                                                     />
-                                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary">alternate_email</span>
+                                                    <AppIcon name="alternate_email" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
                                                 </div>
                                                 {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
                                             </div>
@@ -169,7 +170,7 @@ export default function ContactPage() {
                                                 <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="topic">Chủ đề quan tâm</label>
                                                 <div className="relative">
                                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                                                        <span className="material-symbols-outlined">expand_more</span>
+                                                        <AppIcon name="expand_more" className="" />
                                                     </div>
                                                     <select
                                                         {...register('topic')}
@@ -181,21 +182,21 @@ export default function ContactPage() {
                                                         <option>Phản hồi dịch vụ</option>
                                                         <option>Khác</option>
                                                     </select>
-                                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary">topic</span>
+                                                    <AppIcon name="topic" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
                                                 </div>
                                             </div>
                                             {/* Message Field */}
                                             <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="message">Lời nhắn gửi</label>
+                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="message">Lời nhắn</label>
                                                 <div className="relative">
                                                     <textarea
                                                         {...register('message')}
                                                         className={`w-full resize-none rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.message ? 'border-red-500' : 'border-trad-border-warm'}`}
                                                         id="message"
-                                                        placeholder="Hãy kể cho chúng tôi nghe..."
+                                                        placeholder="Sản phẩm hoặc thông tin bạn quan tâm…"
                                                         rows={5}
                                                     ></textarea>
-                                                    <span className="material-symbols-outlined absolute left-3 top-4 text-stone-400 group-focus-within:text-trad-primary">edit_note</span>
+                                                    <AppIcon name="edit_note" className="absolute left-3 top-4 text-stone-400 group-focus-within:text-trad-primary" />
                                                 </div>
                                                 {errors.message && <p className="text-red-500 text-xs mt-1 ml-1">{errors.message.message}</p>}
                                             </div>
@@ -212,13 +213,13 @@ export default function ContactPage() {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <span>Gửi câu chuyện của bạn</span>
-                                                        <span className="material-symbols-outlined text-sm">send</span>
+                                                        <span>Gửi lời nhắn</span>
+                                                        <AppIcon name="send" className="text-sm" />
                                                     </>
                                                 )}
                                             </button>
                                             <p className="text-center text-xs text-stone-500 italic mt-2">
-                                                Mọi thông tin của bạn đều được bảo mật tuyệt đối.
+                                                Chúng tôi dùng thông tin này để phản hồi lời nhắn của bạn.
                                             </p>
                                         </form>
                                     </div>

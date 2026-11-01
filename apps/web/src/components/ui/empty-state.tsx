@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface EmptyStateProps {
     title?: string;
@@ -16,7 +17,7 @@ export default function EmptyState({
     return (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-fade-in-up">
             <div className="bg-trad-bg-warm rounded-full p-6 mb-4">
-                <span className="material-symbols-outlined text-4xl text-trad-text-muted/50">{icon}</span>
+                <AppIcon name={icon} className="text-4xl text-trad-text-muted/50" />
             </div>
             <h3 className="text-lg font-bold text-trad-text-main mb-2 font-display">{title}</h3>
             <p className="text-trad-text-muted text-sm max-w-sm mb-6">{description}</p>

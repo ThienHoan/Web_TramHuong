@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { uploadProductImage, deleteProductImage, validateImageFile } from '@/lib/upload';
 import { toast } from 'sonner';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ImageUploaderProps {
     images: string[];
@@ -144,9 +145,7 @@ export function ImageUploader({
 
                 <div className="space-y-2">
                     <div className="flex justify-center">
-                        <span className="material-symbols-outlined text-5xl text-gray-400">
-                            {uploading ? 'hourglass_empty' : 'cloud_upload'}
-                        </span>
+                        <AppIcon name={uploading ? 'hourglass_empty' : 'cloud_upload'} className="text-5xl text-gray-400" />
                     </div>
                     <p className="text-sm font-medium text-gray-700">
                         {uploading ? 'Uploading...' : 'Drag and drop images here, or click to select'}
@@ -192,9 +191,9 @@ export function ImageUploader({
                                 type="button"
                             >
                                 {deleting === url ? (
-                                    <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                    <AppIcon name="progress_activity" className="text-sm animate-spin" />
                                 ) : (
-                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                    <AppIcon name="delete" className="text-sm" />
                                 )}
                             </button>
 

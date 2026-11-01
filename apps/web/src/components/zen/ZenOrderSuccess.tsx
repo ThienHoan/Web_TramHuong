@@ -3,7 +3,8 @@
 import { Order } from '@/types/order';
 import { Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
-import ZenFooter from '@/components/zen/ZenFooter'; // Assuming we want the footer
+import ZenFooter from '@/components/zen/ZenFooter';
+import { AppIcon } from "@/components/icons/AppIcon"; // Assuming we want the footer
 // Assuming we might want a ZenHeader too, but the original file had a hardcoded header. 
 // I will keep the header from the original file for now to match the design exactly, 
 // or I should use a standard Zen Header?
@@ -33,7 +34,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                     {/* Left: Logo */}
                     <Link href="/" className="flex items-center gap-4 group">
                         <div className="size-6 text-primary group-hover:text-primary-dark transition-colors">
-                            <span className="material-symbols-outlined !text-[24px]">spa</span>
+                            <AppIcon name="spa" className="!text-[24px]" />
                         </div>
                         <h2 className="text-text-main dark:text-white text-lg font-bold tracking-[0.1em] uppercase">Zen Agarwood</h2>
                     </Link>
@@ -42,7 +43,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                     <div className="flex items-center gap-6">
                         {/* Minified header actions compared to full site */}
                         <Link href="/account" className="text-text-main dark:text-white hover:text-primary transition-colors">
-                            <span className="material-symbols-outlined !text-[20px]">person</span>
+                            <AppIcon name="person" className="!text-[20px]" />
                         </Link>
                     </div>
                 </div>
@@ -57,7 +58,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                     {/* Success Icon */}
                     <div className="mb-10 animate-fade-in text-primary">
                         <div className="size-20 rounded-full border border-primary/20 flex items-center justify-center bg-surface-light dark:bg-surface-dark">
-                            <span className="material-symbols-outlined !text-[40px] font-thin">check</span>
+                            <AppIcon name="check" className="!text-[40px] font-thin" />
                         </div>
                     </div>
 
@@ -98,26 +99,26 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                         {order.shipping_info?.delivery_method === 'pickup' && order.shipping_info?.pickup_location && (
                             <div className="mb-10 p-6 bg-[#FDF8F6] border border-[#EBE5E0] rounded-lg text-left">
                                 <h4 className="text-[#9A3412] font-serif font-semibold text-lg mb-4 flex items-center gap-2">
-                                    <span className="material-symbols-outlined">storefront</span>
+                                    <AppIcon name="storefront" className="" />
                                     Thông tin nhận hàng
                                 </h4>
                                 <div className="space-y-3 text-sm text-stone-600 font-sans">
                                     <div className="flex gap-3">
-                                        <span className="material-symbols-outlined text-stone-400 text-lg">location_on</span>
+                                        <AppIcon name="location_on" className=" text-stone-400 text-lg" />
                                         <div>
                                             <p className="font-semibold text-stone-800">{order.shipping_info.pickup_location.name}</p>
                                             <p>{order.shipping_info.pickup_location.address}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <span className="material-symbols-outlined text-stone-400 text-lg">schedule</span>
+                                        <AppIcon name="schedule" className=" text-stone-400 text-lg" />
                                         <div>
                                             <p className="font-semibold text-stone-800">Giờ mở cửa</p>
                                             <p>{order.shipping_info.pickup_location.hours}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <span className="material-symbols-outlined text-stone-400 text-lg">info</span>
+                                        <AppIcon name="info" className=" text-stone-400 text-lg" />
                                         <div>
                                             <p className="font-semibold text-stone-800">Hướng dẫn nhận hàng</p>
                                             <p>{order.shipping_info.pickup_location.instructions}</p>
@@ -141,7 +142,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                                         <ProductImage src={item.image} alt={item.title || 'Product'} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                            <span className="material-symbols-outlined text-gray-400">spa</span>
+                                                            <AppIcon name="spa" className="text-gray-400" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -184,7 +185,7 @@ export default function ZenOrderSuccess({ order, loading = false }: ZenOrderSucc
                                         return (
                                             <div className="flex justify-between items-center pt-4 text-primary">
                                                 <span className="text-xs font-medium tracking-widest uppercase flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-sm">savings</span>
+                                                    <AppIcon name="savings" className="text-sm" />
                                                     You Saved
                                                 </span>
                                                 <span className="text-lg font-medium tracking-wide">-{formatPrice(totalSavings)}</span>

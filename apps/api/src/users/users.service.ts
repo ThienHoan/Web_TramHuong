@@ -95,7 +95,12 @@ export class UsersService {
     },
   ) {
     const client = this.supabase.getClient();
-    const { error } = await client.from('users').update(data).eq('id', id);
+    const { full_name, phone_number, province, district, ward, street_address, avatar_url } = data;
+    const safeData = Object.fromEntries(
+      Object.entries({ full_name, phone_number, province, district, ward, street_address, avatar_url })
+        .filter(([, value]) => value !== undefined),
+    );
+    const { error } = await client.from('users').update(safeData).eq('id', id);
 
     if (error) {
       console.error('Update Profile Error:', error);

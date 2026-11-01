@@ -79,7 +79,7 @@ export class OrdersController {
 
     const expectedKey = process.env.SEPAY_API_KEY;
 
-    if (expectedKey && apiKey !== expectedKey) {
+    if (!expectedKey || apiKey !== expectedKey) {
       throw new ForbiddenException('Invalid API Key');
     }
 
@@ -88,6 +88,9 @@ export class OrdersController {
     const { content, transferAmount, id } = body;
 
     if (!content) return { success: false, reason: 'No content' };
+    if (!Number.isFinite(Number(transferAmount)) || Number(transferAmount) <= 0) {
+      throw new BadRequestException('Invalid transfer amount');
+    }
 
     const { success, reason } = await this.ordersService.verifyPayment(
       content,
@@ -164,9 +167,12 @@ export class OrdersController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.STAFF, Role.CUSTOMER)
-  async findOne(@Param('id') id: string) {
-    // TODO: Enforce ownership if Customer
-    return this.ordersService.findOne(id);
+  async findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
+    const order = await this.ordersService.findOne(id);
+    if (req.user.role === Role.CUSTOMER && order.user_id !== req.user.id) {
+      throw new ForbiddenException();
+    }
+    return order;
   }
 
   @Patch(':id/status')

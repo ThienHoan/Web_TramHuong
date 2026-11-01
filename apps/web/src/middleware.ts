@@ -6,6 +6,10 @@ import { routing } from './i18n/routing';
 const handleI18nRouting = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
+    // OAuth callbacks and their error page are global routes, not localized pages.
+    if (request.nextUrl.pathname === '/auth/callback' || request.nextUrl.pathname === '/auth/auth-code-error') {
+        return NextResponse.next();
+    }
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-pathname', request.nextUrl.pathname);
 

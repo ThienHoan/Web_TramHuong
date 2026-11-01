@@ -8,10 +8,12 @@ import { Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 import WishlistButton from '@/components/product/WishlistButton';
 import { useCurrency } from '@/hooks/useCurrency';
+import AccountNavigation from '@/components/layout/AccountNavigation';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { motion } from 'framer-motion';
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface WishlistItem {
     id: string;
@@ -65,8 +67,9 @@ export default function WishlistPage() {
 
     if (authLoading || loading) {
         return (
-            <div className="bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
+            <div className="atelier-page bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
                 <TraditionalHeader />
+            <AccountNavigation />
                 <main className="flex-grow flex items-center justify-center">
                     <div className="w-12 h-12 border-4 border-trad-border-warm border-t-trad-primary rounded-full animate-spin"></div>
                 </main>
@@ -79,6 +82,7 @@ export default function WishlistPage() {
         return (
             <div className="bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
                 <TraditionalHeader />
+            <AccountNavigation />
                 <main className="flex-grow flex flex-col items-center justify-center p-8 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -86,7 +90,7 @@ export default function WishlistPage() {
                         className="max-w-md space-y-6"
                     >
                         <div className="w-24 h-24 bg-trad-bg-warm rounded-full mx-auto flex items-center justify-center border border-trad-border-warm">
-                            <span className="material-symbols-outlined text-4xl text-trad-text-muted">lock</span>
+                            <AppIcon name="lock" className="text-4xl text-trad-text-muted" />
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold text-trad-red-900 mb-2 font-display">Đăng nhập để lưu giữ</h1>
@@ -109,6 +113,7 @@ export default function WishlistPage() {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-b from-trad-gold/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
             <TraditionalHeader />
+            <AccountNavigation />
 
             <main className="flex-grow flex flex-col relative z-10 px-4 py-16 md:py-24">
                 <div className="max-w-7xl w-full mx-auto">
@@ -126,7 +131,7 @@ export default function WishlistPage() {
                             </h1>
                             <div className="flex items-center justify-center gap-4 text-trad-gold/60 mb-8">
                                 <div className="h-px w-12 bg-current"></div>
-                                <span className="material-symbols-outlined text-xl">spa</span>
+                                <AppIcon name="spa" className="text-xl" />
                                 <div className="h-px w-12 bg-current"></div>
                             </div>
                             <p className="font-serif text-lg md:text-xl text-trad-text-muted max-w-2xl mx-auto leading-relaxed italic">
@@ -147,7 +152,7 @@ export default function WishlistPage() {
                             <div className="relative inline-block mb-10">
                                 <div className="absolute inset-0 bg-trad-gold/20 blur-2xl rounded-full"></div>
                                 <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white border border-trad-border-warm rounded-full flex items-center justify-center mx-auto shadow-sm">
-                                    <span className="material-symbols-outlined text-5xl md:text-6xl text-trad-text-muted/50">bookmark_border</span>
+                                    <AppIcon name="bookmark_border" className="text-5xl md:text-6xl text-trad-text-muted/50" />
                                 </div>
                             </div>
                             <h2 className="font-display font-bold text-2xl md:text-3xl text-trad-text-main mb-4">
@@ -159,7 +164,7 @@ export default function WishlistPage() {
                             <Link href="/products" className="group relative inline-flex items-center justify-center px-10 py-4 font-display font-medium tracking-wide text-white bg-trad-red-900 rounded-full shadow-lg hover:shadow-xl hover:bg-trad-primary transition-all duration-500 overflow-hidden">
                                 <span className="relative z-10 flex items-center gap-2">
                                     Khám Phá Cửa Hàng
-                                    <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    <AppIcon name="arrow_forward" className="text-lg group-hover:translate-x-1 transition-transform" />
                                 </span>
                             </Link>
                         </motion.div>
@@ -252,7 +257,7 @@ export default function WishlistPage() {
                                                 className="bg-white text-trad-text-main hover:text-red-600 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100"
                                             />
                                             <Link href={`/products/${product.slug}`} className="bg-white text-trad-text-main hover:text-trad-primary w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-75">
-                                                <span className="material-symbols-outlined">visibility</span>
+                                                <AppIcon name="visibility" className="" />
                                             </Link>
                                         </div>
                                     </div>

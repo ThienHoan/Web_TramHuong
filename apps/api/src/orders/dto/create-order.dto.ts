@@ -3,7 +3,8 @@ import {
   IsString,
   IsArray,
   ValidateNested,
-  IsNumber,
+  IsInt,
+  Min,
   IsOptional,
   // IsPhoneNumber,
   // IsEnum,
@@ -15,7 +16,8 @@ class CartItemDto {
   @IsNotEmpty()
   productId: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   quantity: number;
 
   @IsOptional()

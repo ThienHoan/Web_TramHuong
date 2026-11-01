@@ -4,6 +4,7 @@ import { BlogPost } from '@/types/blog';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import Image from 'next/image';
 import { useState, useTransition } from 'react';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ZenBlogListProps {
     posts: BlogPost[];
@@ -113,7 +114,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                         <div className="pt-4">
                                             <Link href={`/blog/${featuredPost.slug}`} className="inline-flex items-center gap-2 text-zen-900 dark:text-white text-xs font-bold tracking-[0.2em] uppercase group/link hover:text-primary transition-colors">
                                                 Read Full Article
-                                                <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover/link:translate-x-1">arrow_forward</span>
+                                                <AppIcon name="arrow_forward" className="text-[16px] transition-transform duration-300 group-hover/link:translate-x-1" />
                                             </Link>
                                         </div>
                                     </div>
@@ -152,7 +153,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                         value={searchValue}
                                         onChange={(e) => setSearchValue(e.target.value)}
                                     />
-                                    <button type="submit" className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-zen-400 dark:text-gray-500 group-focus-within:text-primary transition-colors text-[20px]">search</button>
+                                    <AppIcon name="search" type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 text-zen-400 dark:text-gray-500 group-focus-within:text-primary transition-colors text-[20px]" />
                                 </form>
                             </div>
                         </div>
@@ -197,7 +198,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
 
                             {posts.length === 0 && (
                                 <div className="col-span-full text-center py-20">
-                                    <span className="material-symbols-outlined text-4xl text-zen-300 dark:text-gray-600 mb-4">spa</span>
+                                    <AppIcon name="spa" className="text-4xl text-zen-300 dark:text-gray-600 mb-4" />
                                     <h3 className="text-xl font-light text-zen-900 dark:text-white mb-2">No stories found</h3>
                                     <p className="text-zen-600 dark:text-gray-400 font-light">Try searching for something else.</p>
                                 </div>
@@ -212,7 +213,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                     disabled={meta.currentPage <= 1}
                                     className="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-zen-400 hover:text-zen-900 dark:hover:text-white disabled:opacity-50 transition-colors disabled:cursor-not-allowed"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                                    <AppIcon name="arrow_back" className="text-[16px]" />
                                     Prev
                                 </button>
                                 <div className="flex items-center gap-4 text-sm font-medium">
@@ -227,7 +228,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                     className="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-zen-900 dark:text-white hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Next
-                                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                    <AppIcon name="arrow_forward" className="text-[16px]" />
                                 </button>
                             </div>
                         )}
@@ -237,7 +238,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                 {/* Newsletter / Footer CTA */}
                 <section className="w-full bg-zen-100/50 dark:bg-white/5 py-24 px-4">
                     <div className="max-w-md mx-auto text-center space-y-6">
-                        <span className="material-symbols-outlined text-4xl text-primary font-light">spa</span>
+                        <AppIcon name="spa" className="text-4xl text-primary font-light" />
                         <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-zen-900 dark:text-white">Subscribe to Stillness</h2>
                         <p className="text-sm text-zen-600 dark:text-gray-400 font-light leading-relaxed">
                             Receive contemplative stories, exclusive release news, and guides on the art of incense directly to your inbox.

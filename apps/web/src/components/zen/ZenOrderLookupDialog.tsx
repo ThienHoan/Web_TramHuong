@@ -3,6 +3,7 @@
 import { Order } from '@/types/order';
 import { useCurrency } from '@/hooks/useCurrency';
 import ProductImage from '@/components/ui/ProductImage';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface ZenOrderLookupDialogProps {
     order: Order;
@@ -37,11 +38,11 @@ export default function ZenOrderLookupDialog({ order, isOpen, onClose }: ZenOrde
             {/* Dialog Card */}
             <div className="animate-[fadeInUp_0.5s_ease-out] group relative flex w-full max-w-[640px] flex-col overflow-hidden rounded-2xl bg-[#f7f8f6] dark:bg-[#182111] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-all dark:shadow-black/50 border border-black/5 dark:border-white/5">
                 {/* Close Button */}
-                <button
+                <button aria-label="Close"
                     onClick={onClose}
                     className="absolute right-6 top-6 z-10 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
                 >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                    <AppIcon name="close" className="text-[20px]" />
                 </button>
 
                 {/* Dialog Header */}
@@ -103,7 +104,7 @@ export default function ZenOrderLookupDialog({ order, isOpen, onClose }: ZenOrde
                         {/* Shipping Info */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-[#6d974e] dark:text-gray-500">
-                                <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                                <AppIcon name="local_shipping" className="text-[16px]" />
                                 <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Shipping To</span>
                             </div>
                             <div className="pl-6">
@@ -119,7 +120,7 @@ export default function ZenOrderLookupDialog({ order, isOpen, onClose }: ZenOrde
                         {/* Payment Info */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-[#6d974e] dark:text-gray-500">
-                                <span className="material-symbols-outlined text-[16px]">payments</span>
+                                <AppIcon name="payments" className="text-[16px]" />
                                 <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Payment</span>
                             </div>
                             <div className="pl-6">
@@ -146,7 +147,7 @@ export default function ZenOrderLookupDialog({ order, isOpen, onClose }: ZenOrde
                         </button>
                         <button className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-[#131b0e] py-3 pl-6 pr-5 text-[11px] font-bold uppercase tracking-[0.15em] text-white transition-all hover:bg-[#54ae13] hover:text-[#131b0e] dark:bg-white dark:text-[#131b0e] dark:hover:bg-[#54ae13]">
                             <span>View Full Details</span>
-                            <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
+                            <AppIcon name="arrow_forward" className="text-[16px] transition-transform duration-300 group-hover:translate-x-1" />
                         </button>
                     </div>
                 </div>

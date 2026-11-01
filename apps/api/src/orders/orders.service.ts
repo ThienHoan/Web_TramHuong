@@ -341,6 +341,11 @@ export class OrdersService {
         throw new BadRequestException('Database error while fetching products');
       }
 
+      // Stock belongs to a product, so variants and duplicate lines share it.
+      const requestedQuantities = new Map<string, number>();
+      for (const item of items) {
+        requestedQuantities.set(item.productId, (requestedQuantities.get(item.productId) || 0) + item.quantity);
+      }
       // 1. Validate Stock & Active Status
       for (const item of items) {
         const product = products?.find((p) => p.id === item.productId);
@@ -360,7 +365,7 @@ export class OrdersService {
         }
 
         // Check Stock
-        if (product.quantity < item.quantity) {
+        if (product.quantity < (requestedQuantities.get(item.productId) || 0)) {
           const trans =
             (product.translations as unknown as ProductTranslation[]) || [];
           const title =
@@ -578,14 +583,14 @@ export class OrdersService {
       if (orderError) throw new BadRequestException(orderError.message);
 
       // 3. Decrement Stock
-      for (const item of items) {
-        const product = products?.find((p) => p.id === item.productId);
+      for (const [productId, quantity] of requestedQuantities) {
+        const product = products?.find((p) => p.id === productId);
         if (product) {
-          const newQty = product.quantity - item.quantity;
+          const newQty = product.quantity - quantity;
           await this.client
             .from('products')
             .update({ quantity: newQty })
-            .eq('id', item.productId);
+            .eq('id', productId);
         }
       }
 

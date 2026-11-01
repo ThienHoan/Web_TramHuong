@@ -8,6 +8,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import ZenFooter from '@/components/zen/ZenFooter';
 import { createOrder } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 // Local state for shipping info
 interface ShippingInfo {
@@ -238,12 +239,12 @@ export default function ZenCheckout() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center border border-zen-green-200 dark:border-white/20 rounded-md px-2 py-1">
-                                                        <button onClick={() => updateQuantity(item.key, -1)} className="text-zen-green-text/60 hover:text-zen-green-primary transition-colors flex items-center p-1">
-                                                            <span className="material-symbols-outlined text-[16px]">remove</span>
+                                                        <button aria-label="Decrease quantity" onClick={() => updateQuantity(item.key, -1)} className="text-zen-green-text/60 hover:text-zen-green-primary transition-colors flex items-center p-1">
+                                                            <AppIcon name="remove" className="text-[16px]" />
                                                         </button>
                                                         <span className="mx-3 text-sm font-medium text-zen-green-900 dark:text-white w-4 text-center">{item.quantity}</span>
-                                                        <button onClick={() => updateQuantity(item.key, 1)} className="text-zen-green-text/60 hover:text-zen-green-primary transition-colors flex items-center p-1">
-                                                            <span className="material-symbols-outlined text-[16px]">add</span>
+                                                        <button aria-label="Increase quantity" onClick={() => updateQuantity(item.key, 1)} className="text-zen-green-text/60 hover:text-zen-green-primary transition-colors flex items-center p-1">
+                                                            <AppIcon name="add" className="text-[16px]" />
                                                         </button>
                                                     </div>
                                                     <button onClick={() => removeItem(item.key)} className="text-xs text-zen-green-text/60 underline decoration-transparent hover:decoration-zen-green-text/60 transition-all offset-2">Remove</button>
@@ -324,7 +325,7 @@ export default function ZenCheckout() {
                                                 <span className="block text-sm font-light text-zen-green-text/60 dark:text-gray-400">Pay in cash upon delivery of your order.</span>
                                             </div>
                                             <div className={`ml-auto flex items-center transition-colors ${paymentMethod === 'cod' ? 'text-zen-green-primary' : 'text-gray-400'}`}>
-                                                <span className="material-symbols-outlined font-light text-2xl">local_shipping</span>
+                                                <AppIcon name="local_shipping" className="font-light text-2xl" />
                                             </div>
                                         </label>
 
@@ -345,7 +346,7 @@ export default function ZenCheckout() {
                                                 <span className="block text-sm font-light text-zen-green-text/60 dark:text-gray-400">Instant payment via banking app. QR code provided next.</span>
                                             </div>
                                             <div className={`ml-auto flex items-center transition-colors ${paymentMethod === 'bank_transfer' ? 'text-zen-green-primary' : 'text-gray-400'}`}>
-                                                <span className="material-symbols-outlined font-light text-2xl">qr_code_scanner</span>
+                                                <AppIcon name="qr_code_scanner" className="font-light text-2xl" />
                                             </div>
                                         </label>
                                     </div>
@@ -353,7 +354,7 @@ export default function ZenCheckout() {
                                     {/* Additional Info for Bank Transfer */}
                                     {paymentMethod === 'bank_transfer' && (
                                         <div className="bg-zen-green-primary/10 dark:bg-zen-green-primary/5 rounded-lg p-4 flex gap-3 items-start border border-zen-green-primary/20 animate-in fade-in slide-in-from-top-2">
-                                            <span className="material-symbols-outlined text-zen-green-primary text-xl mt-0.5">info</span>
+                                            <AppIcon name="info" className="text-zen-green-primary text-xl mt-0.5" />
                                             <p className="text-xs font-light text-zen-green-text dark:text-gray-300 leading-relaxed">
                                                 For Bank Transfer orders, you will be redirected to a secure payment gateway to scan your QR code immediately after clicking Complete Order. Please have your banking app ready.
                                             </p>
@@ -365,7 +366,7 @@ export default function ZenCheckout() {
                                             onClick={() => setStep('shipping')}
                                             className="flex items-center gap-2 text-xs font-medium tracking-widest text-zen-green-text/60 hover:text-zen-green-900 dark:hover:text-white transition-colors uppercase group"
                                         >
-                                            <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
+                                            <AppIcon name="arrow_back" className="text-sm transition-transform group-hover:-translate-x-1" />
                                             Return to Shipping
                                         </button>
                                     </div>
@@ -441,11 +442,11 @@ export default function ZenCheckout() {
                                 className="w-full bg-zen-green-primary hover:bg-[#52b312] text-zen-900 dark:text-[#131b0e] py-4 rounded-lg text-sm font-bold tracking-widest uppercase shadow-lg shadow-zen-green-primary/20 transform active:scale-[0.99] transition-all duration-200 mt-2 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span>{step === 'shipping' ? 'Continue to Payment' : (isSubmitting ? 'Processing...' : 'Complete Order')}</span>
-                                {!isSubmitting && <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>}
+                                {!isSubmitting && <AppIcon name="arrow_forward" className="text-[18px] group-hover:translate-x-1 transition-transform" />}
                             </button>
 
                             <div className="flex justify-center items-center gap-2 text-zen-green-text/40 mt-2">
-                                <span className="material-symbols-outlined text-[16px]">lock</span>
+                                <AppIcon name="lock" className="text-[16px]" />
                                 <span className="text-[10px] uppercase tracking-widest font-semibold">Encrypted & Secure</span>
                             </div>
                         </div>

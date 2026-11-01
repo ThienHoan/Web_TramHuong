@@ -7,6 +7,7 @@ import { BlogToolbar } from '@/components/blog/BlogToolbar';
 import { Metadata } from 'next';
 import ZenBlogList from '@/components/zen/ZenBlogList';
 import ZenFooter from '@/components/zen/ZenFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export const metadata: Metadata = {
     title: 'Thư Viện Trầm Hương - Kiến Thức & Văn Hóa',
@@ -90,7 +91,7 @@ export default async function BlogListPage({
                     <div className="max-w-[1200px] w-full px-4 lg:px-10">
                         <div className="flex flex-wrap gap-2 items-center text-sm">
                             <Link className="text-trad-text-muted hover:text-trad-primary transition-colors font-medium leading-normal" href="/">Trang Chủ</Link>
-                            <span className="material-symbols-outlined text-[14px] text-trad-text-muted">chevron_right</span>
+                            <AppIcon name="chevron_right" className="text-[14px] text-trad-text-muted" />
                             <span className="text-trad-text-main font-medium leading-normal">Thư Viện Hương Trầm</span>
                         </div>
                     </div>
@@ -133,10 +134,10 @@ export default async function BlogListPage({
                                 <div className="w-full lg:w-2/5 flex flex-col justify-center p-6 lg:p-10 gap-4 bg-white relative">
                                     <div className="absolute -left-3 top-1/2 w-6 h-6 bg-white rotate-45 hidden lg:block"></div>
                                     <div className="flex items-center gap-2 text-trad-text-muted text-sm font-sans mb-1">
-                                        <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                                        <AppIcon name="calendar_today" className="text-[16px]" />
                                         <span>{new Date(featuredPost.created_at).toLocaleDateString('vi-VN')}</span>
                                         <span className="mx-1">•</span>
-                                        <span className="material-symbols-outlined text-[16px]">person</span>
+                                        <AppIcon name="person" className="text-[16px]" />
                                         <span>{featuredPost.author?.full_name || 'Admin'}</span>
                                     </div>
                                     <h2 className="text-trad-text-main text-2xl lg:text-3xl font-bold leading-tight group-hover:text-trad-primary transition-colors font-display">
@@ -148,7 +149,7 @@ export default async function BlogListPage({
                                     <div className="pt-4">
                                         <span className="inline-flex items-center gap-2 text-trad-primary font-bold uppercase tracking-wide text-sm hover:gap-3 transition-all">
                                             Đọc Tiếp
-                                            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                            <AppIcon name="arrow_forward" className="text-[18px]" />
                                         </span>
                                     </div>
                                 </div>
@@ -191,13 +192,13 @@ export default async function BlogListPage({
                                     </p>
                                     <div className="mt-auto pt-3 border-t border-trad-border-subtle flex justify-between items-center">
                                         <span className="text-xs font-bold text-trad-text-muted uppercase tracking-wider group-hover:text-trad-primary transition-colors">Đọc Tiếp</span>
-                                        <span className="material-symbols-outlined text-[18px] text-trad-text-muted group-hover:text-trad-primary transition-transform group-hover:translate-x-1">arrow_right_alt</span>
+                                        <AppIcon name="arrow_right_alt" className="text-[18px] text-trad-text-muted group-hover:text-trad-primary transition-transform group-hover:translate-x-1" />
                                     </div>
                                 </div>
                             </Link>
                         )) : (
                             <div className="col-span-full text-center py-20 bg-white rounded-xl border border-dashed border-trad-border-warm">
-                                <span className="material-symbols-outlined text-4xl text-gray-300 mb-4">sentiment_dissatisfied</span>
+                                <AppIcon name="sentiment_dissatisfied" className="text-4xl text-gray-300 mb-4" />
                                 <h3 className="text-xl font-bold text-trad-text-main mb-2">Không tìm thấy bài viết nào</h3>
                                 <p className="text-trad-text-muted">Thử thay đổi từ khóa hoặc danh mục tìm kiếm xem sao nhé.</p>
                             </div>
@@ -211,7 +212,7 @@ export default async function BlogListPage({
                                 href={page > 1 ? `/blog?page=${page - 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
                                 className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
                             >
-                                <span className="material-symbols-outlined">chevron_left</span>
+                                <AppIcon name="chevron_left" className="" />
                             </Link>
 
                             <span className="flex items-center justify-center size-12 rounded-lg bg-trad-primary text-white font-bold shadow-md text-lg">{page}</span>
@@ -220,7 +221,7 @@ export default async function BlogListPage({
                                 href={page < meta.totalPages ? `/blog?page=${page + 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
                                 className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page >= meta.totalPages ? 'opacity-50 pointer-events-none' : ''}`}
                             >
-                                <span className="material-symbols-outlined">chevron_right</span>
+                                <AppIcon name="chevron_right" className="" />
                             </Link>
                         </div>
                     )}

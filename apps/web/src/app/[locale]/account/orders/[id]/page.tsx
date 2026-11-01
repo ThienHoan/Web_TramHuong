@@ -14,8 +14,10 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter, Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
+import AccountNavigation from '@/components/layout/AccountNavigation';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface OrderItem {
     title?: string;
@@ -86,7 +88,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }, [user, session, authLoading, router, resolvedParams]);
 
     if (loading || !order) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#ECEAE4]">
+        <div className="atelier-page min-h-screen flex items-center justify-center bg-[#ECEAE4]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9A3412]"></div>
         </div>
     );
@@ -163,7 +165,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {/* Zalo Button Fixed - keeping from template */}
             <a className="fixed bottom-8 right-6 z-50 group" href="#">
                 <div className="relative flex items-center justify-center size-14 bg-gradient-to-br from-[#0068FF] to-[#0041a3] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 ring-4 ring-white/30">
-                    <span className="material-symbols-outlined text-3xl">chat</span>
+                    <AppIcon name="chat" className="text-3xl" />
                     <span className="absolute right-0 top-0 flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -175,12 +177,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </a>
 
             <TraditionalHeader />
+            <AccountNavigation />
 
             <main className="flex-grow py-12 md:py-16">
                 <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
                     <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <Link href="/account/orders" className="inline-flex items-center gap-2 text-sm text-text-main/60 hover:text-primary transition-colors group">
-                            <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                            <AppIcon name="arrow_back" className="text-lg group-hover:-translate-x-1 transition-transform" />
                             Quay lại danh sách đơn hàng
                         </Link>
                         {/* Extra buttons from template if needed, keeping simple for now or adding map */}
@@ -198,7 +201,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <span className={`block text-sm font-bold uppercase tracking-widest mb-2 ${isExpiredOrCanceled ? 'text-trad-gray' : 'text-accent-gold'}`}>Chi Tiết Đơn Hàng</span>
                                     <h1 className={`font-serif text-3xl md:text-4xl font-bold flex items-center gap-3 ${statusConfig.mainColor}`}>
                                         #{order.id?.slice(0, 8).toUpperCase()}
-                                        <span className={`material-symbols-outlined text-2xl ${isExpiredOrCanceled ? 'text-trad-gray/50' : 'text-accent-gold'}`}>{statusConfig.headerIcon}</span>
+                                        <AppIcon name={statusConfig.headerIcon} className={`text-2xl ${isExpiredOrCanceled ? 'text-trad-gray/50' : 'text-accent-gold'}`} />
                                     </h1>
                                     <p className={`mt-2 text-sm ${isExpiredOrCanceled ? 'text-text-main/70 italic font-serif' : 'text-text-main/60'}`}>
                                         {isExpiredOrCanceled
@@ -209,7 +212,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 <div className="flex flex-col items-end gap-3">
                                     <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border text-sm font-semibold shadow-sm ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor}`}>
                                         {statusConfig.pulse && <span className={`w-2 h-2 rounded-full animate-pulse ${isCompleted ? 'bg-green-500' : 'bg-amber-500'}`}></span>}
-                                        {!statusConfig.pulse && <span className="material-symbols-outlined text-[16px]">{statusConfig.icon}</span>}
+                                        {!statusConfig.pulse && <AppIcon name={statusConfig.icon} className="text-[16px]" />}
                                         {statusConfig.label}
                                     </span>
                                     <div className="text-right">
@@ -238,7 +241,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             {/* Step 1: Placed */}
                                             <div className="flex md:flex-col items-center gap-4 md:text-center">
                                                 <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
-                                                    <span className="material-symbols-outlined text-sm">receipt_long</span>
+                                                    <AppIcon name="receipt_long" className="text-sm" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-bold text-text-main">Đặt Hàng</p>
@@ -253,7 +256,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10 transition-colors duration-500 
                                                 ${hasPaid ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'} 
                                                 ${stepStatus === 'AWAITING_PAYMENT' ? 'ring-2 ring-primary ring-offset-2 animate-pulse' : ''}`}>
-                                                    <span className="material-symbols-outlined text-sm">payments</span>
+                                                    <AppIcon name="payments" className="text-sm" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-sm font-bold ${hasPaid ? 'text-text-main' : 'text-gray-400'}`}>Thanh Toán</p>
@@ -268,7 +271,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10 transition-colors duration-500
                                                 ${hasShipped ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}
                                                 ${stepStatus === 'SHIPPED' ? 'ring-2 ring-primary ring-offset-2 animate-pulse' : ''}`}>
-                                                    <span className="material-symbols-outlined text-sm">local_shipping</span>
+                                                    <AppIcon name="local_shipping" className="text-sm" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-sm font-bold ${hasShipped ? 'text-text-main' : 'text-gray-400'}`}>Vận Chuyển</p>
@@ -282,7 +285,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <div className="flex md:flex-col items-center gap-4 md:text-center">
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-4 shadow-sm z-10 transition-colors duration-500
                                                 ${isCanceled ? 'bg-white text-red-500 border-red-100' : (isFinished ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400 border-white')}`}>
-                                                    <span className="material-symbols-outlined text-sm">{isCanceled ? 'cancel' : 'check'}</span>
+                                                    <AppIcon name={isCanceled ? 'cancel' : 'check'} className="text-sm" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-sm font-bold ${isCanceled ? 'text-trad-red-bright' : (isFinished ? 'text-green-700' : 'text-gray-400')}`}>
@@ -302,7 +305,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 <div className="bg-white rounded-2xl shadow-sm border border-[#E6DCC8] overflow-hidden">
                                     <div className="px-8 py-6 border-b border-[#F5EFE6] bg-[#FFFAF0]/50 flex items-center justify-between">
                                         <h2 className="font-serif text-xl font-bold text-text-main flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-primary">inventory_2</span>
+                                            <AppIcon name="inventory_2" className="text-primary" />
                                             Sản Phẩm Đã Chọn
                                         </h2>
                                         <span className="text-xs text-text-main/50 font-medium uppercase tracking-wider">{order.items?.length || 0} Sản phẩm</span>
@@ -370,7 +373,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 <div className={`bg-[#FDFBF7] rounded-2xl p-6 border border-dashed border-accent-gold/30 flex flex-col md:flex-row justify-between items-center gap-6 ${isExpiredOrCanceled ? 'opacity-60 grayscale-[0.5]' : ''}`}>
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-full border flex items-center justify-center shadow-sm ${isExpiredOrCanceled ? 'bg-white border-gray-200' : 'bg-white border-accent-gold/20'}`}>
-                                            <span className={`material-symbols-outlined text-2xl ${isExpiredOrCanceled ? 'text-gray-400' : 'text-accent-gold'}`}>savings</span>
+                                            <AppIcon name="savings" className={`text-2xl ${isExpiredOrCanceled ? 'text-gray-400' : 'text-accent-gold'}`} />
                                         </div>
                                         <div>
                                             <p className="text-sm text-text-main/60">{isExpiredOrCanceled ? 'Bạn đã bỏ lỡ ưu đãi' : 'Bạn đã tiết kiệm được'}</p>
@@ -389,7 +392,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <div className="text-center md:text-right">
                                         <p className="text-sm text-text-main/60 mb-1">{isExpiredOrCanceled ? 'Phương thức thanh toán dự kiến' : 'Phương thức thanh toán'}</p>
                                         <p className={`font-medium flex items-center gap-2 ${isExpiredOrCanceled ? 'text-text-main/70' : 'text-text-main'}`}>
-                                            <span className={`material-symbols-outlined text-lg ${isExpiredOrCanceled ? 'text-gray-500' : 'text-primary'}`}>credit_card</span>
+                                            <AppIcon name="credit_card" className={`text-lg ${isExpiredOrCanceled ? 'text-gray-500' : 'text-primary'}`} />
                                             {order.payment_method === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng (VietQR/Sepay)'}
                                         </p>
                                     </div>
@@ -402,13 +405,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-[#F5EFE6] rounded-bl-full -mr-4 -mt-4 z-0"></div>
                                     <div className="relative z-10">
                                         <h3 className={`font-serif text-lg font-bold mb-6 flex items-center gap-2 ${isExpiredOrCanceled ? 'text-gray-500' : 'text-text-main'}`}>
-                                            <span className={`material-symbols-outlined ${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`}>local_shipping</span>
+                                            <AppIcon name="local_shipping" className={`${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`} />
                                             Thông Tin Giao Hàng
                                         </h3>
                                         <div className="space-y-6">
                                             <div className="flex gap-4">
                                                 <div className={`mt-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`}>
-                                                    <span className="material-symbols-outlined text-xl">person</span>
+                                                    <AppIcon name="person" className="text-xl" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Người nhận</p>
@@ -417,7 +420,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             </div>
                                             <div className="flex gap-4">
                                                 <div className={`mt-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`}>
-                                                    <span className="material-symbols-outlined text-xl">call</span>
+                                                    <AppIcon name="call" className="text-xl" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Số điện thoại</p>
@@ -426,7 +429,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             </div>
                                             <div className="flex gap-4">
                                                 <div className={`mt-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`}>
-                                                    <span className="material-symbols-outlined text-xl">location_on</span>
+                                                    <AppIcon name="location_on" className="text-xl" />
                                                 </div>
                                                 <div>
                                                     <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Địa chỉ nhận hàng</p>
@@ -509,7 +512,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                                                 {isExpiredOrCanceled ? (
                                                     <div className="mt-6 bg-red-900/30 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-red-500/30">
-                                                        <span className="material-symbols-outlined text-red-300">highlight_off</span>
+                                                        <AppIcon name="highlight_off" className="text-red-300" />
                                                         <span className="text-sm font-bold text-red-100 uppercase tracking-wider">Chưa Thanh Toán</span>
                                                     </div>
                                                 ) : isAwaitingPayment ? (
@@ -520,12 +523,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     </div>
                                                 ) : isPending ? (
                                                     <div className="mt-6 bg-[#0068FF]/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-blue-200/30">
-                                                        <span className="material-symbols-outlined text-blue-300">inventory_2</span>
+                                                        <AppIcon name="inventory_2" className="text-blue-300" />
                                                         <span className="text-sm font-bold text-blue-100 uppercase tracking-wider">Đang Chuẩn Bị Hàng</span>
                                                     </div>
                                                 ) : (
                                                     <div className="mt-6 bg-white/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
-                                                        <span className="material-symbols-outlined text-green-400">check_circle</span>
+                                                        <AppIcon name="check_circle" className="text-green-400" />
                                                         <span className="text-sm font-bold text-white uppercase tracking-wider">Đã Thanh Toán</span>
                                                     </div>
                                                 )}
@@ -547,13 +550,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                                 </DialogHeader>
                                                                 <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center">
                                                                     <div className="w-12 h-12 rounded-full bg-accent-gold/10 flex items-center justify-center mb-2">
-                                                                        <span className="material-symbols-outlined text-accent-gold text-2xl">support_agent</span>
+                                                                        <AppIcon name="support_agent" className="text-accent-gold text-2xl" />
                                                                     </div>
                                                                     <p className="text-sm text-gray-600 leading-relaxed max-w-[90%]">
                                                                         Nếu bạn muốn thay đổi hoặc hủy đơn hàng, đừng ngần ngại gọi cho chúng mình qua số hotline để được hỗ trợ nhanh nhất.
                                                                     </p>
                                                                     <p className="font-serif text-lg font-bold text-primary flex items-center gap-2">
-                                                                        <span className="material-symbols-outlined">call</span>
+                                                                        <AppIcon name="call" className="" />
                                                                         035.617.68.78
                                                                     </p>
                                                                     <p className="text-xs text-gray-400 italic">

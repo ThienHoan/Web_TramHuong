@@ -13,5 +13,5 @@ export default function CheckoutLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return <div className="atelier-page atelier-checkout">{children}</div>;
 }

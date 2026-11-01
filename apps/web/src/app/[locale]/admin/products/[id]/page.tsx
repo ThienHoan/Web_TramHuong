@@ -8,6 +8,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import ProductImage from '@/components/ui/ProductImage';
 import { Category } from '@/lib/types';
 import { toast } from 'sonner';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -390,14 +391,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                                     const newOrder = [img, ...currentImages.filter(i => i !== img)];
                                                     setCurrentImages(newOrder);
                                                 }} className="text-white hover:text-yellow-400" title="Set as Main">
-                                                    <span className="material-symbols-outlined">star</span>
+                                                    <AppIcon name="star" className="" />
                                                 </button>
                                             )}
-                                            {idx === 0 && <span className="material-symbols-outlined text-yellow-400">star</span>}
+                                            {idx === 0 && <AppIcon name="star" className="text-yellow-400" />}
                                             {/* Delete */}
                                             <button type="button" onClick={() => setCurrentImages(currentImages.filter(i => i !== img))}
                                                 className="text-white hover:text-red-400" title="Remove">
-                                                <span className="material-symbols-outlined">delete</span>
+                                                <AppIcon name="delete" className="" />
                                             </button>
                                         </div>
                                     </div>
@@ -421,9 +422,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             {newFiles.map((file, idx) => (
                                 <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
                                     <Image src={URL.createObjectURL(file)} alt="Preview" width={80} height={80} className="w-full h-full object-cover" />
-                                    <button type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
+                                    <button aria-label="Đóng" type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
                                         className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl">
-                                        <span className="material-symbols-outlined text-xs">close</span>
+                                        <AppIcon name="close" className="text-xs" />
                                     </button>
                                 </div>
                             ))}
@@ -463,9 +464,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     value={v.description} onChange={e => {
                                         const newV = [...variants]; newV[idx].description = e.target.value; setVariants(newV);
                                     }} />
-                                <button type="button" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
+                                <button aria-label="Xóa" type="button" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
                                     className="p-2 text-red-500 hover:bg-red-50 rounded">
-                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                    <AppIcon name="delete" className="text-lg" />
                                 </button>
                             </div>
                         ))}

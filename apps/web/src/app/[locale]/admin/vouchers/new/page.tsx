@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter, Link } from '@/i18n/routing'; // Ensure Link is imported if needed, though we use router mainly
 import { createVoucher } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function NewVoucherPage() {
     const router = useRouter();
@@ -74,7 +75,7 @@ export default function NewVoucherPage() {
         <div className="max-w-4xl mx-auto p-6 font-sans">
             <div className="mb-8">
                 <Link href="/admin/vouchers" className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-sm mb-2">
-                    <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <AppIcon name="arrow_back" className="text-[18px]" />
                     Quay lại danh sách
                 </Link>
                 <h1 className="text-3xl font-bold text-gray-900">Tạo Mã Giảm Giá Mới</h1>

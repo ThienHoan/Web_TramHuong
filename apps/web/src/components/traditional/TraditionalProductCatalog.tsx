@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { Link, useRouter, usePathname } from '@/i18n/routing';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import TraditionalHeader from './TraditionalHeader';
@@ -20,6 +20,7 @@ import TraditionalProductGridItem from '@/components/traditional/TraditionalProd
 import TraditionalProductFilter from './TraditionalProductFilter';
 
 import { PaginationMeta } from '@/services/product-service';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface TraditionalProductCatalogProps {
     products: Product[];
@@ -37,7 +38,6 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
     const sortOption = searchParams.get('sort') || 'newest';
     const minPriceParam = searchParams.get('min_price') || '';
     const maxPriceParam = searchParams.get('max_price') || '';
-    const currentPage = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
 
     // Local State for UI
     const [categories, setCategories] = useState<Category[]>([]);
@@ -109,21 +109,13 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
 
 
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col bg-pattern-lotus selection:bg-trad-primary selection:text-white">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col bg-pattern-lotus selection:bg-trad-primary selection:text-white">
             <TraditionalHeader />
 
-            {/* Breadcrumb / Page Header */}
-            <div className="w-full bg-gradient-to-r from-trad-bg-light via-white to-trad-bg-light border-b border-trad-border-warm">
-                <div className="container mx-auto px-4 md:px-8 xl:px-20 py-6 text-center">
-                    <h1 className="text-3xl md:text-4xl font-bold text-trad-red-900 mb-2 font-display">Tất Cả Sản Phẩm</h1>
-                    <nav className="flex justify-center text-sm text-trad-text-muted/80 font-body">
-                        <Link className="hover:text-trad-primary transition-colors" href="/">Trang chủ</Link>
-                        <span className="mx-2 text-trad-border-warm">•</span>
-                        <span className="font-medium text-trad-primary">Sản phẩm</span>
-                        {currentPage > 1 && <span className="ml-1 text-trad-text-muted"> (Trang {currentPage})</span>}
-                    </nav>
-                </div>
-            </div>
+            <section className="atelier-catalog-intro">
+                <div><p>Bộ sưu tập Thiên Phúc</p><h1>Những phẩm vật<br /><em>đáng để giữ gìn.</em></h1></div>
+                <p>Tìm sản phẩm theo dòng trầm, mức giá và nhu cầu của bạn. Mỗi lựa chọn đều là một cách đưa thiên nhiên đến gần hơn.</p>
+            </section>
 
             <main className="flex-grow w-full container mx-auto px-4 md:px-8 xl:px-20 py-10">
                 {/* Mobile Filter & Categories Toolbar */}
@@ -133,7 +125,7 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
                         <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                             <SheetTrigger asChild>
                                 <button className="flex items-center gap-2 text-sm font-medium text-trad-primary border border-trad-primary/30 px-4 py-2 rounded-full bg-white shadow-sm h-10 whitespace-nowrap">
-                                    <span className="material-symbols-outlined text-[18px]">filter_list</span>
+                                    <AppIcon name="filter_list" className="text-[18px]" />
                                     Bộ lọc
                                 </button>
                             </SheetTrigger>
@@ -189,7 +181,7 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
                     <aside className="hidden lg:block w-72 shrink-0 space-y-6">
                         <div className="p-6 bg-white rounded-xl border border-trad-border-warm shadow-sm relative overflow-hidden animate-fade-in sticky top-24">
                             <div className="absolute top-0 right-0 w-16 h-16 opacity-10 pointer-events-none">
-                                <span className="material-symbols-outlined text-6xl text-trad-primary">spa</span>
+                                <AppIcon name="spa" className="text-6xl text-trad-primary" />
                             </div>
                             <TraditionalProductFilter
                                 prefix="desktop"
@@ -229,7 +221,7 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
                             )) : (
                                 <div className="col-span-full py-20 text-center bg-white rounded-xl border border-trad-border-warm">
                                     <div className="mb-4 text-trad-text-muted opacity-50">
-                                        <span className="material-symbols-outlined text-6xl">inventory_2</span>
+                                        <AppIcon name="inventory_2" className="text-6xl" />
                                     </div>
                                     <h3 className="text-lg font-bold text-trad-text-main mb-2">Không tìm thấy sản phẩm</h3>
                                     <p className="text-trad-text-muted mb-6">Xin lỗi, chúng tôi không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.</p>
@@ -252,7 +244,7 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
                                     className="p-2 border border-trad-border-warm rounded-full hover:bg-white hover:text-trad-primary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                                     aria-label="Trang trước"
                                 >
-                                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                    <AppIcon name="chevron_left" className="text-sm" />
                                 </button>
 
                                 {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map((pageNum) => (
@@ -274,7 +266,7 @@ export default function TraditionalProductCatalog({ products, pagination }: Trad
                                     className="p-2 border border-trad-border-warm rounded-full hover:bg-white hover:text-trad-primary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                                     aria-label="Trang tiếp"
                                 >
-                                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                    <AppIcon name="chevron_right" className="text-sm" />
                                 </button>
                             </div>
                         )}

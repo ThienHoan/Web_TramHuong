@@ -23,7 +23,7 @@ const buttonVariants = cva(
         zen: "bg-zen-50 border border-zen-800 text-zen-900 hover:bg-zen-800 hover:text-zen-50 transition-all duration-500 ease-out uppercase tracking-[0.2em] text-xs font-light",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        default: "h-11 px-5 py-2 has-[>svg]:px-4",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",

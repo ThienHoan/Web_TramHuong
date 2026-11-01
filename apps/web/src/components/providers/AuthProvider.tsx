@@ -54,44 +54,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
-        const initializeAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.access_token) {
-                setAccessToken(session.access_token);
-            } else {
-                setAccessToken('');
-            }
-
-            if (session?.user) {
-                await fetchProfile(session.user.id);
-            }
-
-            setLoading(false);
-
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        let active = true;
+        let version = 0;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                const currentVersion = ++version;
                 setSession(session);
                 setUser(session?.user ?? null);
-                if (session?.access_token) {
-                    setAccessToken(session.access_token);
-                } else {
-                    setAccessToken('');
-                }
+                setAccessToken(session?.access_token ?? '');
 
                 if (session?.user) {
-                    await fetchProfile(session.user.id);
+                    const userId = session.user.id;
+                    setProfile(null);
+                    setRole(null);
+                    // Defer database work until after the auth callback releases its lock.
+                    setTimeout(async () => {
+                        const { data } = await supabase.from('users')
+                            .select('id, role, full_name, avatar_url, email')
+                            .eq('id', userId).single();
+                        if (active && currentVersion === version) {
+                            setProfile(data as UserProfile | null);
+                            setRole((data?.role as Role) ?? null);
+                        }
+                    }, 0);
                 } else {
                     setProfile(null);
                     setRole(null);
                 }
                 setLoading(false);
-            });
-
-            return () => subscription.unsubscribe();
-        };
-
-        initializeAuth();
+        });
+        return () => { active = false; subscription.unsubscribe(); };
     }, []);
 
     const signOut = async () => {

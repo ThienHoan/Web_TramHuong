@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { submitContact } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 // Schema Validation
 const partnershipSchema = z.object({
@@ -66,7 +67,7 @@ Lý do hợp tác: ${data.reason}
     };
 
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased">
             <TraditionalHeader />
 
             <main className="flex flex-col min-h-screen">
@@ -98,7 +99,7 @@ Lý do hợp tác: ${data.reason}
                 {/* Story/Introduction Section */}
                 <section className="px-4 sm:px-10 lg:px-40 py-8 lg:py-12 flex justify-center bg-white">
                     <div className="w-full max-w-[800px] text-center">
-                        <span className="material-symbols-outlined text-4xl text-trad-primary/50 mb-4">format_quote</span>
+                        <AppIcon name="format_quote" className="text-4xl text-trad-primary/50 mb-4" />
                         <p className="text-trad-text-muted text-lg lg:text-xl font-display font-medium leading-relaxed italic">
                             &quot;Chúng tôi trân trọng kính mời quý đối tác cùng tham gia vào hành trình gìn giữ và lan tỏa nét đẹp văn hóa tâm linh Việt. Mỗi nén hương là một câu chuyện, mỗi sự hợp tác là một chương mới của sự thịnh vượng và an lạc.&quot;
                         </p>
@@ -125,7 +126,7 @@ Lý do hợp tác: ${data.reason}
                             ].map((item, idx) => (
                                 <div key={idx} className="group flex flex-col gap-4 p-6 bg-white rounded-xl border border-trad-border-warm hover:border-trad-primary/50 hover:shadow-lg transition-all duration-300">
                                     <div className="size-12 rounded-full bg-trad-primary/10 flex items-center justify-center text-trad-primary group-hover:bg-trad-primary group-hover:text-white transition-colors">
-                                        <span className="material-symbols-outlined text-[28px]">{item.icon}</span>
+                                        <AppIcon name={item.icon} className="text-[28px]" />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <h3 className="text-trad-text-main text-lg font-bold">{item.title}</h3>
@@ -155,7 +156,7 @@ Lý do hợp tác: ${data.reason}
                                         <div className="space-y-2">
                                             <label className="text-trad-text-main text-sm font-bold font-display">Họ và Tên</label>
                                             <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <span className="material-symbols-outlined text-trad-text-muted mr-2 text-[20px]">person</span>
+                                                <AppIcon name="person" className="text-trad-text-muted mr-2 text-[20px]" />
                                                 <input {...register('full_name')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="Nguyễn Văn A" type="text" />
                                             </div>
                                             {errors.full_name && <p className="text-red-500 text-xs">{errors.full_name.message}</p>}
@@ -164,7 +165,7 @@ Lý do hợp tác: ${data.reason}
                                         <div className="space-y-2">
                                             <label className="text-trad-text-main text-sm font-bold font-display">Số Điện Thoại</label>
                                             <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <span className="material-symbols-outlined text-trad-text-muted mr-2 text-[20px]">call</span>
+                                                <AppIcon name="call" className="text-trad-text-muted mr-2 text-[20px]" />
                                                 <input {...register('phone')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="09xxxxxxx" type="tel" />
                                             </div>
                                             {errors.phone && <p className="text-red-500 text-xs">{errors.phone.message}</p>}
@@ -175,7 +176,7 @@ Lý do hợp tác: ${data.reason}
                                         <div className="space-y-2">
                                             <label className="text-trad-text-main text-sm font-bold font-display">Email</label>
                                             <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <span className="material-symbols-outlined text-trad-text-muted mr-2 text-[20px]">mail</span>
+                                                <AppIcon name="mail" className="text-trad-text-muted mr-2 text-[20px]" />
                                                 <input {...register('email')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="example@email.com" type="email" />
                                             </div>
                                             {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
@@ -185,7 +186,7 @@ Lý do hợp tác: ${data.reason}
                                             <label className="text-trad-text-main text-sm font-bold font-display">Khu Vực Hoạt Động</label>
                                             <div className="relative">
                                                 <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                    <span className="material-symbols-outlined text-trad-text-muted mr-2 text-[20px]">map</span>
+                                                    <AppIcon name="map" className="text-trad-text-muted mr-2 text-[20px]" />
                                                     <select {...register('region')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-trad-text-main font-sans outline-none appearance-none">
                                                         <option>Miền Bắc</option>
                                                         <option>Miền Trung</option>
@@ -220,7 +221,7 @@ Lý do hợp tác: ${data.reason}
                                             ) : (
                                                 <>
                                                     <span>Gửi Đăng Ký Hợp Tác</span>
-                                                    <span className="material-symbols-outlined text-[20px]">send</span>
+                                                    <AppIcon name="send" className="text-[20px]" />
                                                 </>
                                             )}
                                         </button>
@@ -233,11 +234,11 @@ Lý do hợp tác: ${data.reason}
                             <p className="text-trad-text-muted text-sm font-sans">Cần hỗ trợ tư vấn trực tiếp?</p>
                             <div className="flex gap-6">
                                 <a className="flex items-center gap-2 text-trad-text-main font-bold hover:text-trad-primary transition-colors" href="tel:0909123456">
-                                    <span className="material-symbols-outlined text-trad-primary">call</span>
+                                    <AppIcon name="call" className="text-trad-primary" />
                                     0909 123 456
                                 </a>
                                 <a className="flex items-center gap-2 text-trad-text-main font-bold hover:text-trad-primary transition-colors" href="#">
-                                    <span className="material-symbols-outlined text-trad-primary">chat</span>
+                                    <AppIcon name="chat" className="text-trad-primary" />
                                     Zalo Support
                                 </a>
                             </div>

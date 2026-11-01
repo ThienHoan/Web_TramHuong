@@ -9,6 +9,8 @@ import ZenFooter from './ZenFooter';
 import ScrollReveal from '../ui/ScrollReveal';
 import { Product } from '@/types/product';
 import Image from 'next/image';
+import HomeHero from '../traditional/home/HomeHero';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenHome({ products }: { products: Product[] }) {
     // Filter for "Zen" affinity products or just take first few for demo
@@ -19,36 +21,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
     return (
         <div className="bg-zen-50 dark:bg-zinc-950 font-zen-sans text-zen-800 antialiased selection:bg-zen-secondary selection:text-white">
 
-            {/* Hero Section */}
-            <header className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <Image
-                        alt="Serene agarwood incense smoke"
-                        className="w-full h-full object-cover object-center opacity-95 dark:opacity-70 animate-fade-in scale-105 duration-[20s]"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowdR6auj8zzL27aUJupmrLecfj0ANaqKMe-2rnu1Qv3ophqvBINDqWza6xU3DxCEeaKpwnAZ93FUQsctUo_lKJ3PrFPyMHzUNy2HPJeqQIsVlkmSrVvA_MlzULYOzSkrYfH3Nx6Ou2gDqs4vZzx7C1W0iriuXtWYK6rJnCw9OOvzhpyLEAhxgWekpF4Kr0_690wKsyvU-sdrEE701vu0wNzqUHGUnGHPt-S3WNxw8qHTRWcOXY3BcTajZYzdC9C-o1WpqhEhNv5Y"
-                        width={1920}
-                        height={1080}
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zen-50/20 dark:to-black/60"></div>
-                </div>
-                <div className="relative z-10 text-center max-w-5xl px-6 animate-[fadeInUp_1s_ease-out_forwards] mt-16">
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-zen-display font-thin tracking-[0.15em] text-white  mb-8 leading-tight drop-shadow-sm">
-                        THE ESSENCE OF<br /><span className="italic font-light tracking-normal">TRANQUILITY</span>
-                    </h1>
-                    <div className="flex flex-col items-center gap-8 mt-12">
-                        <p className="text-sm md:text-base tracking-[0.3em] uppercase text-zen-50/80 font-light max-w-lg leading-relaxed">
-                            Discover the pure resonance of Vietnamese Agarwood
-                        </p>
-                        <Link href="/products" className="group relative px-10 py-4 overflow-hidden bg-zen-secondary/90 hover:bg-zen-secondary text-white transition-all duration-500 rounded-sm mt-4 shadow-lg shadow-zen-secondary/20">
-                            <span className="relative z-10 text-xs tracking-widest uppercase font-medium">Discover Collection</span>
-                        </Link>
-                    </div>
-                </div>
-                <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce duration-[3000ms] text-zen-400 dark:text-gray-500">
-                    <span className="material-symbols-outlined text-3xl font-thin">keyboard_arrow_down</span>
-                </div>
-            </header>
+            <div className="tp-home tp-zen-hero"><HomeHero locale="en" /></div>
 
             <main className="relative z-10 bg-zen-50 dark:bg-zinc-950">
 
@@ -61,7 +34,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
                                 <p className="text-[10px] tracking-superwide uppercase text-zen-secondary dark:text-gray-400">Best Sellers Selection</p>
                             </div>
                             <Link href="/products" className="hidden md:flex items-center gap-2 text-xs uppercase tracking-widest hover:text-zen-secondary transition-colors mt-4 md:mt-0 pb-1">
-                                View All Products <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                View All Products <AppIcon name="arrow_forward" className="text-sm" />
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
@@ -153,7 +126,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
                 {/* Newsletter */}
                 <section className="py-32 bg-zen-50 dark:bg-zinc-950 border-t border-zen-100 dark:border-zinc-900">
                     <ScrollReveal animation="fade-up" className="max-w-3xl mx-auto px-6 text-center">
-                        <span className="material-symbols-outlined text-4xl font-thin text-zen-secondary mb-6 block mx-auto">spa</span>
+                        <AppIcon name="spa" className="text-4xl font-thin text-zen-secondary mb-6 block mx-auto" />
                         <h2 className="text-3xl md:text-4xl font-zen-display font-light text-zen-900 dark:text-white mb-6 tracking-wide">
                             Join the Circle of Stillness
                         </h2>

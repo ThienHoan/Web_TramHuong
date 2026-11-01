@@ -1,79 +1,76 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface ScrollRevealProps {
-    children: React.ReactNode;
-    className?: string;
-    animation?: 'fade-up' | 'fade-in' | 'slide-in-right' | 'slide-in-left' | 'zoom-in' | 'fade-left' | 'fade-right';
-    delay?: number; // ms
-    duration?: number; // ms
-    threshold?: number; // 0-1
-    once?: boolean;
+  children: ReactNode;
+  className?: string;
+  animation?:
+    | "fade-up"
+    | "fade-in"
+    | "slide-in-right"
+    | "slide-in-left"
+    | "zoom-in"
+    | "fade-left"
+    | "fade-right";
+  delay?: number;
+  duration?: number;
+  threshold?: number;
+  once?: boolean;
 }
 
 export default function ScrollReveal({
-    children,
-    className = "",
-    animation = 'fade-up',
-    delay = 0,
-    duration = 800,
-    threshold = 0.2,
-    once = true
+  children,
+  className = "",
+  animation = "fade-up",
+  delay = 0,
+  duration = 600,
+  threshold = 0.12,
+  once = true,
 }: ScrollRevealProps) {
-    const [isVisible, setIsVisible] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const element = ref.current;
-        if (!element) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    if (once) observer.disconnect();
-                } else if (!once) {
-                    setIsVisible(false);
-                }
-            },
-            { threshold }
-        );
-
-        observer.observe(element);
-
-        return () => observer.disconnect();
-    }, [threshold, once]);
-
-    // Construct style object
-    const style = {
-        transitionDuration: `${duration}ms`,
-        transitionDelay: `${delay}ms`,
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translate(0, 0) scale(1)' : getInitialTransform(animation),
-        filter: isVisible ? 'blur(0)' : 'blur(4px)', // Slight blur for dreamy effect
-    };
-
-    return (
-        <div
-            ref={ref}
-            className={`${className} transition-all ease-out will-change-transform`}
-            style={style}
-        >
-            {children}
-        </div>
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || !("IntersectionObserver" in window)) return;
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          element.dataset.reveal = "visible";
+          if (once) observer.disconnect();
+        } else if (!once || element.dataset.reveal !== "visible") {
+          element.dataset.reveal = "pending";
+        }
+      },
+      { threshold },
     );
-}
+    const sync = () => {
+      observer.disconnect();
+      element.dataset.reveal = "visible";
+      if (!preference.matches) observer.observe(element);
+    };
+    sync();
+    preference.addEventListener("change", sync);
+    return () => {
+      observer.disconnect();
+      preference.removeEventListener("change", sync);
+    };
+  }, [threshold, once]);
 
-function getInitialTransform(animation: string) {
-    switch (animation) {
-        case 'fade-up': return 'translateY(40px)';
-        case 'fade-in': return 'scale(0.95)';
-        case 'slide-in-right': return 'translateX(-50px)';
-        case 'slide-in-left': return 'translateX(50px)';
-        case 'fade-right': return 'translateX(-30px)';
-        case 'fade-left': return 'translateX(30px)';
-        case 'zoom-in': return 'scale(0.8)';
-        default: return 'translateY(20px)';
-    }
+  return (
+    <div
+      ref={ref}
+      className={`scroll-reveal ${className}`}
+      data-animation={animation}
+      style={
+        {
+          "--reveal-duration": `${duration}ms`,
+          "--reveal-delay": `${Math.min(delay, 240)}ms`,
+        } as CSSProperties
+      }
+    >
+      {children}
+    </div>
+  );
 }

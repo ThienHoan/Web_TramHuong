@@ -11,6 +11,7 @@ import { getReviews, createReview, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenProductDetail({ product, relatedProducts }: { product: Product; relatedProducts?: Product[] }) {
     const { addItem } = useCart();
@@ -224,7 +225,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                     {product.category?.slug === 'incense-sticks' ? 'Meditation Grade' : 'Premium Collection'}
                                 </span>
                                 <span className="inline-flex items-center gap-1 text-[10px] font-medium tracking-wider text-zen-green-text/60 dark:text-white/60 uppercase">
-                                    <span className="material-symbols-outlined text-[14px]">eco</span>
+                                    <AppIcon name="eco" className="text-[14px]" />
                                     100% Natural
                                 </span>
                             </div>
@@ -274,12 +275,12 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                 {/* Quantity & Cart Row */}
                                 <div className="flex items-center gap-6">
                                     <div className="flex h-12 w-32 items-center justify-between rounded-lg border border-zen-green-200 bg-zen-green-50 px-4 dark:bg-white/5 dark:border-white/10">
-                                        <button onClick={decrementQuantity} className="flex h-8 w-8 items-center justify-center text-zen-green-text hover:text-zen-green-primary dark:text-white transition-colors">
-                                            <span className="material-symbols-outlined text-sm">remove</span>
+                                        <button aria-label="Decrease quantity" onClick={decrementQuantity} className="flex h-8 w-8 items-center justify-center text-zen-green-text hover:text-zen-green-primary dark:text-white transition-colors">
+                                            <AppIcon name="remove" className="text-sm" />
                                         </button>
                                         <span className="text-sm font-medium text-zen-green-900 dark:text-white">{quantity}</span>
-                                        <button onClick={incrementQuantity} className="flex h-8 w-8 items-center justify-center text-zen-green-text hover:text-zen-green-primary dark:text-white transition-colors">
-                                            <span className="material-symbols-outlined text-sm">add</span>
+                                        <button aria-label="Increase quantity" onClick={incrementQuantity} className="flex h-8 w-8 items-center justify-center text-zen-green-text hover:text-zen-green-primary dark:text-white transition-colors">
+                                            <AppIcon name="add" className="text-sm" />
                                         </button>
                                     </div>
                                     <button
@@ -291,7 +292,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                                     >
                                         <span>{product.stock > 0 ? 'Add to Cart' : 'Sold Out'}</span>
-                                        {product.stock > 0 && <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>}
+                                        {product.stock > 0 && <AppIcon name="arrow_forward" className="text-sm transition-transform duration-300 group-hover:translate-x-1" />}
                                     </button>
                                 </div>
                                 {product.stock > 0 && (
@@ -391,9 +392,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                         <div className="flex flex-col">
                                                             <div className="flex text-zen-green-primary text-lg">
                                                                 {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <span key={star} className="material-symbols-outlined fill-current text-[20px]">
-                                                                        {star <= Math.round(reviewStats.average) ? 'star' : 'star_border'}
-                                                                    </span>
+                                                                    <AppIcon name={star <= Math.round(reviewStats.average) ? 'star' : 'star_border'} key={star} className="fill-current text-[20px]" />
                                                                 ))}
                                                             </div>
                                                             <span className="text-[10px] uppercase tracking-[0.15em] text-zen-green-text/50 dark:text-white/50 mt-1">
@@ -437,9 +436,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                                     </div>
                                                                     <div className="flex text-zen-green-primary text-xs">
                                                                         {[1, 2, 3, 4, 5].map((star) => (
-                                                                            <span key={star} className="material-symbols-outlined text-[14px]">
-                                                                                {star <= review.rating ? 'star' : 'star_border'}
-                                                                            </span>
+                                                                            <AppIcon name={star <= review.rating ? 'star' : 'star_border'} key={star} className="text-[14px]" />
                                                                         ))}
                                                                     </div>
                                                                 </div>
@@ -452,12 +449,12 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                         {/* Pagination Controls */}
                                                         {totalPages > 1 && (
                                                             <div className="flex justify-center items-center gap-4 pt-4">
-                                                                <button
+                                                                <button aria-label="Previous"
                                                                     onClick={() => handlePageChange(currentPage - 1)}
                                                                     disabled={currentPage === 1}
                                                                     className={`p-2 rounded-full transition-colors ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-zen-green-900 hover:bg-zen-green-50 dark:text-white dark:hover:bg-white/10'}`}
                                                                 >
-                                                                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                                                    <AppIcon name="chevron_left" className="text-sm" />
                                                                 </button>
 
                                                                 <div className="flex gap-2">
@@ -475,12 +472,12 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                                     ))}
                                                                 </div>
 
-                                                                <button
+                                                                <button aria-label="Next"
                                                                     onClick={() => handlePageChange(currentPage + 1)}
                                                                     disabled={currentPage === totalPages}
                                                                     className={`p-2 rounded-full transition-colors ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-zen-green-900 hover:bg-zen-green-50 dark:text-white dark:hover:bg-white/10'}`}
                                                                 >
-                                                                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                                                    <AppIcon name="chevron_right" className="text-sm" />
                                                                 </button>
                                                             </div>
                                                         )}
@@ -516,7 +513,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                 </h3>
                                 <Link className="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zen-green-text hover:text-zen-green-primary dark:text-white transition-colors" href="/products">
                                     View All
-                                    <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_right_alt</span>
+                                    <AppIcon name="arrow_right_alt" className="text-sm transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
@@ -536,8 +533,8 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                 <span className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zen-green-900 rounded-sm">Featured</span>
                                             )}
                                             <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zen-green-900 shadow-md hover:bg-zen-green-primary hover:text-white transition-colors">
-                                                    <span className="material-symbols-outlined text-sm">add</span>
+                                                <button aria-label="Increase quantity" className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zen-green-900 shadow-md hover:bg-zen-green-primary hover:text-white transition-colors">
+                                                    <AppIcon name="add" className="text-sm" />
                                                 </button>
                                             </div>
                                         </div>
@@ -556,11 +553,11 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             {isReviewFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-zen-green-50 rounded-2xl dark:bg-[#182111] w-full max-w-lg p-8 md:p-12 shadow-2xl relative border border-zen-green-100 dark:border-white/10">
-                        <button
+                        <button aria-label="Close"
                             onClick={() => setIsReviewFormOpen(false)}
                             className="absolute top-6 right-6 text-zen-green-text/50 hover:text-zen-green-900 dark:text-white/50 dark:hover:text-white transition-colors"
                         >
-                            <span className="material-symbols-outlined">close</span>
+                            <AppIcon name="close" className="" />
                         </button>
 
                         <h3 className="text-xl font-thin uppercase tracking-[0.2em] text-center text-zen-green-900 dark:text-white mb-2">Share Your Thoughts</h3>
@@ -581,9 +578,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                         onClick={() => setFormRating(star)}
                                         className="focus:outline-none transition-transform hover:scale-110"
                                     >
-                                        <span className={`material-symbols-outlined text-3xl ${star <= formRating ? 'fill-current text-zen-green-primary' : 'text-zen-green-200 dark:text-white/20'}`}>
-                                            star
-                                        </span>
+                                        <AppIcon name="star" className={`text-3xl ${star <= formRating ? 'fill-current text-zen-green-primary' : 'text-zen-green-200 dark:text-white/20'}`} />
                                     </button>
                                 ))}
                             </div>

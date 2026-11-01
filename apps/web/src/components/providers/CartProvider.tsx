@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
+import { API_URL } from '@/services/base-http';
 
 export interface CartItem {
     key: string;        // Unique ID (Server ID or Composite for local)
@@ -23,7 +24,7 @@ interface CartContextType {
     items: CartItem[];
     addItem: (item: Omit<CartItem, 'quantity' | 'key' | 'productId' | 'id'> & { id: string, quantity?: number, variantId?: string, variantName?: string, original_price?: number, discount_amount?: number }) => void;
     removeItem: (key: string) => void;
-    updateQuantity: (key: string, delta: number) => void;
+    updateQuantity: (key: string, newQuantity: number) => void;
     clearCart: () => void;
     total: number;
     count: number;
@@ -35,7 +36,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const { user, session } = useAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [initialized, setInitialized] = useState(false);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     const fetchCart = useCallback(async () => {
         if (!user || !session) return;
@@ -66,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
             console.error('Failed to fetch cart', e);
         }
-    }, [user, session, API_URL]);
+    }, [user, session]);
 
     // 1. Initial Load (Guest) or Sync (User)
     useEffect(() => {
@@ -78,7 +78,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 if (localCart.length > 0) {
                     // Merge local items to server
                     try {
-                        await fetch(`${API_URL}/cart/merge`, {
+                        const response = await fetch(`${API_URL}/cart/merge`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -87,6 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
                             body: JSON.stringify({ items: localCart.map((i: any) => ({ ...i, id: i.productId })) })
                         });
+                        if (!response.ok) throw new Error('Cart merge failed');
                         localStorage.removeItem('cart'); // Clear local after merge
                     } catch (e) {
                         console.error('Failed to merge cart', e);
@@ -108,7 +109,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
 
         loadCart();
-    }, [user, session, API_URL, fetchCart]);
+    }, [user, session, fetchCart]);
 
     // 2. Persist to Local Storage (Only for guests)
     useEffect(() => {
@@ -133,7 +134,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
             if (existingIndex > -1) {
                 const updated = [...prev];
-                updated[existingIndex].quantity += qtyToAdd;
+                updated[existingIndex] = { ...updated[existingIndex], quantity: updated[existingIndex].quantity + qtyToAdd };
                 return updated;
             }
 
@@ -157,7 +158,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (user && session) {
             try {
                 // We don't rely only on optimistic key here, we call API
-                await fetch(`${API_URL}/cart/items`, {
+                const response = await fetch(`${API_URL}/cart/items`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -170,16 +171,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         variantName: newItem.variantName
                     })
                 });
+                if (!response.ok) throw new Error('Failed to add item');
 
                 // Re-fetch to get real server IDs (Keys)
                 // This replaces the optimistic item with the real one (Cleanest way)
                 await fetchCart();
 
             } catch (e) {
-                console.error('Failed to add item', e);
                 // Instead of strict rollback, try to fetch current state. 
                 // If the error was duplicate key or race condition, fetchCart will return the success state.
                 await fetchCart();
+                throw e;
             }
         }
     };
@@ -194,10 +196,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 // If the key is temporary (starts with temp-), we should theoretically block or wait, 
                 // but usually Remove only happens on loaded items.
                 if (!key.startsWith('temp-')) {
-                    await fetch(`${API_URL}/cart/items/${key}`, {
+                    const response = await fetch(`${API_URL}/cart/items/${key}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${session.access_token}` }
                     });
+                    if (!response.ok) throw new Error('Failed to remove item');
                 }
             } catch (e) {
                 console.error('Failed to remove item', e);
@@ -220,7 +223,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (user && session) {
             try {
                 if (!key.startsWith('temp-')) {
-                    await fetch(`${API_URL}/cart/items/${key}`, {
+                    const response = await fetch(`${API_URL}/cart/items/${key}`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -228,6 +231,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         },
                         body: JSON.stringify({ quantity: Math.max(1, newQuantity) })
                     });
+                    if (!response.ok) throw new Error('Failed to update quantity');
                 }
             } catch (e) {
                 console.error('Failed to update quantity', e);

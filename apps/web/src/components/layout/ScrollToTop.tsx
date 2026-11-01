@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 export default function ScrollToTop() {
+    const isPreview = usePathname().endsWith('/3d-lab');
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -23,6 +25,8 @@ export default function ScrollToTop() {
             behavior: 'smooth'
         });
     };
+
+    if (isPreview) return null;
 
     return (
         <AnimatePresence>

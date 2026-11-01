@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface Division {
     code: number;
@@ -103,7 +104,7 @@ export default function GuestCheckoutForm({ onSubmit }: GuestCheckoutFormProps) 
             {/* Location Selector (Light Theme Logic) */}
             <div className="bg-trad-bg-warm/30 p-4 rounded-xl border border-trad-border-warm/50 flex flex-col gap-4">
                 <p className="text-sm font-bold text-trad-text-main flex items-center gap-2">
-                    <span className="material-symbols-outlined text-trad-primary">location_on</span>
+                    <AppIcon name="location_on" className="text-trad-primary" />
                     Địa chỉ hành chính <span className="text-red-500">*</span>
                 </p>
                 <LightLocationSelector
@@ -134,7 +135,7 @@ export default function GuestCheckoutForm({ onSubmit }: GuestCheckoutFormProps) 
                 className="mt-6 w-full bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg shadow-orange-900/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group text-lg"
             >
                 Tiếp tục thanh toán
-                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                <AppIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
             </button>
             <p className="text-xs text-center text-trad-text-muted">Thông tin của bạn được bảo mật tuyệt đối.</p>
         </div>
@@ -216,7 +217,7 @@ function LightLocationSelector({ onLocationChange }: { onLocationChange: (loc: {
     };
 
     const selectClass = "w-full bg-white border border-trad-border-warm rounded-lg px-4 py-2.5 text-trad-text-main focus:border-trad-primary focus:ring-1 focus:ring-trad-primary transition-all outline-none appearance-none disabled:opacity-50 disabled:bg-gray-100";
-    const arrowClass = "material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-trad-text-muted pointer-events-none text-xl";
+    const arrowClass = "absolute right-3 top-1/2 -translate-y-1/2 text-trad-text-muted pointer-events-none text-xl";
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -225,21 +226,21 @@ function LightLocationSelector({ onLocationChange }: { onLocationChange: (loc: {
                     <option value="">{loadingP ? 'Đang tải...' : 'Tỉnh / Thành'}</option>
                     {provinces.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
                 </select>
-                <span className={arrowClass}>arrow_drop_down</span>
+                <AppIcon name="arrow_drop_down" className={arrowClass} />
             </div>
             <div className="relative">
                 <select className={selectClass} onChange={e => handleDistrictChange(Number(e.target.value))} value={selectedDistrict?.code || ''} disabled={!selectedProvince}>
                     <option value="">{loadingD ? 'Đang tải...' : 'Quận / Huyện'}</option>
                     {districts.map(d => <option key={d.code} value={d.code}>{d.name}</option>)}
                 </select>
-                <span className={arrowClass}>arrow_drop_down</span>
+                <AppIcon name="arrow_drop_down" className={arrowClass} />
             </div>
             <div className="relative">
                 <select className={selectClass} onChange={e => handleWardChange(Number(e.target.value))} value={selectedWard?.code || ''} disabled={!selectedDistrict}>
                     <option value="">{loadingW ? 'Đang tải...' : 'Phường / Xã'}</option>
                     {wards.map(w => <option key={w.code} value={w.code}>{w.name}</option>)}
                 </select>
-                <span className={arrowClass}>arrow_drop_down</span>
+                <AppIcon name="arrow_drop_down" className={arrowClass} />
             </div>
         </div>
     );

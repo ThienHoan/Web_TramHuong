@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react';
 import { getOrderStatus, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCurrency } from '@/hooks/useCurrency';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function CheckoutPaymentPage() {
     const searchParams = useSearchParams();
@@ -172,7 +173,7 @@ export default function CheckoutPaymentPage() {
         <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0] text-red-600 font-display">
             <div className="p-6 bg-white rounded-xl shadow-lg border border-red-200">
                 <p className="flex items-center gap-2">
-                    <span className="material-symbols-outlined">error</span>
+                    <AppIcon name="error" className="" />
                     {error}
                 </p>
                 <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
@@ -200,7 +201,7 @@ export default function CheckoutPaymentPage() {
                     <div className="flex h-20 items-center justify-between gap-6">
                         <Link href="/" className="flex items-center gap-3 shrink-0 group cursor-pointer">
                             <div className="size-12 text-primary flex items-center justify-center bg-surface-accent rounded-full border border-accent-gold/30 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                                <span className="material-symbols-outlined text-3xl">spa</span>
+                                <AppIcon name="spa" className="text-3xl" />
                             </div>
                             <div>
                                 <h1 className="font-serif text-2xl font-bold leading-none tracking-tight text-primary-dark">Thiên Phúc</h1>
@@ -223,11 +224,11 @@ export default function CheckoutPaymentPage() {
                                 <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-primary/20 mb-6 w-full max-w-[280px] relative">
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-accent-gold text-2xl">qr_code_scanner</span>
+                                            <AppIcon name="qr_code_scanner" className="text-accent-gold text-2xl" />
                                             <span className="font-bold text-text-main text-sm">VietQR</span>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-blue-600 text-lg">payments</span>
+                                            <AppIcon name="payments" className="text-blue-600 text-lg" />
                                             <span className="font-bold text-blue-600 italic text-sm">SePay</span>
                                         </div>
                                     </div>
@@ -244,20 +245,20 @@ export default function CheckoutPaymentPage() {
                                             }}
                                         />
                                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full shadow-md">
-                                            <span className="material-symbols-outlined text-accent-gold text-2xl">spa</span>
+                                            <AppIcon name="spa" className="text-accent-gold text-2xl" />
                                         </div>
                                     </div>
                                     <button
                                         onClick={downloadQR}
                                         className="mt-3 w-full flex items-center justify-center gap-2 bg-white hover:bg-surface-accent text-primary font-bold py-2 rounded-lg border border-primary/20 transition-colors text-sm"
                                     >
-                                        <span className="material-symbols-outlined text-lg">download</span>
+                                        <AppIcon name="download" className="text-lg" />
                                         Tải ảnh QR
                                     </button>
                                     <div className="mt-3 flex justify-between items-center text-[10px] text-gray-500 font-medium">
                                         <span>Hỗ trợ 50+ Ngân hàng</span>
                                         <div className="flex gap-1 items-center">
-                                            <span className="material-symbols-outlined text-sm">lock</span>
+                                            <AppIcon name="lock" className="text-sm" />
                                             <span>Bảo mật</span>
                                         </div>
                                     </div>
@@ -271,7 +272,7 @@ export default function CheckoutPaymentPage() {
                                         <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
                                         <p className="text-xs font-bold text-trad-red uppercase tracking-widest mb-2 opacity-80">Thời hạn thanh toán</p>
                                         <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-primary-dark">
-                                            <span className={`material-symbols-outlined text-3xl ${timeRemaining !== 'EXPIRED' ? 'animate-pulse text-trad-amber' : 'text-red-500'}`}>timer</span>
+                                            <AppIcon name="timer" className={`text-3xl ${timeRemaining !== 'EXPIRED' ? 'animate-pulse text-trad-amber' : 'text-red-500'}`} />
                                             <span>{timeRemaining === 'EXPIRED' ? 'Đã hết hạn' : timeRemaining}</span>
                                         </div>
                                         <p className="text-[11px] text-text-sub mt-2 italic font-medium">Đơn hàng sẽ tự động hủy nếu quá hạn</p>
@@ -283,7 +284,7 @@ export default function CheckoutPaymentPage() {
                         {/* Payment Details Section */}
                         <div className="lg:w-7/12 p-8 lg:p-12 relative flex flex-col justify-center bg-white">
                             <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-                                <span className="material-symbols-outlined text-9xl">local_florist</span>
+                                <AppIcon name="local_florist" className="text-9xl" />
                             </div>
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="w-1 h-8 bg-primary rounded-full"></div>
@@ -292,7 +293,7 @@ export default function CheckoutPaymentPage() {
                             <div className="space-y-6 relative z-10">
                                 <div className="bg-surface-accent/20 rounded-xl p-4 border border-accent-gold/20">
                                     <label className="text-xs font-bold text-text-sub uppercase tracking-wider mb-2 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-sm">attach_money</span> Số tiền cần thanh toán
+                                        <AppIcon name="attach_money" className="text-sm" /> Số tiền cần thanh toán
                                     </label>
                                     <div className="flex items-center gap-3">
                                         <div className="flex items-baseline gap-1 text-4xl font-bold text-primary-dark font-serif">
@@ -303,7 +304,7 @@ export default function CheckoutPaymentPage() {
                                             className="p-2 hover:bg-black/5 rounded-full text-text-sub/50 hover:text-primary transition-colors"
                                             title="Sao chép số tiền"
                                         >
-                                            <span className="material-symbols-outlined text-xl">content_copy</span>
+                                            <AppIcon name="content_copy" className="text-xl" />
                                         </button>
                                     </div>
                                     <p className="text-xs text-text-sub/70 mt-1 italic">
@@ -318,7 +319,7 @@ export default function CheckoutPaymentPage() {
                                                 className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
                                                 readOnly type="text" value={BANK_CODE}
                                             />
-                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">account_balance</span>
+                                            <AppIcon name="account_balance" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                         </div>
                                     </div>
                                     <div>
@@ -328,7 +329,7 @@ export default function CheckoutPaymentPage() {
                                                 className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
                                                 readOnly type="text" value={BANK_NAME}
                                             />
-                                            <span className="absolute right--3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">person</span>
+                                            <AppIcon name="person" className="absolute right--3 top-1/2 -translate-y-1/2 text-gray-400" />
                                         </div>
                                     </div>
                                 </div>
@@ -343,7 +344,7 @@ export default function CheckoutPaymentPage() {
                                             onClick={() => navigator.clipboard.writeText(BANK_ACC)}
                                             className="bg-surface-accent hover:bg-accent-gold border border-l-0 border-accent-gold/30 text-text-sub hover:text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 whitespace-nowrap shrink-0"
                                         >
-                                            <span className="material-symbols-outlined text-lg">content_copy</span>
+                                            <AppIcon name="content_copy" className="text-lg" />
                                             <span>Sao chép</span>
                                         </button>
                                     </div>
@@ -359,12 +360,12 @@ export default function CheckoutPaymentPage() {
                                             onClick={() => navigator.clipboard.writeText(order?.id)}
                                             className="bg-primary hover:bg-primary-dark border border-l-0 border-primary text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg whitespace-nowrap shrink-0"
                                         >
-                                            <span className="material-symbols-outlined text-lg">content_copy</span>
+                                            <AppIcon name="content_copy" className="text-lg" />
                                             <span>Sao chép</span>
                                         </button>
                                     </div>
                                     <div className="flex items-start gap-3 text-xs text-trad-red bg-red-50 p-3 rounded-lg border border-red-100">
-                                        <span className="material-symbols-outlined text-lg shrink-0">warning</span>
+                                        <AppIcon name="warning" className="text-lg shrink-0" />
                                         <span className="font-medium leading-relaxed">
                                             Lưu ý quan trọng: Bạn phải sao chép <strong>chính xác</strong> nội dung chuyển khoản ở trên để đơn hàng được kích hoạt tự động.
                                         </span>
@@ -376,7 +377,7 @@ export default function CheckoutPaymentPage() {
                                     href="/"
                                     className="text-sm font-bold text-text-sub/60 hover:text-primary transition-colors flex items-center gap-1 group"
                                 >
-                                    <span className="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                                    <AppIcon name="arrow_back" className="text-base group-hover:-translate-x-1 transition-transform" />
                                     Quay lại trang chủ
                                 </Link>
                                 <div className="flex gap-3 w-full sm:w-auto">
@@ -391,7 +392,7 @@ export default function CheckoutPaymentPage() {
                                         className="flex-1 sm:flex-none px-8 py-3 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
                                     >
                                         <span>Đã thanh toán</span>
-                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                        <AppIcon name="check_circle" className="text-sm" />
                                     </button>
                                 </div>
                             </div>

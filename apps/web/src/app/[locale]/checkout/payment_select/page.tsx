@@ -10,6 +10,7 @@ import ProductImage from '@/components/ui/ProductImage';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { ProcessingOrderOverlay } from '@/components/ui/ProcessingOrderOverlay';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function PaymentSelectPage() {
     const { items, total, clearCart } = useCart();
@@ -154,7 +155,7 @@ export default function PaymentSelectPage() {
     };
 
     return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white">
+        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white">
             <ProcessingOrderOverlay isVisible={loading} />
             <TraditionalHeader />
 
@@ -163,15 +164,15 @@ export default function PaymentSelectPage() {
                 {/* Breadcrumbs */}
                 <nav className="mb-8 flex items-center gap-2 text-sm md:text-base">
                     <Link className="text-trad-red-800 hover:text-trad-primary transition-colors font-medium" href="/cart">Giỏ hàng</Link>
-                    <span className="material-symbols-outlined text-trad-border-warm text-sm">chevron_right</span>
+                    <AppIcon name="chevron_right" className="text-trad-border-warm text-sm" />
                     <Link className="text-trad-red-800 hover:text-trad-primary transition-colors font-medium" href="/checkout">Giao hàng</Link>
-                    <span className="material-symbols-outlined text-trad-border-warm text-sm">chevron_right</span>
+                    <AppIcon name="chevron_right" className="text-trad-border-warm text-sm" />
                     <span className="text-trad-red-900 font-bold border-b-2 border-trad-primary">Thanh toán</span>
                 </nav>
 
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-center gap-3">
-                        <span className="material-symbols-outlined">error</span>
+                        <AppIcon name="error" className="" />
                         <p>{error}</p>
                     </div>
                 )}
@@ -200,7 +201,7 @@ export default function PaymentSelectPage() {
                                 </div>
                                 <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-trad-bg-warm text-trad-primary">
-                                        <span className="material-symbols-outlined text-[24px]">local_shipping</span>
+                                        <AppIcon name="local_shipping" className="text-[24px]" />
                                     </div>
                                     <div className="flex grow flex-col">
                                         <p className="text-trad-text-main text-base font-bold font-display">Thanh toán khi nhận hàng (COD)</p>
@@ -228,7 +229,7 @@ export default function PaymentSelectPage() {
                                 </div>
                                 <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
-                                        <span className="material-symbols-outlined text-[24px]">qr_code_scanner</span>
+                                        <AppIcon name="qr_code_scanner" className="text-[24px]" />
                                     </div>
                                     <div className="flex grow flex-col pr-0 md:pr-20">
                                         <p className="text-trad-text-main text-base font-bold font-display">Chuyển khoản ngân hàng (SePay)</p>
@@ -256,7 +257,7 @@ export default function PaymentSelectPage() {
                                 </div>
                                 <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
-                                        <span className="material-symbols-outlined text-[24px]">storefront</span>
+                                        <AppIcon name="storefront" className="text-[24px]" />
                                     </div>
                                     <div className="flex grow flex-col">
                                         <p className="text-trad-text-main text-base font-bold font-display">Nhận tại cửa hàng</p>
@@ -268,7 +269,7 @@ export default function PaymentSelectPage() {
                         {/* Back Link */}
                         <div className="mt-4">
                             <Link className="inline-flex items-center gap-2 text-sm font-medium text-trad-text-muted hover:text-trad-primary transition-colors" href="/checkout">
-                                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                                <AppIcon name="arrow_back" className="text-[18px]" />
                                 Quay lại phần vận chuyển
                             </Link>
                         </div>
@@ -336,7 +337,7 @@ export default function PaymentSelectPage() {
                                     {paymentMethod === 'showroom' ? (
                                         <div className="text-sm bg-orange-50 p-3 rounded border border-orange-200 mb-2">
                                             <p className="font-bold text-orange-800 flex items-center gap-1.5">
-                                                <span className="material-symbols-outlined text-[18px]">store</span>
+                                                <AppIcon name="store" className="text-[18px]" />
                                                 Nhận tại cửa hàng:
                                             </p>
                                             <p className="text-trad-text-main/80 mt-1">Showroom Thiên Phúc</p>
@@ -361,18 +362,18 @@ export default function PaymentSelectPage() {
                                         className="w-full flex items-center justify-center gap-2 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3.5 px-6 rounded-lg transition-colors shadow-lg shadow-orange-900/20 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {loading ? 'Đang xử lý...' : 'Hoàn tất đơn hàng'}
-                                        <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                                        <AppIcon name="check_circle" className="text-[20px]" />
                                     </button>
                                 </div>
                                 {/* Trust Signals */}
                                 <div className="mt-4 flex justify-center items-center gap-4 text-xs text-trad-text-muted/70 opacity-70">
                                     <div className="flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                                        <AppIcon name="verified_user" className="text-[16px]" />
                                         <span>Bảo mật 100%</span>
                                     </div>
                                     <div className="w-px h-3 bg-trad-border-warm"></div>
                                     <div className="flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                                        <AppIcon name="local_shipping" className="text-[16px]" />
                                         <span>Đổi trả 7 ngày</span>
                                     </div>
                                 </div>
@@ -395,7 +396,7 @@ export default function PaymentSelectPage() {
                             className="bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
                         >
                             {loading ? 'Xử lý...' : 'Đặt hàng'}
-                            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                            <AppIcon name="check_circle" className="text-[18px]" />
                         </button>
                     </div>
                 </div>

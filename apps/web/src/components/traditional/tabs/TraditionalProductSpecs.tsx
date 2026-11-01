@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Product } from '@/types/product';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface TraditionalProductSpecsProps {
     product: Product;
@@ -48,7 +49,7 @@ export default function TraditionalProductSpecs({ product }: TraditionalProductS
                 {specsData.map((item, idx: number) => (
                     <div key={idx} className="flex items-start gap-4 p-5 bg-white rounded-lg border border-trad-border-warm hover:border-trad-amber-600 transition-colors shadow-sm group">
                         <div className="shrink-0 w-12 h-12 rounded-full bg-trad-bg-warm flex items-center justify-center text-trad-amber-700 group-hover:bg-trad-primary group-hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{getIcon(item.label)}</span>
+                            <AppIcon name={getIcon(item.label)} className="" />
                         </div>
                         <div>
                             <h4 className="font-bold text-trad-text-muted text-sm uppercase tracking-wider mb-1">{item.label}</h4>
@@ -61,7 +62,7 @@ export default function TraditionalProductSpecs({ product }: TraditionalProductS
                 {specsData.length < 3 && (
                     <div className="flex items-start gap-4 p-5 bg-white rounded-lg border border-trad-border-warm border-dashed opacity-70">
                         <div className="shrink-0 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                            <span className="material-symbols-outlined">help_outline</span>
+                            <AppIcon name="help_outline" className="" />
                         </div>
                         <div>
                             <h4 className="font-bold text-trad-text-muted text-sm uppercase tracking-wider mb-1">Hỗ trợ</h4>
@@ -74,7 +75,7 @@ export default function TraditionalProductSpecs({ product }: TraditionalProductS
             {/* Philosophy Quote */}
             <div className="relative mt-16 p-8 bg-trad-bg-warm rounded-2xl text-center border-t-4 border-trad-primary">
                 <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full border border-trad-primary">
-                    <span className="material-symbols-outlined text-trad-primary text-3xl">format_quote</span>
+                    <AppIcon name="format_quote" className="text-trad-primary text-3xl" />
                 </span>
                 <p className="text-xl md:text-2xl font-serif italic text-trad-text-main opacity-80 mt-4">
                     &quot;Hương trầm là cầu nối tâm linh, là nét đẹp văn hóa ngàn đời của người Việt. Chúng tôi gìn giữ và lan tỏa giá trị ấy qua từng sản phẩm.&quot;

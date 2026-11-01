@@ -6,14 +6,10 @@ export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/';
+    const requestedNext = searchParams.get('next') ?? '/';
+    const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\')
+        ? requestedNext : '/';
 
-    console.log('[Auth Callback] Request received:', {
-        url: request.url,
-        code: code ? `${code.substring(0, 10)}...` : null,
-        next,
-        origin
-    });
 
     if (code) {
         const cookieStore = await cookies();
@@ -41,13 +37,9 @@ export async function GET(request: Request) {
         );
 
         console.log('[Auth Callback] Exchanging code for session...');
-        const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
-            console.log('[Auth Callback] ✅ Session created successfully!', {
-                userId: data.session?.user?.id,
-                email: data.session?.user?.email
-            });
 
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const forwardedProto = request.headers.get('x-forwarded-proto');

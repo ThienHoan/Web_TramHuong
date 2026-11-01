@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/icons/AppIcon';
 
 import { useEffect, useState } from 'react';
 
@@ -197,7 +198,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
     };
 
     const selectClass = "w-full appearance-none bg-black/20 border border-trad-amber-600/50 rounded-lg px-4 py-2.5 text-white focus:border-trad-amber-600 focus:ring-1 focus:ring-trad-amber-600 transition-all outline-none pr-10 disabled:opacity-50";
-    const arrowClass = "material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-trad-amber-600 pointer-events-none text-xl";
+    const arrowClass = "absolute right-3 top-1/2 -translate-y-1/2 text-trad-amber-600 pointer-events-none text-xl";
 
     return (
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -216,7 +217,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
                             <option key={p.code} className="text-black" value={p.code}>{p.name}</option>
                         ))}
                     </select>
-                    <span className={arrowClass}>keyboard_arrow_down</span>
+                    <AppIcon name="keyboard_arrow_down" className={arrowClass} />
                 </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -234,7 +235,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
                             <option key={d.code} className="text-black" value={d.code}>{d.name}</option>
                         ))}
                     </select>
-                    <span className={arrowClass}>keyboard_arrow_down</span>
+                    <AppIcon name="keyboard_arrow_down" className={arrowClass} />
                 </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -252,7 +253,7 @@ export default function TraditionalLocationSelector({ onLocationChange, initialP
                             <option key={w.code} className="text-black" value={w.code}>{w.name}</option>
                         ))}
                     </select>
-                    <span className={arrowClass}>keyboard_arrow_down</span>
+                    <AppIcon name="keyboard_arrow_down" className={arrowClass} />
                 </div>
             </div>
         </div>

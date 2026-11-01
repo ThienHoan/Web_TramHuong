@@ -6,6 +6,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { Alert } from '@/components/ui/alert';
+import { AppIcon } from "@/components/icons/AppIcon";
 
 interface Review {
     id: string;
@@ -91,9 +92,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
     const renderStars = (count: number, filledClass = "text-trad-amber-500", emptyClass = "text-gray-300") => (
         <div className="flex">
             {[...Array(5)].map((_, i) => (
-                <span key={i} className={`material-symbols-outlined !text-[20px] ${i < count ? filledClass : emptyClass}`}>
-                    {i < count ? 'star' : 'star_border'}
-                </span>
+                <AppIcon name={i < count ? 'star' : 'star_border'} key={i} className={`!text-[20px] ${i < count ? filledClass : emptyClass}`} />
             ))}
         </div>
     );
@@ -111,7 +110,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
     }
 
     return (
-        <div className="animate-fade-in">
+        <div className="atelier-page animate-fade-in">
             <div className="mb-12 text-center">
                 <h2 className="font-serif text-3xl font-bold text-trad-red-900 mb-4">Tiếng Lòng Hương Trầm – Chia Sẻ Từ Cộng Đồng</h2>
                 <div className="w-24 h-1 bg-trad-primary mx-auto rounded-full"></div>
@@ -134,7 +133,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                         return (
                             <div key={star} className="flex items-center gap-4 mb-3 last:mb-0">
                                 <span className="text-sm font-bold w-3 text-trad-text-main">{star}</span>
-                                <span className="material-symbols-outlined text-xs text-trad-primary">star</span>
+                                <AppIcon name="star" className="text-xs text-trad-primary" />
                                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                                     <div className="h-full bg-trad-primary rounded-full" style={{ width: `${percent}%` }}></div>
                                 </div>
@@ -154,7 +153,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                     onClick={() => setShowForm(!showForm)}
                     className="flex items-center gap-2 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-md active:translate-y-0.5"
                 >
-                    <span className="material-symbols-outlined">edit</span>
+                    <AppIcon name="edit" className="" />
                     {showForm ? 'Đóng biểu mẫu' : 'Viết đánh giá của bạn'}
                 </button>
             </div>
@@ -183,9 +182,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                                             onClick={() => setRating(star)}
                                             className="focus:outline-none transition-transform hover:scale-110"
                                         >
-                                            <span className={`material-symbols-outlined !text-[32px] ${star <= rating ? 'text-trad-amber-500 fill-current' : 'text-gray-300'}`}>
-                                                star
-                                            </span>
+                                            <AppIcon name="star" className={`!text-[32px] ${star <= rating ? 'text-trad-amber-500 fill-current' : 'text-gray-300'}`} />
                                         </button>
                                     ))}
                                 </div>
@@ -209,7 +206,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
                                     className="bg-trad-red-900 hover:bg-trad-red-800 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50"
                                 >
                                     {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
-                                    <span className="material-symbols-outlined">send</span>
+                                    <AppIcon name="send" className="" />
                                 </button>
                             </div>
                         </form>
@@ -230,7 +227,7 @@ export default function TraditionalProductReviews({ productId }: { productId: st
             {meta.total === 0 && !loading ? (
                 <div className="text-center py-16 bg-white border border-trad-border-warm rounded-2xl border-dashed">
                     <div className="mb-4 inline-flex p-4 rounded-full bg-trad-bg-warm text-trad-primary">
-                        <span className="material-symbols-outlined !text-[48px]">rate_review</span>
+                        <AppIcon name="rate_review" className="!text-[48px]" />
                     </div>
                     <p className="text-xl font-medium text-trad-text-main mb-2">Chưa có đánh giá nào</p>
                     <p className="text-trad-text-muted">Hãy là người đầu tiên chia sẻ cảm nhận về sản phẩm này!</p>
