@@ -27,8 +27,19 @@ export class VouchersService {
     private readonly supabase: SupabaseClient<Database>,
   ) {}
 
+  private validateConfiguration(data: { discount_type?: string; discount_amount?: number; start_date?: string; end_date?: string }) {
+    if (!Number.isFinite(data.discount_amount) || Number(data.discount_amount) <= 0 ||
+      (data.discount_type === 'PERCENTAGE' && Number(data.discount_amount) > 100)) {
+      throw new BadRequestException('Giá trị giảm giá không hợp lệ');
+    }
+    if (new Date(data.end_date!).getTime() <= new Date(data.start_date!).getTime()) {
+      throw new BadRequestException('Ngày kết thúc phải sau ngày bắt đầu');
+    }
+  }
+
   // 1. Admin: Create Voucher
   async createVoucher(data: CreateVoucherDto): Promise<VoucherRow> {
+    this.validateConfiguration({ ...data, discount_amount: data.discount_value ?? data.discount_amount });
     // Map frontend 'discount_amount' to DB 'discount_value'
     const discountValue = data.discount_value ?? data.discount_amount;
 
@@ -48,7 +59,7 @@ export class VouchersService {
         code: code.trim().toUpperCase(),
         description: data.description,
         discount_type,
-        discount_amount: discountValue,
+        discount_amount: Number(discountValue),
         min_order_value: min_order_value || 0,
         max_discount_amount: max_discount_amount || null,
         start_date,
@@ -110,7 +121,12 @@ export class VouchersService {
     updates: UpdateVoucherDto,
   ): Promise<VoucherWithAlias> {
     // Map discount_amount -> discount_value if present
-    const updateData: Record<string, unknown> = { ...updates };
+    const { discount_value, ...fields } = updates;
+    const updateData: Record<string, unknown> = { ...fields };
+    if (discount_value !== undefined) updateData.discount_amount = discount_value;
+    if (updates.code !== undefined) updateData.code = updates.code.trim().toUpperCase();
+    const current = await this.getVoucher(id);
+    this.validateConfiguration({ ...current, ...updateData });
     // if (updates.discount_amount !== undefined) {
     //   updateData.discount_amount = updates.discount_amount;
     // }
@@ -125,6 +141,18 @@ export class VouchersService {
     if (error) throw new BadRequestException(error.message);
     const voucher = data;
     return { ...voucher, discount_amount: voucher.discount_amount };
+  }
+
+  async deleteVoucher(id: string): Promise<{ success: true }> {
+    const { data, error } = await this.supabase
+      .from('vouchers')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new BadRequestException(error.message);
+    if (!data) throw new NotFoundException('Voucher not found');
+    return { success: true };
   }
 
   // 4. Validate Voucher (Core Logic)

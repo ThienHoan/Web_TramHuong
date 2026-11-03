@@ -7,6 +7,12 @@ import { Toaster } from "@/components/ui/sonner";
 // import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
 import { Manrope } from "next/font/google";
 import "../globals.css";
+import "../brand.css";
+
+export const metadata = {
+    title: "Thiên Phúc — Tài khoản",
+    icons: { icon: "/brand/mark.svg", apple: "/brand/icon-180.png" },
+};
 
 const manrope = Manrope({
     weight: ['200', '300', '400', '500', '600', '700', '800'],

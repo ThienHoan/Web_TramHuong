@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateProductDto {
@@ -13,10 +14,12 @@ export class CreateProductDto {
   @IsString()
   desc_vi: string;
 
+  @Type(() => Number)
   @IsNumber()
   price: number | string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   original_price?: number | string;
 
@@ -28,6 +31,7 @@ export class CreateProductDto {
   category?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   quantity?: number | string;
 

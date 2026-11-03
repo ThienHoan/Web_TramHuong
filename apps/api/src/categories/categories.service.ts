@@ -1,3 +1,4 @@
+import { pagination } from '../common/pagination';
 import {
   Injectable,
   NotFoundException,
@@ -48,8 +49,7 @@ export class CategoriesService {
     options?: { include_inactive?: boolean; page?: number; limit?: number },
   ) {
     const client = this.supabase.getClient();
-    const page = options?.page || 1;
-    const limit = options?.limit || 20;
+    const { page, limit } = pagination(options?.page, options?.limit ?? 20);
 
     const query = client
       .from('categories')

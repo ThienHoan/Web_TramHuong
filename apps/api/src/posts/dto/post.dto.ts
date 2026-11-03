@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsEnum,
   MaxLength,
+  IsBoolean,
 } from 'class-validator';
 
 export enum PostStatus {
@@ -19,7 +20,7 @@ export class CreatePostDto {
   title: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(200)
   slug: string;
 
@@ -34,7 +35,11 @@ export class CreatePostDto {
 
   @IsOptional()
   @IsString()
-  featured_image?: string;
+  cover_image?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_featured?: boolean;
 
   @IsOptional()
   @IsString()
@@ -77,7 +82,11 @@ export class UpdatePostDto {
 
   @IsOptional()
   @IsString()
-  featured_image?: string;
+  cover_image?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_featured?: boolean;
 
   @IsOptional()
   @IsString()

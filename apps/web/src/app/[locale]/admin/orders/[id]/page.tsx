@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL } from "@/services/base-http";
+
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -7,7 +9,6 @@ import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { setAccessToken } from '@/lib/api-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 import { useCurrency } from '@/hooks/useCurrency';
 

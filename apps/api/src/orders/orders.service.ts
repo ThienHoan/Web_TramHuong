@@ -1,15 +1,19 @@
+import { pagination } from '../common/pagination';
 import {
   Injectable,
   BadRequestException,
   NotFoundException,
   InternalServerErrorException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
 import { MailService } from '../mail/mail.service';
 import { VouchersService } from '../vouchers/vouchers.service';
 import { LookupOrderDto } from './dto/lookup-order.dto';
+import { ShippingQuoteService } from '../shipping/quote.service';
+import { productPrice } from '../common/commerce-pricing';
 
 interface OrderItemInput {
   productId: string;
@@ -41,11 +45,6 @@ interface ProductTranslation {
   description?: string;
 }
 
-interface Variant {
-  name: string;
-  price?: number;
-}
-
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
@@ -55,6 +54,7 @@ export class OrdersService {
     private readonly cartService: CartService,
     private readonly mailService: MailService,
     private readonly vouchersService: VouchersService,
+    @Optional() private readonly shippingQuotes?: ShippingQuoteService,
   ) {}
 
   private get client() {
@@ -171,8 +171,7 @@ export class OrdersService {
   }
 
   async findAll(options?: { page?: number; limit?: number; search?: string }) {
-    const page = options?.page || 1;
-    const limit = options?.limit || 20;
+    const { page, limit } = pagination(options?.page, options?.limit ?? 20);
     const search = options?.search;
 
     let query = this.client.from('orders').select('*', { count: 'exact' });
@@ -242,8 +241,7 @@ export class OrdersService {
     userId: string,
     options?: { page?: number; limit?: number },
   ) {
-    const page = options?.page || 1;
-    const limit = options?.limit || 20;
+    const { page, limit } = pagination(options?.page, options?.limit ?? 20);
 
     // Fetch user email to link guest orders
     const { data: user } = await this.client
@@ -298,6 +296,7 @@ export class OrdersService {
     shippingInfo: ShippingInfo,
     paymentMethod: string = 'cod',
     voucherCode?: string,
+    shippingQuoteReference?: string,
   ) {
     this.logger.log(
       `Creating order for User: ${userId || 'Guest'}, Payment: ${paymentMethod}`,
@@ -396,39 +395,10 @@ export class OrdersService {
           product.slug;
         const image = product.images?.[0] || null;
 
-        // Get BASE price (original price before discount)
-        let originalPrice = Number(product.price);
-        const variants = product.variants as unknown as Variant[];
-        if (item.variantId && Array.isArray(variants)) {
-          const v = variants.find((v) => v.name === item.variantId);
-          if (v && v.price !== undefined) {
-            originalPrice = Number(v.price);
-          }
-        }
-
-        // Calculate discount (same logic as cart.service.ts)
-        let finalPrice = originalPrice;
-        let discountAmount = 0;
-
-        if (product.discount_percentage > 0) {
-          const now = new Date();
-          const startDate = product.discount_start_date
-            ? new Date(product.discount_start_date)
-            : null;
-          const endDate = product.discount_end_date
-            ? new Date(product.discount_end_date)
-            : null;
-
-          const isActive =
-            (!startDate || startDate <= now) && (!endDate || endDate >= now);
-
-          if (isActive) {
-            finalPrice = Math.round(
-              originalPrice * (1 - product.discount_percentage / 100),
-            );
-            discountAmount = originalPrice - finalPrice;
-          }
-        }
+        const priced = productPrice(product, item.variantId);
+        const originalPrice = priced.originalPrice;
+        const finalPrice = priced.price;
+        const discountAmount = priced.discountAmount;
 
         const itemTotal = finalPrice * item.quantity;
         total += itemTotal;
@@ -451,6 +421,21 @@ export class OrdersService {
       // Calculate Subtotal (Sum of item totals)
       // Note: 'total' currently holds the sum of item prices * quantity
       const subtotal = total;
+      if (
+        paymentMethod !== 'showroom' &&
+        this.shippingQuotes?.requiresQuote() &&
+        !shippingQuoteReference
+      ) {
+        throw new BadRequestException('SHIPPING_QUOTE_REQUIRED');
+      }
+      const shippingQuote =
+        shippingQuoteReference && paymentMethod !== 'showroom'
+          ? await this.shippingQuotes?.revalidate(
+              shippingQuoteReference, userId, items, shippingInfo, paymentMethod, voucherCode,
+            )
+          : undefined;
+      if (shippingQuote && shippingQuote.subtotal !== subtotal)
+        throw new BadRequestException('SHIPPING_QUOTE_CHANGED');
 
       // Validate Voucher & Calculate Discount
       let voucherDiscountAmount = 0;
@@ -466,6 +451,8 @@ export class OrdersService {
           );
 
           if (validation.isValid && validation.voucher) {
+            if (shippingQuote && shippingQuote.voucherDiscount !== validation.discountAmount)
+              throw new BadRequestException('SHIPPING_QUOTE_CHANGED');
             voucherDiscountAmount = validation.discountAmount;
             appliedVoucherCode = validation.voucher.code; // Use normalized code
 
@@ -509,7 +496,13 @@ export class OrdersService {
         }
       }
 
-      let shippingFee = total >= 300000 ? 0 : 30000;
+      let shippingFee = shippingQuote
+        ? shippingQuote.customerFee
+        : total >= 300000 ? 0 : 30000;
+      if (shippingQuote) {
+        shippingInfo.shipping_quote_reference = shippingQuote.reference;
+        shippingInfo.shipping_snapshot = shippingQuote;
+      }
 
       // Override shipping fee if picking up at showroom
       if (paymentMethod === 'showroom') {
@@ -558,7 +551,7 @@ export class OrdersService {
 
         // Log SePay Initiation
         this.logger.log(
-          `SePay initiated for amount ${total}, phone ${shippingInfo.phone}`,
+          `SePay initiated for amount ${total}`,
         );
       }
 
@@ -667,50 +660,16 @@ export class OrdersService {
       );
     }
 
-    // STOCK REVERSION LOGIC
-    // If moving TO Canceled FROM non-canceled
-    if (status === 'CANCELED' && currentOrder.status !== 'CANCELED') {
-      const items = (currentOrder.items as any[]) || [];
-      interface ICleanupItem {
-        productId: string;
-        quantity: number;
-      }
-      if (Array.isArray(items)) {
-        for (const rawItem of items) {
-          const item = rawItem as ICleanupItem;
-          if (item?.productId && item?.quantity) {
-            // Fetch current product to get latest quantity
-            const { data: product } = await this.client
-              .from('products')
-              .select('quantity')
-              .eq('id', item.productId)
-              .single();
+    // Stock is restored atomically by the database trigger in admin-order-integrity.sql.
 
-            if (product) {
-              await this.client
-                .from('products')
-                .update({ quantity: product.quantity + item.quantity })
-                .eq('id', item.productId);
-            }
-          }
-        }
-      }
+    const { data: result, error } = await this.client.rpc('transition_order', {
+      p_id: id, p_status: status, p_expected_status: currentStatus,
+    });
+    if (error) {
+      if (error.code === 'PGRST202') throw new InternalServerErrorException('Apply admin-order-integrity.sql before changing order status');
+      throw new BadRequestException(error.message);
     }
-
-    // SYNC LOGIC: If Admin sets status to PAID, ensure payment_status is 'paid'
-    let paymentStatusUpdate = {};
-    if (status === 'PAID') {
-      paymentStatusUpdate = { payment_status: 'paid' };
-    }
-
-    const { data, error } = await this.client
-      .from('orders')
-      .update({ status, ...paymentStatusUpdate })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw new BadRequestException(error.message);
+    const data = result as unknown as import('../common/types/database.types').Database['public']['Tables']['orders']['Row'];
 
     // Email Notification
     if (currentStatus !== status) {
@@ -732,7 +691,7 @@ export class OrdersService {
               info.email = user.email;
             }
 
-            data.shipping_info = { email: user.email };
+            data.shipping_info = { ...shippingInfo, email: user.email };
           }
         }
       }
@@ -756,10 +715,7 @@ export class OrdersService {
     amount: number,
     transactionCode: string,
   ) {
-    this.logger.log(
-      `Verifying Payment: Content="${content}", Amount=${amount}, Code=${transactionCode}`,
-    );
-    // Regex for UUID (Standard)
+    this.logger.log('Verifying SePay payment');
     // Regex for UUID (Standard)
     const uuidRegex =
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -779,9 +735,7 @@ export class OrdersService {
     }
 
     if (!orderId) {
-      this.logger.warn(
-        `Payment Verification Failed: No Order ID found in content "${content}"`,
-      );
+      this.logger.warn('Payment verification failed: missing order reference');
       return { success: false, reason: 'No Order ID found' };
     }
 
@@ -812,15 +766,35 @@ export class OrdersService {
       return { success: false, reason: 'Amount mismatch' };
     }
 
-    // Update Order
-    await this.client
+    if (
+      !['PENDING', 'AWAITING_PAYMENT', 'SHIPPED', 'COMPLETED'].includes(order.status)
+    ) {
+      return { success: false, reason: 'Order state requires manual payment review' };
+    }
+    const nextStatus = ['PENDING', 'AWAITING_PAYMENT'].includes(order.status)
+      ? 'PAID'
+      : order.status;
+    const confirmed = await this.client
       .from('orders')
-      .update({
-        payment_status: 'paid',
-        transaction_code: transactionCode,
-        status: 'PAID',
-      })
-      .eq('id', orderId);
+      .update({ payment_status: 'paid', transaction_code: transactionCode, status: nextStatus })
+      .eq('id', orderId)
+      .eq('status', order.status)
+      .eq('payment_status', order.payment_status)
+      .select('id')
+      .maybeSingle();
+    if (confirmed.error) {
+      this.logger.error('SePay payment persistence failed; manual/retry verification required');
+      return { success: false, reason: 'Payment could not be recorded' };
+    }
+    if (!confirmed.data) {
+      const current = await this.client.from('orders')
+        .select('payment_status').eq('id', orderId).maybeSingle();
+      return current.data?.payment_status === 'paid'
+        ? { success: true, message: 'Already paid' }
+        : { success: false, reason: 'Order changed during payment verification' };
+    }
+    order.status = nextStatus;
+    order.payment_status = 'paid';
 
     // Send Emails (Async - don't block response)
     let customerEmail = (order.shipping_info as unknown as ShippingInfo)?.email;

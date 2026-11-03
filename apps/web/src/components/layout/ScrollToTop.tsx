@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
 export default function ScrollToTop() {
-    const isPreview = usePathname().endsWith('/3d-lab');
+    const pathname = usePathname();
+    const isPreview = pathname.endsWith('/3d-lab') || /\/admin(?:\/|$)/.test(pathname);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {

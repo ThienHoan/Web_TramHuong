@@ -1,6 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/routing';
+import { BrandLockup } from "@/components/brand/BrandIdentity";
 import TraditionalCartDrawer from '../traditional/TraditionalCartDrawer';
 import { useState } from 'react';
 import ZenSearchOverlay from '@/components/zen/ZenSearchOverlay';
@@ -11,6 +12,8 @@ export default function ZenHeader({ locale }: { locale: string }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+    if (/^\/admin(?:\/|$)/.test(pathname)) return null;
+
     return (
         <>
             <ZenSearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} locale={locale} />
@@ -18,7 +21,7 @@ export default function ZenHeader({ locale }: { locale: string }) {
                 <div className="max-w-[1920px] mx-auto px-6 lg:px-12 h-24 flex items-center justify-between">
                     <div className="flex items-center gap-12">
                         <Link href="/" className="tp-zen-brand font-zen-display uppercase font-light text-zen-900 dark:text-white">
-                            Thien Phuc
+                            <BrandLockup locale="en" />
                         </Link>
                         <div className="hidden lg:flex items-center space-x-10 pl-8 border-l border-zen-200 dark:border-zinc-800 h-8">
                             <Link href="/products" className="text-[11px] uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Shop</Link>

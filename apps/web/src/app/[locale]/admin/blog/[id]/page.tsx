@@ -18,7 +18,7 @@ export default function AdminBlogEditPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(!isNew);
 
-    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<Partial<BlogPost>>({
+    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<Partial<BlogPost>>({
         defaultValues: {
             status: 'draft',
             is_featured: false
@@ -30,9 +30,9 @@ export default function AdminBlogEditPage() {
             // Fetch post by ID directly (Backend now supports ID lookup via slug param)
             const fetchPost = async () => {
                 try {
-                    const result = await getPostBySlug(id); // Returns { data, error }
+                    const result = await getPostBySlug(id, true); // Returns { data, error }
                     if (result.data) {
-                        Object.entries(result.data).forEach(([key, value]) => {
+                        Object.entries(result.data).filter(([key]) => ['title', 'slug', 'content', 'excerpt', 'category', 'cover_image', 'is_featured', 'status', 'seo_title', 'seo_description'].includes(key)).forEach(([key, value]) => {
                             setValue(key as keyof BlogPost, value);
                         });
                     } else {
@@ -139,7 +139,7 @@ export default function AdminBlogEditPage() {
 
                 <div className="pt-4 border-t flex justify-end gap-3">
                     <Link href="/admin/blog" className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</Link>
-                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                    <button disabled={isSubmitting} type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                         {isNew ? 'Create Post' : 'Save Changes'}
                     </button>
                 </div>

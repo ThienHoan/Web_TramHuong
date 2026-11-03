@@ -5,6 +5,7 @@ import { Link, usePathname } from '@/i18n/routing';
 import { useAuth } from '../providers/AuthProvider';
 import { useCart } from '../providers/CartProvider';
 import { useState } from 'react';
+import { BrandLockup } from "@/components/brand/BrandIdentity";
 import { Heart } from 'lucide-react';
 
 export default function Header() {
@@ -30,7 +31,7 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo / Home */}
                 <Link href="/" className="text-xl font-bold tracking-widest uppercase font-zen-display">
-                    Tram Huong
+                    <BrandLockup compact inverse={!isHome} locale="en" />
                 </Link>
 
                 {/* Navigation */}

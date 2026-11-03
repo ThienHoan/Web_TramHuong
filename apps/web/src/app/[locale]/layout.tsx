@@ -3,6 +3,7 @@ import { getMessages } from 'next-intl/server';
 import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat, Manrope } from "next/font/google";
 import "./../globals.css";
 import "./../atelier.css";
+import "./../brand.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
@@ -80,8 +81,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   // Remove existing locale prefix to generate alternates
   const pathWithoutLocale = safePathname.replace(new RegExp(`^/${locale}`), '') || '/';
 
-  const siteName = locale === 'vi' ? 'Trầm Hương Thiên Phúc' : 'Thien Phuc Agarwood';
-  const defaultTitle = locale === 'vi' ? 'Trầm Hương Thiên Phúc - Tinh Hoa Đất Trời' : 'Thien Phuc Agarwood - Zen & Traditional';
+  const siteName = locale === 'vi' ? 'Trầm Hương Thiên Phúc' : 'Thiên Phúc Agarwood';
+  const defaultTitle = locale === 'vi' ? 'Thiên Phúc — Trầm hương Việt | Hương Việt. Nếp an yên.' : 'Thiên Phúc — Vietnamese Agarwood';
   const description = locale === 'vi'
     ? 'Trải nghiệm sự giao thoa giữa Thiền và Truyền Thống. Tinh hoa trầm hương Việt Nam.'
     : 'Experience the dual sensation of Agarwood. Zen minimalism meets Traditional heritage.';
@@ -117,7 +118,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       type: 'website',
       images: [
         {
-          url: '/og-image.jpg', // Ensure you have a default OG image at public/og-image.jpg or similar
+          url: '/brand/social-card.png',
           width: 1200,
           height: 630,
           alt: siteName,
@@ -128,7 +129,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       card: 'summary_large_image',
       title: defaultTitle,
       description: description,
-      // images: ['/twitter-image.jpg'], // Optional
+      images: ['/brand/social-card.png'],
     },
     robots: {
       index: true,
@@ -143,11 +144,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     },
     icons: {
       icon: [
-        { url: '/favicon.ico' },
-        { url: '/icon.png', type: 'image/png' },
+        { url: '/brand/mark.svg', type: 'image/svg+xml' },
+        { url: '/brand/icon-32.png', type: 'image/png', sizes: '32x32' },
       ],
       apple: [
-        { url: '/apple-icon.png' },
+        { url: '/brand/icon-180.png', sizes: '180x180' },
       ],
     },
   };

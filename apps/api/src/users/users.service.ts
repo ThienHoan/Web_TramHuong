@@ -1,3 +1,4 @@
+import { pagination } from '../common/pagination';
 import {
   Injectable,
   BadRequestException,
@@ -15,6 +16,7 @@ export class UsersService {
     search?: string;
     role?: string;
   }) {
+    const { page, limit } = pagination(options.page, options.limit);
     const client = this.supabase.getClient();
     let query = client.from('users').select('*', { count: 'exact' });
 
@@ -23,14 +25,14 @@ export class UsersService {
     }
 
     if (options.search) {
-      const search = options.search.toLowerCase();
+      const search = options.search.toLowerCase().replace(/[,().%_]/g, ' ').trim();
       query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
     }
 
     query = query.order('created_at', { ascending: false });
 
-    const from = (options.page - 1) * options.limit;
-    const to = from + options.limit - 1;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
     query = query.range(from, to);
 
     const { data, count, error } = await query;
@@ -43,9 +45,9 @@ export class UsersService {
       data,
       meta: {
         total: count,
-        page: options.page,
-        limit: options.limit,
-        last_page: Math.ceil((count || 0) / options.limit),
+        page,
+        limit,
+        last_page: Math.max(1, Math.ceil((count || 0) / limit)),
       },
     };
   }
@@ -62,6 +64,8 @@ export class UsersService {
   }
 
   async updateUserRole(id: string, role: string) {
+    if (!['ADMIN', 'STAFF', 'CUSTOMER'].includes(role)) throw new BadRequestException('Invalid role');
+    await this.findOne(id);
     const client = this.supabase.getClient();
     const { error } = await client.from('users').update({ role }).eq('id', id);
     if (error) throw new BadRequestException(error.message);
@@ -69,6 +73,8 @@ export class UsersService {
   }
 
   async toggleBan(id: string, isBanned: boolean) {
+    if (typeof isBanned !== 'boolean') throw new BadRequestException('is_banned must be boolean');
+    await this.findOne(id);
     const client = this.supabase.getClient();
     const { error } = await client
       .from('users')

@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL } from "@/services/base-http";
+
 import { useEffect, useState, use } from 'react';
 import Image from 'next/image';
 import { useRouter } from '@/i18n/routing';
@@ -10,7 +12,6 @@ import { Category } from '@/lib/types';
 import { toast } from 'sonner';
 import { AppIcon } from "@/components/icons/AppIcon";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);

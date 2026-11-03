@@ -93,7 +93,7 @@ export const productService = {
 
     async getCategories(locale: string = 'en', includeInactive: boolean = false): Promise<Category[]> {
         try {
-            const url = buildUrl('/categories', { locale, include_inactive: includeInactive });
+            const url = buildUrl(includeInactive ? '/categories/admin/list' : '/categories', { locale, limit: 500 });
             // revalidate 60s
             const data = await fetchWithAuth<Category[] | { data: Category[] }>(url, { next: { revalidate: 60 } });
 

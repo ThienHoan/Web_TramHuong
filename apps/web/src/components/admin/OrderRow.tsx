@@ -18,10 +18,13 @@ interface OrderRowProps {
     onStatusUpdate: (id: string, newStatus: string) => Promise<void>;
 }
 
+import { NEXT_STATUS, ORDER_STATUS } from './admin-resources';
+import { useLocale } from 'next-intl';
 import { useCurrency } from '@/hooks/useCurrency';
 
 export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
     const router = useRouter();
+    const en = useLocale()==='en';
     const [isLoading, setIsLoading] = useState(false);
     const { formatPrice } = useCurrency();
 
@@ -47,8 +50,7 @@ export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
         }
 
         setIsLoading(true);
-        await onStatusUpdate(order.id, newStatus);
-        setIsLoading(false);
+        try { await onStatusUpdate(order.id, newStatus); } finally { setIsLoading(false); }
     };
 
     return (
@@ -60,11 +62,11 @@ export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
             <td className="p-4 align-top">
                 <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]" title={order.user_id}>
                     {/* In real app, we'd fetch user name or display email */}
-                    Customer {order.user_id.slice(0, 4)}...
+                    {order.shipping_info?.full_name || order.shipping_info?.name || (en?'Customer':'Khách hàng')}
                 </div>
                 {order.shipping_info && (
                     <div className="text-xs text-gray-500 mt-1">
-                        {order.shipping_info.fullName}
+                        {order.shipping_info.phone || order.shipping_info.email}
                     </div>
                 )}
             </td>
@@ -80,11 +82,7 @@ export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
                         disabled={isLoading}
                         className="block w-full text-xs border-gray-300 rounded-md focus:ring-black focus:border-black bg-white"
                     >
-                        <option value="PENDING">Pending</option>
-                        <option value="PAID">Paid</option>
-                        <option value="SHIPPED">Shipped</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="CANCELED">Canceled</option>
+                        {[order.status,...(NEXT_STATUS[order.status]||[])].map(status=><option key={status} value={status}>{ORDER_STATUS[status]?.[en?1:0]||status}</option>)}
                     </select>
                 </div>
             </td>

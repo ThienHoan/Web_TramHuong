@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL } from "@/services/base-http";
+
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -9,7 +11,6 @@ import OrderRow from '@/components/admin/OrderRow';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_PAGE_LIMIT } from '@/lib/constants';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface User {
     id: string;

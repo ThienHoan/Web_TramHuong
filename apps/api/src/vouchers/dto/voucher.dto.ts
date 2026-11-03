@@ -1,35 +1,46 @@
 import {
   IsString,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsBoolean,
   IsDateString,
+  IsIn,
+  Min,
+  IsInt,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateVoucherDto {
   @IsString()
+  @IsNotEmpty()
   code: string;
 
   @IsString()
   @IsOptional()
   description?: string;
 
-  @IsString()
+  @IsIn(['PERCENTAGE', 'FIXED_AMOUNT'])
   discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT';
 
+  @ValidateIf(o => o.discount_value !== undefined || o.discount_amount === undefined)
   @IsNumber()
-  discount_value: number;
+  @Min(0.01)
+  discount_value?: number;
 
   // Optional frontend alias
   @IsOptional()
   @IsNumber()
+  @Min(0.01)
   discount_amount?: number;
 
   @IsNumber()
+  @Min(0)
   @IsOptional()
   min_order_value?: number;
 
   @IsNumber()
+  @Min(0)
   @IsOptional()
   max_discount_amount?: number;
 
@@ -39,7 +50,8 @@ export class CreateVoucherDto {
   @IsDateString()
   end_date: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   @IsOptional()
   usage_limit?: number;
 
@@ -52,6 +64,7 @@ export class UpdateVoucherDto {
   // Partial of CreateVoucherDto essentially
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   code?: string;
 
   @IsOptional()
@@ -59,7 +72,7 @@ export class UpdateVoucherDto {
   description?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(['PERCENTAGE', 'FIXED_AMOUNT'])
   discount_type?: 'PERCENTAGE' | 'FIXED_AMOUNT';
 
   @IsOptional()
@@ -68,14 +81,17 @@ export class UpdateVoucherDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0.01)
   discount_amount?: number; // Alias
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   min_order_value?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   max_discount_amount?: number;
 
   @IsOptional()
@@ -87,7 +103,8 @@ export class UpdateVoucherDto {
   end_date?: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   usage_limit?: number;
 
   @IsOptional()
@@ -97,6 +114,7 @@ export class UpdateVoucherDto {
 
 export class ValidateVoucherDto {
   @IsString()
+  @IsNotEmpty()
   code: string;
 
   @IsNumber()

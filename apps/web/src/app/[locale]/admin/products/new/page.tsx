@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL } from "@/services/base-http";
+
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -8,7 +10,6 @@ import { getCategories, setAccessToken } from '@/lib/api-client';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import { toast } from 'sonner';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function NewProductPage() {
     const { session } = useAuth();

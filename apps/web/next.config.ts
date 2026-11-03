@@ -4,6 +4,7 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: import('next').NextConfig = {
     output: 'standalone',
+    experimental: { proxyClientMaxBodySize: '32mb', proxyTimeout: 120000 },
     images: {
         remotePatterns: [
             {
@@ -65,7 +66,7 @@ const nextConfig: import('next').NextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/:path*`,
+                destination: `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '').replace(/\/api$/, '')}/api/:path*`,
             },
         ];
     },

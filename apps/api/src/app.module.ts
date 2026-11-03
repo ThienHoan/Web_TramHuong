@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -22,9 +23,11 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { StorageModule } from './storage/storage.module';
 import { ChatModule } from './chat/chat.module';
 import { MerchantModule } from './merchant/merchant.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
+    AdminModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     // Structured Logging with Pino
     LoggerModule.forRoot({
@@ -39,6 +42,7 @@ import { MerchantModule } from './merchant/merchant.module';
           'req.headers.authorization',
           'req.headers.cookie',
           'req.headers["x-api-key"]',
+          'req.headers["x-ghn-secret"]',
           'req.body.password',
           'req.body.token',
           'req.body.refreshToken',
@@ -87,6 +91,7 @@ import { MerchantModule } from './merchant/merchant.module';
     StorageModule,
     ChatModule,
     MerchantModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [

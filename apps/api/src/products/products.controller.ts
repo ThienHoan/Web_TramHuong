@@ -42,7 +42,7 @@ export class ProductsController {
   ) {
     const validLocale = locale === 'vi' ? 'vi' : 'en';
     return this.productsService.findAll(validLocale, {
-      include_inactive: include_inactive === 'true',
+      include_inactive: false,
       search,
       category,
       category_id,
@@ -52,6 +52,17 @@ export class ProductsController {
       stock_status,
       min_price: min_price ? Number(min_price) : undefined,
       max_price: max_price ? Number(max_price) : undefined,
+    });
+  }
+
+  @Get('admin/list')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  async adminList(@Query() query: Record<string, string>) {
+    return this.productsService.findAll(query.locale === 'vi' ? 'vi' : 'en', {
+      include_inactive: query.include_inactive === 'true', search: query.search,
+      category: query.category, sort: query.sort, page: Number(query.page || 1),
+      limit: Math.min(Number(query.limit || 20), 500), stock_status: query.stock_status,
     });
   }
 
@@ -71,7 +82,7 @@ export class ProductsController {
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FilesInterceptor('files',5,{limits:{fileSize:5*1024*1024,files:5}}))
   async create(
     @Body() body: CreateProductDto,
     @UploadedFiles() files?: Array<Express.Multer.File>,
@@ -85,7 +96,7 @@ export class ProductsController {
   @Patch(':id')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FilesInterceptor('files',5,{limits:{fileSize:5*1024*1024,files:5}}))
   async update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,

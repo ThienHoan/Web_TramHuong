@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 
 import { Link, useRouter, usePathname } from "@/i18n/routing";
+import { BrandLockup } from "@/components/brand/BrandIdentity";
 import TraditionalCartDrawer from "./TraditionalCartDrawer";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLocale } from "next-intl";
@@ -69,22 +70,7 @@ export default function TraditionalHeader() {
         />
         <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link href="/" className="atelier-brand flex items-center gap-3">
-              <div className="flex items-center gap-3 shrink-0 group cursor-pointer">
-                <div className="size-12 text-primary flex items-center justify-center bg-surface-accent rounded-full border border-accent-gold/30 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                  <AppIcon name="spa" className="text-3xl" />
-                </div>
-                <div>
-                  <span className="font-serif text-2xl font-bold leading-none tracking-tight text-primary-dark">
-                    Thiên Phúc
-                  </span>
-                  <p className="text-[0.65rem] uppercase tracking-[0.2em] text-text-main font-bold mt-0.5">
-                    Trầm Hương Việt
-                  </p>
-                </div>
-              </div>
-            </Link>
+            <Link href="/" className="atelier-brand" aria-label="Thiên Phúc — Trang chủ"><BrandLockup /></Link>
 
             {/* Desktop Nav */}
             <nav className="tp-desktop-nav items-center gap-5">

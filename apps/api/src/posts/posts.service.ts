@@ -1,3 +1,4 @@
+import { pagination } from '../common/pagination';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
@@ -16,10 +17,9 @@ export class PostsService {
     category?: string;
     search?: string;
     status?: string;
-  }) {
-    const page = options?.page || 1;
-    const limit = options?.limit || 12;
-    const status = options?.status; // Allow undefined to mean 'published' default, or passed value
+  }, admin = false) {
+    const { page, limit } = pagination(options?.page, options?.limit ?? 12);
+    const status = admin ? options?.status : 'published'; // Allow undefined to mean 'published' default, or passed value
 
     let query = this.client
       .from('posts')
@@ -57,13 +57,14 @@ export class PostsService {
     };
   }
 
-  async findOne(identifier: string) {
+  async findOne(identifier: string, admin = false) {
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         identifier,
       );
 
     const query = this.client.from('posts').select('*');
+    if (!admin) query.eq('status', 'published');
 
     if (isUuid) {
       query.eq('id', identifier);
@@ -85,7 +86,7 @@ export class PostsService {
 
     const { data, error } = await this.client
       .from('posts')
-      .insert(dto)
+      .insert({ ...dto, published_at: dto.status === 'published' ? new Date().toISOString() : null })
       .select()
       .single();
 
@@ -96,7 +97,7 @@ export class PostsService {
   async update(id: string, dto: UpdatePostDto) {
     const { data, error } = await this.client
       .from('posts')
-      .update({ ...dto, updated_at: new Date().toISOString() })
+      .update({ ...dto, ...(dto.status === 'published' ? { published_at: new Date().toISOString() } : {}), updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -118,6 +119,7 @@ export class PostsService {
       .normalize('NFD') // Change diacritics
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
       .toLowerCase()
+      .replace(/đ/g, 'd')
       .trim()
       .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
       .replace(/[èéẹẻẽêềếệểễ]/g, 'e')

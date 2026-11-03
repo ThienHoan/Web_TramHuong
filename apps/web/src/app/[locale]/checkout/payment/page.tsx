@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLockup } from "@/components/brand/BrandIdentity";
 import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/routing';
 import { useEffect, useState, useRef } from 'react';
@@ -189,25 +190,17 @@ export default function CheckoutPaymentPage() {
             <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-accent-gold/20 shadow-sm transition-all duration-300">
                 <div className="bg-text-main text-accent-gold text-xs py-1.5 hidden md:block">
                     <div className="container mx-auto px-4 flex justify-between items-center">
-                        <span className="font-medium">🎁 Freeship đơn hàng từ 500k toàn quốc</span>
+                        <span className="font-medium">Thiên Phúc · Miễn phí vận chuyển đơn từ 300.000 ₫</span>
                         <div className="flex gap-4 font-medium">
-                            <Link href="/lookup" className="hover:text-white transition-colors">Tra cứu đơn hàng</Link>
+                            <Link href="/order-lookup" className="hover:text-white transition-colors">Tra cứu đơn hàng</Link>
                             <span className="text-white/20">|</span>
-                            <Link href="/agency" className="hover:text-white transition-colors">Đại lý &amp; Phân phối</Link>
+                            <Link href="/partnership" className="hover:text-white transition-colors">Đại lý &amp; Phân phối</Link>
                         </div>
                     </div>
                 </div>
                 <div className="container mx-auto px-4 xl:px-8">
                     <div className="flex h-20 items-center justify-between gap-6">
-                        <Link href="/" className="flex items-center gap-3 shrink-0 group cursor-pointer">
-                            <div className="size-12 text-primary flex items-center justify-center bg-surface-accent rounded-full border border-accent-gold/30 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                                <AppIcon name="spa" className="text-3xl" />
-                            </div>
-                            <div>
-                                <h1 className="font-serif text-2xl font-bold leading-none tracking-tight text-primary-dark">Thiên Phúc</h1>
-                                <p className="text-[0.65rem] uppercase tracking-[0.2em] text-text-main font-bold mt-0.5">Trầm Hương Việt</p>
-                            </div>
-                        </Link>
+                        <Link href="/" aria-label="Thiên Phúc — Trang chủ"><BrandLockup /></Link>
                     </div>
                 </div>
             </header>

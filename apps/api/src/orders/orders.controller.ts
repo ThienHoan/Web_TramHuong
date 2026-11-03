@@ -55,6 +55,7 @@ export class OrdersController {
       shipping_info,
       paymentMethod,
       voucherCode,
+      body.shippingQuoteReference,
     );
   }
 

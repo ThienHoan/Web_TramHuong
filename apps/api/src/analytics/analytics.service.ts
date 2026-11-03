@@ -25,13 +25,16 @@ export class AnalyticsService {
     // Note: Supabase/PostgREST doesn't support complex aggregation easily.
     // We will fetch raw data and aggregate in JS for simplicity,
     // as volume is likely manageable for now. Pro solution would use RPC.
-    const { data: rawOrders, error } = await this.client
-      .from('orders')
-      .select('created_at, total, status, payment_status, items')
-      .gte('created_at', startDate.toISOString())
-      .order('created_at', { ascending: true });
-
-    if (error) throw new BadRequestException(error.message);
+    const rawOrders: {created_at:string;total:number;status:string;payment_status:string;items:unknown}[] = [];
+    for (let offset=0;;offset+=500) {
+      const {data,error} = await this.client.from('orders')
+        .select('created_at, total, status, payment_status, items')
+        .gte('created_at',startDate.toISOString()).order('created_at',{ascending:true}).order('id',{ascending:true})
+        .range(offset,offset+499);
+      if (error) throw new BadRequestException('Không thể tải dữ liệu doanh thu');
+      rawOrders.push(...(data||[]));
+      if ((data?.length||0)<500) break;
+    }
 
     // 2. Fetch Wishlist Stats (Top Wishlisted)
     // Note: Simple count aggregation
@@ -50,6 +53,8 @@ export class AnalyticsService {
     const revenueMap: Record<string, number> = {};
     const statusCounts: Record<string, number> = {
       PENDING: 0,
+      AWAITING_PAYMENT: 0,
+      EXPIRED: 0,
       PAID: 0,
       SHIPPED: 0,
       COMPLETED: 0,
@@ -112,7 +117,7 @@ export class AnalyticsService {
     }
 
     (rawOrders as unknown as Order[]).forEach((order) => {
-      const date = new Date(order.created_at).toLocaleDateString('vi-VN'); // DD/MM/YYYY
+      const date = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(order.created_at)); // DD/MM/YYYY
 
       // Count Status
       if (statusCounts[order.status] !== undefined) {
@@ -123,12 +128,12 @@ export class AnalyticsService {
 
       // Revenue: Only count real money (PAID/SHIPPED/COMPLETED)
       if (
-        ['PAID', 'SHIPPED', 'COMPLETED'].includes(order.status) ||
-        order.payment_status === 'paid'
+        ['PAID', 'SHIPPED', 'COMPLETED'].includes(order.status) &&
+        order.payment_status !== 'refunded'
       ) {
         if (!revenueMap[date]) revenueMap[date] = 0;
-        revenueMap[date] += order.total;
-        totalRevenue += order.total;
+        revenueMap[date] += Number(order.total || 0);
+        totalRevenue += Number(order.total || 0);
 
         // Top Products Logic (Only from confirmed orders)
         if (Array.isArray(order.items)) {

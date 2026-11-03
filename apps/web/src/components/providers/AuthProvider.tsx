@@ -66,21 +66,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     const userId = session.user.id;
                     setProfile(null);
                     setRole(null);
+                    setLoading(true);
                     // Defer database work until after the auth callback releases its lock.
                     setTimeout(async () => {
-                        const { data } = await supabase.from('users')
-                            .select('id, role, full_name, avatar_url, email')
-                            .eq('id', userId).single();
-                        if (active && currentVersion === version) {
-                            setProfile(data as UserProfile | null);
-                            setRole((data?.role as Role) ?? null);
+                        try {
+                            const { data } = await supabase.from('users')
+                                .select('id, role, full_name, avatar_url, email')
+                                .eq('id', userId).single();
+                            if (active && currentVersion === version) {
+                                setProfile(data as UserProfile | null);
+                                setRole((data?.role as Role) ?? null);
+                            }
+                        } catch {
+                            if (active && currentVersion === version) {
+                                setProfile(null);
+                                setRole(null);
+                            }
+                        } finally {
+                            if (active && currentVersion === version) setLoading(false);
                         }
                     }, 0);
                 } else {
                     setProfile(null);
                     setRole(null);
+                    setLoading(false);
                 }
-                setLoading(false);
         });
         return () => { active = false; subscription.unsubscribe(); };
     }, []);

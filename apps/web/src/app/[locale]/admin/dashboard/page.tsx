@@ -1,153 +1,322 @@
-'use client';
-import { AppIcon } from '@/components/icons/AppIcon';
+"use client";
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import useSWR from "swr";
+import { useLocale } from "next-intl";
+import {
+  ArrowUpRight,
+  Clock3,
+  CircleDollarSign,
+  Package,
+  ShoppingBag,
+  MessageSquare,
+  Truck,
+  RefreshCw,
+} from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { adminMoney } from "@/components/admin/admin-format";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/routing";
+import { adminFetch, ListResult } from "@/components/admin/use-admin-list";
+import { StatusBadge } from "@/components/admin/AdminStatusBadge";
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { useAnalytics } from '../../../../hooks/useAnalytics';
-import { useCurrency } from '../../../../hooks/useCurrency';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-
-// Lazy load Recharts (Heavy library)
-const DashboardCharts = dynamic(() => import('../../../../components/admin/DashboardCharts'), {
-    ssr: false,
-    loading: () => <div className="h-[400px] w-full bg-gray-100 animate-pulse rounded-xl"></div>
-});
-
-export default function AdminDashboard() {
-    const [range, setRange] = useState('7d');
-    const { data, isLoading, error } = useAnalytics(range);
-    const { formatPrice } = useCurrency();
-
-    if (isLoading) return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900"></div>
-        </div>
-    );
-
-    if (error) return (
-        <div className="flex items-center justify-center min-h-screen text-red-500">
-            Failed to load dashboard data. Please try again.
-        </div>
-    );
-
-    if (!data) return null;
-
-    return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 pt-24 text-black">
-            <div className="max-w-7xl mx-auto space-y-8">
-                <div className="flex justify-between items-center sm:flex-row flex-col gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-amber-900 bg-clip-text text-transparent">
-                            Dashboard Overview
-                        </h1>
-                        <p className="text-gray-500 mt-1">Track your business performance throughout the selected period.</p>
-                    </div>
-
-                    {/* Time Range Filter */}
-                    <div className="flex gap-2">
-                        {['7d', '30d', 'all'].map((r) => (
-                            <Button
-                                key={r}
-                                onClick={() => setRange(r)}
-                                variant={range === r ? 'default' : 'outline'}
-                                size="sm"
-                            >
-                                {r === '7d' ? 'Last 7 Days' : r === '30d' ? 'Last 30 Days' : 'All Time'}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Top Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <MetricCard
-                        title="Total Revenue"
-                        value={formatPrice(Number(data.summary.totalRevenue || 0))}
-                        icon="attach_money"
-                        color="bg-emerald-50 text-emerald-700 border-emerald-100"
-                    />
-                    <MetricCard
-                        title="Total Orders"
-                        value={data.summary.totalOrders}
-                        icon="inventory_2"
-                        color="bg-blue-50 text-blue-700 border-blue-100"
-                    />
-                    <MetricCard
-                        title="Pending Orders"
-                        value={data.summary.pendingOrders}
-                        icon="pending"
-                        color="bg-amber-50 text-amber-700 border-amber-100"
-                    />
-                </div>
-
-                {/* Charts Section */}
-                <DashboardCharts data={data} />
-
-                {/* Top Products Table */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-gray-800">Top Selling Products</h3>
-                        <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded">
-                            Based on {range === '7d' ? 'Last 7 Days' : range === 'all' ? 'All Time' : 'Last 30 Days'}
-                        </span>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-600 text-sm">
-                                <tr>
-                                    <th className="p-4 font-medium">Rank</th>
-                                    <th className="p-4 font-medium">Product Name</th>
-                                    <th className="p-4 font-medium text-right">Sold</th>
-                                    <th className="p-4 font-medium text-right">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type */}
-                                {data.topProducts.map((product: any, index: number) => (
-                                    <tr key={product.name} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="p-4 text-gray-500 font-medium w-16">
-                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                                        </td>
-                                        <td className="p-4 font-medium text-gray-800">{product.name}</td>
-                                        <td className="p-4 text-right text-gray-600">{product.quantity}</td>
-                                        <td className="p-4 text-right font-medium text-amber-700">
-                                            {formatPrice(Number(product.revenue || 0))}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {data.topProducts.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="p-8 text-center text-gray-400 italic">
-                                            No sales data available for this period.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+const DashboardCharts = dynamic(
+  () => import("@/components/admin/DashboardCharts"),
+  { ssr: false, loading: () => <Skeleton className="h-80 w-full" /> },
+);
+export interface Operations {
+  awaitingPayment: number;
+  paidOrders: number;
+  newContacts: number;
+  outOfStock: number;
+  lowStock: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
-function MetricCard({ title, value, icon, color }: any) {
-    // Extract text color class
-    const textColor = color.includes('emerald') ? 'text-emerald-700'
-        : color.includes('blue') ? 'text-blue-700'
-            : 'text-amber-700';
-
-    return (
-        <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <AppIcon name={icon} className="text-3xl opacity-60" />
-            </CardHeader>
-            <CardContent>
-                <div className={`text-2xl font-bold ${textColor}`}>{value}</div>
-            </CardContent>
-        </Card>
-    );
+export default function AdminDashboard() {
+  const [range, setRange] = useState("7d");
+  const locale = useLocale();
+  const en = locale === "en";
+  const t = (vi: string, english: string) => (en ? english : vi);
+  const { session } = useAuth();
+  const token = session?.access_token || "";
+  const { data, isLoading, error, retry } = useAnalytics(range);
+  const formatPrice = (value: number) => adminMoney(value, locale);
+  const operations = useSWR<Operations>(
+    token ? ["/admin/operations", token] : null,
+    ([path, accessToken]: [string, string]) =>
+      adminFetch<Operations>(path, accessToken),
+  );
+  const recent = useSWR<ListResult>(
+    token ? ["/admin/resources/orders?limit=5&page=1", token] : null,
+    ([path, accessToken]: [string, string]) =>
+      adminFetch<ListResult>(path, accessToken),
+  );
+  const tasks = [
+    {
+      label: t("Đơn cần giao", "Ready to ship"),
+      value: operations.data?.paidOrders,
+      icon: Truck,
+      href: "/admin/orders?status=PAID",
+    },
+    {
+      label: t("Chờ thanh toán", "Awaiting payment"),
+      value: operations.data?.awaitingPayment,
+      icon: Clock3,
+      href: "/admin/orders?status=AWAITING_PAYMENT",
+    },
+    {
+      label: t("Sắp hết hàng", "Low inventory"),
+      value: operations.data?.lowStock,
+      icon: Package,
+      href: "/admin/products?stock=low&status=active",
+    },
+    {
+      label: t("Liên hệ chưa đọc", "Unread messages"),
+      value: operations.data?.newContacts,
+      icon: MessageSquare,
+      href: "/admin/contacts?status=new",
+    },
+  ];
+  return (
+    <section className="admin-page admin-dashboard">
+      <header className="admin-page-heading">
+        <div>
+          <span className="admin-eyebrow">
+            THIÊN PHÚC / {t("TỔNG QUAN", "OVERVIEW")}
+          </span>
+          <h1>{t("Nhịp kinh doanh", "Business overview")}</h1>
+          <p>
+            {t(
+              "Theo dõi kết quả và những việc cần xử lý trong cửa hàng.",
+              "Monitor performance and keep store operations on track.",
+            )}
+          </p>
+        </div>
+        <div className="admin-heading-actions">
+          <Button
+            variant="outline"
+            onClick={() => {
+              void retry();
+              void operations.mutate();
+              void recent.mutate();
+            }}
+            disabled={isLoading}
+          >
+            <RefreshCw size={15} />
+            {t("Làm mới", "Refresh")}
+          </Button>
+          <Button asChild>
+            <Link href="/admin/products/new">
+              {t("Thêm sản phẩm", "Add product")}
+              <ArrowUpRight size={15} />
+            </Link>
+          </Button>
+        </div>
+      </header>
+      <div className="admin-section-title">
+        <h2>{t("Cần xử lý", "Your work queue")}</h2>
+        <span>{t("Toàn cửa hàng · hiện tại", "Storewide · current")}</span>
+      </div>
+      {operations.error ? (
+        <div role="alert" className="admin-inline-error">
+          {t(
+            "Chưa tải được số liệu vận hành.",
+            "Unable to load the work queue.",
+          )}{" "}
+          <button
+            className="underline"
+            onClick={() => void operations.mutate()}
+          >
+            {t("Thử lại", "Retry")}
+          </button>
+        </div>
+      ) : (
+        <div className="admin-task-grid">
+          {tasks.map(({ label, value, icon: Icon, href }) => (
+            <Link href={href} key={href}>
+              <span className="admin-task-icon">
+                <Icon size={18} />
+              </span>
+              <div>
+                <span>{label}</span>
+                <strong>
+                  {value === undefined ? "—" : value.toLocaleString(locale)}
+                </strong>
+              </div>
+              <ArrowUpRight size={15} />
+            </Link>
+          ))}
+        </div>
+      )}
+      <div className="admin-section-title admin-period-heading">
+        <h2>{t("Hiệu quả bán hàng", "Sales performance")}</h2>
+        <div
+          className="admin-range-selector"
+          role="group"
+          aria-label={t("Khoảng thống kê", "Report period")}
+        >
+          {["7d", "30d", "all"].map((value) => (
+            <button
+              key={value}
+              aria-pressed={range === value}
+              onClick={() => setRange(value)}
+            >
+              {value === "7d"
+                ? t("7 ngày", "7 days")
+                : value === "30d"
+                  ? t("30 ngày", "30 days")
+                  : t("Tất cả", "All time")}
+            </button>
+          ))}
+        </div>
+      </div>
+      {error ? (
+        <div className="admin-state admin-list-card" role="alert">
+          <h2>{t("Không thể tải báo cáo", "Unable to load report")}</h2>
+          <p>{error.message}</p>
+          <Button variant="outline" onClick={() => void retry()}>
+            {t("Thử lại", "Retry")}
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="admin-metric-strip">
+            {[
+              {
+                label: t("Doanh thu ghi nhận", "Recorded revenue"),
+                value: data ? formatPrice(data.summary.totalRevenue) : "—",
+                icon: CircleDollarSign,
+              },
+              {
+                label: t("Đơn hàng trong kỳ", "Orders in period"),
+                value: data
+                  ? data.summary.totalOrders.toLocaleString(locale)
+                  : "—",
+                icon: ShoppingBag,
+              },
+              {
+                label: t(
+                  "Đơn chờ xác nhận trong kỳ",
+                  "Pending confirmation in period",
+                ),
+                value: data
+                  ? data.summary.pendingOrders.toLocaleString(locale)
+                  : "—",
+                icon: Clock3,
+              },
+            ].map(({ label, value, icon: Icon }) => (
+              <div key={label}>
+                <div>
+                  <span>{label}</span>
+                  <Icon size={17} />
+                </div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-36 mt-3" />
+                ) : (
+                  <strong>{value}</strong>
+                )}
+              </div>
+            ))}
+          </div>
+          {data && !isLoading ? (
+            <DashboardCharts data={data} />
+          ) : (
+            <Skeleton className="h-80 w-full mt-5" />
+          )}
+        </>
+      )}
+      <div className="admin-bottom-grid">
+        <div className="admin-list-card">
+          <div className="admin-widget-heading">
+            <h2>{t("Đơn hàng mới nhất", "Latest orders")}</h2>
+            <Link href="/admin/orders">
+              {t("Tất cả đơn", "All orders")}
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
+          {recent.error ? (
+            <div className="admin-state" role="alert">
+              <p>
+                {t(
+                  "Không thể tải đơn hàng mới.",
+                  "Unable to load recent orders.",
+                )}
+              </p>
+              <Button variant="outline" onClick={() => void recent.mutate()}>
+                {t("Thử lại", "Retry")}
+              </Button>
+            </div>
+          ) : recent.isLoading ? (
+            <Skeleton className="h-60 m-5" />
+          ) : recent.data?.data.length ? (
+            <div className="admin-recent-orders">
+              {recent.data.data.map((order) => (
+                <Link key={order.id} href={"/admin/orders/" + order.id}>
+                  <span className="admin-order-avatar">
+                    <ShoppingBag size={17} />
+                  </span>
+                  <div>
+                    <strong>#{order.id.slice(0, 8).toUpperCase()}</strong>
+                    <span>
+                      {order.shipping_info?.full_name ||
+                        order.shipping_info?.name ||
+                        t("Khách vãng lai", "Guest")}
+                    </span>
+                  </div>
+                  <StatusBadge value={order.status || "PENDING"} en={en} />
+                  <strong className="admin-numeric">
+                    {formatPrice(Number(order.total || 0))}
+                  </strong>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-state">
+              <p>{t("Chưa có đơn hàng.", "No orders yet.")}</p>
+            </div>
+          )}
+        </div>
+        <div className="admin-list-card">
+          <div className="admin-widget-heading">
+            <h2>{t("Sản phẩm bán tốt", "Best sellers")}</h2>
+            <span>{t("Theo kỳ đã chọn", "Selected period")}</span>
+          </div>
+          {isLoading ? (
+            <Skeleton className="h-60 m-5" />
+          ) : data?.topProducts.length ? (
+            <div className="admin-best-sellers">
+              {data.topProducts.map((product, index) => (
+                <div key={product.name + index}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{product.name}</strong>
+                    <span>
+                      {product.quantity} {t("sản phẩm đã bán", "units sold")}
+                    </span>
+                  </div>
+                  <strong className="admin-numeric">
+                    {formatPrice(product.revenue)}
+                  </strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-state">
+              <p>
+                {t("Chưa có doanh số trong kỳ.", "No sales in this period.")}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+      <p className="admin-list-footnote">
+        {t(
+          "Số liệu bán hàng theo kỳ được chọn. Hàng chờ xử lý phản ánh toàn bộ cửa hàng.",
+          "Sales reflect the selected period. Work queues cover the entire store.",
+        )}
+      </p>
+    </section>
+  );
 }

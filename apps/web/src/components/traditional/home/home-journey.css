@@ -733,6 +733,36 @@
   top: 80px;
   min-height: calc(100svh - 80px);
 }
+.journey-enhanced .journey-workbench {
+  transform: translateY(calc(var(--sculpture-exit, 0) * -12px))
+    scale(calc(1 - var(--sculpture-exit, 0) * 0.035));
+  transform-origin: center;
+}
+.journey-enhanced .journey-inspector {
+  opacity: calc(1 - var(--sculpture-exit, 0) * 0.25);
+}
+.journey-enhanced .journey-scene-nav {
+  opacity: calc(1 - var(--sculpture-exit, 0) * 0.25);
+}
+.journey-exit-note {
+  display: none;
+}
+.journey-enhanced .journey-exit-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: absolute;
+  bottom: 10px;
+  left: 20px;
+  right: 20px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #c9b48b;
+  opacity: var(--sculpture-exit, 0);
+  transform: translateY(calc((1 - var(--sculpture-exit, 0)) * 10px));
+  pointer-events: none;
+}
 @media (max-width: 1199px) and (min-width: 900px) {
   .journey-workbench {
     grid-template-columns: minmax(0, 1.35fr) minmax(290px, 1fr);

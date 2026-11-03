@@ -11,6 +11,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { BrandSeal } from "@/components/brand/BrandIdentity";
 import { IncenseBurnerIcon } from "@/components/icons/BrandIcons";
 import { Link } from "@/i18n/routing";
 
@@ -41,7 +42,7 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
             <span />{" "}
             {en
               ? "ROOTED IN NATURE · MADE FOR STILLNESS"
-              : "TỪ ĐẤT TRỜI · ĐẾN BÌNH AN"}
+              : "THIÊN PHÚC · TRẦM HƯƠNG VIỆT"}
           </p>
           <h1 id="home-heading">
             {en ? (
@@ -72,6 +73,7 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
               <ArrowDown size={16} />
             </a>
           </div>
+          <p className="brand-provenance">{en ? "THIÊN PHÚC · HUẾ, VIETNAM" : "HƯƠNG VIỆT. NẾP AN YÊN. · THIÊN PHÚC, HUẾ"}</p>
           <div className="tp-hero-footnote">
             <span className="tp-small-seal">
               <IncenseBurnerIcon size={19} />
@@ -102,6 +104,7 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
             pointerY.set(0);
           }}
         >
+          <BrandSeal className="brand-hero-seal" />
           <div className="tp-orbit tp-orbit-one" aria-hidden="true" />
           <div className="tp-orbit tp-orbit-two" aria-hidden="true" />
           <span className="tp-vertical-label" aria-hidden="true">

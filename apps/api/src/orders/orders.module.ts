@@ -8,9 +8,10 @@ import { CartModule } from '../cart/cart.module';
 
 import { MailModule } from '../mail/mail.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
+import { ShippingModule } from '../shipping/shipping.module';
 
 @Module({
-  imports: [SupabaseModule, CartModule, MailModule, VouchersModule],
+  imports: [SupabaseModule, CartModule, MailModule, VouchersModule,ShippingModule],
   controllers: [OrdersController],
   providers: [OrdersService, OrderCleanupService],
   exports: [OrdersService], // Export for UsersModule

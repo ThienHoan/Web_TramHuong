@@ -33,6 +33,21 @@ export class PostsController {
     return this.postsService.findAll({ page, limit, category, search, status });
   }
 
+  @Get('admin/list')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  async adminList(@Query('page') page?: number, @Query('limit') limit?: number,
+    @Query('search') search?: string, @Query('status') status?: string) {
+    return this.postsService.findAll({ page, limit, search, status: status || 'all' }, true);
+  }
+
+  @Get('admin/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  async adminOne(@Param('id') id: string) {
+    return this.postsService.findOne(id, true);
+  }
+
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
     return this.postsService.findOne(slug);

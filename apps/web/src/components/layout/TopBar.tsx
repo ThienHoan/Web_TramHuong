@@ -5,8 +5,8 @@ import { Phone, Truck, Gift, Sparkles } from 'lucide-react';
 const messages = [
     { icon: Truck, text: "Miễn phí vận chuyển đơn từ 300.000 ₫" },
     { icon: Phone, text: "Hotline: 0356.176.878" },
-    { icon: Gift, text: "Quà tặng đặc biệt cho đơn hàng đầu tiên" },
-    { icon: Sparkles, text: "Trầm hương thiên nhiên 100%" },
+    { icon: Gift, text: "Cùng Thiên Phúc chọn hương cho bạn" },
+    { icon: Sparkles, text: "Thiên Phúc · Hương Việt, nếp an yên" },
 ];
 
 const MessageSet = () => (

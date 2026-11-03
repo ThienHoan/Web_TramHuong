@@ -53,3 +53,9 @@ SplitText giữ aria-label của tiêu đề; matchMedia hoàn nguyên markup v�
 - Phòng 3D nhúng thứ hai chỉ khởi tạo khi khách bấm mở; cảnh studio chính vẫn chạy theo cuộn. Trang 3D lab độc lập vẫn tự khởi tạo khi tới màn hình.
 - Lượt đo sau thay đổi không còn long task ở các đoạn đo; khoảng frame tối đa ở gallery khoảng 77ms. Đây là số đo cục bộ trên dev server, không phải cam kết FPS cho mọi thiết bị.
 - Kiểm tra nút mở 3D nhúng, tự mở 3D lab, sắc gỗ/ánh sáng, reset, mobile và reduced-motion đạt; không ghi nhận pageerror.
+
+### Nhịp kết thúc cảnh vòng trầm
+
+Tiến trình cuộn có bốn nhịp: toàn cảnh → tách hạt → cận cảnh → lùi camera/ghép vòng. Khoảng 80–97% tiến trình dành cho nhịp kết thúc, để mô hình trở về toàn cảnh trước khi section hết sticky. Bảng thông tin thu nhẹ và hiện lời chuyển tiếp; cuộn ngược khôi phục từng cảnh. Các nút góc nhìn chọn điểm nằm trước nhịp kết thúc nên vẫn có thể dừng để xem cận cảnh.
+
+Giới hạn cuộn căn theo chiều cao thật của stage thay vì chỉ chiều cao viewport, để cửa sổ desktop thấp cũng kết thúc chuyển động trước khi unpin. Không thêm khóa wheel hoặc chặn cuộn; mobile/reduced-motion vẫn dùng các nút và bố cục thông thường.

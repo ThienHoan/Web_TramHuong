@@ -49,6 +49,7 @@ export interface Order {
 }
 
 export interface CreateOrderDto {
+    shippingQuoteReference?: string;
     items: {
         productId: string;
         quantity: number;

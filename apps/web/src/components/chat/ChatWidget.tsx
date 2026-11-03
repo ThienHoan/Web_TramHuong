@@ -36,7 +36,7 @@ const WELCOME_DELAY_MS = 8000; // 8 seconds
 
 export default function ChatWidget() {
     const pathname = usePathname();
-    const isPreview = pathname.endsWith('/3d-lab');
+    const isPreview = pathname.endsWith('/3d-lab') || /\/admin(?:\/|$)/.test(pathname);
     const isLanding = /^\/(vi|en)?\/?$/.test(pathname);
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);

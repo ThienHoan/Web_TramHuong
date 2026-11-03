@@ -1,23 +1,21 @@
 import useSWR from 'swr';
 import { useAuth } from '../components/providers/AuthProvider';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-const fetcher = (url: string, token: string) =>
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.json());
+import { API_URL } from '../services/base-http';
+import { AnalyticsError, fetchAnalytics } from '../lib/analytics';
 
 export function useAnalytics(range: string = '7d') {
-    const { session } = useAuth();
+    const { session, loading: authLoading } = useAuth();
 
-    const { data, error, isLoading } = useSWR(
+    const { data, error, isLoading, mutate } = useSWR(
         session ? [`${API_URL}/analytics/dashboard?range=${range}`, session.access_token] : null,
-        ([url, token]) => fetcher(url, token)
+        ([url, token]) => fetchAnalytics(url, token)
     );
 
     return {
         data,
-        isLoading,
-        error
+        isLoading: authLoading || isLoading,
+        error: error || (!authLoading && !session ? new Error('Vui lòng đăng nhập để xem thống kê.') : undefined),
+        isUnauthenticated: (!authLoading && !session) || (error instanceof AnalyticsError && error.status === 401),
+        retry: () => mutate(),
     };
 }

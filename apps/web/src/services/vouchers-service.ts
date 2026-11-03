@@ -45,8 +45,7 @@ export const vouchersService = {
                 headers: getHeaders(),
             });
             if (!res.ok) {
-                // Return empty if fail or throw?
-                return [];
+                throw new Error(`Không thể tải mã giảm giá (${res.status})`);
             }
             return await res.json() as Voucher[];
         } catch (e) {

@@ -79,7 +79,7 @@ export function ImageUploader({
         try {
             await deleteProductImage(urlToDelete);
             onChange(images.filter(url => url !== urlToDelete));
-            toast.success('Image deleted');
+            toast.success('Đã gỡ ảnh khỏi danh sách. Lưu sản phẩm để hoàn tất.');
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Delete failed');
         } finally {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -51,5 +51,12 @@ export class VouchersController {
   @Roles(Role.ADMIN, Role.STAFF)
   async update(@Param('id') id: string, @Body() body: UpdateVoucherDto) {
     return this.vouchersService.updateVoucher(id, body);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  async remove(@Param('id') id: string) {
+    return this.vouchersService.deleteVoucher(id);
   }
 }

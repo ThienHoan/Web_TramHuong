@@ -1,77 +1,157 @@
-'use client';
-
+"use client";
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
-} from 'recharts';
-import { useCurrency } from '../../hooks/useCurrency';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-export default function DashboardCharts({ data }: { data: any }) {
-    const { formatPrice } = useCurrency();
-
-    if (!data) return null;
-
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Revenue Trend */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Revenue Trend</h3>
-                <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data.revenueChart}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                            <YAxis
-                                tick={{ fontSize: 12 }}
-                                tickFormatter={(val) => new Intl.NumberFormat('en', { notation: 'compact' }).format(val)}
-                            />
-                            <Tooltip
-                                formatter={(value: unknown) => formatPrice(Number(value))}
-                                labelStyle={{ color: '#333' }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="revenue"
-                                stroke="#4F46E5"
-                                strokeWidth={2}
-                                dot={{ r: 4 }}
-                                activeDot={{ r: 8 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
-
-            {/* Order Status Breakdown */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Order Status</h3>
-                <div className="h-[300px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data.statusChart}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type */}
-                                {data.statusChart.map((entry: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { useLocale } from "next-intl";
+import { adminMoney } from "@/components/admin/admin-format";
+import { AnalyticsData } from "@/lib/analytics";
+import { ORDER_STATUS } from "./admin-resources";
+const COLORS = [
+  "#345c42",
+  "#66805e",
+  "#9aaf8a",
+  "#b99b67",
+  "#c2cbb8",
+  "#69796d",
+  "#9c5d4c",
+];
+export default function DashboardCharts({ data }: { data: AnalyticsData }) {
+  const locale = useLocale();
+  const formatPrice = (value: number) => adminMoney(value, locale);
+  const en = locale === "en";
+  const statuses = data.statusChart.map((row) => ({
+    ...row,
+    name: ORDER_STATUS[row.name]?.[en ? 1 : 0] || row.name,
+  }));
+  return (
+    <div className="admin-chart-grid">
+      <div className="admin-list-card">
+        <div className="admin-widget-heading">
+          <h2>{en ? "Revenue trend" : "Xu hướng doanh thu"}</h2>
+          <span>{en ? "VND" : "Đơn vị: VND"}</span>
         </div>
-    );
+        <div className="admin-chart-canvas">
+          {data.revenueChart.length ? (
+            <ResponsiveContainer
+              width="100%"
+              height={258}
+              minWidth={0}
+              initialDimension={{ width: 320, height: 258 }}
+            >
+              <AreaChart
+                data={data.revenueChart}
+                margin={{ top: 15, right: 12, bottom: 4, left: 0 }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  stroke="#e8ece2"
+                  strokeDasharray="3 4"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: "#71806a" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={12}
+                />
+                <YAxis
+                  width={55}
+                  tick={{ fontSize: 10, fill: "#71806a" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) =>
+                    new Intl.NumberFormat(locale, {
+                      notation: "compact",
+                    }).format(value)
+                  }
+                />
+                <Tooltip
+                  formatter={(value) => formatPrice(Number(value))}
+                  contentStyle={{
+                    border: "1px solid #dce4d5",
+                    borderRadius: 8,
+                    fontSize: 12,
+                    boxShadow: "none",
+                  }}
+                />
+                <Area
+                  name={en ? "Revenue" : "Doanh thu"}
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3c5c3d"
+                  fill="#eff4e9"
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="admin-chart-empty">
+              {en
+                ? "No revenue recorded in this period."
+                : "Chưa có doanh thu trong kỳ này."}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="admin-list-card">
+        <div className="admin-widget-heading">
+          <h2>{en ? "Order distribution" : "Phân bổ đơn hàng"}</h2>
+        </div>
+        <div className="admin-status-chart">
+          {statuses.length ? (
+            <>
+              <div className="admin-donut">
+                <ResponsiveContainer
+                  width="100%"
+                  height={170}
+                  minWidth={0}
+                  initialDimension={{ width: 200, height: 170 }}
+                >
+                  <PieChart>
+                    <Pie
+                      data={statuses}
+                      dataKey="value"
+                      innerRadius={53}
+                      outerRadius={75}
+                      paddingAngle={2}
+                      stroke="none"
+                      isAnimationActive={false}
+                    >
+                      {statuses.map((row, i) => (
+                        <Cell key={row.name} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="admin-chart-legend">
+                {statuses.map((row, i) => (
+                  <div key={row.name}>
+                    <span style={{ background: COLORS[i % COLORS.length] }} />
+                    <span>{row.name}</span>
+                    <strong>{row.value}</strong>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="admin-chart-empty">
+              {en ? "No orders in this period." : "Chưa có đơn hàng trong kỳ."}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

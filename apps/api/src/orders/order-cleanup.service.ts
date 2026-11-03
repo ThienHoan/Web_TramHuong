@@ -27,8 +27,7 @@ export class OrderCleanupService {
       .from('orders')
       .select('*')
       .eq('status', 'AWAITING_PAYMENT')
-      .lt('payment_deadline', now)
-      .is('expired_at', null); // Only process orders not yet expired
+      .lt('payment_deadline', now); // Only process orders not yet expired
 
     if (error) {
       // Handle specific network errors gracefully
@@ -74,62 +73,11 @@ export class OrderCleanupService {
     try {
       this.logger.log(`[OrderCleanup] Processing expired order: ${orderId}`);
 
-      // 1. Restore stock for each item in the order
-      const items = (order.items as any[]) || [];
-
-      interface CleanupItem {
-        productId: string;
-        quantity: number;
-      }
-
-      if (Array.isArray(items)) {
-        for (const rawItem of items) {
-          const item = rawItem as CleanupItem;
-          if (item?.productId && item?.quantity) {
-            // Fetch current product quantity
-            const { data: product, error: productError } = await this.client
-              .from('products')
-              .select('quantity, slug')
-              .eq('id', item.productId)
-              .single();
-
-            if (productError || !product) {
-              this.logger.warn(
-                `[OrderCleanup] Product ${item.productId} not found, skipping stock restoration`,
-              );
-              continue;
-            }
-
-            // Restore stock
-            const newQuantity = product.quantity + Number(item.quantity);
-            const { error: updateError } = await this.client
-              .from('products')
-              .update({ quantity: newQuantity })
-              .eq('id', item.productId);
-
-            if (updateError) {
-              this.logger.error(
-                `[OrderCleanup] Failed to restore stock for product ${item.productId}:`,
-                updateError,
-              );
-            } else {
-              this.logger.log(
-                `[OrderCleanup] Restored ${item.quantity} unit(s) to product ${product.slug} ` +
-                  `(${product.quantity} -> ${newQuantity})`,
-              );
-            }
-          }
-        }
-      }
-
+      // The database trigger restores stock inside this status update.
       // 2. Update order status to EXPIRED
-      const { error: updateOrderError } = await this.client
-        .from('orders')
-        .update({
-          status: 'EXPIRED',
-          // expired_at column does not exist in types, assuming valid status update is enough
-        })
-        .eq('id', orderId);
+      const { error: updateOrderError } = await this.client.rpc('transition_order', {
+        p_id: orderId, p_status: 'EXPIRED', p_expected_status: 'AWAITING_PAYMENT',
+      });
 
       if (updateOrderError) {
         throw updateOrderError;

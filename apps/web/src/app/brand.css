@@ -1,0 +1,207 @@
+/* Thiên Phúc identity. Keep the existing lotus drawing; one lockup for all locales. */
+:root {
+  --brand-pine: #29392f;
+  --brand-brass: #b99b67;
+  --brand-paper: #f8f5ee;
+  --brand-ink: #302e28;
+}
+.brand-lockup {
+  display: inline-flex;
+  gap: 13px;
+  align-items: center;
+  color: var(--brand-pine);
+  flex-shrink: 0;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.brand-lockup-mark {
+  width: 47px;
+  height: 51px;
+  border: 1px solid #a28c65;
+  border-radius: 18px 18px 2px 2px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.brand-lockup-mark svg {
+  stroke-width: 1.5;
+}
+.brand-lockup-type {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.brand-lockup-name {
+  font:
+    500 31px/0.98 var(--font-serif),
+    Georgia,
+    serif;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+.brand-lockup-descriptor {
+  font:
+    500 8px/1.5 var(--font-display),
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.23em;
+  white-space: nowrap;
+}
+.brand-lockup-inverse {
+  color: #f0e8d7;
+}
+.brand-lockup-inverse .brand-lockup-mark {
+  border-color: #ad966a;
+  color: #d6bf91;
+}
+.brand-lockup-compact {
+  gap: 10px;
+}
+.brand-lockup-compact .brand-lockup-mark {
+  width: 36px;
+  height: 40px;
+  border-radius: 14px 14px 2px 2px;
+}
+.brand-lockup-compact .brand-lockup-mark svg {
+  width: 24px;
+}
+.brand-lockup-compact .brand-lockup-name {
+  font-size: 25px;
+}
+.brand-lockup-compact .brand-lockup-descriptor {
+  font-size: 7px;
+  letter-spacing: 0.16em;
+}
+.brand-seal {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  gap: 8px;
+  border: 1px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: -7px;
+  border-radius: 50%;
+  color: #785f35;
+  background: #eee5d3;
+  flex-shrink: 0;
+}
+.brand-seal-top {
+  font:
+    600 9px var(--font-display),
+    sans-serif;
+  letter-spacing: 0.16em;
+}
+.brand-seal-bottom {
+  font:
+    500 7px var(--font-display),
+    sans-serif;
+  letter-spacing: 0.1em;
+}
+.brand-hero-seal {
+  position: absolute;
+  right: -8px;
+  bottom: 100px;
+  z-index: 3;
+  transform: rotate(9deg);
+}
+.brand-footer-signature {
+  padding: 0 0 36px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  border-bottom: 1px solid #ffffff26;
+  margin-bottom: 8px;
+}
+.brand-footer-signature > span:first-child {
+  font:
+    400 clamp(48px, 8.5vw, 126px) / 0.95 var(--font-serif),
+    Georgia,
+    serif;
+  letter-spacing: -0.05em;
+  color: #f0e8d7;
+}
+.brand-footer-signature > span:last-child {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  line-height: 2;
+  text-align: right;
+  color: #bdc6b7;
+}
+.brand-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid #d9d1c1;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #77674e;
+}
+.brand-provenance::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: #ab8954;
+}
+.atelier-admin-sidebar > a:has(.brand-lockup) {
+  margin-inline: 0;
+}
+.tp-zen-header .brand-lockup {
+  color: #29392f;
+}
+.dark .tp-zen-header .brand-lockup {
+  color: #f0e8d7;
+}
+@media (max-width: 767px) {
+  .brand-lockup {
+    gap: 10px;
+  }
+  .brand-lockup-mark {
+    width: 38px;
+    height: 43px;
+    border-radius: 15px 15px 2px 2px;
+  }
+  .brand-lockup-mark svg {
+    width: 25px;
+  }
+  .brand-lockup-name {
+    font-size: 26px;
+  }
+  .brand-lockup-descriptor {
+    font-size: 7px;
+    letter-spacing: 0.18em;
+  }
+  .brand-hero-seal {
+    width: 86px;
+    height: 86px;
+    right: 8px;
+    bottom: 60px;
+    gap: 6px;
+  }
+  .brand-hero-seal svg {
+    width: 25px;
+    height: 25px;
+  }
+  .brand-hero-seal .brand-seal-top {
+    font-size: 7px;
+  }
+  .brand-hero-seal .brand-seal-bottom {
+    font-size: 6px;
+  }
+  .brand-footer-signature {
+    padding-bottom: 26px;
+    gap: 18px;
+    align-items: center;
+  }
+  .brand-footer-signature > span:last-child {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+}

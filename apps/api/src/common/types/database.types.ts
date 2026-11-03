@@ -9,6 +9,17 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      shipping_records: {
+        Row: {id:string;key:string;kind:string;state:string;owner_id:string|null;order_id:string|null;data:Json;version:number;created_at:string;updated_at:string};
+        Insert: {key:string;kind:string;state:string;data:Json;owner_id?:string|null;order_id?:string|null};
+        Update: {state?:string;data?:Json;version?:number};Relationships:[];
+      };
+      admin_catalog_imports: {
+        Row: {request_id:string;actor_id:string;payload_hash:string;result:Json;created_at:string};
+        Insert: {request_id:string;actor_id:string;payload_hash:string;result:Json;created_at?:string};
+        Update: {request_id?:string;actor_id?:string;payload_hash?:string;result?:Json};
+        Relationships: [];
+      };
       products: {
         Row: {
           id: string;
@@ -532,7 +543,20 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      shipping_attach_snapshot:{Args:{p_order_id:string;p_total:number;p_snapshot:Json};Returns:Json};
+      shipping_complete_cod:{Args:{p_ship_key:string;p_ship_version:number;p_action_key:string;p_action_version:number;p_amount:number};Returns:Json};
+      shipping_reserve_shipment:{Args:{p_order_id:string;p_key:string;p_data:Json};Returns:Json};
+      shipping_write_record: {
+        Args:{p_key:string;p_kind:string;p_state:string;p_data:Json;p_expected_version:number;p_owner_id:string|null;p_order_id:string|null};Returns:Json;
+      };
+      admin_import_catalog_row: {
+        Args: {p_resource:string;p_row:Json;p_mode:string;p_request_id:string;p_actor_id:string;p_hash:string};
+        Returns: Json;
+      };
+      transition_order: {
+        Args: { p_id: string; p_status: string; p_expected_status: string };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

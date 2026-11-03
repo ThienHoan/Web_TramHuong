@@ -1,0 +1,17 @@
+"use client";
+import {useSearchParams} from 'next/navigation';
+import {AuthContext} from '@/components/providers/AuthProvider';
+import {CartProvider} from '@/components/providers/CartProvider';
+import AdminLayout from '../../admin/layout';
+import Admin from '../../admin/shipping/page';
+import Tracking from '../../shipping/[orderId]/page';
+import ZenCheckout from '@/components/zen/ZenCheckout';
+import Payment from '../../checkout/payment_select/page';
+import TraditionalCheckout from '@/components/traditional/checkout/TraditionalCheckout';
+import DashboardCharts from '@/components/admin/DashboardCharts';
+import type {Session,User} from '@supabase/supabase-js';
+const layoutParams=Promise.resolve({locale:'vi'});
+const user={id:'00000000-0000-4000-8000-000000000001',email:'fixture@example.invalid'} as User;
+const session={access_token:'fixture-only',user} as Session;
+const analytics={summary:{totalRevenue:300000,totalOrders:3,pendingOrders:1},revenueChart:[{date:'2026-10-30',revenue:100000},{date:'2026-10-31',revenue:200000}],statusChart:[{name:'PENDING',value:1},{name:'COMPLETED',value:2}],topProducts:[],topWishlist:[],categoryStats:[]};
+export default function Fixture(){const view=useSearchParams().get('view'),guest=view==='recipient-guest';if(process.env.NODE_ENV!=='development')return null;return <AuthContext.Provider value={{user:guest?null:user,session:guest?null:session,profile:guest?null:{id:user.id,role:'ADMIN',full_name:'Fixture'},role:guest?null:'ADMIN',loading:false,signOut:async()=>{},refreshProfile:async()=>{}}}><CartProvider>{view==='admin'?<AdminLayout params={layoutParams}><Admin/></AdminLayout>:view==='charts'?<AdminLayout params={layoutParams}><DashboardCharts data={analytics}/></AdminLayout>:view==='recipient'||view==='recipient-guest'?<TraditionalCheckout/>:view==='checkout'?<ZenCheckout/>:view==='payment'?<Payment/>:<Tracking/>}</CartProvider></AuthContext.Provider>}

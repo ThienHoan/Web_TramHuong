@@ -56,14 +56,14 @@ const details = [
     title: "Tách từng hạt, hiểu từng chi tiết.",
     text: "Các hạt mở ra để lộ cách sắp xếp và đường dây xuyên tâm. Bấm các điểm trên bàn để chuyển góc khám phá.",
     note: "Khám phá cấu trúc",
-    progress: 0.5,
+    progress: 0.4,
   },
   {
     label: "Dáng hạt",
     title: "Đến gần một hạt trầm.",
     text: "Góc nhìn gần làm rõ bề mặt và dáng hạt. Mô hình là minh họa; sắc gỗ và vân thực tế thay đổi theo từng phẩm vật.",
     note: "Góc nhìn cận cảnh",
-    progress: 0.99,
+    progress: 0.74,
   },
 ];
 const tones = [
@@ -78,6 +78,7 @@ export default function HomeJourney() {
   const stage = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const sculpture = useRef<HTMLElement>(null);
+  const sculptureStage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const controller = useRef<PreviewController | null>(null);
   const progress = useRef(0);
@@ -174,18 +175,32 @@ export default function HomeJourney() {
               },
             });
             renderGallery();
-            ScrollTrigger.create({
-              trigger: sculpture.current,
-              start: "top 80px",
-              end: "bottom bottom",
-              onUpdate: (self) => {
-                progress.current = self.progress;
-                controller.current?.setScrollProgress?.(self.progress);
-                setDetail(Math.min(2, Math.floor(self.progress * 3)));
+            const sculpturePlayhead = { position: 0 };
+            gsap.to(sculpturePlayhead, {
+              position: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: sculpture.current,
+                start: "top 80px",
+                end: () =>
+                  `+=${Math.max(1, sculpture.current!.offsetHeight - sculptureStage.current!.offsetHeight)}`,
+                scrub: 0.35,
+              },
+              onUpdate: () => {
+                const p = sculpturePlayhead.position;
+                progress.current = p;
+                controller.current?.setScrollProgress?.(p);
+                setDetail(p < 0.27 ? 0 : p < 0.53 ? 1 : 2);
+                const exit = gsap.utils.clamp(0, 1, (p - 0.8) / 0.17);
+                root.current?.style.setProperty(
+                  "--sculpture-exit",
+                  String(exit * exit * (3 - 2 * exit)),
+                );
               },
             });
             return () => {
               root.current?.classList.remove("journey-enhanced");
+              root.current?.style.removeProperty("--sculpture-exit");
               cards.forEach((card) => {
                 card.style.removeProperty("transform");
                 card.style.removeProperty("opacity");
@@ -198,6 +213,7 @@ export default function HomeJourney() {
         );
         const resize = new ResizeObserver(() => ScrollTrigger.refresh());
         if (stage.current) resize.observe(stage.current);
+        if (sculptureStage.current) resize.observe(sculptureStage.current);
         cleanup = () => {
           resize.disconnect();
           media.revert();
@@ -302,7 +318,9 @@ export default function HomeJourney() {
     ) {
       const top =
         sculpture.current.getBoundingClientRect().top + window.scrollY - 80;
-      const travel = sculpture.current.offsetHeight - (window.innerHeight - 80);
+      const travel =
+        sculpture.current.offsetHeight -
+        (sculptureStage.current?.offsetHeight ?? window.innerHeight - 80);
       window.scrollTo({ top: top + travel * p, behavior: "smooth" });
     }
   };
@@ -544,7 +562,7 @@ export default function HomeJourney() {
         className="journey-sculpture"
         aria-labelledby="sculpture-heading"
       >
-        <div className="journey-sculpture-stage">
+        <div ref={sculptureStage} className="journey-sculpture-stage">
           <header className="journey-sculpture-heading">
             <div>
               <p className="journey-kicker">BÀN KHÁM PHÁ · THIÊN PHÚC</p>
@@ -702,6 +720,10 @@ export default function HomeJourney() {
               </button>
             ))}
           </nav>
+          <p className="journey-exit-note" aria-hidden="true">
+            Một vòng trầm. Một câu chuyện còn tiếp.
+            <ArrowDown size={14} />
+          </p>
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 const getBaseApiUrl = () => {
     if (typeof window !== 'undefined') return '/api';
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
     return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 }
 
@@ -28,13 +28,13 @@ export async function fetchWithAuth<T = unknown>(url: string, options: RequestIn
     const res = await fetch(url, { ...options, headers });
 
     if (!res.ok) {
-        // Safe json parsing
-        try {
-            const err = await res.json() as { message?: string };
-            throw new Error(err.message || 'Request failed');
-        } catch {
-            throw new Error(res.statusText || 'Request failed');
-        }
+        const err = await res.json().catch(() => null) as { message?: unknown; errors?: unknown } | null;
+        const details = Array.isArray(err?.errors)
+            ? err.errors.filter((value): value is string => typeof value === 'string')
+            : Array.isArray(err?.message)
+                ? err.message.filter((value): value is string => typeof value === 'string')
+                : [];
+        throw new Error(details.join('; ') || (typeof err?.message === 'string' ? err.message : '') || res.statusText || 'Request failed');
     }
 
     // Safe response parsing

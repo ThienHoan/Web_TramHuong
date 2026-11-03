@@ -1,10 +1,11 @@
 'use client';
 
+import { API_URL } from "@/services/base-http";
+
 import { useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function NewCategoryPage() {
     const { session } = useAuth();

@@ -83,4 +83,35 @@ describe('OrdersService', () => {
       expect(normalize('  0909 123 456  ')).toBe('+84909123456');
     });
   });
+  describe('admin order status changes', () => {
+    const setup = (status: string, rpcResult: object) => {
+      const single = jest.fn().mockResolvedValue({ data: { status, items: [] }, error: null });
+      const query = { select: jest.fn().mockReturnThis(), eq: jest.fn().mockReturnThis(), single };
+      const rpc = jest.fn().mockResolvedValue(rpcResult);
+      mockSupabaseService.getClient.mockReturnValue({ from: () => query, rpc });
+      return rpc;
+    };
+    it('rejects transitions out of completed orders', async () => {
+      const rpc = setup('COMPLETED', {});
+      await expect(service.updateStatus('order', 'PAID')).rejects.toThrow('Invalid status transition');
+      expect(rpc).not.toHaveBeenCalled();
+    });
+    it('uses an atomic database transition with the expected old status', async () => {
+      const rpc = setup('PENDING', { data: { id: 'order', status: 'CANCELED' }, error: null });
+      (mockMailService as any).sendOrderStatusUpdate = jest.fn().mockResolvedValue(undefined);
+      await expect(service.updateStatus('order', 'CANCELED')).resolves.toMatchObject({ status: 'CANCELED' });
+      expect(rpc).toHaveBeenCalledWith('transition_order', {
+        p_id: 'order', p_status: 'CANCELED', p_expected_status: 'PENDING',
+      });
+    });
+    it('fails explicitly when the required migration is missing', async () => {
+      setup('PENDING', { data: null, error: { code: 'PGRST202', message: 'Missing function' } });
+      await expect(service.updateStatus('order', 'CANCELED')).rejects.toThrow('Apply admin-order-integrity.sql');
+    });
+    it('rejects a stale status update instead of overwriting newer data', async () => {
+      setup('PENDING', { data: null, error: { code: 'PT409', message: 'Order changed' } });
+      await expect(service.updateStatus('order', 'CANCELED')).rejects.toThrow('Order changed');
+    });
+  });
+
 });

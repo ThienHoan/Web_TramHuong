@@ -1,3 +1,4 @@
+import { StorageService } from '../storage/storage.service';
 /* eslint-disable */
 import {
   Injectable,
@@ -55,7 +56,7 @@ export class ProductsService {
     }));
   }
 
-  constructor(private readonly supabase: SupabaseService) { }
+  constructor(private readonly supabase: SupabaseService, private readonly storage: StorageService) { }
 
   async findAll(
     locale: string = 'en',
@@ -74,6 +75,8 @@ export class ProductsService {
       featured_section?: string;
     },
   ) {
+    if (options?.page !== undefined && (!Number.isSafeInteger(options.page) || options.page < 1)) throw new BadRequestException('Invalid page');
+    if (options?.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 1)) throw new BadRequestException('Invalid limit');
     const client = this.supabase.getClient();
     const isFilteringByCategorySlug = !!options?.category;
 
@@ -295,7 +298,21 @@ export class ProductsService {
     };
   }
 
+  private validateNumbers(body: { price?: number | string; original_price?: number | string; quantity?: number | string; discount_percentage?: number | string }) {
+    for (const field of ['price', 'original_price', 'quantity', 'discount_percentage'] as const) {
+      const raw = body[field];
+      if (raw === undefined || raw === null || (field === 'original_price' && raw === '')) continue;
+      const value = Number(raw);
+      if (raw === '' || !Number.isFinite(value) || value < 0 ||
+        (field === 'quantity' && !Number.isInteger(value)) ||
+        (field === 'discount_percentage' && value > 100)) {
+        throw new BadRequestException(`Invalid ${field}`);
+      }
+    }
+  }
+
   async create(body: CreateProductDto, files: Array<Express.Multer.File>) {
+    this.validateNumbers(body);
     // Handle images: prioritize pre-uploaded URLs from body, fallback to file uploads
     let imageUrls: string[] = [];
 
@@ -367,14 +384,13 @@ export class ProductsService {
     const productInsertData: Database['public']['Tables']['products']['Insert'] =
     {
       slug,
-      price: parseFloat(price.toString().replace(/\./g, '')),
+      price: Number(price),
       original_price: original_price
-        ? parseFloat(original_price.toString().replace(/\./g, ''))
+        ? Number(original_price)
         : null,
       images: imageUrls,
       category_id: category_id,
-      quantity:
-        typeof quantity === 'number' ? quantity : parseInt(String(quantity)),
+      quantity: Number(quantity ?? 0),
       style: body.style || 'both',
       is_active: true,
       is_featured:
@@ -447,6 +463,7 @@ export class ProductsService {
     body: UpdateProductDto,
     files?: Array<Express.Multer.File>,
   ) {
+    this.validateNumbers(body);
     console.log('Update Product ID:', id);
     console.log('Update Body:', JSON.stringify(body));
 
@@ -480,17 +497,14 @@ export class ProductsService {
     if ((files && files.length > 0) || body.keep_images) {
       updateData.images = [...keepImages, ...newImageUrls];
     }
-    if (body.price) {
-      const cleanPrice = body.price.toString().replace(/\./g, '');
-      updateData.price = parseFloat(cleanPrice);
+    if (body.price !== undefined) {
+      updateData.price = Number(body.price);
     }
     if (body.original_price !== undefined) {
       if (body.original_price === '' || body.original_price === null) {
         updateData.original_price = null;
       } else {
-        updateData.original_price = parseFloat(
-          body.original_price.toString().replace(/\./g, ''),
-        );
+        updateData.original_price = Number(body.original_price);
       }
     }
     if (body.slug) updateData.slug = body.slug;
@@ -501,7 +515,10 @@ export class ProductsService {
           .select('id')
           .eq('slug', body.category)
           .single();
-        if (catData) updateData.category_id = catData.id;
+        if (!catData) throw new BadRequestException('Category not found');
+        updateData.category_id = catData.id;
+      } else {
+        updateData.category_id = null;
       }
     }
     if (body.quantity !== undefined && body.quantity !== null)
@@ -647,14 +664,7 @@ export class ProductsService {
 
    
   async uploadImage(file: Express.Multer.File): Promise<string> {
-    const client = this.supabase.getClient();
-    const fileName = `${Date.now()}_${file.originalname}`;
-
-    const {
-      data: { publicUrl },
-    } = client.storage.from('product-images').getPublicUrl(fileName);
-
-    return publicUrl;
+    return (await this.storage.uploadProductImage(file)).url;
   }
 
   async bulkUpdate(

@@ -5,6 +5,9 @@ import {
 } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import sharp from 'sharp';
+import { randomUUID } from 'node:crypto';
+import { downloadPublicImage } from './remote-image';
 import { Database } from '../common/types/database.types';
 
 @Injectable()
@@ -49,40 +52,102 @@ export class StorageService {
     // Validate file
     this.validateImage(file);
 
-    // Generate unique filename with timestamp and random string
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 15);
-    const ext = this.getFileExtension(file.originalname);
-    const sanitizedName = this.sanitizeFilename(file.originalname);
-    const filename = `products/${timestamp}-${randomStr}-${sanitizedName}.${ext}`;
+    return this.storeOptimizedImage(file.buffer);
+  }
 
-    try {
-      // Upload to Supabase Storage
-      const { data, error } = await this.supabase.storage
-        .from(this.BUCKET_NAME)
-        .upload(filename, file.buffer, {
-          contentType: file.mimetype,
-          cacheControl: '31536000', // 1 year cache
-          upsert: false, // Prevent overwrites
-        });
-
-      if (error) {
-        throw new BadRequestException(`Upload failed: ${error.message}`);
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = this.supabase.storage.from(this.BUCKET_NAME).getPublicUrl(data.path);
-
-      return {
-        url: publicUrl,
-        path: data.path,
-      };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new BadRequestException(`Failed to upload image: ${message}`);
+  async importRemoteImage(
+    source: string,
+  ): Promise<{ url: string; path: string; reused?: boolean }> {
+    const image = await downloadPublicImage(source);
+    const url = new URL(source);
+    const storageUrl = new URL(this.configService.get<string>('SUPABASE_URL')!);
+    const prefix = '/storage/v1/object/public/product-images/';
+    const ownedPath = url.pathname.startsWith(prefix)
+      ? url.pathname.slice(prefix.length)
+      : '';
+    if (
+      url.origin === storageUrl.origin &&
+      /^products\/optimized\/[a-f0-9-]{36}\.webp$/.test(ownedPath)
+    ) {
+      return { url: url.origin + url.pathname, path: ownedPath, reused: true };
     }
+    return this.storeOptimizedImage(image.buffer);
+  }
+
+  async storeOptimizedImage(
+    buffer: Buffer,
+  ): Promise<{ url: string; path: string }> {
+    let main: Buffer;
+    let thumbnail: Buffer;
+    try {
+      const image = sharp(buffer, {
+        limitInputPixels: 60_000_000,
+        animated: false,
+        failOn: 'error',
+      });
+      const metadata = await image.metadata();
+      if (
+        !['jpeg', 'png', 'webp', 'avif', 'heif'].includes(metadata.format || '')
+      )
+        throw new Error('Unsupported image');
+      main = await image
+        .rotate()
+        .resize({
+          width: 1600,
+          height: 1600,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82, effort: 4 })
+        .toBuffer();
+      thumbnail = await sharp(main)
+        .resize({
+          width: 480,
+          height: 480,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 78 })
+        .toBuffer();
+    } catch {
+      throw new BadRequestException(
+        'Không đọc được ảnh. Hãy dùng JPEG, PNG, WebP hoặc AVIF hợp lệ.',
+      );
+    }
+    const path = `products/optimized/${randomUUID()}.webp`;
+    const thumbnailPath = path.replace(/\.webp$/, '-thumb.webp');
+    const mainResult = await this.supabase.storage
+      .from(this.BUCKET_NAME)
+      .upload(path, main, {
+        contentType: 'image/webp',
+        cacheControl: '31536000',
+        upsert: false,
+      });
+    if (mainResult.error)
+      throw new BadRequestException('Không thể lưu ảnh vào Supabase Storage');
+    const thumbResult = await this.supabase.storage
+      .from(this.BUCKET_NAME)
+      .upload(thumbnailPath, thumbnail, {
+        contentType: 'image/webp',
+        cacheControl: '31536000',
+        upsert: false,
+      });
+    if (thumbResult.error) {
+      await this.supabase.storage
+        .from(this.BUCKET_NAME)
+        .remove(
+          path.startsWith('products/optimized/') &&
+            !path.endsWith('-thumb.webp')
+            ? [path, path.replace(/\.webp$/, '-thumb.webp')]
+            : [path],
+        );
+      throw new BadRequestException('Không thể lưu ảnh thu nhỏ');
+    }
+    return {
+      path,
+      url: this.supabase.storage.from(this.BUCKET_NAME).getPublicUrl(path).data
+        .publicUrl,
+    };
   }
 
   /**
@@ -96,10 +161,31 @@ export class StorageService {
       throw new ForbiddenException('Invalid file path');
     }
 
+    // Existing products may share a public image URL (e.g. Excel imports).
+    // Detaching an image in an editor must not remove another product's file.
+    const publicUrl = this.supabase.storage
+      .from(this.BUCKET_NAME)
+      .getPublicUrl(path).data.publicUrl;
+    const references = await this.supabase
+      .from('products')
+      .select('id')
+      .contains('images', [publicUrl])
+      .limit(1);
+    if (references.error)
+      throw new BadRequestException(
+        'Không kiểm tra được ảnh đang được sử dụng',
+      );
+    if (references.data.length) return;
+
     try {
       const { error } = await this.supabase.storage
         .from(this.BUCKET_NAME)
-        .remove([path]);
+        .remove(
+          path.startsWith('products/optimized/') &&
+            !path.endsWith('-thumb.webp')
+            ? [path, path.replace(/\.webp$/, '-thumb.webp')]
+            : [path],
+        );
 
       if (error) {
         throw new BadRequestException(`Delete failed: ${error.message}`);
@@ -160,31 +246,5 @@ export class StorageService {
     );
 
     return hasValidExt;
-  }
-
-  /**
-   * Get file extension safely
-   */
-  private getFileExtension(filename: string): string {
-    const parts = filename.split('.');
-    if (parts.length < 2) {
-      throw new BadRequestException('Invalid filename');
-    }
-    return parts.pop()!.toLowerCase();
-  }
-
-  /**
-   * Sanitize filename to prevent injection
-   */
-  private sanitizeFilename(filename: string): string {
-    // Remove extension
-    const nameWithoutExt =
-      filename.substring(0, filename.lastIndexOf('.')) || filename;
-
-    // Keep only alphanumeric, dash, underscore
-    return nameWithoutExt
-      .replace(/[^a-zA-Z0-9-_]/g, '-')
-      .replace(/--+/g, '-')
-      .substring(0, 50); // Limit length
   }
 }

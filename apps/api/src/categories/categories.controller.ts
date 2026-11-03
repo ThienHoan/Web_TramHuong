@@ -34,9 +34,18 @@ export class CategoriesController {
   ) {
     const validLocale = locale === 'vi' ? 'vi' : 'en';
     return this.categoriesService.findAll(validLocale, {
-      include_inactive: include_inactive === 'true',
+      include_inactive: false,
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 20,
+    });
+  }
+
+  @Get('admin/list')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  async adminList(@Query('locale') locale: string, @Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.categoriesService.findAll(locale === 'vi' ? 'vi' : 'en', {
+      include_inactive: true, page: Number(page || 1), limit: Number(limit || 20),
     });
   }
 

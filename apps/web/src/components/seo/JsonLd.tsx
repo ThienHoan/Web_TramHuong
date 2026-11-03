@@ -29,11 +29,11 @@ const JsonLd = () => {
                 'name': 'Trầm Hương Thiên Phúc',
                 'url': baseUrl,
                 'image': [
-                    `${baseUrl}/og-image.jpg` // Fallback, effectively the store image
+                    `${baseUrl}/brand/social-card.png` // Fallback, effectively the store image
                 ],
                 'logo': {
                     '@type': 'ImageObject',
-                    'url': `${baseUrl}/icon.png`,
+                    'url': `${baseUrl}/brand/icon-512.png`,
                     'width': 512,
                     'height': 512
                 },

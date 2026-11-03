@@ -32,7 +32,7 @@ export const blogService = {
         if (options?.status) queryParams.status = options.status;
 
         try {
-            const url = buildUrl('/posts', queryParams);
+            const url = buildUrl(options?.status && options.status !== 'published' ? '/posts/admin/list' : '/posts', queryParams);
             const result = await fetchWithAuth<{ data: BlogPost[], meta: BlogMeta }>(url);
             const defaultMeta: BlogMeta = { total: 0, page: 1, limit: 10, currentPage: 1, totalPages: 1, totalItems: 0 };
             return { data: result.data || [], meta: result.meta || defaultMeta, error: undefined };
@@ -44,9 +44,9 @@ export const blogService = {
         }
     },
 
-    getPostBySlug: async (slug: string): Promise<{ data: BlogPost | null; error?: string }> => {
+    getPostBySlug: async (slug: string, admin = false): Promise<{ data: BlogPost | null; error?: string }> => {
         try {
-            const url = buildUrl(`/posts/${slug}`);
+            const url = buildUrl(admin ? `/posts/admin/${slug}` : `/posts/${slug}`);
             const data = await fetchWithAuth<BlogPost>(url);
             return { data, error: undefined };
         } catch (e: unknown) {

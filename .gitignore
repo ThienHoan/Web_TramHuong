@@ -17,6 +17,7 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 .env.production
+!apps/api/.env.example
 
 # Build / output folders
 dist/              # NestJS build output

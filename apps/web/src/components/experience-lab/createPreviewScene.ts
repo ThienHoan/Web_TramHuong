@@ -548,12 +548,19 @@ export function createPreviewScene(
       const p = THREE.MathUtils.clamp(progress, 0, 1);
       controls.enabled = false;
       options.autoRotate = false;
-      options.expanded = p > 0.3 && p < 0.7;
-      exhibit.rotation.y = -0.35 + Math.min(p, 0.72) * Math.PI * 1.1;
-      const closeup = THREE.MathUtils.smoothstep(p, 0.72, 0.98);
+      // Reserve the last scroll beat for reassembly and pulling the camera back.
+      // Ending on the macro view leaves a clipped object sliding out of the section.
+      const exit = THREE.MathUtils.smoothstep(p, 0.8, 0.97);
+      options.expanded = p > 0.27 && p < 0.53;
+      exhibit.rotation.y = THREE.MathUtils.lerp(
+        -0.35 + Math.min(p, 0.55) * Math.PI * 1.1,
+        -0.35,
+        exit,
+      );
+      const closeup = THREE.MathUtils.smoothstep(p, 0.55, 0.7) * (1 - exit);
       camera.zoom =
         presentation === "studio"
-          ? 1 + closeup * 1.1
+          ? 1 + closeup * 1.1 - exit * 0.16
           : 0.65 + Math.sin(p * Math.PI) * 0.1;
       controls.target.set(0, 0.2, 0);
       if (presentation === "studio" && mode === "bracelet" && closeup > 0) {

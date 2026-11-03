@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLockup } from "@/components/brand/BrandIdentity";
 import { Link } from '@/i18n/routing';
 
 export default function ZenFooter() {
@@ -9,7 +10,7 @@ export default function ZenFooter() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
                     <div className="md:col-span-4 lg:col-span-5 pr-8">
                         <Link href="/" className="text-xl tracking-[0.2em] font-zen-display uppercase font-bold text-zen-900 dark:text-white block mb-6">
-                            Tram Huong Thien Phuc
+                            <BrandLockup locale="en" />
                         </Link>
                         <p className="text-sm text-gray-500 dark:text-gray-400 leading-7 font-zen-sans font-light max-w-sm">
                             Bringing the sacred scent of Vietnamese agarwood to the modern sanctuary. An invitation to pause, breathe, and reconnect.
@@ -40,7 +41,7 @@ export default function ZenFooter() {
                     </div>
                 </div>
                 <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-gray-400 font-light font-zen-sans">
-                    <p>© 2024 Tram Huong. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} Thiên Phúc · Vietnamese Agarwood.</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
                         <a href="#" className="hover:text-zen-secondary transition-colors">Instagram</a>
                         <a href="https://www.facebook.com/profile.php?id=61585286954215" className="hover:text-zen-secondary transition-colors">Facebook</a>

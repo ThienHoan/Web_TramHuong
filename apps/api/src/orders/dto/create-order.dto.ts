@@ -6,6 +6,7 @@ import {
   IsInt,
   Min,
   IsOptional,
+  IsUUID,
   // IsPhoneNumber,
   // IsEnum,
 } from 'class-validator';
@@ -60,6 +61,9 @@ class ShippingInfoDto {
 }
 
 export class CreateOrderDto {
+  @IsOptional()
+  @IsUUID()
+  shippingQuoteReference?: string;
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
