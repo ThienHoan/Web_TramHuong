@@ -9,6 +9,9 @@ import { submitContact } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useLocale } from 'next-intl';
+import { useContactProtection } from '@/hooks/useContactProtection';
+import { ContactProtection } from '@/components/contact/ContactProtection';
 
 const contactSchema = z.object({
     full_name: z.string().min(2, 'Vui lòng nhập tên của bạn'),
@@ -21,6 +24,9 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionError, setSubmissionError] = useState<string | null>(null);
+    const locale = useLocale();
+    const protection = useContactProtection();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
@@ -31,19 +37,22 @@ export default function ContactPage() {
     });
 
     const onSubmit = async (data: ContactFormValues) => {
+        if (!protection.canSubmit) return;
+        setSubmissionError(null);
         setIsSubmitting(true);
         try {
-            await submitContact(data);
+            await submitContact({ ...data, ...(protection.token ? { turnstileToken: protection.token } : {}) });
             toast.success('Đã gửi lời nhắn thành công!', {
                 description: 'Cảm ơn bạn đã chia sẻ câu chuyện. Chúng tôi sẽ phản hồi sớm nhất.',
             });
             reset();
         } catch (error) {
-            console.error(error);
+            setSubmissionError(error instanceof Error ? error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
             toast.error('Gửi thất bại', {
                 description: 'Có lỗi xảy ra, vui lòng thử lại sau ít phút.',
             });
         } finally {
+            protection.resetToken();
             setIsSubmitting(false);
         }
     };
@@ -201,8 +210,10 @@ export default function ContactPage() {
                                                 {errors.message && <p className="text-red-500 text-xs mt-1 ml-1">{errors.message.message}</p>}
                                             </div>
                                             {/* Submit Button */}
+                                            <ContactProtection protection={protection} locale={locale} disabled={isSubmitting} />
+                                            {submissionError && <p role="alert" className="text-sm text-red-700">{submissionError}</p>}
                                             <button
-                                                disabled={isSubmitting}
+                                                disabled={isSubmitting || !protection.canSubmit}
                                                 type="submit"
                                                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-trad-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-trad-primary/25 transition-all hover:bg-trad-primary-dark hover:shadow-trad-primary/40 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                                             >

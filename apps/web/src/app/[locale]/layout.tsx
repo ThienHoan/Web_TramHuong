@@ -19,6 +19,9 @@ import NextTopLoader from 'nextjs-toploader';
 import ChatWidget from '@/components/chat/ChatWidget';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { LocalFunnelAuth } from '@/components/analytics/LocalFunnelAuth';
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
+import { AnalyticsConsent } from '@/components/analytics/AnalyticsConsent';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -181,7 +184,9 @@ export default async function RootLayout({
       >
         <NextTopLoader color="var(--color-trad-primary)" showSpinner={false} />
         <NextIntlClientProvider messages={messages} locale={locale} timeZone="Asia/Ho_Chi_Minh">
+          <AnalyticsProvider>
           <AuthProvider>
+            <LocalFunnelAuth />
             <CartProvider>
               <WishlistProvider>
                 <NetworkStatusProvider>
@@ -191,6 +196,7 @@ export default async function RootLayout({
                     {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
                     <SmoothScroll />
                     {children}
+                    <AnalyticsConsent />
                     <ChatWidget />
                     <ScrollToTop />
                     </MotionProvider>
@@ -203,6 +209,7 @@ export default async function RootLayout({
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
+          </AnalyticsProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-03",
+  "scope": "local mocks; no production requests or database writes",
+  "jest": {
+    "numTotalTestSuites": 27,
+    "numPassedTestSuites": 27,
+    "numFailedTestSuites": 0,
+    "numTotalTests": 246,
+    "numPassedTests": 246,
+    "numFailedTests": 0,
+    "success": true
+  },
+  "lint": {
+    "api": {
+      "files": 130,
+      "errors": 110,
+      "warnings": 2
+    },
+    "web": {
+      "files": 208,
+      "errors": 0,
+      "warnings": 0
+    }
+  },
+  "apiBuild": "PASS",
+  "webTypecheck": "PASS after next typegen repaired stale ignored route artifacts",
+  "webBuild": "NOT_RUN outbound font/prerender isolation required",
+  "sql": {
+    "engine": "in-memory PostgreSQL",
+    "checks": 28,
+    "productionWrites": 0
+  },
+  "sourceFilesScanned": 387
+}

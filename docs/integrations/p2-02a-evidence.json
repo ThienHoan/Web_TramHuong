@@ -1,0 +1,12 @@
+{
+  "batch": "P2-02a",
+  "date": "2026-11-04",
+  "scope": "Search Console mock only, existing AnalyticsModule/admin dashboard",
+  "api": { "scopedTestsPassed": 34, "fullSuitesPassed": 39, "fullTestsPassed": 416, "build": "PASS", "scopedLint": "PASS", "resultFile": "/tmp/tramhuong-gsc-final-tests.json" },
+  "web": { "schemaFetchTestsPassed": 7, "tsc": "PASS", "scopedLint": "PASS", "productionBuild": "SKIP: existing env/prerender external paths", "disposableNextRoute": "PASS" },
+  "demoRegression": { "contactHttpAssertions": 18, "purchaseHttpChecks": 26 },
+  "browser": { "languages": ["vi", "en"], "mobileWidth": 375, "mobileDocumentWidth": 375, "defaultWidth": 814, "duplicateAccumulation": false, "quotaFailurePreservesSnapshot": true, "retryAfterMinuteReset": "PASS", "queriedDays": 14, "missingDays": 2, "queries": 4, "lowCtrProductPages": 1, "screenshot": "/private/tmp/search-console-mock.png" },
+  "external": { "providerCalls": 0, "hostedDatabaseWrites": 0, "billingEnabled": false, "dnsChanges": 0, "realTransactions": 0 },
+  "release": { "defaultFlag": false, "schedulerEnabled": false, "persistence": "process_memory", "liveTransport": false, "migrationAdded": false, "phase2Complete": false, "blockers": ["verified property and readonly OAuth unconfirmed", "encrypted token storage and rotation pending", "durable incremental metrics and distributed quota/lock pending", "theme URL mapping pending", "real response staging acceptance pending"] },
+  "git": { "commit": false, "push": false }
+}

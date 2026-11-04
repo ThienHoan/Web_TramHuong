@@ -1,0 +1,42 @@
+# P2-LIVE-01 — real Google connection diagnostics, default OFF
+
+Design04/11/2026, before implementation. Owner confirmed localhost only and has not supplied Google IDs, keys or verified property. No public exposure/tunnel/deployment/account creation or provider calls authorized by this batch. Implement actual HTTP adapters and ADMIN manual diagnostics, test with injected HTTP, report missing configuration explicitly. Mock screens remain mock; never call a fixture a successful Google connection.
+
+Reuse AnalyticsModule, existing auth/role guards, default-OFF provider flags, kill switch and PageSpeed numeric normalizer. No DB/module/dependency duplication. No scheduler, financial event collection, raw query storage or new schema. Live diagnostics limited to development/test, explicit GOOGLE_DIAGNOSTICS_ENABLED, INTEGRATIONS_ENV=staging, individual provider flag and configured approved target; NODE_ENV production always blocked. A developer must intentionally configure and manually invoke diagnostics. Environment flags are runtime controls, not evidence of owner authorization for this agent to call an external service.
+
+GET/admin/integrations/google/status exposes readiness/missing variable names only; POST/diagnose takes strict provider enum and strategy. No user URL/token/event input. PSI fixed HTTPS origin approved in server environment, homepage VI/EN only; no arbitrary paths/queries/credentials/local/private address. GSC refreshes an AES-256-GCM encrypted refresh token via fixed OAuth token endpoint and reads one final Pacific day/100rows; only counts returned to client, no raw queries/customer data. GA4 calls debug/mp/collect with a fixed nonfinancial synthetic diagnostic event: validation only, never /mp/collect. Empty validation messages do NOT verify API secret or report ingestion.
+
+HTTP redirect:error, bounded time and response bytes; no automatic retry; errors redact provider bodies/URLs/secrets. Process-local budget20calls/day/provider and5/minute, one in-flight diagnostic; all OAuth/PSI/GA4 attempts count. These are local manual diagnostics, not distributed worker quota or durable history. Existing full ingestion/history/dedupe/consent/live release gates remain pending. Pause by kill switch/flags +restart; no data migration or cleanup.
+
+Official sources reviewed04/11: [PSI](https://developers.google.com/speed/docs/insights/v5/reference/pagespeedapi/runpagespeed), [Search Analytics](https://developers.google.com/webmaster-tools/v1/searchanalytics/query), [OAuth refresh](https://developers.google.com/identity/protocols/oauth2/web-server), [GA4 validation](https://developers.google.com/analytics/devguides/collection/protocol/ga4/validating-events). Google states debug events do not appear in reports and debug does not validate api_secret. No universal quota/free billing guarantee inferred.
+
+## Giải thích cho chủ dự án đang chạy localhost
+
+Hiện chưa có dữ liệu Google thật. Cần phân biệt ba việc: đã viết code gọi HTTP; đã cấu hình tài khoản; đã gọi Google thành công. Batch này hoàn thành việc thứ nhất và kiểm thử offline, chưa hoàn thành hai việc sau. Màn lab đang mở vẫn là mock, không đổi nhãn dữ liệu giả thành thật.
+
+1. PageSpeed của Google phải nhìn thấy URL công khai. Localhost chỉ có trên máy bạn nên chưa đo qua Google được. Không tự tạo tunnel/public deploy. Khi bạn có website thử nghiệm công khai, chọn origin đó rồi cấu hình key/quota backend và cho phép phép đo cụ thể.
+2. Search Console cần website công khai, thêm property và xác minh quyền quản lý trên Google. Sau đó cấp scope chỉ đọc. Website mới có thể chưa có số liệu; kết quả thiếu không phải0. Không tự đổi DNS hoặc tạo property thay chủ dự án.
+3. GA4 cần tài khoản/property/web stream và measurement ID. Đường debug hiện chỉ kiểm tra cấu trúc payload; không ghi sự kiện vào báo cáo và không xác minh API secret. Theo dõi hành vi thật/purchase cần batch consent/delivery riêng sau khi thiết lập stream.
+
+Chưa cần dán API key vào chat. Secret đặt trong backend/secret manager, không NEXT_PUBLIC, không Git. Riêng refresh token GSC dùng AES-256-GCM, không lưu plaintext vào DB. Cấu hình ciphertext phải cùng client/property/keyID; helper encryptGoogleRefreshToken/decryptGoogleRefreshToken trong service cung cấp bước provisioning/rotation offline: decrypt bằng key cũ, encrypt bằng key mới với keyID mới rồi thay ciphertext/keyID/key cùng lúc. Khóa32byte base64, IV12byte ngẫu nhiên, tag16byte; AAD `web-tramhuong:gsc:<clientId>:<property>`. Chưa có OAuth browser consent/callback/rotation automation hoặc UI nhập secrets. Chưa provision bất kỳ token thật nào.
+
+## Sử dụng kỹ thuật sau khi có quyền
+
+Không dùng lệnh này với credentials thật trước khi owner cho phép kết nối tương ứng. Config mẫu trong apps/api/.env.example, realenv không chỉnh. Bật riêng GOOGLE_DIAGNOSTICS_ENABLED=true và provider flag, INTEGRATIONS_ENV=staging, NODE_ENV development/test, kill switchfalse. `GOOGLE_APPROVED_PUBLIC_ORIGIN` là HTTPS origin không trailing slash/path/port/query/IP/private suffix. GSCproperty phải đúng origin+/ hoặc sc-domain:hostname. GA4 debug không cần origin công khai trong code nhưng cần measurement ID/APIsecret hợp lệ được owner cung cấp.
+
+Đăng nhập ADMIN hiện hữu, gọi GET `/api/admin/integrations/google/status`. Kết quả chỉ có tên biến thiếu/configValid/ready, không secret. ready nghĩa là đủ config cho thao tác kiểm tra thủ công, không có nghĩa đã verify Google. POST `/api/admin/integrations/google/diagnose` body `{"provider":"pagespeed","strategy":"mobile"}` hoặc provider search_console/ga4. Không nhận URL/token/event hoặc forceflag từ body. Status không gọi mạng. Quyền CUSTOMER/STAFF/banned bị chặn. Proxy/client prefix tùy cấu hình hiện hữu.
+
+PSI chỉ đo approvedOrigin+/vi cho một strategy mỗi lần, chuẩn hóa4scores/lab bằng hàm có sẵn. GSC chỉ group by date (không query/page/device/country trong diagnostic), ngàyPacific-3; trả aggregate/metricsnull khi thiếu, không lưu query. Hai requestOAuth+GSC đều tính quota. GA4 chỉ debug với fixed nonfinancial integration_diagnostic event, không client/session thật và không purchase. Nếu cần full ingestion/history, phải triển khai durable quota/history và không dùng diagnostic này thay pipeline.
+
+## File manifest / acceptance
+
+New `apps/api/src/analytics/google-diagnostics.service.ts`, controller.ts, service/controller.spec.ts. Existing analytics.module.ts registers within module; pagespeed.service.ts only exports/renames existing normalizer for reuse, mock behaviour unchanged. apps/api/.env.example adds blank keys/defaultOFF, package adds test:google-diagnostics. Docs13/progress/evidence updated. No frontend/commerce/auth implementation/schema change.
+
+Actual backend full43suites/507testsPASS, including37newcases (27service+10HTTP); JSON `/tmp/tramhuong-google-real-tests.json`. All provider requests injected fake transport. Tests cover URL/config/defaultflags/production/kill, token encryption/AAD/keybinding, fixed endpoints and payloads, no GA4 collect, redaction, body size, timeout, concurrency, quota and real AuthGuard/RolesGuard. Build/scopedlint results recorded in progress after completion. Frontend/SQL unchanged, no new UI/browser claim or SQL rerun. No real Google call, billing, DNS, hostedDBwrite, real transaction, commit/push. Blockers: localhost/publicsite and Google accounts/credentials; actual provider acceptance NOT_RUN. FullPhase2 remains open.
+
+
+## Actual GA4 debug acceptance04/11 update
+
+Owner later created property562307226/stream16272049994 (G-XJNSBPN8HN), provisioned secret locally, explicitly authorized debug check. Google returned HTTP200 and validationIssueCount0 after fixing client_id to two positive decimal parts. Three actual debug requests total, no collected events. Evidence p2-live-01b-evidence.json. Full43suites508testsPASS. APIsecret validity and streamreporting ingestion remain unverified by debug, as documented by Google.
+
+Reusable operator command from apps/api: node scripts/check-ga4-debug.cjs --allow-google-debug --measurement-id G-XJNSBPN8HN. Explicit per-run invocation only; reads.env without modifying it, refuses missing/duplicate vars/ID mismatch/kill/no-optin, sends one fixed nonfinancial debug event per run. Do not call it without owner authorization. Never startsAppModule/cron or forwards otherenvvalues. Do not paste results containing rawsecrets; this script only emits safe validationstatus/codes/fieldnames and publicmeasurementID.

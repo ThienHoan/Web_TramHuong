@@ -1,0 +1,58 @@
+{
+  "review_date": "2026-11-03",
+  "source": "owner-supplied schema_report attachment",
+  "attachment_sha256": "b7881b550bf66631e75f850c18b5ecb5f8eb94b49f2de25e541ba9828cac732c",
+  "environment": "owner-confirmed testing database on 2026-11-03; no hosted mutation by agent",
+  "remote_requests": 0,
+  "database_writes": 0,
+  "shape_checks": "PASS: all13 array sections,17 public base tables,195 columns including22 for products_with_discounts; view definition not exported",
+  "initial_shape_check": "Assumption that every information_schema.columns relation is a base table failed; corrected classification, no source data modified",
+  "section_counts": {
+    "rls": 17,
+    "columns": 195,
+    "indexes": 65,
+    "database": 1,
+    "policies": 44,
+    "triggers": 5,
+    "functions": 14,
+    "extensions": 7,
+    "constraints": 66,
+    "publications": 1,
+    "table_grants": 463,
+    "column_grants": 2951,
+    "managed_tables": 27
+  },
+  "server_version": "17.6",
+  "tables": [
+    "admin_catalog_imports",
+    "cart_items",
+    "categories",
+    "category_translations",
+    "contacts",
+    "order_items",
+    "orders",
+    "posts",
+    "product_translations",
+    "products",
+    "reviews",
+    "shipping_records",
+    "shipping_tracking",
+    "user_events",
+    "users",
+    "vouchers",
+    "wishlists"
+  ],
+  "additional_column_relations": [
+    "products_with_discounts"
+  ],
+  "extensions": [
+    "moddatetime",
+    "pg_stat_statements",
+    "pg_trgm",
+    "pgcrypto",
+    "plpgsql",
+    "supabase_vault",
+    "uuid-ossp"
+  ],
+  "security_validation": "NEEDS_VALIDATION; metadata review only, no exploit or live probes"
+}

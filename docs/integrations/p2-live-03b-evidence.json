@@ -1,0 +1,165 @@
+{
+  "batch": "P2-LIVE-03b",
+  "date": "2026-11-05",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "authorization": "Owner explicitly requested real test after offline acceptance; then confirmed they would inspect DebugView",
+  "propertyId": "562307226",
+  "measurementId": "G-XJNSBPN8HN",
+  "transport": {
+    "source": "google",
+    "endpoint": "https://www.google-analytics.com/mp/collect",
+    "requests": 9,
+    "allHttp204": true,
+    "events": [
+      {
+        "request": 1,
+        "name": "add_to_cart",
+        "responseAtUtc": "2026-11-04T17:11:52.440Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 2,
+        "name": "add_shipping_info",
+        "responseAtUtc": "2026-11-04T17:11:52.530Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 3,
+        "name": "add_payment_info",
+        "responseAtUtc": "2026-11-04T17:11:52.608Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 4,
+        "name": "select_item",
+        "responseAtUtc": "2026-11-04T17:12:10.130Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 5,
+        "name": "view_item",
+        "responseAtUtc": "2026-11-04T17:12:11.931Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 6,
+        "name": "view_item_list",
+        "responseAtUtc": "2026-11-04T17:12:28.091Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 7,
+        "name": "begin_checkout",
+        "responseAtUtc": "2026-11-04T17:12:42.479Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 8,
+        "name": "view_item_list",
+        "responseAtUtc": "2026-11-04T17:13:01.718Z",
+        "httpStatus": 204
+      },
+      {
+        "request": 9,
+        "name": "remove_from_cart",
+        "responseAtUtc": "2026-11-04T17:13:14.671Z",
+        "httpStatus": 204
+      }
+    ],
+    "eventCounts": {
+      "add_to_cart": 1,
+      "add_shipping_info": 1,
+      "add_payment_info": 1,
+      "select_item": 1,
+      "view_item": 1,
+      "view_item_list": 2,
+      "begin_checkout": 1,
+      "remove_from_cart": 1
+    },
+    "localTimeWindow": "2026-11-05 00:11:52–00:13:14 +07:00",
+    "maximumAllowedAttempts": 20,
+    "retries": 0
+  },
+  "browser": {
+    "sessionActiveAtEnd": false,
+    "attempted": 9,
+    "httpAccepted": 9,
+    "unknown": 0,
+    "dropped": 0,
+    "consent": "granted",
+    "theme": "Zen",
+    "purchaseAttemptSuppressed": true,
+    "initialMockViewNotReplayed": true,
+    "screenshot": "/private/tmp/ga4-live-funnel-accepted.png"
+  },
+  "acceptance": {
+    "transportVerified": true,
+    "ownerDebugViewObserved": true,
+    "ingestionVerified": true,
+    "debugViewStatus": "OWNER_REPORTED_ALL_8_NAMES",
+    "standardReports": "NOT_VERIFIED",
+    "testsRun": [
+      "Demo node --check PASS",
+      "Real UI session: 9/9 Google HTTP204, 8 allowlisted event names",
+      "Evidence JSON/count assertions PASS",
+      "Owned live QA process stopped; no listeners on4400/4401",
+      "git diff --check PASS",
+      "Owner DebugView event-name set matches all eight expected names; evidence consistency PASS"
+    ],
+    "fullRegressionRerun": false,
+    "fullRegressionReason": "Only QA log name/timestamp metadata changed; collection/business code unchanged from P2-LIVE-03 tested baseline",
+    "debugViewVerification": {
+      "source": "owner text confirmation in chat",
+      "date": "2026-11-05",
+      "eventNames": [
+        "view_item_list",
+        "select_item",
+        "view_item",
+        "add_to_cart",
+        "remove_from_cart",
+        "begin_checkout",
+        "add_shipping_info",
+        "add_payment_info"
+      ],
+      "scope": "eight event names visible in DebugView, as reported by owner; not independently read by agent",
+      "screenshotProvided": false,
+      "eventCountsVerified": false,
+      "parametersVerified": false,
+      "parameterVerificationScope": "Partial: owner screenshot confirms add_to_cart currency=VND and value=100000 only, with engagement/session fields visible. Item-level fields and two-unit event not verified."
+    },
+    "parameterEvidence": {
+      "source": "owner-provided DebugView screenshot",
+      "screenshotTimeLocal": "2026-11-05T00:22:56+07:00",
+      "screenshot": "/var/folders/2x/n3m0z3bs2gb71pyb7l9gnm9r0000gn/T/TemporaryItems/NSIRD_screencaptureui_YxDT41/Ảnh màn hình 2026-11-05 lúc 00.22.56.png",
+      "event": "add_to_cart",
+      "eventTimeLocal": "2026-11-05T00:11:52+07:00",
+      "observed": {
+        "currency": "VND",
+        "value": 100000,
+        "engagement_time_msec": 1,
+        "ga_session_id": 1793812311
+      },
+      "expectedAddedQuantityFromTestAction": 1,
+      "expectedUnitPriceFromFixture": 100000,
+      "currencyAndValueMatch": true,
+      "itemsVisible": false,
+      "quantityVerifiedInGoogle": false,
+      "twoItemsSingleActionTest": "NOT_RUN"
+    }
+  },
+  "safety": {
+    "realGoogleReportingRequestsThisBatch": 9,
+    "googlePurchaseEvents": 0,
+    "googleRefundEvents": 0,
+    "realEnvChanged": false,
+    "defaultFeatureFlagsRemainOff": true,
+    "liveQaProcessStopped": true,
+    "hostedDatabaseWrites": 0,
+    "realOrders": 0,
+    "realPayments": 0,
+    "billingEnabled": false,
+    "dnsChanges": 0,
+    "commit": false,
+    "push": false
+  }
+}

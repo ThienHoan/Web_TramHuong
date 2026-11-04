@@ -1,0 +1,65 @@
+{
+  "batch": "P2-LIVE-03c",
+  "date": "2026-11-05",
+  "scope": "Investigate owner live session events not visible in DebugView",
+  "transport": {
+    "observedProcessRequests": 17,
+    "allObservedResponsesHttp204": true,
+    "observationThroughUtc": "2026-11-04T17:39:44.481Z",
+    "agentGeneratedNewReportingEvents": 0,
+    "processCap": 20,
+    "processRestartedDuringInvestigation": false
+  },
+  "browser": {
+    "propertyId": "562307226",
+    "source": "Agent read owner authenticated Brave DebugView via CUA",
+    "initialSelectedDevice": "Old session with nine events at00:11–00:13",
+    "deviceSelectorObservedCount": 3,
+    "deviceDisplayNames": [
+      "web",
+      "web",
+      "web"
+    ],
+    "firstOwnerSessionObserved": {
+      "events": {
+        "select_item": 1,
+        "view_item": 1,
+        "add_to_cart": 1,
+        "view_item_list": 1
+      },
+      "addToCartTimeLocal": "2026-11-05T00:27:58+07:00"
+    },
+    "secondOwnerSessionObserved": {
+      "events": {
+        "add_to_cart": 3,
+        "remove_from_cart": 1
+      },
+      "latestAddToCartTimesLocal": [
+        "2026-11-05T00:30:25+07:00",
+        "2026-11-05T00:30:26+07:00"
+      ]
+    },
+    "screenshot": "/private/tmp/ga4-debugview-current-device.png",
+    "parametersVerifiedDuringInvestigation": false,
+    "twoUnitValue200000InGoogleVerified": false,
+    "laterOwnerActions": "Further operator activity through00:39 logged HTTP204; those later events not independently inspected in Google in this investigation"
+  },
+  "finding": "Wrong DebugView device selection hid newer events; per-start ephemeral client identity appears as a separate device with the same web label. No send-path failure established.",
+  "remaining": "Two-unit single-action VND200000 and ingested item-level price/quantity still need verification. Owner controls were active during native inspection; avoid competing interactions.",
+  "safety": {
+    "businessCodeChanged": false,
+    "envChanged": false,
+    "databaseMigration": false,
+    "hostedWritesByAgent": 0,
+    "realTransactions": 0,
+    "billingEnabled": false,
+    "commit": false,
+    "push": false
+  },
+  "tests": [
+    "Read live logs: HTTP204 for17 observed requests",
+    "Read live lab counters4attempted/4accepted/0unknown/0dropped for observed session",
+    "Read three-device selector and match new event timestamps/counts in actual Google DebugView",
+    "Evidence JSON/name-count checks and git diff --check"
+  ]
+}

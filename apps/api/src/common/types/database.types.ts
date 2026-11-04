@@ -1,3 +1,5 @@
+import type { IntegrationTables, IntegrationFunctions } from '../../integrations/integration-database.types';
+
 export type Json =
   | string
   | number
@@ -8,7 +10,7 @@ export type Json =
 
 export type Database = {
   public: {
-    Tables: {
+    Tables: IntegrationTables & {
       shipping_records: {
         Row: {id:string;key:string;kind:string;state:string;owner_id:string|null;order_id:string|null;data:Json;version:number;created_at:string;updated_at:string};
         Insert: {key:string;kind:string;state:string;data:Json;owner_id?:string|null;order_id?:string|null};
@@ -542,7 +544,7 @@ export type Database = {
     Views: {
       [_ in never]: never;
     };
-    Functions: {
+    Functions: IntegrationFunctions & {
       shipping_attach_snapshot:{Args:{p_order_id:string;p_total:number;p_snapshot:Json};Returns:Json};
       shipping_complete_cod:{Args:{p_ship_key:string;p_ship_version:number;p_action_key:string;p_action_version:number;p_amount:number};Returns:Json};
       shipping_reserve_shipment:{Args:{p_order_id:string;p_key:string;p_data:Json};Returns:Json};

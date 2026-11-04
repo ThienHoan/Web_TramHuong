@@ -1,4 +1,6 @@
 "use client";
+import { useAnalyticsView, useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
+import { cartAnalyticsItems } from '@/lib/ga4/contract';
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -20,6 +22,8 @@ import {
 export default function TraditionalCheckout() {
   const ghnCheckout = useShippingAvailability();
   const { items, total, updateQuantity, removeItem } = useCart();
+  const analytics = useAnalyticsTracker();
+  useAnalyticsView('begin_checkout', { items: cartAnalyticsItems(items) });
   const { session, loading: authLoading } = useAuth();
   const router = useRouter();
   const [initialInfo, setInitialInfo] = useState<Partial<GuestSubmitData>>({});
@@ -148,6 +152,7 @@ export default function TraditionalCheckout() {
       else localStorage.removeItem("checkout_voucher_code");
       if (!session) localStorage.setItem("is_guest_checkout", "true");
       else localStorage.removeItem("is_guest_checkout");
+      analytics?.track('add_shipping_info', { shipping_tier: 'delivery', items: cartAnalyticsItems(items) });
       router.push("/checkout/payment_select");
     } catch {
       setError("Chưa lưu được thông tin. Vui lòng thử lại.");

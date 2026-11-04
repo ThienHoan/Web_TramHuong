@@ -1,0 +1,18 @@
+{
+  "batch": "P1-01",
+  "scope": "new integration config/module + existing orders/payment/voucher/users/GHN config mocked regression",
+  "jest": {
+    "numTotalTestSuites": 8,
+    "numPassedTestSuites": 8,
+    "numFailedTestSuites": 0,
+    "numTotalTests": 68,
+    "numPassedTests": 68,
+    "numFailedTests": 0,
+    "success": true
+  },
+  "api_build": "PASS",
+  "scoped_eslint": "PASS src/integrations",
+  "frontend_checks": "NOT_RUN: no frontend source changes",
+  "runtime_scope": "isolated modules with mocked services; no full app bootstrap or remote DB/provider calls",
+  "schema_security_probes": "NOT_RUN; source-only metadata review, no exploit execution"
+}

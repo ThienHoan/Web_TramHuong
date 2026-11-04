@@ -12,6 +12,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
 import { Product } from '@/types/product';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useAnalyticsView } from '@/components/analytics/AnalyticsProvider';
 
 export default function ZenProductDetail({ product, relatedProducts }: { product: Product; relatedProducts?: Product[] }) {
     const { addItem } = useCart();
@@ -25,6 +26,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
 
     // Calculate discount at component level (required for hooks rules)
     const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product);
+    useAnalyticsView('view_item', { items: [{ item_id: product.id, price: finalPrice, quantity: 1 }] });
 
     // Reviews state
     interface ReviewUser {

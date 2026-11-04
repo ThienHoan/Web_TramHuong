@@ -1,0 +1,68 @@
+{
+  "batch": "P2-LIVE-03d",
+  "date": "2026-11-05",
+  "rootCause": {
+    "previousLiveProcessMaximum": 20,
+    "previousLiveProcessObservedRequests": 20,
+    "lastSuccessfulEvent": "add_to_cart",
+    "lastSuccessfulResponseUtc": "2026-11-04T17:46:32.520Z",
+    "lastSuccessfulResponseLocal": "2026-11-05T00:46:32.520+07:00",
+    "scope": "process budget, shared across browser session starts",
+    "previousUiFailure": "guard exception mapped to unknown, browser stopped without reason"
+  },
+  "changes": [
+    "Typed trusted local pre-transport cap error maps to blocked/test_limit and dedupes reason",
+    "Frontend reason distinguishes cap/expiry/consent/auth/policy/quota/busy/rejection/network/unknown/manual",
+    "Known exhausted server cap blocks rearm on same page",
+    "RAM-only session ID displayed for DebugView ga_session_id comparison",
+    "Dedicated capped fake transport and loopback verifier, no automatic live budget reset"
+  ],
+  "tests": {
+    "apiSuites": 46,
+    "apiTests": 581,
+    "webLogicTests": 59,
+    "apiBuild": "PASS",
+    "apiScopedLint": "PASS",
+    "webTsc": "PASS",
+    "webScopedLint": "PASS",
+    "contactHttp": 18,
+    "purchaseHttp": 26,
+    "cappedFakeAccepted": 20,
+    "cappedFakeNext": "blocked/test_limit",
+    "cappedFakeDuplicate": "blocked/test_limit/duplicate=true",
+    "fixtureGoogleRequests": 0,
+    "browser": {
+      "consent": "granted",
+      "attempted": 1,
+      "accepted": 0,
+      "unknown": 0,
+      "blocked": 1,
+      "active": false,
+      "startButtonDisabled": true,
+      "sessionIdVisible": true,
+      "safeVietnameseLimitMessageVisible": true
+    },
+    "screenshot": "/private/tmp/ga4-session-limit-message.png",
+    "apiResults": "/tmp/tramhuong-ga4-stop-reasons-api-tests.json",
+    "webResults": "/tmp/tramhuong-ga4-stop-reasons-web-tests.txt"
+  },
+  "safety": {
+    "newActualGoogleRequestsByAgent": 0,
+    "oldExhaustedLiveProcessStopped": true,
+    "activeLab": "ga4-funnel-limit-fixture",
+    "defaultFlagsRemainOff": true,
+    "realEnvChanged": false,
+    "databaseMigration": false,
+    "hostedDatabaseWrites": 0,
+    "realTransactions": 0,
+    "billingEnabled": false,
+    "dnsChanges": 0,
+    "commit": false,
+    "push": false
+  },
+  "remaining": [
+    "Two-unit value200000 and item-level Google parameters still not accepted",
+    "Live test needs a separately started bounded run; do not auto-reset quota",
+    "Process-local budgets and ephemeral device IDs are QA-only, not production readiness"
+  ]
+}

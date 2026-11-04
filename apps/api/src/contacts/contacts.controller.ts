@@ -9,6 +9,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { ContactsService, CreateContactDto } from './contacts.service';
 import {
@@ -17,12 +18,14 @@ import {
   IsOptional,
   IsString,
   Length,
+  MaxLength,
 } from 'class-validator';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
+import { ContactProtectionService } from '../integrations/contact-protection.service';
 
 class CreateContactValidator implements CreateContactDto {
   @IsNotEmpty()
@@ -42,19 +45,43 @@ class CreateContactValidator implements CreateContactDto {
   @IsString()
   @Length(10, 2000)
   message: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  turnstileToken?: string;
 }
 
 @Controller('contacts')
 export class ContactsController {
-  constructor(private readonly contactsService: ContactsService) {}
+  constructor(
+    private readonly contactsService: ContactsService,
+    private readonly protection: ContactProtectionService,
+  ) {}
+
+  @Get('protection')
+  protectionStatus() {
+    return this.protection.status();
+  }
+
+  @Post('protection/challenge')
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
+  issueChallenge(@Headers('origin') origin?: string) {
+    return this.protection.issue(origin);
+  }
 
   @Post()
   // Rate Limit: 5 requests per 15 minutes (900000ms)
   // "default" refers to the default throttler set in AppModule, we override it here for this route
   @Throttle({ default: { limit: 5, ttl: 900000 } })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async create(@Body() body: CreateContactValidator) {
-    return this.contactsService.create(body);
+  async create(
+    @Body() body: CreateContactValidator,
+    @Headers('origin') origin?: string,
+  ) {
+    await this.protection.verify(body.turnstileToken, origin);
+    const { full_name, email, topic, message } = body;
+    return this.contactsService.create({ full_name, email, topic, message });
   }
 
   @Get()

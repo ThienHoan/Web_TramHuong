@@ -24,11 +24,13 @@ import { StorageModule } from './storage/storage.module';
 import { ChatModule } from './chat/chat.module';
 import { MerchantModule } from './merchant/merchant.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 @Module({
   imports: [
     AdminModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    IntegrationsModule,
     // Structured Logging with Pino
     LoggerModule.forRoot({
       pinoHttp: {
@@ -47,6 +49,7 @@ import { ShippingModule } from './shipping/shipping.module';
           'req.body.token',
           'req.body.refreshToken',
           'req.body.access_token',
+          'req.body.turnstileToken',
         ],
         // Auto-assign request ID if missing
         genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),

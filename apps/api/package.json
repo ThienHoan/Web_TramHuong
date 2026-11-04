@@ -19,7 +19,16 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:integrations": "jest --runInBand --runTestsByPath src/integrations/integration-executor.spec.ts src/integrations/integrations.config.spec.ts src/integrations/integration.repository.spec.ts src/integrations/mock-delivery.consumer.spec.ts src/integrations/turnstile.adapter.spec.ts src/integrations/contact-protection.service.spec.ts src/mail/mail.service.spec.ts src/supabase/supabase.service.spec.ts src/orders/orders.service.spec.ts src/orders/payment-persistence.spec.ts src/orders/shipping-checkout.spec.ts src/orders/order-validation.spec.ts src/vouchers/vouchers.service.spec.ts src/users/users.security.spec.ts src/shipping/ghn/ghn.config.spec.ts && node scripts/verify-integration-permissions.cjs && node scripts/verify-integration-delivery.cjs",
+    "demo:contact-protection": "node scripts/demo-contact-protection.cjs",
+    "test:contact-http": "node scripts/verify-contact-http.cjs",
+    "demo:analytics": "node scripts/demo-contact-protection.cjs --analytics",
+    "test:analytics": "jest --runInBand --runTestsByPath src/analytics/collection-policy.service.spec.ts src/analytics/purchase-capture.service.spec.ts && node scripts/verify-purchase-capture.cjs",
+    "test:purchase-http": "node scripts/verify-purchase-http.cjs",
+    "test:seo": "jest --runInBand --runTestsByPath src/analytics/search-console.service.spec.ts src/analytics/search-console.controller.spec.ts",
+    "test:pagespeed": "jest --runInBand --runTestsByPath src/analytics/pagespeed.service.spec.ts src/analytics/pagespeed.controller.spec.ts",
+    "test:google-diagnostics": "jest --runInBand --runTestsByPath src/analytics/google-diagnostics.service.spec.ts src/analytics/google-diagnostics.controller.spec.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

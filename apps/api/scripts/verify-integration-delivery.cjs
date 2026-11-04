@@ -1,0 +1,104 @@
+// Exact migration tests in PostgreSQL memory, no env/remote client or provider.
+const { PGlite } = require('@electric-sql/pglite');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
+const assert = require('node:assert/strict');
+const sql = readFileSync(join(__dirname, '../migrations/integration-delivery-foundation.sql'), 'utf8');
+const pause = readFileSync(join(__dirname, '../migrations/integration-delivery-foundation.pause.sql'), 'utf8');
+
+(async () => {
+  const db = new PGlite(); let checks = 0;
+  const equal = (actual, expected) => { assert.deepEqual(actual, expected); checks++; };
+  const denied = async (call, code) => { await assert.rejects(call, error => error.code === code); checks++; };
+  const insert = async (key, kind='read', env='mock', provider='resend') => {
+    const r=await db.query(`INSERT INTO integration_outbox(provider,environment,dedupe_key,event_type,operation_kind) VALUES($1,$2,$3,'fixture',$4) RETURNING *`, [provider,env,key,kind]);
+    return r.rows[0];
+  };
+  const claim = async (provider='resend', env='mock', limit=10) => (await db.query('SELECT * FROM integration_claim($1,$2,$3,5)',[provider,env,limit])).rows;
+  const finish = async (r,outcome) => (await db.query('SELECT * FROM integration_finish($1,$2,$3,$4)',[r.id,r.lease_token,r.version,outcome])).rows[0];
+  const usage = async (amount,limit,provider='resend',metric='requests',env='mock') => (await db.query('SELECT integration_reserve_usage($1,$2,$3,$4,$5) AS r',[provider,env,metric,amount,limit])).rows[0].r;
+  try {
+    await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS; GRANT USAGE ON SCHEMA public TO anon,authenticated,service_role;');
+    await db.exec(sql); checks++;
+    equal((await db.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public'")).rows[0].n,2);
+    equal((await db.query("SELECT has_table_privilege('anon','integration_outbox','SELECT') AS a,has_table_privilege('authenticated','integration_usage_daily','UPDATE') AS b,has_function_privilege('anon','integration_claim(text,text,integer,integer)','EXECUTE') AS c")).rows[0],{a:false,b:false,c:false});
+    await db.exec('SET ROLE authenticated');
+    await denied(()=>db.query('SELECT * FROM integration_outbox'),'42501');
+    await denied(()=>claim(),'42501');
+    await db.exec('RESET ROLE; SET ROLE service_role');
+    await denied(()=>claim('resend','production'),'42501');
+    await denied(()=>claim('resend','staging'),'42501');
+    await denied(()=>claim('ghn'),'22023');
+    await denied(()=>claim('resend','mock',0),'22023');
+    const original = await insert('unique');
+    await denied(()=>insert('unique'),'23505');
+    const other=await insert('unique','read','mock','pagespeed');
+    equal(original.id===other.id,false);
+    const [a,b]=await Promise.all([claim('resend'),claim('resend')]);
+    equal(a.length+b.length,1);
+    const leased=[...a,...b][0];
+    equal(leased.attempts,1); equal(leased.state,'WORKING');
+    await denied(()=>finish({...leased,version:leased.version-1},'ACCEPTED'),'PT409');
+    await denied(()=>finish({...leased,lease_token:'00000000-0000-4000-8000-000000000001'},'ACCEPTED'),'PT409');
+    const accepted=await finish(leased,'ACCEPTED');
+    equal(accepted.state,'ACCEPTED'); equal(accepted.lease_token,null);
+    await denied(()=>finish(leased,'ACCEPTED'),'PT409');
+    equal((await claim('resend')).length,0);
+    const m=await insert('mutation','mutation');
+    const mutation=(await claim())[0];
+    equal(mutation.id,m.id);
+    await denied(()=>finish(mutation,'RETRY'),'22023');
+    await denied(()=>finish(mutation,'DELIVERED'),'22023');
+    equal((await finish(mutation,'UNKNOWN')).state,'UNKNOWN');
+    equal((await claim()).length,0);
+
+    const stale=await insert('expired_mutation','mutation');
+    const staleLease=(await claim())[0];
+    await db.query("UPDATE integration_outbox SET lease_until=now()-interval '1 second' WHERE id=$1",[stale.id]);
+    equal((await claim()).length,0);
+    equal((await db.query('SELECT state FROM integration_outbox WHERE id=$1',[stale.id])).rows[0].state,'UNKNOWN');
+    await denied(()=>finish(staleLease,'ACCEPTED'),'PT409');
+
+    const read=await insert('expired_read');
+    const firstRead=(await claim())[0];
+    await db.query("UPDATE integration_outbox SET lease_until=now()-interval '1 second' WHERE id=$1",[read.id]);
+    const secondRead=(await claim())[0]; equal(secondRead.attempts,2);
+    equal(firstRead.lease_token===secondRead.lease_token,false);
+    await denied(()=>finish(firstRead,'ACCEPTED'),'PT409');
+    const retried=await finish(secondRead,'RETRY'); equal(retried.state,'QUEUED');
+    equal(Date.parse(retried.next_at)>Date.now(),true);
+    equal((await claim()).length,0);
+    await db.query('UPDATE integration_outbox SET attempts=7,next_at=now() WHERE id=$1',[read.id]);
+    const lastRead=(await claim())[0]; equal(lastRead.attempts,8);
+    equal((await finish(lastRead,'RETRY')).state,'DEAD');
+    equal((await claim()).length,0);
+
+    await db.exec('BEGIN');
+    await insert('rolled_back'); await db.exec('ROLLBACK');
+    equal((await db.query("SELECT count(*)::int AS n FROM integration_outbox WHERE dedupe_key='rolled_back'")).rows[0].n,0);
+    await denied(()=>usage(1,0),'PT429');
+    equal((await usage(12,20)).newlyCrossed,[60]);
+    equal((await usage(4,20)).newlyCrossed,[80]);
+    equal((await usage(3,20)).newlyCrossed,[95]);
+    equal((await usage(1,20)).newlyCrossed,[]);
+    await denied(()=>usage(1,20),'PT429');
+    await denied(()=>usage(1,21),'PT409');
+    equal((await usage(1,20,'pagespeed')).used,1);
+    equal((await usage(1,20,'resend','tokens')).used,1);
+    await denied(()=>usage(1,20,'resend','requests','production'),'42501');
+    await denied(()=>usage(0,20),'22023');
+    await denied(()=>usage(1,20,'ghn'),'23514');
+    const race=await Promise.allSettled([usage(1,1,'merchant'),usage(1,1,'merchant')]);
+    equal(race.filter(v=>v.status==='fulfilled').length,1);
+    equal((await db.query("SELECT used::int AS n FROM integration_usage_daily WHERE provider='merchant'")).rows[0].n,1);
+    const counts=await db.query('SELECT (SELECT count(*)::int FROM integration_outbox) AS outbox,(SELECT count(*)::int FROM integration_usage_daily) AS usage');
+    await db.exec('RESET ROLE');
+    await denied(()=>db.exec(sql),'42P07'); await db.exec('ROLLBACK');
+    equal((await db.query('SELECT (SELECT count(*)::int FROM integration_outbox) AS outbox,(SELECT count(*)::int FROM integration_usage_daily) AS usage')).rows,counts.rows);
+    await db.exec(pause); await db.exec('SET ROLE service_role');
+    await denied(()=>claim(),'42501');
+    await denied(()=>usage(1,20),'42501');
+    equal((await db.query('SELECT count(*)::int AS n FROM integration_outbox')).rows[0].n,counts.rows[0].outbox);
+    console.log(JSON.stringify({batch:'P1-02d',engine:'in-memory PostgreSQL',checks,remoteRequests:0,productionWrites:0,pause:'PASS',schema:'PASS'}));
+  } finally { await db.close(); }
+})().catch(error=>{console.error(error.message);process.exitCode=1;});

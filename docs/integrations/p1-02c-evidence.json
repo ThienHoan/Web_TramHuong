@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-03",
+  "batch": "P1-02c",
+  "jest": {
+    "numPassedTestSuites": 11,
+    "numFailedTestSuites": 0,
+    "numPassedTests": 92,
+    "numFailedTests": 0,
+    "success": true
+  },
+  "api_build": "PASS",
+  "scoped_lint": "PASS src/integrations after test-only unbound-method correction",
+  "frontend": "NOT_RUN: no frontend changes",
+  "outbound_requests": 0,
+  "remote_sql": 0,
+  "new_billing": false,
+  "scope": "mock executor only, not durable cost accounting"
+}

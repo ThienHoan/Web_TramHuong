@@ -4,6 +4,8 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { API_URL } from '@/services/base-http';
+import { useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
+import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
 export interface CartItem {
     key: string;        // Unique ID (Server ID or Composite for local)
@@ -33,6 +35,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+    const analytics = useAnalyticsTracker();
     const { user, session } = useAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [initialized, setInitialized] = useState(false);
@@ -184,10 +187,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 throw e;
             }
         }
+        analytics?.track('add_to_cart', { items: cartAnalyticsItems([{ ...newItem, quantity: qtyToAdd }]) });
     };
 
     const removeItem = async (key: string) => {
         const oldItems = [...items];
+        const removed = oldItems.find(item => item.key === key);
         setItems(prev => prev.filter(i => i.key !== key));
 
         if (user && session) {
@@ -205,12 +210,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             } catch (e) {
                 console.error('Failed to remove item', e);
                 setItems(oldItems);
+                return;
             }
         }
+        if (removed) analytics?.track('remove_from_cart', { items: cartAnalyticsItems([removed]) });
     };
 
     const updateQuantity = async (key: string, newQuantity: number) => {
         const oldItems = [...items];
+        const changed = oldItems.find(item => item.key === key);
 
         // Set to absolute quantity (not delta!)
         setItems(prev => prev.map(i => {
@@ -236,7 +244,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             } catch (e) {
                 console.error('Failed to update quantity', e);
                 setItems(oldItems);
+                return;
             }
+        }
+        if (changed) {
+            const delta = Math.max(1, newQuantity) - changed.quantity;
+            if (delta) analytics?.track(delta > 0 ? 'add_to_cart' : 'remove_from_cart', {
+                items: cartAnalyticsItems([{ ...changed, quantity: Math.abs(delta) }]),
+            });
         }
     };
 

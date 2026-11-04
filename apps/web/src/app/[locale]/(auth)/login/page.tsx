@@ -102,18 +102,8 @@ export default function LoginPage() {
                     router.push('/');
                 }
             } else if (mode === 'SIGNUP') {
-                // SIGNUP mode - check if email already exists first
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('email')
-                    .eq('email', email.trim())
-                    .single();
-
-                if (existingUser) {
-                    throw new Error('EMAIL_ALREADY_EXISTS');
-                }
-
-                // Email doesn't exist, proceed with OTP signup
+                // Auth owns signup and existing-account handling. Profiles are
+                // private; signup must not query other users by email.
                 const { error } = await supabase.auth.signInWithOtp({
                     email: email.trim(),
                     options: {

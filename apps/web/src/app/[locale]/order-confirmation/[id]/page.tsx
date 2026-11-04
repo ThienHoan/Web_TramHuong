@@ -8,6 +8,7 @@ import { Order } from '@/types/order';
 import ZenOrderSuccess from '@/components/zen/ZenOrderSuccess';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
 
 export default function OrderConfirmationPage() {
     const params = useParams();
@@ -80,5 +81,5 @@ export default function OrderConfirmationPage() {
         );
     }
 
-    return <ZenOrderSuccess order={order} />;
+    return <><PurchaseCapture orderId={id} /><ZenOrderSuccess order={order} /></>;
 }

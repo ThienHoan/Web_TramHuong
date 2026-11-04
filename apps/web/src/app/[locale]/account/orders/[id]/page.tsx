@@ -18,6 +18,7 @@ import AccountNavigation from '@/components/layout/AccountNavigation';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
 
 interface OrderItem {
     title?: string;
@@ -162,6 +163,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     return (
         <div className="min-h-screen bg-background-light font-display text-text-main antialiased selection:bg-primary selection:text-white flex flex-col transition-colors duration-300">
+            <PurchaseCapture orderId={resolvedParams?.id} />
             {/* Zalo Button Fixed - keeping from template */}
             <a className="fixed bottom-8 right-6 z-50 group" href="#">
                 <div className="relative flex items-center justify-center size-14 bg-gradient-to-br from-[#0068FF] to-[#0041a3] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 ring-4 ring-white/30">

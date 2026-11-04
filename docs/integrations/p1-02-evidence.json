@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-03",
+  "batches": [
+    "P1-02a permissions",
+    "P1-02b logging privacy"
+  ],
+  "test_db_owner_confirmed": true,
+  "remote_sql_applied": "OWNER_REPORTED_SUCCESS",
+  "remote_apply_blocker": null,
+  "permission_fixture": {
+    "engine": "in-memory PostgreSQL",
+    "checks": 42,
+    "apply": "PASS",
+    "rollback": "PASS",
+    "repeat_apply": "PASS",
+    "remoteRequests": 0,
+    "productionWrites": 0
+  },
+  "logistics_fixture": {
+    "engine": "in-memory PostgreSQL",
+    "checks": 28,
+    "productionWrites": 0
+  },
+  "jest": {
+    "numPassedTestSuites": 10,
+    "numFailedTestSuites": 0,
+    "numPassedTests": 71,
+    "numFailedTests": 0,
+    "success": true
+  },
+  "jest_command": "pnpm exec jest --runInBand --silent --runTestsByPath src/mail/mail.service.spec.ts src/supabase/supabase.service.spec.ts src/integrations/integrations.config.spec.ts src/orders/orders.service.spec.ts src/orders/payment-persistence.spec.ts src/orders/shipping-checkout.spec.ts src/orders/order-validation.spec.ts src/vouchers/vouchers.service.spec.ts src/users/users.security.spec.ts src/shipping/ghn/ghn.config.spec.ts --json --outputFile=/tmp/tramhuong-p1-02-tests.json",
+  "api_build": "PASS",
+  "api_scoped_lint": "PASS mail/supabase services and tests",
+  "web_typecheck": "PASS",
+  "web_scoped_lint": "PASS login page",
+  "browser_live_otp": "NOT_RUN: no real emails or accounts",
+  "security_audit_isolation": "dedicated bootstrap not available; migration fixtures use normal execution sandbox and env allowlist, no hosted exploit or full isolated-audit claim",
+  "new_costs": 0,
+  "git_commit_push": false,
+  "remote_acceptance": "post-apply metadata and live behavior not agent-verified"
+}

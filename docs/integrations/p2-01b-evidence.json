@@ -1,0 +1,52 @@
+{
+  "batch": "P2-01b",
+  "date": "2026-11-04",
+  "status": "IMPLEMENTED_MOCK_OWNER_ONLY",
+  "flags_default_off": [
+    "FEATURE_GA4_ENABLED",
+    "FEATURE_GA4_PURCHASE_ENABLED"
+  ],
+  "tests": {
+    "backend_suites": 37,
+    "backend_tests": 382,
+    "analytics_api_tests": 43,
+    "web_tests": 43,
+    "sql_checks": 73,
+    "rounding_cases": 40,
+    "http_purchase_checks": 26,
+    "concurrent_capture_requests": 6,
+    "recorded_per_order": 1,
+    "quota_delta": 1,
+    "contact_http_regression": 18,
+    "api_build": "PASS",
+    "api_scoped_lint": "PASS",
+    "web_typecheck": "PASS",
+    "web_scoped_lint": "PASS",
+    "persistence_reopen": "PASS",
+    "pause_preserves_rows": "PASS"
+  },
+  "database": "local synthetic PostgreSQL fixtures only",
+  "hosted_migration": "NOT_EXECUTED",
+  "new_tables": 0,
+  "new_rpc": 1,
+  "new_partial_unique_index": 1,
+  "financial_source_writes": 0,
+  "external_provider_requests": 0,
+  "external_database_writes": 0,
+  "billing_changes": 0,
+  "real_transactions": 0,
+  "browser": [
+    "pending not_eligible0",
+    "paid recorded1",
+    "repeat/reload duplicate1",
+    "withdraw disables capture"
+  ],
+  "blockers": [
+    "hosted foundation/capture install acceptance",
+    "guest scoped receipt capability",
+    "COD/manual paid/refund sources",
+    "Google live permissions/transport/attribution/privacy/DebugView"
+  ],
+  "next_batch": "P2-02 Search Console readonly mock",
+  "screenshot": "/private/tmp/ga4-purchase-dedupe.png"
+}

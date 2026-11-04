@@ -1,0 +1,53 @@
+{
+  "batch": "P2-01a",
+  "accepted_at_local_date": "2026-11-04",
+  "scope": "GA4 nonfinancial funnel mock + consent",
+  "mode": "MOCK_PARTIAL_DEFAULT_OFF",
+  "tests": {
+    "backend_full_prior_final_header": {
+      "suites": 36,
+      "tests": 352,
+      "status": "PASS",
+      "date": "2026-11-03"
+    },
+    "backend_policy_http_final": {
+      "tests": 13,
+      "status": "PASS"
+    },
+    "frontend_logic_final": {
+      "tests": 35,
+      "status": "PASS"
+    },
+    "contact_http_regression": {
+      "assertions": 18,
+      "status": "PASS"
+    },
+    "api_build": "PASS",
+    "api_scoped_lint": "PASS",
+    "web_typecheck": "PASS",
+    "web_scoped_lint": "PASS",
+    "browser": [
+      "VI/EN cart and PDP",
+      "consent unknown/denied/granted/revoked",
+      "cross-tab revocation",
+      "VND in Zen",
+      "fake purchase rejected",
+      "feature off",
+      "Zen checkout to payment choice with synthetic local address",
+      "375x844 and 1440x1000 no overflow"
+    ]
+  },
+  "migrations": [],
+  "remote_provider_requests": 0,
+  "database_writes": 0,
+  "real_transactions": 0,
+  "billing_changes": 0,
+  "production_build": "NOT_RUN_REAL_ENV_AVOIDED",
+  "purchase": "NOT_IMPLEMENTED_REJECTED",
+  "credentials": "NEEDS_ACCOUNT",
+  "next_batch": "P2-01b paid receipt + durable dedupe",
+  "screenshots": [
+    "/private/tmp/ga4-consent-mobile.png",
+    "/private/tmp/ga4-mock-desktop.png"
+  ]
+}

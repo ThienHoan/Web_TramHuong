@@ -1,0 +1,12 @@
+{
+  "batch": "P2-03a",
+  "date": "2026-11-04",
+  "scope": "PageSpeed mock in existing AnalyticsModule/admin dashboard",
+  "api": { "scopedTestsPassed": 54, "fullSuitesPassed": 41, "fullTestsPassed": 470, "build": "PASS", "scopedLint": "PASS", "resultFile": "/tmp/tramhuong-pagespeed-final-tests.json" },
+  "web": { "contractFetchTestsPassed": 10, "tsc": "PASS", "scopedLint": "PASS", "productionBuild": "SKIP: existing env/prerender paths", "disposableNextRoutes": ["vi/integration-lab/analytics", "en/integration-lab/analytics"] },
+  "browser": { "mobileWidth": 375, "documentWidth": 375, "longPdpSelector": "PASS", "languages": ["vi", "en"], "cachePreservesHistoryCount": 1, "nextFixtureDayHistoryCount": 2, "regressionWarnings": 4, "desktopIndependentHistoryCount": 1, "fieldMetrics": null, "screenshot": "/private/tmp/pagespeed-mock.png", "viewportRestored": true },
+  "demoRegression": { "contactHttpAssertions": 18, "purchaseHttpChecks": 26, "parallelPurchaseCaptures": 6, "purchaseRows": 1, "quotaDelta": 1 },
+  "release": { "defaultFlag": false, "schedulerEnabled": false, "cacheHours": 24, "targetCount": 6, "strategies": ["mobile", "desktop"], "maxHistoryPerPair": 30, "persistence": "process_memory", "liveTransport": false, "migrationAdded": false, "phase2Complete": false, "blockers": ["approved live origin and representative URLs", "API key/project quota and rights unconfirmed", "actual PSI field schema and units pending", "durable history and distributed lock/quota pending", "live transport/staging latency acceptance", "scheduler activation and retention"] },
+  "external": { "providerCalls": 0, "hostedDatabaseWrites": 0, "billingEnabled": false, "dnsChanges": 0, "realTransactions": 0 },
+  "git": { "commit": false, "push": false }
+}

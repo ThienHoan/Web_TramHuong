@@ -1,4 +1,6 @@
 "use client";
+import { useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
+import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -26,6 +28,7 @@ export default function PaymentSelectPage() {
     { enabled: false, ready: false, quote: null },
   );
   const { items, total, clearCart } = useCart();
+  const analytics = useAnalyticsTracker();
   const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -123,6 +126,7 @@ export default function PaymentSelectPage() {
       setError("Vui lòng tính lại phí vận chuyển trước khi đặt hàng.");
       return;
     }
+    analytics?.track('add_payment_info', { payment_type: paymentMethod, items: cartAnalyticsItems(items) });
     setLoading(true);
     try {
       if (session?.access_token) {

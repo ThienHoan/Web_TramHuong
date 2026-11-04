@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
@@ -16,6 +16,8 @@ interface IOrderForMail {
 
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   constructor(
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
@@ -24,12 +26,9 @@ export class MailService {
   private async sendSafe(options: ISendMailOptions) {
     try {
       await this.mailerService.sendMail(options);
-    } catch (error) {
-      const to =
-        typeof options.to === 'string'
-          ? options.to
-          : JSON.stringify(options.to);
-      console.error(`Failed to send email to ${to}:`, error);
+    } catch {
+      // SMTP errors can contain recipients, message bodies and credentials.
+      this.logger.error('MAIL_DELIVERY_FAILED');
       // Non-blocking: Do not re-throw error to prevent stopping the order flow
     }
   }

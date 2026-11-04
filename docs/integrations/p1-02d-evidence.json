@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-03",
+  "batch": "P1-02d",
+  "migration": "apps/api/migrations/integration-delivery-foundation.sql",
+  "pause": "apps/api/migrations/integration-delivery-foundation.pause.sql",
+  "hosted_apply": "NOT_EXECUTED",
+  "engine": "PGlite PostgreSQL in-memory",
+  "sql_checks": 57,
+  "result": "PASS",
+  "remoteRequests": 0,
+  "productionWrites": 0,
+  "new_tables": [
+    "integration_outbox",
+    "integration_usage_daily"
+  ],
+  "existing_shipping_tables_modified": false,
+  "worker_enabled": false,
+  "live_access": "BLOCKED in RPCs and registry",
+  "limits": "queued Promise.all tests in one engine, not multi-connection load certification",
+  "test_helper_correction": "use FROM composite function once to avoid repeated volatile finalization",
+  "rollback": "RPC execution revoked, tables/rows retained"
+}

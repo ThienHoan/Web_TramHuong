@@ -1,4 +1,5 @@
 'use client';
+import { useAnalyticsView } from '@/components/analytics/AnalyticsProvider';
 
 import { useState, useEffect } from 'react';
 import { useCart } from '../providers/CartProvider';
@@ -40,6 +41,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const { finalPrice, isActive: isDiscountActive, originalPrice } = useProductDiscount(product, selectedVariant ? Number(selectedVariant.price) : undefined);
+    useAnalyticsView('view_item', { items: [{ item_id: product.id, price: finalPrice, quantity: 1, ...(selectedVariant?.id ? { item_variant: selectedVariant.id } : {}) }] });
     const [isAdding, setIsAdding] = useState(false);
 
     // Initialize variant

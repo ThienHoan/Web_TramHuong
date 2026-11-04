@@ -7,6 +7,7 @@ export interface ContactData {
     email: string;
     topic?: string;
     message: string;
+    turnstileToken?: string;
 }
 
 // Contact interface moved to @/types/contact

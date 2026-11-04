@@ -1,0 +1,57 @@
+{
+  "batch": "P2-LIVE-02",
+  "date": "2026-11-04",
+  "measurementId": "G-XJNSBPN8HN",
+  "tests": {
+    "apiSuites": 45,
+    "apiTests": 534,
+    "webLogicTests": 46,
+    "build": "PASS",
+    "apiLint": "PASS",
+    "webTsc": "PASS",
+    "webLint": "PASS",
+    "contactHttp": 18,
+    "purchaseHttp": 26
+  },
+  "browser": {
+    "fixtureConsentDenyBlocks": true,
+    "fixtureConsentGrantAllows": true,
+    "realReportingRequests": 1,
+    "httpStatus": 204,
+    "event": "local_test_action",
+    "debugMode": true,
+    "ownerDebugViewObserved": true,
+    "ingestionVerified": true,
+    "ingestionVerificationScope": "one local_test_action observed in owner-provided DebugView screenshot; general ecommerce and standard reports not verified",
+    "ownerDebugViewEvidence": {
+      "source": "user-provided screenshot",
+      "propertyId": "562307226",
+      "propertyName": "Web_TramHuong - Test",
+      "event": "local_test_action",
+      "eventCountLast30Minutes": 1,
+      "eventTimeLocal": "2026-11-04T23:38:59+07:00",
+      "screenshotTimeLocal": "2026-11-04T23:46:32+07:00",
+      "screenshot": "/var/folders/2x/n3m0z3bs2gb71pyb7l9gnm9r0000gn/T/TemporaryItems/NSIRD_screencaptureui_ArMS65/Ảnh màn hình 2026-11-04 lúc 23.46.32.png"
+    },
+    "screenshot": "/private/tmp/ga4-local-reporting-test.png"
+  },
+  "safety": {
+    "purchaseSent": false,
+    "defaultFeatureFlag": false,
+    "productionEnabled": false,
+    "envChanged": false,
+    "databaseMigration": false,
+    "hostedDatabaseWrites": 0,
+    "billingEnabled": false,
+    "dnsChanges": 0,
+    "realTransactions": 0,
+    "commit": false,
+    "push": false
+  },
+  "limitations": [
+    "manual custom event only",
+    "general ecommerce remains mock",
+    "process-only quota and dedupe",
+    "DebugView verified for one manual test event only; standard reports, automatic ecommerce and production collection remain unverified"
+  ]
+}

@@ -1,4 +1,6 @@
 "use client";
+import { useAnalyticsView, useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
+import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
 import { useState, useEffect } from "react";
 import { useCart } from "@/components/providers/CartProvider";
@@ -43,6 +45,8 @@ export default function ZenCheckout() {
     { enabled: false, ready: false, quote: null },
   );
   const { items, updateQuantity, removeItem, total, clearCart } = useCart();
+  const analytics = useAnalyticsTracker();
+  useAnalyticsView('begin_checkout', { items: cartAnalyticsItems(items) });
   const { user } = useAuth();
   const router = useRouter();
 
@@ -190,6 +194,7 @@ export default function ZenCheckout() {
       return;
     }
     setCheckoutError("");
+    analytics?.track('add_shipping_info', { shipping_tier: 'delivery', items: cartAnalyticsItems(items) });
     setStep("payment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -205,6 +210,7 @@ export default function ZenCheckout() {
       return;
     }
     setCheckoutError("");
+    analytics?.track('add_payment_info', { payment_type: paymentMethod, items: cartAnalyticsItems(items) });
     setIsSubmitting(true);
 
     try {

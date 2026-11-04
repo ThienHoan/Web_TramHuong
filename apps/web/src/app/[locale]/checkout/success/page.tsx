@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
 
 export default function CheckoutSuccessPage() {
     const searchParams = useSearchParams();
@@ -79,6 +80,7 @@ export default function CheckoutSuccessPage() {
             backgroundImage: 'radial-gradient(var(--color-trad-border-warm) 1px, transparent 1px)',
             backgroundSize: '24px 24px'
         }}>
+            <PurchaseCapture orderId={orderId} />
             <TraditionalHeader />
 
             <main className="flex-grow flex flex-col items-center justify-center py-10 px-4 md:px-6">

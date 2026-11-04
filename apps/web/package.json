@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:analytics": "node scripts/test-analytics.cjs",
+    "test:seo": "node scripts/test-search-console.cjs",
+    "test:pagespeed": "node scripts/test-pagespeed.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

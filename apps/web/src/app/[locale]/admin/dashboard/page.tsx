@@ -21,6 +21,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/routing";
 import { adminFetch, ListResult } from "@/components/admin/use-admin-list";
 import { StatusBadge } from "@/components/admin/AdminStatusBadge";
+import { SearchConsolePanel } from "@/components/admin/SearchConsolePanel";
+import { PagespeedPanel } from "@/components/admin/PagespeedPanel";
+import { LocalGa4TestPanel } from "@/components/analytics/LocalGa4TestPanel";
 
 const DashboardCharts = dynamic(
   () => import("@/components/admin/DashboardCharts"),
@@ -311,6 +314,9 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      <SearchConsolePanel token={token} />
+      <PagespeedPanel token={token} />
+      <LocalGa4TestPanel token={token} />
       <p className="admin-list-footnote">
         {t(
           "Số liệu bán hàng theo kỳ được chọn. Hàng chờ xử lý phản ánh toàn bộ cửa hàng.",
