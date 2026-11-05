@@ -30,7 +30,7 @@ export class SearchConsoleController {
   @Get('summary')
   @Header('Cache-Control', 'no-store')
   summary() {
-    return this.search.summary();
+    return this.search.report();
   }
 
   @Post('sync')

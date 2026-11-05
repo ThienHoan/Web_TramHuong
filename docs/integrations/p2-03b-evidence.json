@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-05",
+  "batch": "P2-03b",
+  "scope": "local_mock_test_only",
+  "sql": {
+    "result": "PASS",
+    "checks": 58,
+    "exactSql": true,
+    "engine": "PGlite_in_memory_single_connection",
+    "realTsServiceRepository": true,
+    "origin": "https://mock.example.invalid",
+    "source": "mock",
+    "restartReadsWithoutProvider": true,
+    "dbClockCache24hNoBudgetNoRow": true,
+    "perPairLease409OtherPairsProceed": true,
+    "expiredLeaseNewGenerationStaleOwnerRejected": true,
+    "crossPairWriteRefused": true,
+    "invalidAndNonIncrementalSamplesRolledBack": true,
+    "historyCap30PerPair": true,
+    "durableBudgetHard100": true,
+    "browserRolesDenied": true,
+    "repeatInstallRefused": true,
+    "pauseRevokesRpcPreservesRows": true,
+    "mutationTests": {
+      "removedCrossPairCheckDetected": true,
+      "removedRevokeDetected": true,
+      "migrationRestoredSameSha1": true
+    },
+    "psiCalls": 0,
+    "hostedWrites": 0
+  },
+  "searchConsoleRegressionAfterSharedHelperRefactor": {
+    "sqlChecks": 50,
+    "jestTests": 70,
+    "result": "PASS"
+  },
+  "api": {
+    "suites": 64,
+    "passed": 924,
+    "failed": 0,
+    "newCases": 33,
+    "build": "PASS",
+    "scopedLint": "PASS"
+  },
+  "web": {
+    "pagespeedSchemaFetch": 11,
+    "searchConsoleSchemaFetch": 8,
+    "tsc": "PASS",
+    "scopedLint": "PASS",
+    "browser": "NOT_RERUN_copy_only_change"
+  },
+  "defaults": {
+    "FEATURE_PAGESPEED_PERSISTENCE_ENABLED": false
+  },
+  "hostedSql": "NOT_EXECUTED",
+  "realEnvChanged": false,
+  "liveProviderCalls": 0,
+  "commitPush": false,
+  "remaining": [
+    "hosted_test_db_install_and_metadata_check",
+    "approved_public_urls_api_key_project_quota",
+    "real_psi_field_contract",
+    "scheduler_and_lease_renewal",
+    "merchant_outbound_fencing",
+    "integrated_live_acceptance"
+  ]
+}

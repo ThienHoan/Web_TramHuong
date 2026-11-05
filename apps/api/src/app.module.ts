@@ -25,12 +25,14 @@ import { ChatModule } from './chat/chat.module';
 import { MerchantModule } from './merchant/merchant.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { AutomationModule } from './automation/automation.module';
 
 @Module({
   imports: [
     AdminModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     IntegrationsModule,
+    AutomationModule,
     // Structured Logging with Pino
     LoggerModule.forRoot({
       pinoHttp: {

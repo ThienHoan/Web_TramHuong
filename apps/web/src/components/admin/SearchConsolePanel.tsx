@@ -122,10 +122,15 @@ export function SearchConsolePanel({ token }: { token: string }) {
         {data?.mode === "mock" && (
           <>
             <p>
-              {t(
-                "Chưa xác nhận property/OAuth. Dữ liệu chỉ lưu trong RAM, sẽ mất khi khởi động lại server.",
-                "Verified property/OAuth is pending. Data is in RAM and clears on server restart.",
-              )}
+              {data.persistence === "database"
+                ? t(
+                    "Chưa xác nhận property/OAuth. Dữ liệu mẫu được lưu trong DB thử nghiệm, giữ lại sau khi khởi động lại server.",
+                    "Verified property/OAuth is pending. Sample data is stored in the test DB and survives server restarts.",
+                  )
+                : t(
+                    "Chưa xác nhận property/OAuth. Dữ liệu chỉ lưu trong RAM, sẽ mất khi khởi động lại server.",
+                    "Verified property/OAuth is pending. Data is in RAM and clears on server restart.",
+                  )}
             </p>
             <p role="status">
               {t("Cập nhật thành công: ", "Last successful sync: ")}

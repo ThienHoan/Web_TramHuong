@@ -1,0 +1,326 @@
+{
+  "batches": [
+    "P5-02a",
+    "P5-02b",
+    "P5-01b"
+  ],
+  "checkedAt": "2026-11-05T12:02:00.020844+07:00",
+  "scope": "source_local_postgres_and_browser_fixtures",
+  "hostedFtsApplied": false,
+  "liveGeminiEnabled": false,
+  "productionReady": false,
+  "designAndAcceptance": "19-catalog-fts.md",
+  "verification": {
+    "fullApi": {
+      "suites": 55,
+      "passedTests": 757,
+      "failedTests": 0
+    },
+    "catalogSearchAlias": {
+      "suites": 5,
+      "passedTests": 106,
+      "postgresChecks": 58
+    },
+    "connectionsAlias": {
+      "suites": 10,
+      "passedTests": 178
+    },
+    "web": {
+      "chatContractTests": 4,
+      "healthContractTests": 7,
+      "oauthTests": 19,
+      "analyticsTests": 59
+    },
+    "apiBuild": "PASS",
+    "apiScopedLint": "PASS",
+    "webTypecheck": "PASS",
+    "webScopedLint": "PASS",
+    "scriptSyntax": "PASS",
+    "gitDiffCheck": "PASS",
+    "sql": {
+      "batch": "P5-02a",
+      "engine": "in-memory PostgreSQL",
+      "checks": 58,
+      "benchmark": [
+        {
+          "name": "accent_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            1.681,
+            1.075,
+            0.996
+          ]
+        },
+        {
+          "name": "unaccent_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.966,
+            0.537,
+            0.523
+          ]
+        },
+        {
+          "name": "nfd_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.549,
+            0.532,
+            0.538
+          ]
+        },
+        {
+          "name": "natural_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000200",
+            "00000000-0000-4000-8000-000000000210"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.537,
+            0.54,
+            0.538
+          ]
+        },
+        {
+          "name": "incense_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000201"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000201"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.402,
+            0.397,
+            0.549
+          ]
+        },
+        {
+          "name": "cone_vi",
+          "locale": "vi",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000202"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000202"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.432,
+            0.416,
+            0.397
+          ]
+        },
+        {
+          "name": "bracelet_en",
+          "locale": "en",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000203"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000203"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.409,
+            0.459,
+            1.183
+          ]
+        },
+        {
+          "name": "incense_en",
+          "locale": "en",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000204"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000204"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.382,
+            0.371,
+            0.359
+          ]
+        },
+        {
+          "name": "gift_en",
+          "locale": "en",
+          "expectedIds": [
+            "00000000-0000-4000-8000-000000000205"
+          ],
+          "returnedIds": [
+            "00000000-0000-4000-8000-000000000205"
+          ],
+          "top5Recall": 1,
+          "durationMs": [
+            0.374,
+            0.375,
+            0.431
+          ]
+        },
+        {
+          "name": "absent",
+          "locale": "vi",
+          "expectedIds": [],
+          "returnedIds": [],
+          "top5Recall": null,
+          "durationMs": [
+            0.277,
+            0.84,
+            1.905
+          ]
+        },
+        {
+          "name": "literal_operators",
+          "locale": "vi",
+          "expectedIds": [],
+          "returnedIds": [],
+          "top5Recall": null,
+          "durationMs": [
+            0.49,
+            0.402,
+            0.351
+          ]
+        },
+        {
+          "name": "no_stemming_claim",
+          "locale": "en",
+          "expectedIds": [],
+          "returnedIds": [],
+          "top5Recall": null,
+          "durationMs": [
+            0.299,
+            0.532,
+            0.355
+          ]
+        }
+      ],
+      "allExpectedResults": true,
+      "indexEligible": true,
+      "indexPlan": "Bitmap Heap Scan on product_translations  (cost=25.73..30.00 rows=1 width=4)\n  Recheck Cond: ((catalog_search_vector(title, description) @@ '''vong'' & ''tay'''::tsquery) AND (locale = ANY ('{vi,en}'::text[])))\n  ->  Bitmap Index Scan on catalog_translation_fts_v1  (cost=0.00..25.73 rows=1 width=0)\n        Index Cond: (catalog_search_vector(title, description) @@ '''vong'' & ''tay'''::tsquery)",
+      "latencyScope": "synthetic_single_engine_not_hosted_load",
+      "remoteRequests": 0,
+      "hostedWrites": 0,
+      "schema": "PASS",
+      "pause": "PASS"
+    },
+    "exactSqlToTypeScriptRepositoryAdvisor": "PASS",
+    "metadataStates": [
+      "before_3CHUA_CAI",
+      "installed_3PASS",
+      "paused_RPCFAIL_INDEXPASS_INVOKERPASS"
+    ],
+    "benchmarkSummary": {
+      "queries": 12,
+      "nonemptyTop5Recall": 1,
+      "emptyCaseCount": 3,
+      "timingSamples": 36,
+      "medianMs": 0.475,
+      "maxMs": 1.905,
+      "scope": "synthetic_single_engine_not_hosted_load"
+    },
+    "browser": {
+      "result": "PASS",
+      "results": [
+        {
+          "locale": "vi",
+          "streamRequests": 1,
+          "source": "fixture_catalog",
+          "renderedRecommendation": true
+        },
+        {
+          "locale": "en",
+          "streamRequests": 1,
+          "source": "fixture_catalog",
+          "renderedRecommendation": true
+        }
+      ],
+      "chatRequests": 2,
+      "externalRequests": [],
+      "javascriptErrors": [],
+      "hostedWrites": 0,
+      "realModelCalls": 0
+    },
+    "viewports": [
+      375,
+      1440
+    ],
+    "screenshotsViewed": true
+  },
+  "behavior": {
+    "ftsDefault": "off",
+    "ftsAllowedRuntime": "development_or_test_and_mock_environment_and_kill_false",
+    "rpcOnlyRole": "service_role",
+    "noFtsOrFailure": "bounded_keyword_explicit_fallback",
+    "validEmptyFts": "no_match_no_fabricated_fallback",
+    "existingChat": "grounded_catalog_json_and_sse",
+    "legacyGeminiSdkCallPath": "removed",
+    "conversationHistoryUsedForModel": false,
+    "maximumBudget": "structured_filter",
+    "newProviderOrModelDependency": false
+  },
+  "sideEffects": {
+    "remoteSqlApplications": 0,
+    "realEnvEdits": 0,
+    "newTables": 0,
+    "sourceRowBackfills": 0,
+    "newFunctions": 3,
+    "newIndexes": 1,
+    "productionWrites": 0,
+    "realModelRequests": 0,
+    "emails": 0,
+    "shipments": 0,
+    "payments": 0,
+    "billingDnsChanges": 0,
+    "commitsPushes": 0
+  },
+  "remaining": [
+    "test_database_install_metadata_acceptance",
+    "owner_catalog_relevance_and_hosted_query_plans_latency",
+    "live_model_transport_token_budget_data_policy",
+    "notification_transactional_source_events_and_durable_delivery",
+    "other_provider_access_and_live_acceptance"
+  ],
+  "lab": {
+    "url": "http://localhost:4400/vi/integration-lab/analytics",
+    "leftRunning": true,
+    "source": "synthetic_catalog",
+    "ftsEnabled": false
+  }
+}

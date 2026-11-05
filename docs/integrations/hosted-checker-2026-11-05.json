@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-05",
+  "source": "owner_ran_verify-installed-all.sql_in_test_db_sql_editor_and_pasted_result",
+  "agentHostedAccess": false,
+  "result": {
+    "1_foundation": {
+      "PASS": [
+        "users_anon_cannot_read_columns",
+        "users_authenticated_can_select_rows_subject_to_RLS",
+        "users_authenticated_cannot_update_role",
+        "users_authenticated_cannot_update_banned",
+        "posts_authenticated_cannot_write_directly",
+        "orders_authenticated_cannot_write_directly",
+        "contacts_anon_cannot_insert_directly",
+        "backend_profile_and_order_writes_preserved",
+        "profile_public_true_select_policy_removed"
+      ],
+      "CHUA_CAI": [
+        "outbox_private_and_rls_enabled",
+        "usage_private_and_rls_enabled",
+        "claim_rpc_service_only",
+        "finish_rpc_service_only",
+        "quota_rpc_service_only"
+      ]
+    },
+    "2_to_10": "all CHUA_CAI",
+    "FAIL": 0
+  },
+  "interpretation": {
+    "integrationPermissionsMigration": "METADATA_VERIFIED (9/9 PASS); supersedes OWNER_REPORTED_SUCCESS of 03/11",
+    "integrationPackages": "none installed yet",
+    "schemaCompatibilityOfCoreBundle": "columns used (id,status,payment_status,payment_method,total,transaction_code,voucher_discount_amount,items,shipping_info) present per 04-schema-review; status labels match deployed admin-order-integrity trigger"
+  },
+  "next": "first live provider track (Turnstile test keys recommended) or optional dashboard UI check with real backend",
+  "secondRunAfterCoreBundle": {
+    "source": "owner_ran_test-db-core-bundle.sql_then_verify-installed-all.sql",
+    "PASS_components": [
+      "1_foundation (14/14)",
+      "2_purchase (3/3)",
+      "3_notifications_merchant_queue (5/5)",
+      "6_merchant_fence (6/6)",
+      "8_search_console_store (6/6)",
+      "9_pagespeed_store (6/6)",
+      "10_ops_metrics (1/1)"
+    ],
+    "CHUA_CAI_components_by_design": [
+      "4_notification_source",
+      "5_shipment_notifications",
+      "7_catalog_fts"
+    ],
+    "FAIL": 0,
+    "meaning": "metadata/grants verified on hosted TEST DB; functional hosted smoke not yet run"
+  },
+  "hostedReadOnlySmoke": {
+    "script": "apps/api/scripts/hosted-readonly-smoke.cjs (agent-run, read-only)",
+    "offlineTest": "verify-hosted-readonly-smoke.cjs PASS 10 checks (fake loopback PostgREST, sentinel no-leak, FAIL on anon-readable/malformed)",
+    "result": "PASS",
+    "checks": 7,
+    "requests": 7,
+    "writes": 0,
+    "backendReads": {
+      "integration_ops_metrics_mock": "parsed: 10 providers, window 7, no outbox rows, no usage today, GSC/PSI/fence stores installed",
+      "seo_search_read_mock": "parsed: never synced",
+      "seo_pagespeed_read_mock": "parsed: 0 pairs",
+      "integration_merchant_fence_ready_mock": "true"
+    },
+    "anonDenied": {
+      "integration_ops_metrics_mock": "42501",
+      "seo_search_read_mock": "42501",
+      "table integration_outbox": "42501"
+    },
+    "printed": "names/codes/counts only; project URL and keys hidden"
+  },
+  "hostedWriteSmoke": {
+    "approval": "owner chat 05/11/2026: \"Cho phép ghi thử\" (scope: one GSC mock sync + one PSI mock audit on TEST DB)",
+    "script": "apps/api/scripts/hosted-write-smoke.cjs --allow-test-db-writes (allowlisted RPCs, max 40 requests)",
+    "offlineTest": "verify-hosted-write-smoke.cjs PASS 10 checks (gating 0 requests, allowlist, no leak, 15 quota reservations)",
+    "result": "PASS",
+    "requests": 22,
+    "googleCalls": 0,
+    "rpcCounts": {
+      "seo_search_begin_mock": 1,
+      "integration_reserve_usage": 15,
+      "seo_search_complete_mock": 1,
+      "seo_pagespeed_begin_mock": 1,
+      "seo_pagespeed_record_mock": 1,
+      "seo_search_read_mock": 1,
+      "seo_pagespeed_read_mock": 1,
+      "integration_ops_metrics_mock": 1
+    },
+    "written": {
+      "search_console": "synthetic property sc-domain:mock.example.invalid, 14-day window, 48 rows (2 days intentionally empty)",
+      "pagespeed": "1 sample home_vi/mobile on https://mock.example.invalid, field data unavailable",
+      "usage": "search_console 14, pagespeed 1 (requests, today UTC)"
+    },
+    "untouched": "orders, products, users, outbox, notifications, merchant",
+    "readback": "fresh instances: GSC fresh 14 days, PSI history 1; ops metrics test_db_mock shows GSC 14/100, PSI 1/100 with last success",
+    "readOnlyRecheck": "PASS 7/7 after writes; anon still 42501",
+    "notVerified": "admin dashboard UI against the hosted DB (needs real backend + admin login); API data path is the same IntegrationHealthService.report()"
+  }
+}

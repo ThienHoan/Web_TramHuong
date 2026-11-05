@@ -4,6 +4,8 @@ import { Link } from "@/i18n/routing";
 import { ArrowUpRight, Phone, Mail } from "lucide-react";
 import { BrandLockup, BRAND } from "@/components/brand/BrandIdentity";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
+
 export default function TraditionalFooter() {
   return (
     <footer className="atelier-footer mt-auto">
@@ -75,6 +77,7 @@ export default function TraditionalFooter() {
             </ul>
           </div>
         </div>
+        <LegalLinks />
         <div className="brand-footer-signature" aria-hidden="true">
           <span>Thiên Phúc.</span>
           <span>

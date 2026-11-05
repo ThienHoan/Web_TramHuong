@@ -78,7 +78,8 @@ export const pagespeedSchema = z
   .object({
     source: z.literal("mock"),
     mode: z.enum(["disabled", "mock", "blocked"]),
-    persistence: z.literal("process_memory"),
+    // database = opt-in TEST DB mock history; still synthetic, never live PSI.
+    persistence: z.enum(["process_memory", "database"]),
     schedulerEnabled: z.literal(false),
     cacheHours: z.literal(24),
     historyPerPair: z.literal(30),

@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-05",
+  "batch": "P2-02b",
+  "scope": "local_mock_test_only",
+  "sql": {
+    "result": "PASS",
+    "checks": 50,
+    "exactSql": true,
+    "engine": "PGlite_in_memory_single_connection",
+    "realTsServiceRepository": true,
+    "property": "sc-domain:mock.example.invalid",
+    "source": "mock",
+    "restartReadsWithoutProvider": true,
+    "repeatSyncReplacesNotAccumulates": true,
+    "leaseConflict409": true,
+    "expiredLeaseNewGenerationStaleOwnerRejected": true,
+    "invalidPublicationRollsBackDelete": true,
+    "durableBudgetPerAttemptHard100": true,
+    "browserRolesDenied": true,
+    "repeatInstallRefused": true,
+    "pauseRevokesRpcPreservesRows": true,
+    "mutationTestRemovedRevokeDetected": true,
+    "googleCalls": 0,
+    "hostedWrites": 0
+  },
+  "api": {
+    "suites": 62,
+    "passed": 891,
+    "failed": 0,
+    "newCases": 36,
+    "build": "PASS",
+    "scopedLint": "PASS"
+  },
+  "web": {
+    "searchConsoleSchemaFetch": 8,
+    "tsc": "PASS",
+    "scopedLint": "PASS",
+    "browser": "NOT_RERUN_copy_only_change"
+  },
+  "defaults": {
+    "FEATURE_SEARCH_CONSOLE_PERSISTENCE_ENABLED": false
+  },
+  "hostedSql": "NOT_EXECUTED",
+  "realEnvChanged": false,
+  "liveProviderCalls": 0,
+  "commitPush": false,
+  "remaining": [
+    "hosted_test_db_install_and_metadata_check",
+    "verified_property_oauth_token_rotation",
+    "live_search_analytics_transport",
+    "scheduler_and_lease_renewal",
+    "real_query_retention_policy",
+    "pagespeed_durable_history",
+    "merchant_outbound_fencing"
+  ]
+}

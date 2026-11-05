@@ -10,6 +10,7 @@ import {
   Param,
   UseGuards,
   Headers,
+  Optional,
 } from '@nestjs/common';
 import { ContactsService, CreateContactDto } from './contacts.service';
 import {
@@ -19,7 +20,11 @@ import {
   IsString,
   Length,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ConfigService } from '@nestjs/config';
+import { LegalAcceptanceDto, legalReceipt } from '../legal/legal-acceptance';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -28,6 +33,11 @@ import { Role } from '../auth/role.enum';
 import { ContactProtectionService } from '../integrations/contact-protection.service';
 
 class CreateContactValidator implements CreateContactDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LegalAcceptanceDto)
+  legalAcceptance?: LegalAcceptanceDto;
+
   @IsNotEmpty()
   @IsString()
   @Length(2, 100)
@@ -57,6 +67,7 @@ export class ContactsController {
   constructor(
     private readonly contactsService: ContactsService,
     private readonly protection: ContactProtectionService,
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   @Get('protection')
@@ -79,9 +90,20 @@ export class ContactsController {
     @Body() body: CreateContactValidator,
     @Headers('origin') origin?: string,
   ) {
+    const receipt = legalReceipt(
+      body.legalAcceptance,
+      'contact_response',
+      this.config?.get('LEGAL_CONSENT_ENFORCED') === 'true',
+    );
     await this.protection.verify(body.turnstileToken, origin);
     const { full_name, email, topic, message } = body;
-    return this.contactsService.create({ full_name, email, topic, message });
+    return this.contactsService.create({
+      full_name,
+      email,
+      topic,
+      message,
+      ...(receipt ? { legal_acceptance: receipt } : {}),
+    });
   }
 
   @Get()

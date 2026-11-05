@@ -28,6 +28,12 @@ test('accepts empty mock summary, rejects live/scheduled/unbounded policy', () =
   const { pagespeedSchema: schema } = load(); assert.equal(schema.safeParse(fixture()).success, true);
   for (const patch of [{ source: 'live' }, { schedulerEnabled: true }, { historyPerPair: 31 }, { cacheHours: 0 }]) assert.equal(schema.safeParse({ ...fixture(), ...patch }).success, false);
 });
+test('accepts the opt-in durable mock history but no other persistence claim', () => {
+  const { pagespeedSchema: schema } = load();
+  assert.equal(schema.safeParse({ ...fixture(), persistence: 'database' }).success, true);
+  for (const persistence of ['google', 'crux_archive', undefined]) assert.equal(schema.safeParse({ ...fixture(), persistence }).success, false);
+  assert.equal(schema.safeParse({ ...fixture(), persistence: 'database', source: 'live' }).success, false);
+});
 test('rejects malformed/external/PII URLs and unexpected target paths', () => {
   const { pagespeedSchema: schema } = load();
   for (const url of ['bad', 'https://real.example/vi', 'https://mock.example.invalid/vi?email=secret', 'https://user:pass@mock.example.invalid/vi']) {

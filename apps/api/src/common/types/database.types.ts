@@ -545,6 +545,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: IntegrationFunctions & {
+      catalog_search: {
+        Args: {p_query:string;p_locale:string;p_min_price?:number;p_max_price?:number;p_category_id?:string|null;p_limit?:number};
+        Returns: Json;
+      };
       shipping_attach_snapshot:{Args:{p_order_id:string;p_total:number;p_snapshot:Json};Returns:Json};
       shipping_complete_cod:{Args:{p_ship_key:string;p_ship_version:number;p_action_key:string;p_action_version:number;p_amount:number};Returns:Json};
       shipping_reserve_shipment:{Args:{p_order_id:string;p_key:string;p_data:Json};Returns:Json};

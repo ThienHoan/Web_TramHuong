@@ -24,6 +24,7 @@ import { StatusBadge } from "@/components/admin/AdminStatusBadge";
 import { SearchConsolePanel } from "@/components/admin/SearchConsolePanel";
 import { PagespeedPanel } from "@/components/admin/PagespeedPanel";
 import { LocalGa4TestPanel } from "@/components/analytics/LocalGa4TestPanel";
+import { IntegrationHealthPanel } from "@/components/admin/IntegrationHealthPanel";
 
 const DashboardCharts = dynamic(
   () => import("@/components/admin/DashboardCharts"),
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
   const locale = useLocale();
   const en = locale === "en";
   const t = (vi: string, english: string) => (en ? english : vi);
-  const { session } = useAuth();
+  const { session, role } = useAuth();
   const token = session?.access_token || "";
   const { data, isLoading, error, retry } = useAnalytics(range);
   const formatPrice = (value: number) => adminMoney(value, locale);
@@ -314,6 +315,7 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      <IntegrationHealthPanel token={token} isAdmin={role === "ADMIN"} />
       <SearchConsolePanel token={token} />
       <PagespeedPanel token={token} />
       <LocalGa4TestPanel token={token} />

@@ -1,5 +1,13 @@
 import { pagination } from '../common/pagination';
-import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  BadRequestException,
+  Optional,
+  Logger,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { LegalReceipt } from '../legal/legal-acceptance';
 import { SupabaseService } from '../supabase/supabase.service';
 
 export interface CreateContactDto {
@@ -7,11 +15,16 @@ export interface CreateContactDto {
   email: string;
   topic?: string;
   message: string;
+  legal_acceptance?: LegalReceipt;
 }
 
 @Injectable()
 export class ContactsService {
-  constructor(private readonly supabase: SupabaseService) {}
+  private readonly logger = new Logger(ContactsService.name);
+  constructor(
+    private readonly supabase: SupabaseService,
+    @Optional() private readonly config?: ConfigService,
+  ) {}
 
   private get client() {
     return this.supabase.getClient();
@@ -24,10 +37,13 @@ export class ContactsService {
       topic: dto.topic || 'Khác',
       message: dto.message,
       status: 'new',
+      ...(this.config?.get('LEGAL_CONSENT_ENFORCED') === 'true'
+        ? { legal_acceptance: dto.legal_acceptance }
+        : {}),
     });
 
     if (error) {
-      console.error('Error creating contact:', error);
+      this.logger.error('CONTACT_SAVE_FAILED');
       throw new InternalServerErrorException('Could not save contact message');
     }
 
@@ -56,7 +72,8 @@ export class ContactsService {
   }
 
   async updateStatus(id: string, status: string) {
-    if (!['new', 'read', 'replied'].includes(status)) throw new BadRequestException('Invalid contact status');
+    if (!['new', 'read', 'replied'].includes(status))
+      throw new BadRequestException('Invalid contact status');
     const { data, error } = await this.client
       .from('contacts')
       .update({ status })

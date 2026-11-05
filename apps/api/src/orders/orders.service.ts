@@ -6,6 +6,8 @@ import {
   InternalServerErrorException,
   Logger,
   Optional,
+  HttpException,
+  ConflictException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
@@ -14,6 +16,8 @@ import { VouchersService } from '../vouchers/vouchers.service';
 import { LookupOrderDto } from './dto/lookup-order.dto';
 import { ShippingQuoteService } from '../shipping/quote.service';
 import { productPrice } from '../common/commerce-pricing';
+import { CheckoutRepository } from './checkout.repository';
+import { checkoutIntent } from './checkout-intent';
 
 interface OrderItemInput {
   productId: string;
@@ -297,10 +301,9 @@ export class OrdersService {
     paymentMethod: string = 'cod',
     voucherCode?: string,
     shippingQuoteReference?: string,
+    idempotencyKey?: string,
   ) {
-    this.logger.log(
-      `Creating order for User: ${userId || 'Guest'}, Payment: ${paymentMethod}`,
-    );
+    this.logger.log('CHECKOUT_ATTEMPT');
     try {
       if (!items || items.length === 0) {
         throw new BadRequestException('Items are required');
@@ -313,6 +316,31 @@ export class OrdersService {
       if (shippingInfo.phone) {
         shippingInfo.phone = this.normalizeVietnamesePhone(shippingInfo.phone);
       }
+
+      shippingInfo = {
+        ...shippingInfo,
+        name: shippingInfo.name?.trim(),
+        address: shippingInfo.address?.trim(),
+        city: shippingInfo.city?.trim(),
+        email: shippingInfo.email?.trim().toLowerCase() || undefined,
+      };
+      const intent = checkoutIntent(
+        idempotencyKey,
+        userId,
+        items,
+        shippingInfo,
+        paymentMethod,
+        voucherCode,
+      );
+      const checkout = new CheckoutRepository(this.supabaseService);
+      // Recover a committed result BEFORE stock, voucher or quote revalidation.
+      const previous = await checkout.lookup(
+        intent.key,
+        userId,
+        intent.fingerprint,
+      );
+      if (previous) return previous.order;
+      items = intent.items;
 
       // Fetch products to validate and get prices + DISCOUNT INFO
       const productIds = items.map((i) => i.productId);
@@ -343,7 +371,10 @@ export class OrdersService {
       // Stock belongs to a product, so variants and duplicate lines share it.
       const requestedQuantities = new Map<string, number>();
       for (const item of items) {
-        requestedQuantities.set(item.productId, (requestedQuantities.get(item.productId) || 0) + item.quantity);
+        requestedQuantities.set(
+          item.productId,
+          (requestedQuantities.get(item.productId) || 0) + item.quantity,
+        );
       }
       // 1. Validate Stock & Active Status
       for (const item of items) {
@@ -395,6 +426,19 @@ export class OrdersService {
           product.slug;
         const image = product.images?.[0] || null;
 
+        if (
+          item.variantId &&
+          (!Array.isArray(product.variants) ||
+            !product.variants.some(
+              (value) =>
+                value &&
+                typeof value === 'object' &&
+                'name' in value &&
+                value.name === item.variantId,
+            ))
+        ) {
+          throw new ConflictException('CHECKOUT_VARIANT_UNAVAILABLE');
+        }
         const priced = productPrice(product, item.variantId);
         const originalPrice = priced.originalPrice;
         const finalPrice = priced.price;
@@ -412,7 +456,7 @@ export class OrdersService {
           title,
           image,
           variant_id: item.variantId || null,
-          variant_name: item.variantName || null,
+          variant_name: item.variantId || null,
         };
       });
 
@@ -431,7 +475,12 @@ export class OrdersService {
       const shippingQuote =
         shippingQuoteReference && paymentMethod !== 'showroom'
           ? await this.shippingQuotes?.revalidate(
-              shippingQuoteReference, userId, items, shippingInfo, paymentMethod, voucherCode,
+              shippingQuoteReference,
+              userId,
+              items,
+              shippingInfo,
+              paymentMethod,
+              voucherCode,
             )
           : undefined;
       if (shippingQuote && shippingQuote.subtotal !== subtotal)
@@ -441,64 +490,27 @@ export class OrdersService {
       let voucherDiscountAmount = 0;
       let appliedVoucherCode = null;
 
-      if (voucherCode) {
-        try {
-          // Determine effective subtotal for validation constraints
-          // (e.g. min_order_value usually applies to subtotal before shipping)
-          const validation = await this.vouchersService.validateVoucher(
-            voucherCode,
-            subtotal,
-          );
-
-          if (validation.isValid && validation.voucher) {
-            if (shippingQuote && shippingQuote.voucherDiscount !== validation.discountAmount)
-              throw new BadRequestException('SHIPPING_QUOTE_CHANGED');
-            voucherDiscountAmount = validation.discountAmount;
-            appliedVoucherCode = validation.voucher.code; // Use normalized code
-
-            // Decrement Usage Count (Optimistic Lock)
-            // If limit is null, it's unlimited. If limit exists, must be > usage_count.
-            // We need to atomically increment usage_count.
-            const { error: usageError } = await this.client
-              .from('vouchers')
-              .update({ usage_count: validation.voucher.usage_count + 1 })
-              .eq('id', validation.voucher.id)
-              // Safety check again: only update if usage_count is still what we saw OR just rely on constraint?
-              // Better: constraint check in WHERE clause.
-              // Usage: usage_limit IS NULL OR usage_count < usage_limit
-              // Supabase/Postgres doesn't support complex WHERE on UPDATE easily via JS client .eq().
-              // We will rely on the initial check + DB constraint if possible, but JS client is limited.
-              // Best effort: Update and check usage_limit in application logic previously.
-              // Since we don't have high concurrency, simple increment is acceptable for now.
-              // Ideally: .rpc('increment_voucher_usage', { voucher_id: ... })
-              .select()
-              .single();
-
-            if (usageError) {
-              // Rollback/Throw?
-              // If update fails (e.g. constraint), invalid voucher.
-              throw new BadRequestException(
-                'Mã giảm giá không khả dụng (đã hết lượt hoặc lỗi)',
-              );
-            }
-          }
-        } catch (error) {
-          // If voucher invalid, throw error to stop order creation? Or ignore?
-          // User expects valid voucher if entered. Throw error.
-          if (
-            error instanceof BadRequestException ||
-            error instanceof NotFoundException
-          ) {
-            throw error;
-          }
-          this.logger.error('Voucher error:', error);
-          // If system error, maybe ignore to not block order? No, consistent behavior better.
-        }
+      if (voucherCode?.trim()) {
+        const validation = await this.vouchersService.validateVoucher(
+          voucherCode,
+          subtotal,
+        );
+        if (!validation.isValid || !validation.voucher)
+          throw new BadRequestException('CHECKOUT_VOUCHER_UNAVAILABLE');
+        if (
+          shippingQuote &&
+          shippingQuote.voucherDiscount !== validation.discountAmount
+        )
+          throw new ConflictException('SHIPPING_QUOTE_CHANGED');
+        voucherDiscountAmount = validation.discountAmount;
+        appliedVoucherCode = validation.voucher.code;
       }
 
       let shippingFee = shippingQuote
         ? shippingQuote.customerFee
-        : total >= 300000 ? 0 : 30000;
+        : total >= 300000
+          ? 0
+          : 30000;
       if (shippingQuote) {
         shippingInfo.shipping_quote_reference = shippingQuote.reference;
         shippingInfo.shipping_snapshot = shippingQuote;
@@ -521,74 +533,24 @@ export class OrdersService {
         shippingInfo.shipping_fee = shippingFee;
       }
 
-      // 3. Determine order status and deadline based on payment method
-      let orderStatus = 'PENDING';
-      let paymentDeadline = null;
-      let dbPaymentMethod = paymentMethod;
-
-      if (paymentMethod === 'showroom') {
-        // Map 'showroom' to 'cod' for DB constraint compatibility
-        // But mark delivery_method as 'pickup' in shipping_info
-        dbPaymentMethod = 'cod';
-        if (typeof shippingInfo === 'object') {
-          shippingInfo.delivery_method = 'pickup';
-          shippingInfo.pickup_location = {
-            name: 'Showroom Thiên Phúc',
-            address: '123 Đường Trầm Hương, Quận 1, TP. HCM',
-            hours: '9:00 - 21:00 (T2 - CN)',
-            instructions:
-              'Vui lòng đọc mã đơn hàng hoặc số điện thoại cho nhân viên tại quầy.',
-          };
-        }
-      }
-
-      if (paymentMethod === 'sepay') {
-        orderStatus = 'AWAITING_PAYMENT';
-        // Set deadline 15 minutes from now (in UTC)
-        const now = new Date();
-        const deadlineMs = now.getTime() + 15 * 60 * 1000; // Add 15 minutes in milliseconds
-        paymentDeadline = new Date(deadlineMs).toISOString();
-
-        // Log SePay Initiation
-        this.logger.log(
-          `SePay initiated for amount ${total}`,
-        );
-      }
-
-      // 3. Insert Order
-      const { data: orderData, error: orderError } = await this.client
-        .from('orders')
-        .insert({
-          user_id: userId, // Can be null
-          status: orderStatus,
-          payment_deadline: paymentDeadline,
-          total,
-          items: enrichedItems,
-          shipping_info: shippingInfo,
-          payment_method: dbPaymentMethod,
-          payment_status: 'pending',
-          voucher_code: appliedVoucherCode,
-          voucher_discount_amount: voucherDiscountAmount,
-        })
-        .select()
-        .single();
-
-      if (orderError) throw new BadRequestException(orderError.message);
-
-      // 3. Decrement Stock
-      for (const [productId, quantity] of requestedQuantities) {
-        const product = products?.find((p) => p.id === productId);
-        if (product) {
-          const newQty = product.quantity - quantity;
-          await this.client
-            .from('products')
-            .update({ quantity: newQty })
-            .eq('id', productId);
-        }
-      }
+      if (paymentMethod === 'showroom') shippingInfo.delivery_method = 'pickup';
+      const committed = await checkout.create({
+        p_key: intent.key,
+        p_user_id: userId,
+        p_fingerprint: intent.fingerprint,
+        p_items: enrichedItems,
+        p_shipping_info: shippingInfo,
+        p_payment_method: paymentMethod,
+        p_voucher_code: appliedVoucherCode,
+        p_expected_subtotal: subtotal,
+        p_expected_discount: voucherDiscountAmount,
+        p_shipping_fee: shippingFee,
+        p_quote: shippingQuote ?? null,
+      });
+      const orderData = committed.order;
 
       // 4. Clear Cart (Only if user logged in)
-      if (userId) {
+      if (userId && !committed.replayed) {
         try {
           await this.cartService.clearCart(userId);
         } catch {
@@ -600,17 +562,10 @@ export class OrdersService {
       this.logger.log(`Order created successfully: ${orderData.id}`);
       return orderData;
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      this.logger.error('Create order failed', error.stack || error);
-      if (
-        error instanceof BadRequestException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        'Không tạo được đơn hàng, vui lòng thử lại',
-      );
+      // Do not log the request, receiver details, keys or raw DB/provider errors.
+      if (error instanceof HttpException) throw error;
+      this.logger.error('CHECKOUT_FAILED');
+      throw new InternalServerErrorException('CHECKOUT_RESULT_UNKNOWN');
     }
   }
 
@@ -663,13 +618,19 @@ export class OrdersService {
     // Stock is restored atomically by the database trigger in admin-order-integrity.sql.
 
     const { data: result, error } = await this.client.rpc('transition_order', {
-      p_id: id, p_status: status, p_expected_status: currentStatus,
+      p_id: id,
+      p_status: status,
+      p_expected_status: currentStatus,
     });
     if (error) {
-      if (error.code === 'PGRST202') throw new InternalServerErrorException('Apply admin-order-integrity.sql before changing order status');
+      if (error.code === 'PGRST202')
+        throw new InternalServerErrorException(
+          'Apply admin-order-integrity.sql before changing order status',
+        );
       throw new BadRequestException(error.message);
     }
-    const data = result as unknown as import('../common/types/database.types').Database['public']['Tables']['orders']['Row'];
+    const data =
+      result as unknown as import('../common/types/database.types').Database['public']['Tables']['orders']['Row'];
 
     // Email Notification
     if (currentStatus !== status) {
@@ -767,31 +728,48 @@ export class OrdersService {
     }
 
     if (
-      !['PENDING', 'AWAITING_PAYMENT', 'SHIPPED', 'COMPLETED'].includes(order.status)
+      !['PENDING', 'AWAITING_PAYMENT', 'SHIPPED', 'COMPLETED'].includes(
+        order.status,
+      )
     ) {
-      return { success: false, reason: 'Order state requires manual payment review' };
+      return {
+        success: false,
+        reason: 'Order state requires manual payment review',
+      };
     }
     const nextStatus = ['PENDING', 'AWAITING_PAYMENT'].includes(order.status)
       ? 'PAID'
       : order.status;
     const confirmed = await this.client
       .from('orders')
-      .update({ payment_status: 'paid', transaction_code: transactionCode, status: nextStatus })
+      .update({
+        payment_status: 'paid',
+        transaction_code: transactionCode,
+        status: nextStatus,
+      })
       .eq('id', orderId)
       .eq('status', order.status)
       .eq('payment_status', order.payment_status)
       .select('id')
       .maybeSingle();
     if (confirmed.error) {
-      this.logger.error('SePay payment persistence failed; manual/retry verification required');
+      this.logger.error(
+        'SePay payment persistence failed; manual/retry verification required',
+      );
       return { success: false, reason: 'Payment could not be recorded' };
     }
     if (!confirmed.data) {
-      const current = await this.client.from('orders')
-        .select('payment_status').eq('id', orderId).maybeSingle();
+      const current = await this.client
+        .from('orders')
+        .select('payment_status')
+        .eq('id', orderId)
+        .maybeSingle();
       return current.data?.payment_status === 'paid'
         ? { success: true, message: 'Already paid' }
-        : { success: false, reason: 'Order changed during payment verification' };
+        : {
+            success: false,
+            reason: 'Order changed during payment verification',
+          };
     }
     order.status = nextStatus;
     order.payment_status = 'paid';

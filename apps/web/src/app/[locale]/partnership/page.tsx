@@ -1,5 +1,10 @@
 'use client';
 
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { legalAcceptance } from '@/lib/legal';
+import { useContactProtection } from '@/hooks/useContactProtection';
+import { ContactProtection } from '@/components/contact/ContactProtection';
+import { useLocale } from 'next-intl';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { useForm } from 'react-hook-form';
@@ -12,17 +17,20 @@ import { AppIcon } from "@/components/icons/AppIcon";
 
 // Schema Validation
 const partnershipSchema = z.object({
-    full_name: z.string().min(2, 'Vui lòng nhập họ và tên'),
-    phone: z.string().min(10, 'Số điện thoại không hợp lệ').regex(/^[0-9+]+$/, 'Chỉ nhập số'),
+    full_name: z.string().min(2, 'Vui lòng nhập họ và tên').max(100),
+    phone: z.string().min(10, 'Số điện thoại không hợp lệ').max(20).regex(/^[0-9+]+$/, 'Chỉ nhập số'),
     email: z.string().email('Email không hợp lệ'),
-    region: z.string(),
-    experience: z.string().min(10, 'Vui lòng chia sẻ thêm về kinh nghiệm'),
-    reason: z.string().min(10, 'Vui lòng chia sẻ lý do hợp tác'),
+    region: z.string().max(100),
+    experience: z.string().min(10, 'Vui lòng chia sẻ thêm về kinh nghiệm').max(500),
+    reason: z.string().min(10, 'Vui lòng chia sẻ lý do hợp tác').max(1000),
 });
 
 type PartnershipFormValues = z.infer<typeof partnershipSchema>;
 
 export default function PartnershipPage() {
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+    const protection = useContactProtection();
+    const locale = useLocale();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<PartnershipFormValues>({
@@ -34,6 +42,7 @@ export default function PartnershipPage() {
     });
 
     const onSubmit = async (data: PartnershipFormValues) => {
+        if (!privacyAccepted || !protection.canSubmit) return;
         setIsSubmitting(true);
         try {
             // Format the message to include all partnership details
@@ -46,6 +55,8 @@ Lý do hợp tác: ${data.reason}
             `.trim();
 
             await submitContact({
+                legalAcceptance: legalAcceptance(),
+                ...(protection.token ? { turnstileToken: protection.token } : {}),
                 full_name: data.full_name,
                 email: data.email,
                 topic: 'Đăng Ký Đại Lý / Hợp Tác', // Special topic
@@ -56,12 +67,14 @@ Lý do hợp tác: ${data.reason}
                 description: 'Chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.',
             });
             reset();
+            setPrivacyAccepted(false);
         } catch (error) {
             console.error(error);
             toast.error('Gửi đăng ký thất bại', {
                 description: 'Vui lòng thử lại sau.',
             });
         } finally {
+            protection.resetToken();
             setIsSubmitting(false);
         }
     };
@@ -119,7 +132,7 @@ Lý do hợp tác: ${data.reason}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {/* Benefit Items */}
                             {[
-                                { icon: 'verified', title: 'Sản Phẩm Tinh Hoa', desc: 'Nguồn nguyên liệu trầm hương 100% tự nhiên, được tuyển chọn kỹ lưỡng.' },
+                                { icon: 'verified', title: 'Sản Phẩm Tinh Hoa', desc: 'Trao đổi thông tin thành phần và nguồn gốc cụ thể theo từng sản phẩm trước khi hợp tác.' },
                                 { icon: 'trending_up', title: 'Lợi Nhuận Bền Vững', desc: 'Chính sách chiết khấu hấp dẫn, cơ chế thưởng linh hoạt tối ưu hóa lợi nhuận.' },
                                 { icon: 'campaign', title: 'Hỗ Trợ Truyền Thông', desc: 'Cung cấp tài liệu marketing chuyên nghiệp, hình ảnh, video và hỗ trợ quảng cáo.' },
                                 { icon: 'school', title: 'Đào Tạo Chuyên Sâu', desc: 'Được tham gia các khóa đào tạo về kiến thức trầm hương và kỹ năng bán hàng.' },
@@ -211,8 +224,10 @@ Lý do hợp tác: ${data.reason}
                                     </div>
                                     {/* Submit Botton */}
                                     <div className="pt-4">
-                                        <button
-                                            disabled={isSubmitting}
+                                        <LegalConsent purpose="partnership" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
+                                    <ContactProtection protection={protection} locale={locale} disabled={isSubmitting} />
+                                    <button
+                                            disabled={isSubmitting || !privacyAccepted || !protection.canSubmit}
                                             type="submit"
                                             className="w-full bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 font-display text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                                         >

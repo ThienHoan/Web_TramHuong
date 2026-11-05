@@ -26,9 +26,31 @@
     "demo:analytics": "node scripts/demo-contact-protection.cjs --analytics",
     "test:analytics": "jest --runInBand --runTestsByPath src/analytics/collection-policy.service.spec.ts src/analytics/purchase-capture.service.spec.ts && node scripts/verify-purchase-capture.cjs",
     "test:purchase-http": "node scripts/verify-purchase-http.cjs",
-    "test:seo": "jest --runInBand --runTestsByPath src/analytics/search-console.service.spec.ts src/analytics/search-console.controller.spec.ts",
-    "test:pagespeed": "jest --runInBand --runTestsByPath src/analytics/pagespeed.service.spec.ts src/analytics/pagespeed.controller.spec.ts",
-    "test:google-diagnostics": "jest --runInBand --runTestsByPath src/analytics/google-diagnostics.service.spec.ts src/analytics/google-diagnostics.controller.spec.ts"
+    "test:seo": "jest --runInBand --runTestsByPath src/analytics/search-console.service.spec.ts src/analytics/search-console.controller.spec.ts src/analytics/search-console.store.spec.ts src/analytics/search-console.store-http.spec.ts && node scripts/verify-search-console-store.cjs",
+    "test:pagespeed": "jest --runInBand --runTestsByPath src/analytics/pagespeed.service.spec.ts src/analytics/pagespeed.controller.spec.ts src/analytics/pagespeed.store.spec.ts src/analytics/pagespeed.store-http.spec.ts && node scripts/verify-pagespeed-store.cjs",
+    "test:google-diagnostics": "jest --runInBand --runTestsByPath src/analytics/google-diagnostics.service.spec.ts src/analytics/google-diagnostics.controller.spec.ts",
+    "test:connections": "jest --runInBand --runTestsByPath src/mail/email-provider.spec.ts src/mail/mail.service.spec.ts src/merchant/merchant.spec.ts src/merchant/merchant.controller.spec.ts src/chat/catalog-advisor.service.spec.ts src/chat/catalog-advisor.controller.spec.ts src/integrations/integration-health.spec.ts src/products/catalog-search.repository.spec.ts src/chat/chat.service.spec.ts src/chat/chat.controller.spec.ts",
+    "check:live": "node scripts/check-live-readiness.cjs",
+    "smoke:hosted-readonly": "node scripts/hosted-readonly-smoke.cjs",
+    "check:gemini-live": "node scripts/check-gemini-live.cjs",
+    "test:gemini-live": "jest --runInBand --runTestsByPath src/chat/gemini-live.spec.ts src/chat/catalog-advisor.service.spec.ts src/chat/chat.service.spec.ts && node scripts/verify-live-usage.cjs",
+    "check:turnstile-live": "node scripts/check-turnstile-live.cjs",
+    "smoke:hosted-write": "node scripts/hosted-write-smoke.cjs --allow-test-db-writes",
+    "test:hosted-write-smoke": "node scripts/verify-hosted-write-smoke.cjs",
+    "test:hosted-smoke": "node scripts/verify-hosted-readonly-smoke.cjs",
+    "test:sql-bundle": "node scripts/build-test-db-bundle.cjs",
+    "test:sql-checker": "node scripts/verify-combined-checker.cjs",
+    "test:ops": "jest --runInBand --runTestsByPath src/integrations/ops-metrics.spec.ts src/integrations/integration-health.spec.ts && node scripts/verify-ops-integration.cjs",
+    "test:catalog-search": "jest --runInBand --runTestsByPath src/products/catalog-search.repository.spec.ts src/chat/catalog-advisor.service.spec.ts src/chat/catalog-advisor.controller.spec.ts src/chat/chat.service.spec.ts src/chat/chat.controller.spec.ts && node scripts/verify-catalog-search.cjs",
+    "test:notifications": "jest --runInBand --runTestsByPath src/mail/notification-delivery.spec.ts src/mail/notification.controller.spec.ts src/mail/email-provider.spec.ts src/mail/mail.service.spec.ts && node scripts/verify-notification-delivery.cjs && node scripts/verify-notification-workflow.cjs",
+    "test:merchant-queue": "jest --runInBand --runTestsByPath src/merchant/merchant-delivery.spec.ts src/merchant/merchant.controller.spec.ts src/merchant/merchant.spec.ts src/merchant/merchant-fence.spec.ts && node scripts/verify-merchant-workflow.cjs && node scripts/verify-merchant-fence.cjs",
+    "benchmark:media": "node scripts/benchmark-media.cjs",
+    "test:notification-source": "jest --runInBand --runTestsByPath src/mail/notification-reconciliation.spec.ts src/mail/shipment-notification.spec.ts src/mail/notification-delivery.spec.ts src/mail/notification.controller.spec.ts && node scripts/verify-notification-source.cjs && node scripts/verify-shipment-notifications.cjs",
+    "demo:automation": "node scripts/automation/demo-server.cjs",
+    "automation": "node scripts/automation/cli.cjs",
+    "test:automation": "jest --runInBand --runTestsByPath src/automation/automation.spec.ts && node --test scripts/automation/runtime.test.cjs scripts/automation/verify-sql.cjs scripts/automation/workflow.test.cjs",
+    "test:checkout": "jest --runInBand --runTestsByPath src/orders/checkout.spec.ts src/orders/shipping-checkout.spec.ts src/orders/orders.service.spec.ts src/orders/order-validation.spec.ts src/orders/payment-persistence.spec.ts && node --test scripts/checkout/verify-atomic.cjs",
+    "test:checkout-concurrency": "node scripts/checkout/verify-concurrency.cjs --run-docker"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -104,6 +126,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/../test/no-external-fetch.cjs"
+    ]
   }
 }

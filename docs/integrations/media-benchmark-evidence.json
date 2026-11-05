@@ -1,0 +1,282 @@
+{
+  "batch": "P7-01",
+  "result": "PASS",
+  "samples": 12,
+  "results": [
+    {
+      "source": "editorial/forest.webp",
+      "sourceSha256": "766d8d019e3b54d5ab999128f8ef0c51bf71926ebe8b074b8074afc0ab48df13",
+      "sourceBytes": 37900,
+      "sourceFormat": "webp",
+      "sourceWidth": 512,
+      "sourceHeight": 512,
+      "targetWidth": 512,
+      "targetHeight": 512,
+      "webp82": {
+        "bytes": 28618,
+        "encodingMs": 25.03,
+        "psnr": 39.44
+      },
+      "avif50": {
+        "bytes": 15096,
+        "encodingMs": 41.66,
+        "psnr": 36.72
+      },
+      "thumbnailWebp78Bytes": 19558,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "editorial/ritual.webp",
+      "sourceSha256": "b79699937534f181a3d60b4a0f846522bcdac3640d942f2d0dc6c948fd7b93d2",
+      "sourceBytes": 17466,
+      "sourceFormat": "webp",
+      "sourceWidth": 512,
+      "sourceHeight": 512,
+      "targetWidth": 512,
+      "targetHeight": 512,
+      "webp82": {
+        "bytes": 13494,
+        "encodingMs": 18.32,
+        "psnr": 42.53
+      },
+      "avif50": {
+        "bytes": 5950,
+        "encodingMs": 26.88,
+        "psnr": 39.6
+      },
+      "thumbnailWebp78Bytes": 8132,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "editorial/wood.webp",
+      "sourceSha256": "6b9daee2503ecbbb6f38486731decd4c37ee762c81d6fd8f8da25c09b2435bb8",
+      "sourceBytes": 26440,
+      "sourceFormat": "webp",
+      "sourceWidth": 512,
+      "sourceHeight": 512,
+      "targetWidth": 512,
+      "targetHeight": 512,
+      "webp82": {
+        "bytes": 20196,
+        "encodingMs": 20.95,
+        "psnr": 40.49
+      },
+      "avif50": {
+        "bytes": 10130,
+        "encodingMs": 33,
+        "psnr": 37.77
+      },
+      "thumbnailWebp78Bytes": 12438,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "editorial/preview-ritual.webp",
+      "sourceSha256": "8ba0a7ce0e7f1c2096efafeae2fd7dc69629831ca6bf5b1c58e4346b5185bdb4",
+      "sourceBytes": 12830,
+      "sourceFormat": "webp",
+      "sourceWidth": 1000,
+      "sourceHeight": 663,
+      "targetWidth": 1000,
+      "targetHeight": 663,
+      "webp82": {
+        "bytes": 10754,
+        "encodingMs": 32.38,
+        "psnr": 47
+      },
+      "avif50": {
+        "bytes": 5096,
+        "encodingMs": 39.48,
+        "psnr": 43.67
+      },
+      "thumbnailWebp78Bytes": 3560,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "editorial/preview-gallery.webp",
+      "sourceSha256": "73fce3a9def84a9918465aa527bab8639b560209490de2c377ee8f2a51baabfa",
+      "sourceBytes": 18248,
+      "sourceFormat": "webp",
+      "sourceWidth": 1000,
+      "sourceHeight": 657,
+      "targetWidth": 1000,
+      "targetHeight": 657,
+      "webp82": {
+        "bytes": 15102,
+        "encodingMs": 33.4,
+        "psnr": 45.44
+      },
+      "avif50": {
+        "bytes": 8031,
+        "encodingMs": 43.67,
+        "psnr": 42.27
+      },
+      "thumbnailWebp78Bytes": 4904,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "editorial/preview-bracelet.webp",
+      "sourceSha256": "565ee6a5012c3b995a391d31962cd18887657641aa2b091968a08ad58ccfe35f",
+      "sourceBytes": 17638,
+      "sourceFormat": "webp",
+      "sourceWidth": 1000,
+      "sourceHeight": 704,
+      "targetWidth": 1000,
+      "targetHeight": 704,
+      "webp82": {
+        "bytes": 14510,
+        "encodingMs": 34.68,
+        "psnr": 45.55
+      },
+      "avif50": {
+        "bytes": 6832,
+        "encodingMs": 44.34,
+        "psnr": 43.08
+      },
+      "thumbnailWebp78Bytes": 4728,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/bracelet-detail.jpg",
+      "sourceSha256": "d9f3b222eedfed5e09f049d481f58c90e063d175abca6789a3011f833c9f7a8e",
+      "sourceBytes": 69776,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 1200,
+      "sourceHeight": 1200,
+      "targetWidth": 1200,
+      "targetHeight": 1200,
+      "webp82": {
+        "bytes": 45954,
+        "encodingMs": 64.28,
+        "psnr": 44.17
+      },
+      "avif50": {
+        "bytes": 23864,
+        "encodingMs": 71.96,
+        "psnr": 41.99
+      },
+      "thumbnailWebp78Bytes": 8544,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/bracelet.jpg",
+      "sourceSha256": "2a72776b6770b630e320614414ebba87622eb876a305278ed22af9606f947bae",
+      "sourceBytes": 104554,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 1200,
+      "sourceHeight": 1200,
+      "targetWidth": 1200,
+      "targetHeight": 1200,
+      "webp82": {
+        "bytes": 114610,
+        "encodingMs": 78.52,
+        "psnr": 40.65
+      },
+      "avif50": {
+        "bytes": 68914,
+        "encodingMs": 98.65,
+        "psnr": 40.3
+      },
+      "thumbnailWebp78Bytes": 17646,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/burner-angle.jpg",
+      "sourceSha256": "926d812d386548301dc6bd353299c7bb0a2bf4bc260b2bf901cc839fb488a2f1",
+      "sourceBytes": 84836,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 800,
+      "sourceHeight": 800,
+      "targetWidth": 800,
+      "targetHeight": 800,
+      "webp82": {
+        "bytes": 18280,
+        "encodingMs": 35.34,
+        "psnr": 41.24
+      },
+      "avif50": {
+        "bytes": 8273,
+        "encodingMs": 41.88,
+        "psnr": 41.85
+      },
+      "thumbnailWebp78Bytes": 7032,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/burner.jpg",
+      "sourceSha256": "d897785d7c907582177726300c0ea2b221aabe7c7140997554f040675fc2f78c",
+      "sourceBytes": 112432,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 800,
+      "sourceHeight": 800,
+      "targetWidth": 800,
+      "targetHeight": 800,
+      "webp82": {
+        "bytes": 19916,
+        "encodingMs": 104.02,
+        "psnr": 40.36
+      },
+      "avif50": {
+        "bytes": 9704,
+        "encodingMs": 94.15,
+        "psnr": 40.51
+      },
+      "thumbnailWebp78Bytes": 7640,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/cones-detail.jpg",
+      "sourceSha256": "747692bfc72105f81618c68eaea5b1b5ce8c765b7aa2c6818d96b3380fdde9ec",
+      "sourceBytes": 104617,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 1200,
+      "sourceHeight": 1200,
+      "targetWidth": 1200,
+      "targetHeight": 1200,
+      "webp82": {
+        "bytes": 72686,
+        "encodingMs": 73.17,
+        "psnr": 42.05
+      },
+      "avif50": {
+        "bytes": 34986,
+        "encodingMs": 101,
+        "psnr": 39.78
+      },
+      "thumbnailWebp78Bytes": 10846,
+      "sourceUnchanged": true
+    },
+    {
+      "source": "references/annhien/cones.jpg",
+      "sourceSha256": "41e6516bcef349e257c32eb7592976dfa9cbdc5739781d9ceba2f96bebd5b39f",
+      "sourceBytes": 269364,
+      "sourceFormat": "jpeg",
+      "sourceWidth": 1200,
+      "sourceHeight": 1200,
+      "targetWidth": 1200,
+      "targetHeight": 1200,
+      "webp82": {
+        "bytes": 120038,
+        "encodingMs": 96.07,
+        "psnr": 37.63
+      },
+      "avif50": {
+        "bytes": 73679,
+        "encodingMs": 105.08,
+        "psnr": 38.04
+      },
+      "thumbnailWebp78Bytes": 24092,
+      "sourceUnchanged": true
+    }
+  ],
+  "totals": {
+    "sourceBytes": 876101,
+    "webp82Bytes": 494158,
+    "avif50Bytes": 270555
+  },
+  "sourceFilesUnchanged": true,
+  "remoteRequests": 0,
+  "uploads": 0,
+  "cloudinaryTested": false,
+  "cwvMeasured": false,
+  "decision": "KEEP_EXISTING_STORAGE_CLOUDINARY_DEFERRED_PENDING_AUTHORIZED_CDN_BENCHMARK"
+}

@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-05",
+  "scope": "local_mock_test_only",
+  "orderSource": {
+    "batch": "P4-03a",
+    "result": "PASS",
+    "checks": 52,
+    "exactSql": true,
+    "source": "synthetic_memory_orders_enum",
+    "existingTransitionAndStockRestorationPreserved": true,
+    "orderRowAndOutboxAtomic": true,
+    "entireCheckoutAtomic": false,
+    "defaultTrigger": "DISABLED",
+    "realEmails": 0,
+    "hostedWrites": 0,
+    "remoteRequests": 0
+  },
+  "shipmentBridge": {
+    "batch": "P4-03b",
+    "result": "PASS",
+    "checks": 54,
+    "exactSql": true,
+    "actualTsRepositoryWorkerTemplate": true,
+    "source": "synthetic_shipping_write_record_CAS",
+    "defaultTrigger": "DISABLED",
+    "sourceAndProjectionAndOutboxRollback": true,
+    "financialStateUnchanged": true,
+    "simulations": 2,
+    "realEmails": 0,
+    "ghnCalls": 0,
+    "hostedWrites": 0,
+    "remoteRequests": 0
+  },
+  "api": {
+    "suites": 60,
+    "passed": 855,
+    "failed": 0,
+    "build": "PASS",
+    "scopedLint": "PASS"
+  },
+  "hostedSql": "NOT_EXECUTED",
+  "realEnvChanged": false,
+  "liveProviderCalls": 0,
+  "commitPush": false,
+  "remaining": [
+    "hosted_install_and_explicit_source_trigger_enable",
+    "live_resend_transport_and_authenticated_webhooks",
+    "broader_locale_brand_templates",
+    "diagnostic_durable_history_token_budget",
+    "merchant_outbound_fencing",
+    "oauth_linking_policy",
+    "integrated_live_acceptance"
+  ]
+}

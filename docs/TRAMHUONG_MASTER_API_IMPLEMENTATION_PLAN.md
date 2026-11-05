@@ -68,6 +68,7 @@
 - [ ] Secrets chỉ NestJS/server environment; mã hóa token OAuth refresh khi lưu; RBAC cho màn hình admin.
 
 ### 3.2 Cloudflare Turnstile (P0)
+- [ ] **P1-03b — localhost Cloudflare test keys:** nối adapter Siteverify đã có với form liên hệ; giữ default OFF, test lưu RAM và opt-in riêng, duyệt trước lần gọi thật. Không cần đợi toàn bộ SQL các phase khác. Phạm vi, giao nhau với phiên khác và acceptance: [31-localhost-turnstile-gemini.md](./integrations/31-localhost-turnstile-gemini.md).
 - [ ] Audit chống spam/captcha và NestJS throttling hiện có.
 - [ ] Bật Turnstile theo flags cho đăng ký, liên hệ, nhận voucher, đánh giá; checkout chỉ bật nếu risk high và UX cho phép.
 - [ ] FE site key (public) và BE secret key (private); gọi `siteverify` server-to-server; không chỉ kiểm tra token ở frontend.
@@ -145,6 +146,7 @@
 ## 7. PHASE 5 — GEMINI ADVISOR + FULL TEXT SEARCH → PGVECTOR (P1)
 
 ### 7.1 Gemini Advisor
+- [ ] **P5-01c — Gemini Free localhost:** chủ dự án đã chọn Free ngày 05/11/2026; chỉ gửi catalog công khai, không raw query/history/PII; adapter live + quota token bền vững trước nghiệm thu. Model/quota thực của key chưa xác minh, không tự bật billing. P5-01b đã dùng cho catalog JSON/SSE wiring. Chi tiết: [31-localhost-turnstile-gemini.md](./integrations/31-localhost-turnstile-gemini.md).
 - [ ] Audit chatbot/Gemini API hiện có, GEMINI_API_KEY và model thực dùng; không cài SDK khác nếu không cần.
 - [ ] Định nghĩa AI use cases: hỏi về sản phẩm, gợi ý theo ngân sách, sở thích mùi, hướng dẫn bảo quản, chính sách giao hàng/đổi trả đã được duyệt; câu hỏi vượt phạm vi chuyển CSKH.
 - [ ] Chỉ dùng catalog thực từ DB (sku/slug/price/stock/material/verified descriptions) + curated FAQs; retrieval server-side, filter product published & available.
@@ -331,6 +333,11 @@ NEXT BATCH: ...
 8. P7-01 Cloudinary POC; P7-02 production-ready media adapter only if beneficial.
 9. P8-01 Merchant eligibility and catalog audit; P8-02 guarded sync.
 10. P9-01 integrated admin health/KPI + E2E + release docs.
+
+**Ưu tiên localhost đã chốt 05/11/2026:** P1-03b (Turnstile test keys) → P5-01c
+(Gemini Free, catalog-only + quota token). Đây là hai sub-batch của Phase 1/5,
+không phải phase mới; triển khai file chung tuần tự, không đổi runtime phiên khác.
+Chưa gọi provider thật và chưa đánh dấu hoàn tất; xem checklist riêng trong tài liệu 31.
 
 ## 18. CẤU HÌNH ENV GỢI Ý — CHỈ THÊM KHI THỰC SỰ DÙNG
 

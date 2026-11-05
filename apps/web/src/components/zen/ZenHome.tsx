@@ -131,14 +131,9 @@ export default function ZenHome({ products }: { products: Product[] }) {
                             Join the Circle of Stillness
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed mb-10">
-                            Receive quiet updates on our newest harvests, mindful living tips, and exclusive offers tailored for our community.
+                            Explore stories about Vietnamese agarwood, new collections and mindful rituals.
                         </p>
-                        <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                            <input className="flex-1 bg-transparent border border-zen-200 dark:border-zinc-700 rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-zen-secondary focus:border-zen-secondary outline-none dark:text-white font-light placeholder-gray-400" placeholder="Your email address" type="email" />
-                            <button className="px-8 py-3 bg-zen-900 dark:bg-white text-white dark:text-zen-900 rounded-sm text-xs uppercase tracking-widest hover:bg-zen-secondary dark:hover:bg-gray-200 transition-colors duration-300" type="submit">
-                                Subscribe
-                            </button>
-                        </form>
+                        <p className="text-sm leading-relaxed">Newsletter subscriptions are not available yet. Read stories in our journal.</p>
                         <p className="text-[10px] text-gray-400 mt-4 tracking-wide">We respect your privacy and inbox peace.</p>
                     </ScrollReveal>
                 </section>

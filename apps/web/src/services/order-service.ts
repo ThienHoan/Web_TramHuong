@@ -1,5 +1,8 @@
 import { getHeaders, API_URL } from './base-http';
 import { CreateOrderDto, Order } from '../types/order';
+import { prepareCheckoutAttempt, completeCheckoutAttempt, checkoutErrorMessage } from '../lib/checkout-attempt';
+
+const inFlight = new Map<string, Promise<Order>>();
 
 export interface OrderMeta {
     total?: number;
@@ -8,22 +11,35 @@ export interface OrderMeta {
 }
 
 export const orderService = {
-    async createOrder(data: CreateOrderDto): Promise<Order> {
-        try {
+    async createOrder(data: CreateOrderDto, ownerId: string | null = null): Promise<Order> {
+        const en = typeof window !== 'undefined' && window.location.pathname.startsWith('/en/');
+        let key: string;
+        try { key = await prepareCheckoutAttempt(data, ownerId); }
+        catch { throw new Error(checkoutErrorMessage('CHECKOUT_STORAGE_UNAVAILABLE', en)); }
+        const current = inFlight.get(key);
+        if (current) return current;
+        const task = (async () => {
+          try {
             const res = await fetch(`${API_URL}/orders`, {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify(data),
+                body: JSON.stringify({ ...data, idempotencyKey: key }),
             });
             if (!res.ok) {
                 const err = await res.json() as { message?: string };
-                throw new Error(err.message || 'Failed to create order');
+                throw new Error(checkoutErrorMessage(err.message || 'CHECKOUT_RESULT_UNKNOWN', en));
             }
-            return await res.json() as Order;
-        } catch (e) {
-            console.error("Create Order Error:", e);
-            throw e;
-        }
+            const order = await res.json() as Order;
+            if (!order || typeof order.id !== 'string') throw new Error(checkoutErrorMessage('CHECKOUT_RESULT_UNKNOWN',en));
+            completeCheckoutAttempt(key);
+            return order;
+          } catch (error) {
+            if (error instanceof TypeError) throw new Error(checkoutErrorMessage('CHECKOUT_RESULT_UNKNOWN',en));
+            throw error;
+          }
+        })();
+        inFlight.set(key,task);
+        try { return await task; } finally { inFlight.delete(key); }
     },
 
     async getMyOrders(page = 1, limit = 10): Promise<{ data: Order[]; meta: OrderMeta }> {

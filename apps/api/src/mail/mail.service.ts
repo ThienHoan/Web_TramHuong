@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
+import { EMAIL_PROVIDER, type EmailProvider } from './email-provider';
+import { NotificationDeliveryService } from './notification-delivery.service';
+import type { NotificationEvent } from './notification.repository';
 
 interface IOrderForMail {
   id: string;
@@ -19,13 +21,23 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
 
   constructor(
-    private readonly mailerService: MailerService,
+    @Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider,
     private readonly configService: ConfigService,
+    @Optional() private readonly notifications?: NotificationDeliveryService,
   ) {}
 
-  private async sendSafe(options: ISendMailOptions) {
+  private async sendSafe(
+    options: ISendMailOptions,
+    reference?: { id: string; event: NotificationEvent },
+  ) {
     try {
-      await this.mailerService.sendMail(options);
+      if (this.notifications?.enabled && reference) {
+        await this.notifications.capture(reference.id, reference.event);
+        return;
+      }
+      const result = await this.emailProvider.send(options);
+      if (result.outcome !== 'accepted')
+        this.logger.error('MAIL_DELIVERY_FAILED');
     } catch {
       // SMTP errors can contain recipients, message bodies and credentials.
       this.logger.error('MAIL_DELIVERY_FAILED');
@@ -52,20 +64,25 @@ export class MailService {
     const email = order.shipping_info?.email;
     if (!email) return;
 
-    await this.sendSafe({
-      to: email,
-      subject: `Order Confirmation #${order.id}`,
-      template: './order-confirmation',
-      context: {
-        id: order.id,
-        total: this.formatPrice(order.total),
-        items: order.items,
-        shipping: order.shipping_info,
+    await this.sendSafe(
+      {
+        to: email,
+        subject: `Order Confirmation #${order.id}`,
+        template: './order-confirmation',
+        context: {
+          id: order.id,
+          total: this.formatPrice(order.total),
+          items: order.items,
+          shipping: order.shipping_info,
+        },
       },
-    });
+      { id: order.id, event: 'order_confirmation' },
+    );
   }
 
   async sendAdminAlert(order: IOrderForMail) {
+    // Opt-in mock delivery must not accidentally send an admin email via SMTP.
+    if (this.notifications?.enabled) return;
     const adminEmail = this.configService.get<string>('MAIL_ADMIN_ADDRESS');
     if (!adminEmail) return;
 
@@ -87,15 +104,18 @@ export class MailService {
     const email = order.shipping_info?.email;
     if (!email) return;
 
-    await this.sendSafe({
-      to: email,
-      subject: `Payment Received for Order #${order.id}`,
-      template: './payment-success',
-      context: {
-        id: order.id,
-        total: this.formatPrice(order.total),
+    await this.sendSafe(
+      {
+        to: email,
+        subject: `Payment Received for Order #${order.id}`,
+        template: './payment-success',
+        context: {
+          id: order.id,
+          total: this.formatPrice(order.total),
+        },
       },
-    });
+      { id: order.id, event: 'payment_success' },
+    );
   }
 
   async sendOrderStatusUpdate(order: IOrderForMail) {
@@ -121,15 +141,18 @@ export class MailService {
         break;
     }
 
-    await this.sendSafe({
-      to: email,
-      subject,
-      template: './order-status',
-      context: {
-        id: order.id,
-        status: order.status,
-        items: order.items,
+    await this.sendSafe(
+      {
+        to: email,
+        subject,
+        template: './order-status',
+        context: {
+          id: order.id,
+          status: order.status,
+          items: order.items,
+        },
       },
-    });
+      { id: order.id, event: 'order_status' },
+    );
   }
 }

@@ -137,11 +137,11 @@ interface ChatAIResponse {
 }
 
 // Chat AI
-export async function chatWithAI(message: string, history: ChatMessage[] = []): Promise<ChatAIResponse> {
+export async function chatWithAI(message: string, history: ChatMessage[] = [], locale: 'vi' | 'en' = 'vi'): Promise<ChatAIResponse> {
     const res = await fetch(`${API_URL}/chat/message`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, locale }),
     });
 
     if (!res.ok) {
@@ -175,12 +175,13 @@ export async function chatWithAIStream(
     onChunk: (text: string) => void,
     onWarning?: (message: string) => void,
     onError?: (error: string) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    locale: 'vi' | 'en' = 'vi'
 ): Promise<void> {
     const res = await fetch(`${API_URL}/chat/stream`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, locale }),
         signal,
     });
 

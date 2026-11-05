@@ -7,7 +7,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import type { Response, Request } from 'express';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 
 // Validation constants
@@ -33,6 +33,7 @@ export class ChatController {
     body: {
       message: string;
       history?: { role: string; content: string }[];
+      locale?: 'vi' | 'en';
     },
   ) {
     // Sanitize and validate message
@@ -55,7 +56,13 @@ export class ChatController {
       ? body.history.slice(-MAX_HISTORY_LENGTH)
       : [];
 
-    return this.chatService.processMessage(message, history);
+    if (body.locale !== undefined && !['vi', 'en'].includes(body.locale))
+      throw new HttpException('Invalid locale', HttpStatus.BAD_REQUEST);
+    return this.chatService.processMessage(
+      message,
+      history,
+      body.locale ?? 'vi',
+    );
   }
 
   @Post('stream')
@@ -65,6 +72,7 @@ export class ChatController {
     body: {
       message: string;
       history?: { role: string; content: string }[];
+      locale?: 'vi' | 'en';
     },
     @Res() res: Response,
   ) {
@@ -88,6 +96,9 @@ export class ChatController {
       ? body.history.slice(-MAX_HISTORY_LENGTH)
       : [];
 
+    if (body.locale !== undefined && !['vi', 'en'].includes(body.locale))
+      throw new HttpException('Invalid locale', HttpStatus.BAD_REQUEST);
+
     // Set SSE headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -99,6 +110,7 @@ export class ChatController {
       const streamGenerator = this.chatService.processMessageStream(
         message,
         history,
+        body.locale ?? 'vi',
       );
 
       for await (const chunk of streamGenerator) {

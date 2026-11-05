@@ -158,10 +158,15 @@ export function PagespeedPanel({ token }: { token: string }) {
         {data?.mode === "mock" && (
           <>
             <p>
-              {t(
-                "Chỉ dùng URL mẫu trong danh sách. Giỏ hàng, checkout và trang tài khoản không được đo. Lịch sử lưu trong RAM, mất khi server khởi động lại.",
-                "Only allowlisted sample URLs are used. Cart, checkout and account pages are excluded. History is in RAM and clears on server restart.",
-              )}
+              {data.persistence === "database"
+                ? t(
+                    "Chỉ dùng URL mẫu trong danh sách. Giỏ hàng, checkout và trang tài khoản không được đo. Lịch sử mẫu lưu trong DB thử nghiệm, giữ lại sau khi server khởi động lại.",
+                    "Only allowlisted sample URLs are used. Cart, checkout and account pages are excluded. Sample history is stored in the test DB and survives server restarts.",
+                  )
+                : t(
+                    "Chỉ dùng URL mẫu trong danh sách. Giỏ hàng, checkout và trang tài khoản không được đo. Lịch sử lưu trong RAM, mất khi server khởi động lại.",
+                    "Only allowlisted sample URLs are used. Cart, checkout and account pages are excluded. History is in RAM and clears on server restart.",
+                  )}
             </p>
             <div className="flex flex-wrap items-end gap-3">
               <div className="w-full min-w-0 space-y-2 sm:w-auto sm:flex-1">

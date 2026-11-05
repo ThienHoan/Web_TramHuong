@@ -1,0 +1,180 @@
+{
+  "batchIds": [
+    "P3-01",
+    "P4-01",
+    "P5-01a",
+    "P6-01a",
+    "P7-review",
+    "P8-01",
+    "P9-01a",
+    "P9-01b"
+  ],
+  "checkedAt": "2026-11-05T11:34:07.703624+07:00",
+  "scope": "source_and_local_fixtures_only",
+  "allLiveConnectionsComplete": false,
+  "productionReady": false,
+  "design": "17-remaining-phases.md",
+  "acceptance": "18-connection-status-and-acceptance.md",
+  "verification": {
+    "apiFullJest": {
+      "command": "pnpm exec jest --runInBand --silent --json --outputFile=/private/tmp/tramhuong-remaining-phases-jest.json",
+      "passedSuites": 52,
+      "passedTests": 692,
+      "failedTests": 0
+    },
+    "apiConnectionsAlias": {
+      "command": "pnpm run test:connections",
+      "passedSuites": 7,
+      "passedTests": 113
+    },
+    "webConnectionsAlias": {
+      "command": "pnpm run test:connections",
+      "healthTests": 7,
+      "oauthTests": 19,
+      "network": false
+    },
+    "webAnalytics": {
+      "command": "pnpm run test:analytics",
+      "passedTests": 59,
+      "network": false
+    },
+    "apiBuild": "PASS",
+    "apiScopedLint": "PASS",
+    "webTypecheck": "PASS",
+    "webScopedLint": "PASS",
+    "scriptSyntax": "PASS",
+    "gitDiffCheck": "PASS",
+    "browser": {
+      "result": "PASS",
+      "viewportWidths": [
+        375,
+        1440
+      ],
+      "providers": 11,
+      "healthRequests": 6,
+      "loadingRows": 11,
+      "states": [
+        "ready",
+        "refresh",
+        "error",
+        "retry",
+        "loading",
+        "vi",
+        "en"
+      ],
+      "horizontalOverflow": false,
+      "javascriptErrors": [],
+      "externalRequests": [],
+      "providerRequests": 0,
+      "hostedDatabaseWrites": 0,
+      "fixtureOnly": true
+    },
+    "probe": {
+      "widths": [
+        375,
+        1440
+      ],
+      "horizontalOverflow": false,
+      "javascriptErrors": [],
+      "knownOutOfScopeFindings": [
+        "existing_product_hover_scale",
+        "legacy_lab_scroll_widget",
+        "existing_brand_border_scrollbar_and_focus_conventions"
+      ],
+      "screenshotsViewed": true,
+      "fullLabStyleCertification": false
+    },
+    "notRun": [
+      "hosted_schema_or_RLS_validation",
+      "live_provider_acceptance",
+      "real_Google_OAuth_login",
+      "production_web_build_prerender",
+      "SQL_fixtures_unchanged"
+    ]
+  },
+  "sideEffects": {
+    "newMigrations": 0,
+    "hostedDatabaseWrites": 0,
+    "liveProviderApiCalls": 0,
+    "realEmails": 0,
+    "shipments": 0,
+    "realPaymentsOrOrders": 0,
+    "realAccountCreations": 0,
+    "productionDeployments": 0,
+    "billingOrDnsChanges": 0,
+    "realEnvEdits": 0,
+    "commitsOrPushes": 0,
+    "publicDocumentationReads": true,
+    "temporaryBrowserToolPackagesInstalled": 2
+  },
+  "retainedBehavior": [
+    "SMTP_default_for_transactional_mail",
+    "legacy_chat_and_Supabase_auth_reused",
+    "GHN_SePay_orders_vouchers_unchanged",
+    "new_feature_flags_default_off"
+  ],
+  "remainingCodeAndExternalGates": [
+    "hosted_delivery_foundation_verification",
+    "atomic_notification_source_events_and_durable_delivery",
+    "live_transports_and_distributed_budgets",
+    "FTS_SQL_and_relevance_benchmark_before_vector",
+    "hosted_OAuth_same_email_linking_and_owner_reauthentication",
+    "representative_image_benchmark_before_Cloudinary",
+    "Merchant_account_data_source_OAuth_and_incremental_sync",
+    "GA4_attribution_item_parameters_financial_purchase_guest",
+    "GSC_property_OAuth_durable_sync",
+    "PSI_approved_URL_project_quota_durable_audits",
+    "Turnstile_live_siteverify",
+    "integrated_staging_end_to_end_acceptance"
+  ],
+  "runtime": {
+    "mockLab": "http://localhost:4400/vi/integration-lab/analytics",
+    "ports": [
+      4400,
+      4401
+    ],
+    "leftRunningForReview": true,
+    "realCredentialsRead": false
+  },
+  "files": [
+    "apps/api/package.json",
+    "apps/api/src/chat/catalog-advisor.contract.ts",
+    "apps/api/src/chat/catalog-advisor.controller.spec.ts",
+    "apps/api/src/chat/catalog-advisor.controller.ts",
+    "apps/api/src/chat/catalog-advisor.service.spec.ts",
+    "apps/api/src/chat/catalog-advisor.service.ts",
+    "apps/api/src/chat/chat.module.ts",
+    "apps/api/src/integrations/integration-health.controller.ts",
+    "apps/api/src/integrations/integration-health.service.ts",
+    "apps/api/src/integrations/integration-health.spec.ts",
+    "apps/api/src/integrations/integrations.module.ts",
+    "apps/api/src/mail/email-provider.spec.ts",
+    "apps/api/src/mail/email-provider.ts",
+    "apps/api/src/mail/mail.module.ts",
+    "apps/api/src/mail/mail.service.spec.ts",
+    "apps/api/src/mail/mail.service.ts",
+    "apps/api/src/mail/mock-resend-email.provider.ts",
+    "apps/api/src/mail/smtp-email.provider.ts",
+    "apps/api/src/merchant/merchant.controller.spec.ts",
+    "apps/api/src/merchant/merchant.controller.ts",
+    "apps/api/src/merchant/merchant.mapper.ts",
+    "apps/api/src/merchant/merchant.module.ts",
+    "apps/api/src/merchant/merchant.service.ts",
+    "apps/api/src/merchant/merchant.spec.ts",
+    "apps/web/package.json",
+    "apps/web/scripts/fixtures/analytics-lab.tsx",
+    "apps/web/scripts/test-google-auth.cjs",
+    "apps/web/scripts/test-integration-health.cjs",
+    "apps/web/scripts/verify-integration-health-ui.cjs",
+    "apps/web/src/app/[locale]/(auth)/login/page.tsx",
+    "apps/web/src/app/[locale]/admin/dashboard/page.tsx",
+    "apps/web/src/app/auth/callback/route.ts",
+    "apps/web/src/components/admin/IntegrationHealthPanel.tsx",
+    "apps/web/src/lib/integration-health.ts",
+    "apps/web/src/lib/oauth-return.ts",
+    "docs/integrations/07-testing-guide.md",
+    "docs/integrations/17-remaining-phases.md",
+    "docs/integrations/18-connection-status-and-acceptance.md",
+    "docs/integrations/implementation-progress.md"
+  ]
+}

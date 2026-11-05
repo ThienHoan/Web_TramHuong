@@ -1,187 +1,103 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { content_v2_1, auth } from '@googleapis/content';
 import { ProductsService } from '../products/products.service';
-import { Database } from '../common/types/database.types';
-
-type ProductRow = Database['public']['Tables']['products']['Row'];
-type TranslationRow =
-  Database['public']['Tables']['product_translations']['Row'];
-
-// Intersection type matching what ProductsService.findAll returns
-type MerchantProduct = ProductRow & {
-  translation?: TranslationRow;
-};
+import type { IntegrationRegistry } from '../integrations/integrations.config';
+import { IntegrationExecutor } from '../integrations/integration-executor';
+import { mapMerchantProduct } from './merchant.mapper';
 
 @Injectable()
 export class MerchantService {
-  private readonly logger = new Logger(MerchantService.name);
-  private merchantId: string;
-  private contentApi: content_v2_1.Content;
-
   constructor(
-    private configService: ConfigService,
-    private productsService: ProductsService,
-  ) {
-    this.merchantId =
-      this.configService.get<string>('GOOGLE_MERCHANT_ID') || '';
-    this.initGoogleClient();
-  }
+    private readonly config: ConfigService,
+    private readonly products: ProductsService,
+    private readonly registry: IntegrationRegistry,
+    private readonly executor: IntegrationExecutor,
+  ) {}
 
-  private initGoogleClient() {
-    try {
-      const clientEmail = this.configService.get<string>('GOOGLE_CLIENT_EMAIL');
-      let privateKey = this.configService.get<string>('GOOGLE_PRIVATE_KEY');
-
-      if (!clientEmail || !privateKey || !this.merchantId) {
-        this.logger.warn(
-          'Google Merchant credentials missing. Sync will not work.',
-        );
-        return;
-      }
-
-      // Handle Base64 encoded Private Key (for Production envs)
-      if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-        try {
-          const decoded = Buffer.from(privateKey, 'base64').toString('utf8');
-          if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-            privateKey = decoded;
-          }
-        } catch {
-          // Ignore error, assume it might be raw but malformed, let GoogleAuth handle or fail later
-        }
-      }
-
-      // Handle escaped newlines (common in .env files)
-      privateKey = privateKey.replace(/\\n/g, '\n');
-
-      const authClient = new auth.GoogleAuth({
-        credentials: {
-          client_email: clientEmail,
-          private_key: privateKey,
-        },
-        scopes: ['https://www.googleapis.com/auth/content'],
-      });
-
-      this.contentApi = new content_v2_1.Content({
-        auth: authClient,
-      });
-
-      this.logger.log('Google Merchant API client initialized properly.');
-    } catch (error) {
-      this.logger.error('Failed to initialize Google Merchant client', error);
-    }
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
-    timeZone: 'Asia/Ho_Chi_Minh',
-  })
-  async handleCron() {
-    this.logger.log(
-      'Cron Job Started: Syncing products to Google Merchant Center...',
-    );
-    try {
-      const result = await this.syncProducts();
-      this.logger.log(`Cron Job Finished: ${JSON.stringify(result)}`);
-    } catch (error) {
-      this.logger.error('Cron Job Failed:', error);
-    }
-  }
-
-  async syncProducts() {
-    if (!this.contentApi) {
-      throw new Error('Merchant API not initialized. Check .env');
-    }
-
-    const products = await this.productsService.findAll('vi', {
-      limit: 1000,
-      page: 1,
-    });
-    // Explicitly cast to MerchantProduct[] because findAll returns a complex inferred type
-    const productList = products.data as unknown as MerchantProduct[];
-
-    if (productList.length === 0) {
-      return { message: 'No products to sync' };
-    }
-
-    const batchSize = 25; // Safe batch size
-    const results = [];
-
-    for (let i = 0; i < productList.length; i += batchSize) {
-      const batch = productList.slice(i, i + batchSize);
-      const entries = batch.map((product, index) => {
-        // Now 'product' is typed as simple MerchantProduct, properties are accessible.
-        // DB fields: price is number, sale_price is number | null
-        const price = product.price;
-        const backendUrl =
-          this.configService.get<string>('FRONTEND_URL') ||
-          'https://tramhuongthienphuchue.com';
-
-        const title = product.translation?.title || 'Product';
-        const description = product.translation?.description || '';
-
-        return {
-          batchId: i + index,
-          merchantId: this.merchantId,
-          method: 'insert', // upsert
-          product: {
-            offerId: product.id,
-            title: title,
-            description: description,
-            link: `${backendUrl}/products/${product.slug}`,
-            // Images is string[] | null in DB types usually, check null safety
-            imageLink:
-              product.images && product.images.length > 0
-                ? product.images[0]
-                : '',
-            contentLanguage: 'vi',
-            targetCountry: 'VN',
-            feedLabel: 'VN',
-            channel: 'online',
-            availability:
-              product.quantity && product.quantity > 0
-                ? 'in stock'
-                : 'out of stock',
-            condition: 'new',
-            price: {
-              value: price.toString(),
-              currency: 'VND',
-            },
-            shipping: [
-              {
-                country: 'VN',
-                price: {
-                  value: price >= 300000 ? '0' : '30000',
-                  currency: 'VND',
-                },
-              },
-            ],
-          },
-        };
-      });
-
-      try {
-        this.logger.log(
-          `Syncing batch ${i / batchSize + 1}... Merchant ID: ${this.merchantId}`,
-        );
-        const response = await this.contentApi.products.custombatch({
-          requestBody: { entries },
-        });
-        results.push(response.data);
-      } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const errorDetails = error.response?.data || error.message;
-        this.logger.error(
-          `Batch sync failed for index ${i}. Reason: ${JSON.stringify(errorDetails)}`,
-        );
-      }
-    }
-
+  status() {
     return {
-      success: true,
-      batches_processed: Math.ceil(productList.length / batchSize),
-      detailed_results: results,
+      source: 'configuration' as const,
+      mode: this.registry.merchant.mode,
+      apiVersion: 'products/v1',
+      liveAvailable: false,
+      schedulerEnabled: false,
+      persistence: 'none',
+      blockers: [
+        'MERCHANT_ACCOUNT_AND_DATA_SOURCE',
+        'OAUTH_RIGHTS',
+        'CATALOG_ELIGIBILITY',
+        'LIVE_TRANSPORT_NOT_RELEASED',
+      ],
     };
+  }
+
+  // Explicit manual mock preview, never a Google write or a scheduled sync.
+  async syncProducts(source: 'mock' = 'mock') {
+    if (
+      source !== 'mock' ||
+      this.registry.merchant.mode !== 'mock' ||
+      !['development', 'test'].includes(
+        this.config.get<string>('NODE_ENV') ?? '',
+      )
+    )
+      throw new ServiceUnavailableException('MERCHANT_PREVIEW_NOT_EXECUTABLE');
+    try {
+      const result = await this.executor.runMock(
+        'merchant',
+        'catalog_preview',
+        'read',
+        async (signal) => {
+          const catalog = await this.products.findAll('vi', {
+            page: 1,
+            limit: 20,
+          });
+          signal.throwIfAborted();
+          if (!Array.isArray(catalog.data) || catalog.data.length > 20)
+            throw new Error('MERCHANT_CATALOG_INVALID');
+          const baseUrl = this.config.get<string>('FRONTEND_URL') ?? '';
+          const evaluatedAt = new Date();
+          const items = catalog.data.map((product) => {
+            try {
+              return {
+                outcome: 'candidate' as const,
+                input: mapMerchantProduct(product, baseUrl, evaluatedAt),
+              };
+            } catch (error: unknown) {
+              return {
+                outcome: 'ineligible_source' as const,
+                input: null,
+                reason:
+                  error instanceof Error &&
+                  /^MERCHANT_[A-Z_]+$/.test(error.message)
+                    ? error.message
+                    : 'MERCHANT_SOURCE_INELIGIBLE',
+              };
+            }
+          });
+          return {
+            items,
+            evaluatedAt: evaluatedAt.toISOString(),
+            candidateCount: items.filter((p) => p.outcome === 'candidate')
+              .length,
+          };
+        },
+      );
+      return {
+        ...this.status(),
+        source: 'mock',
+        result: 'preview',
+        synced: false,
+        scope: 'first_page_only',
+        limit: 20,
+        ...result.data,
+        limitations: [
+          'NOT_GOOGLE_APPROVAL',
+          'NO_CATALOG_WRITES_OR_DELETIONS',
+          'NO_ACCOUNT_SHIPPING_OR_RETURNS_VALIDATION',
+        ],
+      };
+    } catch {
+      throw new ServiceUnavailableException('MERCHANT_PREVIEW_UNAVAILABLE');
+    }
   }
 }

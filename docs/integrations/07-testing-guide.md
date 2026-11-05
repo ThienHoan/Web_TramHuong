@@ -1,5 +1,57 @@
 # Cách kiểm thử hạ tầng tích hợp
 
+## Dashboard vận hành + rollback tích hợp (P9-02) — 05/11/2026
+
+`pnpm --dir apps/api run test:ops`: 2 suite Jest (29 cases) + kiểm thử tích hợp
+cài 8 migration vào một PGlite, chạy service thật (GA4, thông báo, Merchant,
+GSC, PSI), đối chiếu số liệu dashboard rồi chạy toàn bộ script pause (59 checks).
+Xem panel: `QA_API_PORT=4411 QA_WEB_PORT=4410 pnpm --dir apps/api run demo:analytics -- --ops-metrics-fixture`
+rồi mở http://localhost:4410/vi/integration-lab/analytics. Chi tiết: [29](./29-ops-metrics-dashboard.md).
+
+## Merchant send fence (P8-03) — 05/11/2026
+
+`pnpm --dir apps/api run test:merchant-queue`: 4 suite Jest (85 cases) + workflow
+P8-02 (24 checks) + kiểm thử fence hai worker (52 checks) trên PGlite. Kỳ vọng
+`sendOrder` là giá cũ rồi giá mới nhất, `deferred:1` khi worker thứ hai gặp sản
+phẩm đang gửi. Không gọi Google. Chi tiết và rollback: [28](./28-merchant-send-fence.md).
+
+## Notification, media, Merchant — cập nhật05/11/2026
+
+FullAPI58suites/816testsPASS. `test:notifications` gồm source/SMTP/provider/HTTP
+và exactSQL37 +actualTSworkflow19checks; `test:merchant-queue` gồm mapper/service/
+HTTP và exactSQL/TS24checks, có A→B→A/restart/UNKNOWN/roles/pause. Không realmail,
+Google hoặc hostedwrites. `benchmark:media` đo12ảnh local, không Cloudinary/CWV.
+[Hướng dẫn kích hoạt](./23-activation-guide.md) có flags/SQL/API/rollback và giới hạn;
+đây chưa phải tất cả phase live hoàn tất. Các số liệu các batch bên dưới là lịch sử.
+
+## FTS và chat nối thật vào catalog — cập nhật05/11/2026
+
+`pnpm --dir apps/api run test:catalog-search` →5suites/106tests+58PostgreSQL
+in-memory checksPASS. `pnpm --dir apps/web run test:chat` →4client/SSEtestsPASS.
+FullAPIhiện55suites/757PASS. Labanalytics đã có ChatModule thật dùng catalog mẫu:
+mở chat và hỏi **Sản phẩm mẫu dưới 200k**; bản `/en/` hỏi **sample item under200000VND**
+(có thể dùng khoảng trắng giữa under và số). Kỳ vọng thẻ sản phẩm100000VND,
+không gọi Gemini/Google/Supabase thật. Widget vẫn giữ bố cục hiện có.
+Chat hiện là catalog assistance; không dùng lịch sử để tạo freeform model answer.
+
+FTS mặc địnhtắt; chưa cài trên Supabase. GóiSQLtestDB/máyđo/metadata/pause trong
+[19-catalog-fts.md](./19-catalog-fts.md). Khi chưa cài hoặc RPC lỗi, advisor dùng
+bounded_keyword/100candidates cùng searchFallbackReason rõ ràng; flag không đủ
+để chứng nhận hosted search đã chạy. Không cần embeddings/Gemini key để test.
+
+## Các batch kết nối mới05/11/2026
+
+Chạy `pnpm --dir apps/api run test:connections` →7suites/113testsPASS;
+`pnpm --dir apps/web run test:connections` →7health+19OAuth testsPASS.
+API tests chỉ mở localhost/mock auth/DB/provider, không cần credentials hoặc
+server có sẵn. Web tests không network. FullAPI52suites/692testsPASS và web
+analytics59testsPASS. Mở lab bằng `pnpm --dir apps/api run demo:analytics` rồi
+vào `http://localhost:4400/vi/integration-lab/analytics` để xem panel11tích hợp.
+Lab hiển thị cấu hình fixture, không đọc env/provider thật. Dashboard ADMIN chính
+có panel tương tự gọi health API bằng session thật sau khi backend được restart.
+Routes mới, browser checks, giới hạn và blockers trong
+[18-connection-status-and-acceptance.md](./18-connection-status-and-acceptance.md).
+
 ## 1. Chạy kiểm thử tự động trên máy
 
 Tại terminal:
@@ -67,7 +119,7 @@ pnpm --dir apps/api run test:analytics chạy43APItests và73SQLchecks+40roundin
 
 ## 7. Search Console mock (P2-02a)
 
-Chạy `pnpm --dir apps/api run test:seo` (34 backend tests, có HTTP loopback) và `pnpm --dir apps/web run test:seo` (7 schema/fetch tests, không network). Không cần Google credentials hoặc SQL. Full API regression04/11:39suites/416testsPASS. Bộ script có thể cần quyền mở cổng loopback trong sandbox; không dùng AppModule hoặc env thật.
+Chạy `pnpm --dir apps/api run test:seo` (4 suite Jest có HTTP loopback + kiểm thử SQL lưu trữ bền vững 50 checks trên PGlite, cập nhật05/11) và `pnpm --dir apps/web run test:seo` (8 schema/fetch tests, không network). Bật lưu DB thử nghiệm: xem [26](./26-search-console-durable-store.md). Không cần Google credentials hoặc SQL. Full API regression04/11:39suites/416testsPASS. Bộ script có thể cần quyền mở cổng loopback trong sandbox; không dùng AppModule hoặc env thật.
 
 Demo chung `pnpm --dir apps/api run demo:analytics`, mở [lab tiếng Việt](http://localhost:4400/vi/integration-lab/analytics). Panel Search Console ở đầu trang dùng synthetic admin token **chỉ trong file QA**, server vẫn chạy AuthGuard/RolesGuard thật. Đây không phải tài khoản Supabase. Nhấn Đồng bộ mẫu: xuất hiện14 ngày Pacific,2 ngày thiếu,4 truy vấn,1 trang sản phẩm CTR thấp. Bấm lại không cộng trùng. Ba lượt sync liên tiếp trong cùng phút có thể chạm30read attempts/phút, báo quota và giữ timestamp/bảng cũ; chờ phút sau thử lại. Daily hard cap100attempts/process, restart demo reset RAM/budget. Không gọi Google.
 
@@ -77,7 +129,7 @@ Xem [11-search-console-mock.md](./11-search-console-mock.md) cho contract, file 
 
 ## 8. PageSpeed diagnostics mock (P2-03a)
 
-`pnpm --dir apps/api run test:pagespeed`:54cases (41service+13HTTP loopback). `pnpm --dir apps/web run test:pagespeed`:10schema/fetch cases, không network. Không cần API key, SQL hoặc Supabase credentials. FullAPI04/11:41suites/470testsPASS; APIbuild/scopedlint/webtsc/scopedlintPASS.
+`pnpm --dir apps/api run test:pagespeed`: 4 suite Jest (87 cases, có HTTP loopback) + kiểm thử SQL lịch sử bền vững 58 checks trên PGlite (cập nhật05/11). `pnpm --dir apps/web run test:pagespeed`: 11 schema/fetch cases, không network. Bật lưu lịch sử vào DB thử nghiệm: xem [27](./27-pagespeed-durable-history.md). Không cần API key, SQL hoặc Supabase credentials. FullAPI04/11:41suites/470testsPASS; APIbuild/scopedlint/webtsc/scopedlintPASS.
 
 Demo `pnpm --dir apps/api run demo:analytics`, mở [lab](http://localhost:4400/vi/integration-lab/analytics), tìm **PageSpeed · Mẫu**. Chọn URL/mobile→Đo mẫu:4Lighthouse scores, labLCP/CLS/TBT và1history. Bấm lại:cached/history1. Bấm **PageSpeed mẫu: sang ngày mới** rồi đo lại:history2 và4regression warnings (86→71points,2200→3000msLCP,0.04→0.12CLS,160→410msTBT, ngày giả05→06/11/2026). Đồng hồ này chỉ trong RAM, không đổi OS/GSC/GA4. Ngày giả luân phiên nhanh/chậm; bước tiếp có thể cải thiện.
 

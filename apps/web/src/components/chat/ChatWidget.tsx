@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from '@/i18n/routing';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
@@ -10,6 +11,7 @@ import { X, Send, Sparkles, MessageSquare, Trash2, Square, RotateCcw } from 'luc
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from 'sonner';
 import { usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 interface Message {
     role: 'user' | 'model';
@@ -36,6 +38,10 @@ const WELCOME_DELAY_MS = 8000; // 8 seconds
 
 export default function ChatWidget() {
     const pathname = usePathname();
+    const locale = useLocale() === 'en' ? 'en' : 'vi';
+    const suggestions = locale === 'en'
+        ? ['Agarwood gift ideas', 'Incense for a quiet evening', 'Incense cones under 500k', 'Agarwood bracelets']
+        : SUGGESTIONS;
     const isPreview = pathname.endsWith('/3d-lab') || /\/admin(?:\/|$)/.test(pathname);
     const isLanding = /^\/(vi|en)?\/?$/.test(pathname);
     const { user } = useAuth();
@@ -100,27 +106,18 @@ export default function ChatWidget() {
     // Get current storage key
     const storageKey = getChatStorageKey(user?.id ?? null);
 
-    // Load chat history when user changes or on mount
+    // New conversations stay in page memory, including for guests. Never read a
+    // previous account's messages from localStorage after login/logout.
     useEffect(() => {
         const currentUserId = user?.id ?? null;
-
-        // Reload history when user changes (login/logout/switch)
         if (prevUserIdRef.current !== currentUserId) {
-            const saved = localStorage.getItem(storageKey);
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    // Ensure we only load up to MAX_MESSAGES
-                    setMessages(Array.isArray(parsed) ? parsed.slice(-MAX_MESSAGES) : []);
-                } catch {
-                    setMessages([]);
-                }
-            } else {
-                setMessages([]);
-            }
+            abortControllerRef.current?.abort();
+            setMessages([]);
+            setStreamingContent('');
+            setLastFailedMessage(null);
             prevUserIdRef.current = currentUserId;
         }
-    }, [user?.id, storageKey]);
+    }, [user?.id]);
 
     // Scroll to bottom
     useEffect(() => {
@@ -134,12 +131,11 @@ export default function ChatWidget() {
         // setIsOpen(false); 
     });
 
-    // Save messages to localStorage with limit
+    // Bound in-memory history; never persist raw conversation text.
     const saveMessages = useCallback((msgs: Message[]) => {
         const trimmed = msgs.slice(-MAX_MESSAGES);
-        localStorage.setItem(storageKey, JSON.stringify(trimmed));
         return trimmed;
-    }, [storageKey]);
+    }, []);
 
     const handleStopStream = () => {
         if (abortControllerRef.current) {
@@ -182,7 +178,8 @@ export default function ChatWidget() {
                     toast.error(error);
                 },
                 // signal
-                abortControllerRef.current.signal
+                abortControllerRef.current.signal,
+                locale
             );
 
             // Stream complete - finalize message
@@ -231,9 +228,12 @@ export default function ChatWidget() {
     };
 
     const handleClearHistory = () => {
-        localStorage.removeItem(storageKey);
+        handleStopStream();
+        try { localStorage.removeItem(storageKey); localStorage.removeItem("chat_history_guest"); } catch { /* Storage can be blocked. */ }
         setMessages([]);
-        toast.success('Đã xóa lịch sử chat trên thiết bị này');
+        setStreamingContent('');
+        setLastFailedMessage(null);
+        toast.success(locale === 'en' ? 'Conversation cleared on this device' : 'Đã xóa lịch sử chat trên thiết bị này');
     };
 
     if (isPreview) return null;
@@ -246,7 +246,7 @@ export default function ChatWidget() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="bg-white w-[350px] md:w-[400px] h-[500px] md:h-[600px] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden"
+                        className="bg-white w-[min(350px,calc(100vw-3rem))] md:w-[400px] h-[500px] md:h-[600px] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden"
                         ref={chatRef}
                     >
                         {/* Header */}
@@ -256,24 +256,22 @@ export default function ChatWidget() {
                                     <Sparkles size={16} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">Chuyên gia Trầm Hương</h3>
+                                    <h3 className="font-bold text-sm">{locale === 'en' ? 'Thiên Phúc AI assistant' : 'Trợ lý AI Thiên Phúc'}</h3>
                                     <p className="text-[10px] opacity-90 flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                        {isLoading ? 'Đang trả lời...' : 'Sẵn sàng hỗ trợ'}
+                                        {locale === 'en' ? (isLoading ? 'Responding…' : 'Ready to help') : (isLoading ? 'Đang trả lời…' : 'Sẵn sàng hỗ trợ')}
                                     </p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-1">
-                                {messages.length > 0 && (
-                                    <button
+                                <button
                                         onClick={handleClearHistory}
                                         className="hover:bg-white/20 p-1.5 rounded transition-colors"
-                                        title="Xóa lịch sử chat"
+                                        title={locale === 'en' ? 'Clear conversation on this device' : 'Xóa lịch sử chat trên thiết bị này'}
                                     >
                                         <Trash2 size={16} />
                                     </button>
-                                )}
-                                <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded transition-colors">
+                                <button aria-label={locale === "en" ? "Close AI assistant" : "Đóng trợ lý AI"} onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -291,13 +289,13 @@ export default function ChatWidget() {
                                         <Sparkles size={32} />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="font-semibold text-gray-800">Xin chào!</p>
+                                        <p className="font-semibold text-gray-800">{locale === 'en' ? 'Hello!' : 'Xin chào!'}</p>
                                         <p className="text-sm text-gray-500 max-w-[200px] mx-auto">
-                                            Tôi là AI tư vấn viên của Thiên Phúc. Bạn cần tìm sản phẩm gì hôm nay?
+                                            {locale === 'en' ? 'I am the Thiên Phúc AI assistant. What product are you looking for?' : 'Tôi là trợ lý AI của Thiên Phúc. Bạn cần tìm sản phẩm gì hôm nay?'}
                                         </p>
                                     </div>
                                     <div className="grid grid-cols-1 gap-2 pt-4">
-                                        {SUGGESTIONS.map(s => (
+                                        {suggestions.map(s => (
                                             <button
                                                 key={s}
                                                 onClick={() => handleSuggestionClick(s)}
@@ -325,6 +323,10 @@ export default function ChatWidget() {
                             </div>
                         </div>
 
+                        <p className="px-3 py-2 text-xs leading-relaxed text-stone-600">
+                            {locale === 'en' ? 'AI product suggestions may be inaccurate. Do not share personal details, passwords or OTPs. Conversations stay in page memory. ' : 'Gợi ý từ AI có thể chưa chính xác. Không gửi thông tin cá nhân, mật khẩu hoặc OTP. Hội thoại chỉ giữ trong bộ nhớ trang. '}
+                            <Link href="/policies/privacy" className="underline underline-offset-4">{locale === 'en' ? 'Privacy notice' : 'Chính sách dữ liệu'}</Link>
+                        </p>
                         {/* Input */}
                         <div className="p-3 border-t bg-white shrink-0">
                             <form
@@ -335,7 +337,7 @@ export default function ChatWidget() {
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Đặt câu hỏi..."
+                                    placeholder={locale === 'en' ? 'Ask about a product…' : 'Đặt câu hỏi về sản phẩm…'}
                                     className="flex-1 text-sm bg-gray-50 border-gray-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-trad-primary"
                                     disabled={isLoading}
                                 />
@@ -395,7 +397,7 @@ export default function ChatWidget() {
                                 <Sparkles size={16} />
                             </div>
                             <p className="text-sm text-gray-700 leading-relaxed">
-                                Chào bạn! 👋 Mình là trợ lý trầm hương <strong>Thiên Phúc</strong>. Mình có thể giúp bạn chọn trầm hợp gu hoặc gợi ý quà tặng tinh tế.
+                                Chào bạn! 👋 Mình là trợ lý AI trầm hương <strong>Thiên Phúc</strong>. Mình có thể giúp bạn chọn trầm hợp gu hoặc gợi ý quà tặng tinh tế.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -424,6 +426,9 @@ export default function ChatWidget() {
 
             {/* Launcher Button */}
             <motion.button
+                type="button"
+                aria-label={locale === "en" ? (isOpen ? "Close AI assistant" : "Open AI assistant") : (isOpen ? "Đóng trợ lý AI" : "Mở trợ lý AI")}
+                aria-expanded={isOpen}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => { setIsOpen(!isOpen); setShowWelcomeBubble(false); }}

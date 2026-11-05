@@ -332,11 +332,11 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                 <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-trad-border-warm">
                                     <div className="flex flex-col items-center text-center gap-2">
                                         <AppIcon name="verified" className="text-trad-primary !text-[32px]" />
-                                        <span className="text-xs font-medium text-trad-text-main">100% Tự nhiên</span>
+                                        <span className="text-xs font-medium text-trad-text-main">Thông tin sản phẩm</span>
                                     </div>
                                     <div className="flex flex-col items-center text-center gap-2">
                                         <AppIcon name="local_shipping" className="text-trad-primary !text-[32px]" />
-                                        <span className="text-xs font-medium text-trad-text-main">Giao hàng nhanh</span>
+                                        <span className="text-xs font-medium text-trad-text-main">Theo dõi đơn hàng</span>
                                     </div>
                                     <div className="flex flex-col items-center text-center gap-2">
                                         <AppIcon name="security" className="text-trad-primary !text-[32px]" />

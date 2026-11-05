@@ -91,7 +91,6 @@ export default function ResetPasswordPage() {
                     console.error('[Reset Password] Error getting user:', userError);
                 }
                 const userEmail = user?.email || '';
-                console.log('[Reset Password] User email:', userEmail);
 
                 // Sign out to invalidate session - user must login with NEW password
                 console.log('[Reset Password] Signing out...');

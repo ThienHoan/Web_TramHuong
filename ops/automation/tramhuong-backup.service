@@ -1,0 +1,20 @@
+[Unit]
+Description=Thien Phuc encrypted database and Storage backup
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tramhuong-ops
+Group=tramhuong-ops
+WorkingDirectory=/opt/tramhuong/apps/api
+EnvironmentFile=/etc/tramhuong-automation/backup.env
+ExecStart=/usr/bin/node scripts/automation/cli.cjs backup --execute
+StateDirectory=tramhuong-automation
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/tramhuong-automation
+TimeoutStartSec=1h

@@ -1,5 +1,7 @@
 'use client';
 
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { useForm } from 'react-hook-form';
@@ -23,6 +25,7 @@ const contactSchema = z.object({
 type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
     const locale = useLocale();
@@ -37,15 +40,16 @@ export default function ContactPage() {
     });
 
     const onSubmit = async (data: ContactFormValues) => {
-        if (!protection.canSubmit) return;
+        if (!protection.canSubmit || !privacyAccepted) return;
         setSubmissionError(null);
         setIsSubmitting(true);
         try {
-            await submitContact({ ...data, ...(protection.token ? { turnstileToken: protection.token } : {}) });
+            await submitContact({ ...data, legalAcceptance: legalAcceptance(), ...(protection.token ? { turnstileToken: protection.token } : {}) });
             toast.success('Đã gửi lời nhắn thành công!', {
                 description: 'Cảm ơn bạn đã chia sẻ câu chuyện. Chúng tôi sẽ phản hồi sớm nhất.',
             });
             reset();
+            setPrivacyAccepted(false);
         } catch (error) {
             setSubmissionError(error instanceof Error ? error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
             toast.error('Gửi thất bại', {
@@ -117,7 +121,7 @@ export default function ContactPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-trad-text-main">Thư tín</p>
-                                                    <p className="text-sm text-stone-600 mt-1">tamgiao@thienphuc.vn</p>
+                                                    <p className="text-sm text-stone-600 mt-1">{SHOP_CONTACT.email}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-4">
@@ -209,11 +213,12 @@ export default function ContactPage() {
                                                 </div>
                                                 {errors.message && <p className="text-red-500 text-xs mt-1 ml-1">{errors.message.message}</p>}
                                             </div>
+                                            <LegalConsent purpose="contact" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
                                             {/* Submit Button */}
                                             <ContactProtection protection={protection} locale={locale} disabled={isSubmitting} />
                                             {submissionError && <p role="alert" className="text-sm text-red-700">{submissionError}</p>}
                                             <button
-                                                disabled={isSubmitting || !protection.canSubmit}
+                                                disabled={isSubmitting || !protection.canSubmit || !privacyAccepted}
                                                 type="submit"
                                                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-trad-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-trad-primary/25 transition-all hover:bg-trad-primary-dark hover:shadow-trad-primary/40 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                                             >

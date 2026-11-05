@@ -239,16 +239,11 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                 <section className="w-full bg-zen-100/50 dark:bg-white/5 py-24 px-4">
                     <div className="max-w-md mx-auto text-center space-y-6">
                         <AppIcon name="spa" className="text-4xl text-primary font-light" />
-                        <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-zen-900 dark:text-white">Subscribe to Stillness</h2>
+                        <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-zen-900 dark:text-white">Stories of Stillness</h2>
                         <p className="text-sm text-zen-600 dark:text-gray-400 font-light leading-relaxed">
-                            Receive contemplative stories, exclusive release news, and guides on the art of incense directly to your inbox.
+                            Explore contemplative stories, collection news and guides on the art of incense in our journal.
                         </p>
-                        <form className="flex flex-col gap-4 pt-4">
-                            <div className="flex border-b border-zen-800 dark:border-white/50">
-                                <input className="w-full bg-transparent py-3 text-sm focus:outline-none placeholder:text-zen-400 dark:placeholder:text-gray-500 text-zen-900 dark:text-white" placeholder="Your email address" type="email" />
-                                <button className="text-xs font-bold uppercase tracking-widest text-zen-900 dark:text-white hover:text-primary transition-colors">Join</button>
-                            </div>
-                        </form>
+                        <p className="text-sm leading-relaxed">Newsletter subscriptions are not available yet. Read stories in our journal.</p>
                     </div>
                 </section>
             </main>

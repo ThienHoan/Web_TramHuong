@@ -19,6 +19,11 @@ import {
   type AuditStrategy,
   type PagespeedMockAdapter,
 } from './pagespeed.adapter';
+import type {
+  PagespeedHistoryStore,
+  PagespeedLease,
+  StoredPagespeedReport,
+} from './pagespeed.repository';
 
 const DAY = 86400000;
 const THRESHOLD_KEYS = {
@@ -188,6 +193,7 @@ export class PagespeedService {
     { at: string; error: string | null }
   >();
   private running = false;
+  private storeRunning = false;
   private readonly thresholds: RegressionThresholds;
   constructor(
     private readonly registry: IntegrationRegistry,
@@ -198,6 +204,8 @@ export class PagespeedService {
     thresholds: RegressionThresholds = pagespeedThresholds({
       get: () => undefined,
     }),
+    // Opt-in TEST DB history (FEATURE_PAGESPEED_PERSISTENCE_ENABLED); else RAM.
+    private readonly store?: PagespeedHistoryStore,
   ) {
     // Validate injected config too; do not let NaN disable regression warnings.
     this.thresholds = pagespeedThresholds({
@@ -208,6 +216,25 @@ export class PagespeedService {
         return thresholds[key];
       },
     });
+  }
+  private restore(reports: StoredPagespeedReport[]) {
+    this.history.clear();
+    this.attempts.clear();
+    for (const report of reports) {
+      const key = report.targetId + ':' + report.strategy;
+      this.history.set(key, report.samples);
+      if (report.lastAttemptAt)
+        this.attempts.set(key, {
+          at: report.lastAttemptAt,
+          error: report.lastError,
+        });
+    }
+    this.storeRunning = reports.some((report) => report.running);
+  }
+  async report() {
+    if (this.mode() === 'mock' && this.store)
+      this.restore(await this.store.read());
+    return this.summary();
   }
   private mode(): 'disabled' | 'mock' | 'blocked' {
     const mode = this.registry.pagespeed.mode;
@@ -267,17 +294,19 @@ export class PagespeedService {
     return {
       source: 'mock' as const,
       mode,
-      persistence: 'process_memory' as const,
+      persistence: this.store
+        ? ('database' as const)
+        : ('process_memory' as const),
       schedulerEnabled: false,
       blockers: [
         'APPROVED_PUBLIC_URLS_AND_PROJECT_QUOTA_PENDING',
-        'DURABLE_HISTORY_PENDING',
+        ...(this.store ? [] : ['DURABLE_HISTORY_PENDING']),
         'REAL_FIELD_CONTRACT_PENDING',
       ],
       cacheHours: 24,
       historyPerPair: 30,
       thresholds: { ...this.thresholds },
-      running: visible && this.running,
+      running: visible && (this.running || this.storeRunning),
       excluded: [
         { path: 'cart', reason: 'SESSION_DRAWER' },
         { path: '/checkout', reason: 'SESSION_DEPENDENT' },
@@ -321,23 +350,52 @@ export class PagespeedService {
     const key = targetId + ':' + strategy;
     if (this.running)
       throw new ConflictException('PAGESPEED_AUDIT_IN_PROGRESS');
-    const samples = this.history.get(key) ?? [];
-    const latest = samples.at(-1);
-    if (latest && this.now() - Date.parse(latest.storedAt) < DAY)
-      return { ...this.summary(), result: 'cached' as const };
+    if (!this.store) {
+      const latest = this.history.get(key)?.at(-1);
+      if (latest && this.now() - Date.parse(latest.storedAt) < DAY)
+        return { ...this.summary(), result: 'cached' as const };
+    }
     this.running = true;
     const at = new Date(this.now()).toISOString();
-    this.attempts.set(key, { at, error: null });
+    let lease: PagespeedLease | undefined;
+    let storageFailed = false;
     try {
+      let latestMeasuredAt: string | null;
+      if (this.store) {
+        // DB decides cache (24h) and the per-pair lease across instances.
+        const begun = await this.store.begin(targetId, strategy);
+        if (begun.cached) {
+          this.restore(await this.store.read());
+          return { ...this.summary(), result: 'cached' as const };
+        }
+        lease = begun;
+        latestMeasuredAt = begun.latestMeasuredAt;
+      } else {
+        this.attempts.set(key, { at, error: null });
+        latestMeasuredAt = this.history.get(key)?.at(-1)?.measuredAt ?? null;
+      }
       const result = await this.executor.runMock(
         'pagespeed',
         'lighthouse_audit',
         'read',
-        (signal) =>
-          this.adapter.audit(
+        async (signal) => {
+          // Durable budget per attempt (incl. retry). A store outage is not a
+          // provider outage: no retry, no provider call, no circuit count.
+          if (this.store) {
+            try {
+              await this.store.reserve();
+            } catch (error) {
+              if (error instanceof IntegrationFailure) throw error;
+              storageFailed = true;
+              throw new IntegrationFailure('REJECTED');
+            }
+          }
+          signal.throwIfAborted();
+          return this.adapter.audit(
             { url: target.url, strategy, categories: PAGESPEED_CATEGORIES },
             signal,
-          ),
+          );
+        },
       );
       const sample = normalizePagespeedSample(
         result.data,
@@ -347,15 +405,33 @@ export class PagespeedService {
         this.now(),
       );
       if (
-        latest &&
-        Date.parse(sample.measuredAt) <= Date.parse(latest.measuredAt)
+        latestMeasuredAt &&
+        Date.parse(sample.measuredAt) <= Date.parse(latestMeasuredAt)
       )
         throw new Error('NON_INCREMENTAL_SAMPLE');
-      this.history.set(key, [...samples.slice(-29), sample]);
+      if (this.store && lease)
+        this.restore(await this.store.record(lease, sample));
+      else
+        this.history.set(key, [
+          ...(this.history.get(key) ?? []).slice(-29),
+          sample,
+        ]);
     } catch (error: unknown) {
+      if (error instanceof ConflictException) throw error;
       const code =
-        error instanceof IntegrationFailure ? error.code : 'INVALID_RESPONSE';
+        storageFailed || error instanceof ServiceUnavailableException
+          ? 'STORAGE_UNAVAILABLE'
+          : error instanceof IntegrationFailure
+            ? error.code
+            : 'INVALID_RESPONSE';
       this.attempts.set(key, { at, error: code });
+      if (this.store && lease) {
+        try {
+          await this.store.fail(lease, code);
+        } catch {
+          // Lease expires on its own; previous samples are untouched.
+        }
+      }
       throw new HttpException(
         'PAGESPEED_' + code,
         ['RATE_LIMITED', 'QUOTA_EXCEEDED'].includes(code) ? 429 : 503,

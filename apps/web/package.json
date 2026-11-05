@@ -9,7 +9,11 @@
     "lint": "eslint",
     "test:analytics": "node scripts/test-analytics.cjs",
     "test:seo": "node scripts/test-search-console.cjs",
-    "test:pagespeed": "node scripts/test-pagespeed.cjs"
+    "test:pagespeed": "node scripts/test-pagespeed.cjs",
+    "test:google-auth": "node scripts/test-google-auth.cjs",
+    "test:chat": "node scripts/test-chat-contract.cjs",
+    "test:connections": "node scripts/test-integration-health.cjs && node scripts/test-google-auth.cjs",
+    "test:checkout": "node --test scripts/test-checkout-attempt.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

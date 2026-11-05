@@ -33,6 +33,15 @@ test('validates mock source and fails closed for live/scheduled/unknown property
     assert.equal(schema.safeParse({ ...report, ...patch }).success, false);
   }
 });
+test('accepts the opt-in durable mock store but no other persistence claim', () => {
+  const { searchConsoleSchema: schema } = load();
+  assert.equal(schema.safeParse({ ...report, persistence: 'database' }).success, true);
+  for (const persistence of ['google', 'live_archive', undefined]) {
+    assert.equal(schema.safeParse({ ...report, persistence }).success, false);
+  }
+  // Durable storage never turns the synthetic property into live data.
+  assert.equal(schema.safeParse({ ...report, persistence: 'database', source: 'google' }).success, false);
+});
 test('rejects malformed, external and PII-bearing page URLs without throwing', () => {
   const { searchConsoleSchema: schema } = load();
   for (const key of ['broken', 'https://real.example/', 'https://mock.example.invalid/?email=secret', 'https://user:pass@mock.example.invalid/']) {

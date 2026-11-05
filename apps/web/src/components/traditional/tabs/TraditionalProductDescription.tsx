@@ -34,7 +34,7 @@ export default function TraditionalProductDescription({ product }: TraditionalPr
                         {product.translation?.description}
                     </p>
                     <p className="mt-4">
-                        Mỗi nén nhang là sự kết tinh của trời đất, qua bàn tay tỉ mỉ của những nghệ nhân lành nghề. Chúng tôi cam kết sử dụng 100% bột trầm hương tự nhiên, không hóa chất độc hại, giữ trọn vẹn mùi hương nguyên bản mộc mạc mà quyến rũ.
+                        Mỗi nén nhang là sự kết tinh của trời đất, qua bàn tay tỉ mỉ của những nghệ nhân lành nghề. Thành phần, nguồn gốc và cách sử dụng cần được đối chiếu với thông tin của từng sản phẩm. Liên hệ cửa hàng nếu bạn cần tài liệu bổ sung trước khi chọn mua.
                     </p>
                 </div>
                 {/* Visual Image */}

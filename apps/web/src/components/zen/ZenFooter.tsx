@@ -3,6 +3,8 @@
 import { BrandLockup } from "@/components/brand/BrandIdentity";
 import { Link } from '@/i18n/routing';
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
+
 export default function ZenFooter() {
     return (
         <footer className="bg-zen-100 dark:bg-[#0f0f0f] pt-20 pb-12 border-t border-zen-200 dark:border-zinc-800">
@@ -40,6 +42,7 @@ export default function ZenFooter() {
                         <a href="mailto:Hoan64735@gmail.com" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors font-light block font-zen-sans">Hoan64735@gmail.com</a>
                     </div>
                 </div>
+        <LegalLinks />
                 <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-gray-400 font-light font-zen-sans">
                     <p>© {new Date().getFullYear()} Thiên Phúc · Vietnamese Agarwood.</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">

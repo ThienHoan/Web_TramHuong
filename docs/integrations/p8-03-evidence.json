@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-05",
+  "batch": "P8-03",
+  "scope": "local_mock_test_only",
+  "sql": {
+    "result": "PASS",
+    "checks": 52,
+    "exactSql": true,
+    "engine": "PGlite_in_memory_single_connection",
+    "workers": 2,
+    "realTsServiceRepositoryConsumer": true,
+    "sendOrderMicros": ["200000000000", "300000000000"],
+    "oneInFlightPerProduct": true,
+    "busyDeferredUnsentAttemptRestored": true,
+    "generationOrderedStarts": true,
+    "duplicateBeginStale": true,
+    "crashedInflightExpiresStaleTokenRejected": true,
+    "lostMutationLeaseBecomesUnknown": true,
+    "ownershipAndMalformedRowRefused": true,
+    "browserRolesDenied": true,
+    "repeatInstallRefused": true,
+    "pauseDrain503ZeroClaims": true,
+    "mutationTests": {
+      "noBusyCheckDetected": true,
+      "noMonotonicStartedCheckDetected": true,
+      "noCoalesceOnPayloadKeysDetected": true,
+      "deferWithoutStartedProofDetected": true,
+      "migrationRestoredSameSha1": true
+    },
+    "googleCalls": 0,
+    "hostedWrites": 0
+  },
+  "regression": {
+    "merchantWorkflowP8_02": 24,
+    "notificationsSql": [37, 19],
+    "foundationSql": 57,
+    "merchantQueueJest": 85,
+    "notificationsJest": 60
+  },
+  "api": {
+    "suites": 65,
+    "passed": 940,
+    "failed": 0,
+    "newCases": 16,
+    "build": "PASS",
+    "scopedLint": "PASS",
+    "tscPreExistingSpecErrors": 5
+  },
+  "requiresNewMigrationForDrain": true,
+  "hostedSql": "NOT_EXECUTED",
+  "realEnvChanged": false,
+  "liveProviderCalls": 0,
+  "commitPush": false,
+  "limitations": [
+    "fence_lease_60s_must_exceed_transport_deadline",
+    "no_provider_side_conditional_write_readback_reconciliation_required_live",
+    "deferral_consumes_one_mock_budget_unit"
+  ],
+  "remaining": [
+    "hosted_test_db_install_and_metadata_check",
+    "merchant_account_data_source_oauth_live_adapter",
+    "readback_reconciliation",
+    "source_write_atomicity_and_deletion_diff",
+    "scheduler",
+    "integrated_live_acceptance"
+  ]
+}

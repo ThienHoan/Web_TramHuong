@@ -1,4 +1,7 @@
 "use client";
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { legalAcceptance } from '@/lib/legal';
+import { beginCheckoutAttempt } from '@/lib/checkout-attempt';
 import { useAnalyticsView, useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
 import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
@@ -40,6 +43,7 @@ import ShippingQuotePanel, {
 import { useShippingAvailability } from "@/hooks/useShippingAvailability";
 
 export default function ZenCheckout() {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const ghnCheckout = useShippingAvailability();
   const [shippingSelection, setShippingSelection] = useState<ShippingSelection>(
     { enabled: false, ready: false, quote: null },
@@ -194,12 +198,15 @@ export default function ZenCheckout() {
       return;
     }
     setCheckoutError("");
+    try { beginCheckoutAttempt(); }
+    catch { setCheckoutError('Your browser cannot save this checkout attempt. Allow site storage and try again.'); return; }
     analytics?.track('add_shipping_info', { shipping_tier: 'delivery', items: cartAnalyticsItems(items) });
     setStep("payment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCompleteOrder = async () => {
+    if (!termsAccepted) return;
     if (isSubmitting) return;
     if (
       shippingSelection.enabled &&
@@ -215,6 +222,7 @@ export default function ZenCheckout() {
 
     try {
       const payload = {
+        legalAcceptance: legalAcceptance(),
         shippingQuoteReference: shippingSelection.quote?.reference,
         items: items.map((item) => ({
           productId: item.id,
@@ -248,7 +256,7 @@ export default function ZenCheckout() {
         paymentMethod: paymentMethod,
       };
 
-      const order = await createOrder(payload);
+      const order = await createOrder(payload, user?.id || null);
 
       clearCart();
 
@@ -305,7 +313,7 @@ export default function ZenCheckout() {
                 <CheckoutPrimaryButton
                   type="button"
                   onClick={handleCompleteOrder}
-                  disabled={isSubmitting || quotePending || !items.length}
+                  disabled={isSubmitting || quotePending || !items.length || !termsAccepted}
                 >
                   {isSubmitting
                     ? "Placing your order…"
@@ -319,7 +327,9 @@ export default function ZenCheckout() {
                 </CheckoutPrimaryButton>
               ) : undefined
             }
-          />
+          >
+            {step === "payment" && <LegalConsent purpose="order" checked={termsAccepted} onChange={setTermsAccepted} disabled={isSubmitting} />}
+          </CheckoutSummary>
         }
       >
         {checkoutError && <CheckoutNotice>{checkoutError}</CheckoutNotice>}
@@ -347,6 +357,7 @@ export default function ZenCheckout() {
               title="Recipient details"
               description="Tell us who will receive your order and where to find them."
             >
+              <p className="mb-4 text-sm leading-relaxed">Recipient details support delivery quotes, fulfilment and order support. When GHN is used, the necessary details are shared with the delivery provider. <Link href="/policies/privacy" className="underline underline-offset-4">How we use this data</Link>.</p>
               <form
                 id="zen-recipient-form"
                 className="checkout-form"

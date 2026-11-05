@@ -10,15 +10,18 @@ import {
   ForbiddenException,
   BadRequestException,
   Query,
+  Optional,
 } from '@nestjs/common';
 import type { Request as ExpressRequest } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { legalReceipt } from '../legal/legal-acceptance';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from '../auth/auth.guard';
 
 interface RequestWithUser extends ExpressRequest {
   user: {
     id: string;
-    role: string;
+    role: Role;
     email: string;
   };
 }
@@ -33,7 +36,10 @@ import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 @Controller('orders')
 @UseGuards(AuthGuard, RolesGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    @Optional() private readonly config?: ConfigService,
+  ) {}
 
   @Post('lookup')
   @Public()
@@ -49,13 +55,19 @@ export class OrdersController {
     const userId = req.user?.id || null;
     const { items, shipping_info, paymentMethod, voucherCode } =
       body as CreateOrderDto & { voucherCode?: string };
+    const receipt = legalReceipt(
+      body.legalAcceptance,
+      'order_fulfilment_and_terms',
+      this.config?.get('LEGAL_CONSENT_ENFORCED') === 'true',
+    );
     return this.ordersService.create(
       userId,
       items,
-      shipping_info,
+      { ...shipping_info, ...(receipt ? { legal_acceptance: receipt } : {}) },
       paymentMethod,
       voucherCode,
       body.shippingQuoteReference,
+      body.idempotencyKey,
     );
   }
 
@@ -89,7 +101,10 @@ export class OrdersController {
     const { content, transferAmount, id } = body;
 
     if (!content) return { success: false, reason: 'No content' };
-    if (!Number.isFinite(Number(transferAmount)) || Number(transferAmount) <= 0) {
+    if (
+      !Number.isFinite(Number(transferAmount)) ||
+      Number(transferAmount) <= 0
+    ) {
       throw new BadRequestException('Invalid transfer amount');
     }
 
@@ -136,7 +151,6 @@ export class OrdersController {
       limit: limit ? parseInt(limit) : 20,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (user.role === Role.CUSTOMER) {
       return this.ordersService.findAllForUser(user.id, options);
     }

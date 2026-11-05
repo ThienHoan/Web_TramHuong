@@ -21,7 +21,9 @@ Fields have visible labels, autocomplete, inline validation, error associations 
 
 The existing order endpoints, quote references, voucher checks, SePay redirects and cart clearing after successful creation are retained. The Zen quantity controls now pass absolute quantities to CartProvider rather than increments. There are no backend, schema, credential or environment changes in this increment.
 
-The pre-existing showroom address/policy in the payment handler still needs operator confirmation before operational use. Existing commerce transaction boundaries and live carrier/payment acceptance remain separate work; this UI verification does not certify them.
+The pre-existing showroom address/policy in the payment handler still needs operator confirmation before operational use. Live carrier/payment acceptance remains separate work; this UI verification does not certify it.
+
+Update 2026-11-06: order creation, stock and voucher usage now commit in one database transaction with retry-safe idempotency keys. See [checkout/atomic-checkout.md](./checkout/atomic-checkout.md) (migration prepared, not yet installed).
 
 ## Verification
 

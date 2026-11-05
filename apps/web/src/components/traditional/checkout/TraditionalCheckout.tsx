@@ -9,6 +9,7 @@ import { Link, useRouter } from "@/i18n/routing";
 import TraditionalHeader from "@/components/traditional/TraditionalHeader";
 import TraditionalFooter from "@/components/traditional/TraditionalFooter";
 import GuestCheckoutForm, { type GuestSubmitData } from "./GuestCheckoutForm";
+import { beginCheckoutAttempt } from '@/lib/checkout-attempt';
 import { useShippingAvailability } from "@/hooks/useShippingAvailability";
 import {
   CheckoutCard,
@@ -139,6 +140,7 @@ export default function TraditionalCheckout() {
     setLoading(true);
     setError("");
     try {
+      beginCheckoutAttempt();
       localStorage.setItem(
         "checkout_shipping_info",
         JSON.stringify({
@@ -244,6 +246,7 @@ export default function TraditionalCheckout() {
               title="Thông tin người nhận"
               description="Cho chúng tôi biết tên, số liên hệ và địa chỉ chi tiết của bạn."
             >
+              <p className="mb-4 text-sm leading-relaxed">Thông tin người nhận được dùng để tính phí, giao hàng và hỗ trợ đơn. Nếu dùng GHN, thông tin cần thiết được chuyển cho đơn vị vận chuyển. <Link href="/policies/privacy" className="underline underline-offset-4">Cách sử dụng dữ liệu</Link>.</p>
               <GuestCheckoutForm
                 showSubmit={false}
                 onSubmit={continueCheckout}

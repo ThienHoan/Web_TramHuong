@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tự động hóa · Thiên Phúc</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script src="/demo.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">THIÊN PHÚC / VẬN HÀNH</p>
+          <h1>Tự động hóa</h1>
+          <p class="intro">Thử các tác vụ trước khi đưa cửa hàng lên VPS.</p>
+        </div>
+        <span class="local">Bản thử localhost</span>
+      </header>
+      <div class="notice">
+        <strong>Dữ liệu giả lập, xử lý tại máy.</strong
+        ><span
+          >Không tạo đơn thật, không gửi email/Telegram, không đọc DB đang
+          dùng.</span
+        >
+      </div>
+      <div class="summary" aria-label="Tổng quan">
+        <div><span>Đơn mẫu</span><strong id="orders">0</strong></div>
+        <div><span>Liên hệ mẫu</span><strong id="contacts">0</strong></div>
+        <div><span>Thông báo gửi thật</span><strong>0</strong></div>
+      </div>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Thông báo đơn & liên hệ</h2>
+            <p>Tạo dữ liệu mẫu, sau đó chạy hàng đợi để xem kết quả.</p>
+          </div>
+          <button class="primary" data-action="drain">Chạy hàng đợi</button>
+        </div>
+        <div class="actions">
+          <button data-action="order">Tạo đơn mẫu</button
+          ><button data-action="contact">Tạo liên hệ mẫu</button>
+        </div>
+        <ul id="queue" class="records">
+          <li class="empty">
+            Chưa có sự kiện. Tạo một đơn hoặc liên hệ mẫu để bắt đầu.
+          </li>
+        </ul>
+      </section>
+      <div class="columns">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Giám sát kết nối</h2>
+              <p>Cảnh báo sau hai lần lỗi liên tiếp; ghi nhận khi phục hồi.</p>
+            </div>
+          </div>
+          <div id="health" class="health" aria-label="Trạng thái kết nối">
+            <span>Chưa chạy kiểm tra</span>
+          </div>
+          <div class="actions">
+            <button data-action="down">Mô phỏng mất kết nối</button
+            ><button data-action="recover">Khôi phục kết nối</button>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Sao lưu có mã hóa</h2>
+              <p>Gói dữ liệu PostgreSQL mẫu và một tệp ảnh giả lập.</p>
+            </div>
+          </div>
+          <p id="backup-status" class="backup-status">Chưa có bản sao lưu</p>
+          <p class="helper">
+            Kiểm tra giải mã và toàn vẹn tệp; chưa thay thế việc thử khôi phục
+            DB thật.
+          </p>
+          <div class="actions">
+            <button data-action="backup">Tạo & kiểm tra bản sao lưu</button>
+          </div>
+        </section>
+      </div>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Nhật ký cảnh báo</h2>
+            <p>
+              “Đã ghi nhận tại máy” là kết quả của bản thử, chưa phải giao tin
+              nhắn.
+            </p>
+          </div>
+        </div>
+        <ul id="alerts" class="records">
+          <li class="empty">Chưa có cảnh báo.</li>
+        </ul>
+      </section>
+      <p id="feedback" role="status" aria-live="polite">Đang tải bản thử…</p>
+    </main>
+  </body>
+</html>

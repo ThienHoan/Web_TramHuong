@@ -18,6 +18,7 @@ import { captureServerPurchase, type PurchaseResult } from "@/lib/ga4/purchase";
 import { SearchConsolePanel } from "@/components/admin/SearchConsolePanel";
 import { PagespeedPanel } from "@/components/admin/PagespeedPanel";
 import { LocalGa4TestPanel } from "@/components/analytics/LocalGa4TestPanel";
+import { IntegrationHealthPanel } from "@/components/admin/IntegrationHealthPanel";
 import "@/app/[locale]/admin/admin.css";
 
 interface PurchaseFixture {
@@ -138,6 +139,12 @@ export default function AnalyticsLab() {
   };
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-8">
+      <div
+        className="admin-workspace"
+        style={{ display: "block", minHeight: 0 }}
+      >
+        <IntegrationHealthPanel token="seo-admin-fixture" isAdmin />
+      </div>
       <LocalGa4TestPanel token="seo-admin-fixture" />
       <SearchConsolePanel token="seo-admin-fixture" />
       <PagespeedPanel token="seo-admin-fixture" />

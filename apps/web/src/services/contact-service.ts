@@ -8,6 +8,7 @@ export interface ContactData {
     topic?: string;
     message: string;
     turnstileToken?: string;
+    legalAcceptance?: { accepted: true; version: string };
 }
 
 // Contact interface moved to @/types/contact

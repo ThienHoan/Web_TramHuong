@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Thien Phuc operations cycle every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+Unit=tramhuong-automation.service
+
+[Install]
+WantedBy=timers.target

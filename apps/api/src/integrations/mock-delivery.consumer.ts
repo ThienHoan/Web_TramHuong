@@ -10,6 +10,17 @@ import {
 import { IntegrationRepository } from './integration.repository';
 import type { IntegrationOutboxRow } from './integration-database.types';
 
+/**
+ * Thrown by a handler that made NO provider call and wants the row requeued
+ * (e.g. Merchant send fence busy). Only honoured when drain() got `defer`;
+ * otherwise it is an ordinary non-retryable failure.
+ */
+export class IntegrationDeferred extends IntegrationFailure {
+  constructor() {
+    super('CONCURRENCY_LIMIT');
+  }
+}
+
 // Explicit invocation only: no cron, no provider handler and no order hooks.
 export class MockDeliveryConsumer {
   private readonly running = new Set<IntegrationProvider>();
@@ -25,10 +36,18 @@ export class MockDeliveryConsumer {
   async drain(
     provider: IntegrationProvider,
     handler: (row: IntegrationOutboxRow, signal: AbortSignal) => Promise<void>,
+    defer?: (row: IntegrationOutboxRow) => Promise<void>,
   ) {
     requireMockIntegration(this.registry, provider);
     if (this.running.has(provider))
-      return { busy: true, claimed: 0, accepted: 0, failed: 0, conflicts: 0 };
+      return {
+        busy: true,
+        claimed: 0,
+        accepted: 0,
+        failed: 0,
+        conflicts: 0,
+        deferred: 0,
+      };
     this.running.add(provider);
     const counts = {
       busy: false,
@@ -36,6 +55,7 @@ export class MockDeliveryConsumer {
       accepted: 0,
       failed: 0,
       conflicts: 0,
+      deferred: 0,
     };
     try {
       const rows = await this.repo.claimMock(provider);
@@ -55,6 +75,16 @@ export class MockDeliveryConsumer {
             },
           );
         } catch (error: unknown) {
+          if (error instanceof IntegrationDeferred && defer) {
+            // Not finished: the caller proves no provider call happened.
+            try {
+              await defer(row);
+              counts.deferred++;
+            } catch {
+              counts.conflicts++; // lease expires → UNKNOWN, never resent
+            }
+            continue;
+          }
           counts.failed++;
           const failure =
             error instanceof IntegrationFailure

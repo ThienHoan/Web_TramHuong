@@ -235,13 +235,13 @@ export default function TraditionalProductList({ products }: { products: Product
                                 <div className="relative z-10">
                                     <h3 className="mb-3 font-display text-2xl font-bold">Lựa chọn cho gia đình</h3>
                                     <p className="mb-6 text-trad-cream/90 max-w-md">
-                                        100% Nguyên liệu tự nhiên, không hóa chất tạo mùi. An toàn cho người già, trẻ nhỏ và phụ nữ mang thai. Kiểm định bởi CASE.
+                                        Xem thành phần và hướng dẫn của từng sản phẩm trước khi chọn. Với người nhạy cảm với khói hoặc mùi hương, hãy cân nhắc điều kiện sử dụng phù hợp.
                                     </p>
                                     <ul className="space-y-2 mb-6 text-sm">
-                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Hương dịu, không gây đau đầu</li>
-                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Ít khói, phù hợp chung cư</li>
+                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Dùng ở nơi thông thoáng, theo hướng dẫn</li>
+                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Không để hương đang cháy gần vật dễ bắt lửa</li>
                                     </ul>
-                                    <a className="inline-block border-b border-white pb-1 font-bold hover:text-trad-gold hover:border-trad-gold transition-colors" href="#">Xem chứng nhận chất lượng</a>
+                                    <Link className="inline-block border-b border-white pb-1 font-bold hover:text-trad-gold hover:border-trad-gold transition-colors" href="/contact">Hỏi thêm về sản phẩm</Link>
                                 </div>
                             </div>
 
@@ -399,12 +399,9 @@ export default function TraditionalProductList({ products }: { products: Product
                         <AppIcon name="mark_email_unread" className="mb-4 text-5xl opacity-80" />
                         <h2 className="mb-4 font-display text-3xl font-bold">Thư Hương Từ Thiên Phúc</h2>
                         <p className="mx-auto mb-8 max-w-lg text-trad-bg-light/80">
-                            Đăng ký để nhận những câu chuyện về Trầm Hương và ưu đãi dành riêng cho khách hàng thân thiết.
+                            Khám phá câu chuyện trầm hương, cách lựa chọn và những nghi thức nhỏ mỗi ngày.
                         </p>
-                        <form className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-                            <input className="flex-1 rounded border-0 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 focus:bg-white focus:text-trad-text-main focus:ring-2 focus:ring-trad-primary outline-none transition-colors" placeholder="Email của bạn..." required type="email" />
-                            <button className="rounded bg-trad-primary px-8 py-3 font-bold text-white shadow-lg hover:bg-trad-primary-dark hover:text-white transition-colors" type="submit">ĐĂNG KÝ</button>
-                        </form>
+                        <p className="text-sm leading-relaxed">Đăng ký bản tin chưa được mở. Bạn có thể đọc các bài viết tại Chuyện hương trầm.</p>
                     </div>
                 </section >
             </main >

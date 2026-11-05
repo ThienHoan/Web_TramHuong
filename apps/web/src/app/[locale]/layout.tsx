@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond
 import "./../globals.css";
 import "./../atelier.css";
 import "./../brand.css";
+import "./../legal.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';

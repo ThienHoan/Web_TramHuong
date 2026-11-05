@@ -49,6 +49,8 @@ export interface Order {
 }
 
 export interface CreateOrderDto {
+    idempotencyKey?: string;
+    legalAcceptance?: { accepted: true; version: string };
     shippingQuoteReference?: string;
     items: {
         productId: string;

@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-05",
+  "batch": "P1-03b",
+  "scope": "local_offline_plus_lab",
+  "officialDocsRead": {
+    "testing": "updated 2026-10-20",
+    "serverValidation": "updated 2026-10-22",
+    "clientRendering": "updated 2026-06-17",
+    "widgetConfigurations": "updated 2026-06-28"
+  },
+  "api": {
+    "suites": 67,
+    "passed": 995,
+    "failed": 0,
+    "newCases": 36,
+    "turnstileExisting": 29,
+    "build": "PASS",
+    "scopedLint": "PASS"
+  },
+  "web": {
+    "tsc": "PASS",
+    "scopedLint": "PASS"
+  },
+  "browserLab": {
+    "fakeTurnstile": true,
+    "backendMode": "cloudflare_real_service_fake_siteverify",
+    "renders": 1,
+    "siteverifyCalls": 1,
+    "accepted": 1,
+    "saved": 1,
+    "resetAfterSubmit": true,
+    "expireHandled": true,
+    "viewports": [
+      "vi_1280",
+      "en_375"
+    ],
+    "cloudflareRequests": 0
+  },
+  "notRerun": [
+    "scripts/verify-contact-http.cjs (lab restart refused by session safety check)"
+  ],
+  "incident": {
+    "what": "unapproved real siteverify POSTs during spec development",
+    "estimatedRequests": 4,
+    "keys": "cloudflare_public_test_secret_only",
+    "data": "dummy/forged token only",
+    "cost": 0,
+    "cause": "jest.restoreAllMocks in earlier describe removed global fetch spy",
+    "fixes": [
+      "TURNSTILE_TRANSPORT DI token",
+      "per-block spy restore",
+      "global jest no-external-fetch guard + test"
+    ]
+  },
+  "approvedRealCalls": 2,
+  "pendingApproval": [
+    "optional real widget script load in browser (test sitekey)"
+  ],
+  "realEnvChanged": false,
+  "commitPush": false,
+  "approvedLiveCheck": {
+    "approval": "owner chat 05/11/2026: \"Cho phép 2 request\"",
+    "script": "apps/api/scripts/check-turnstile-live.cjs --allow-cloudflare-test-call (test keys hard-coded, .env not read)",
+    "result": "PASS",
+    "requests": 2,
+    "cases": [
+      {
+        "case": "always_pass_secret (1x...AA + dummy token)",
+        "outcome": "accepted",
+        "httpStatus": 200,
+        "ms": 1242,
+        "success": true,
+        "action": null,
+        "hostname": "example.com",
+        "challengeTsPresent": true,
+        "errorCodes": []
+      },
+      {
+        "case": "always_fail_secret (2x...AA + dummy token)",
+        "outcome": "rejected (403)",
+        "httpStatus": 200,
+        "ms": 42,
+        "success": false,
+        "action": null,
+        "hostname": null,
+        "challengeTsPresent": false,
+        "errorCodes": [
+          "invalid-input-response"
+        ]
+      }
+    ],
+    "finding": "real test-key response has hostname example.com and no action, unlike the docs sample (localhost/test); test-key mode correctly enforces success only"
+  }
+}

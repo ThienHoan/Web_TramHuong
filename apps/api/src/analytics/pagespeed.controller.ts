@@ -29,7 +29,7 @@ export class PagespeedController {
   @Get('summary')
   @Header('Cache-Control', 'no-store')
   summary() {
-    return this.pagespeed.summary();
+    return this.pagespeed.report();
   }
   @Post('audits')
   @Header('Cache-Control', 'no-store')

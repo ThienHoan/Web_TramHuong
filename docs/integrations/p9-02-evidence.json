@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-05",
+  "batch": "P9-02",
+  "scope": "local_mock_test_only",
+  "integratedRollback": {
+    "result": "PASS",
+    "checks": 59,
+    "engine": "PGlite_in_memory_single_connection",
+    "migrationsInstalled": 8,
+    "realServices": ["purchase_capture_sql", "notifications", "merchant_fence", "search_console_store", "pagespeed_store", "integration_health"],
+    "pauseScriptsRun": 8,
+    "healthReadableAfterRollback": true,
+    "rowsAndOutboxStatesIdenticalAfterRollback": true,
+    "mutationTests": {
+      "destructivePauseDetected": true,
+      "unknownCountedAsAcceptedDetected": true,
+      "anonGrantDetected": true
+    },
+    "googleCalls": 0,
+    "realEmails": 0,
+    "hostedWrites": 0
+  },
+  "correctionDuringVerification": "search_console_and_pagespeed_metrics_require_own_persistence_flag_and_installed_store",
+  "api": { "suites": 66, "passed": 959, "failed": 0, "newCases": 19, "build": "PASS", "scopedLint": "PASS", "tscPreExistingSpecErrors": 5 },
+  "web": { "integrationHealth": 9, "googleAuth": 19, "tsc": "PASS", "scopedLint": "PASS" },
+  "browser": {
+    "lab": "http://localhost:4410 (QA ports; existing lab on 4400/4401 untouched)",
+    "checked": ["vi_1440", "en_375"],
+    "horizontalOverflow": false,
+    "storeUnavailableFooterInBrowser": "NOT_RUN_covered_by_schema_and_http_tests"
+  },
+  "defaults": { "FEATURE_INTEGRATION_OPS_METRICS_ENABLED": false },
+  "hostedSql": "NOT_EXECUTED",
+  "realEnvChanged": false,
+  "liveProviderCalls": 0,
+  "commitPush": false,
+  "toolingNote": "npx prettier in apps/web downloaded prettier 3.9.10 to the npm cache; no project dependency added",
+  "remaining": ["live_provider_metrics", "ga4_data_api_or_dashboard_link", "staff_role_view_and_read_audit_log", "hosted_install_acceptance", "end_to_end_live_journeys"]
+}

@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-05",
+  "batch": "P5-03a",
+  "scope": "local_offline",
+  "officialDocsRead": {
+    "terms": "effective 2026-03-23",
+    "interactionsApi": "GA June 2026, store default true (paid 55d, free 1d), store=false opt-out",
+    "openapi": "interactions.openapi.json create/response/usage fields",
+    "models": "gemini-3.5-flash-lite / gemini-3.8-flash for new projects; gemini-2.5-flash deprecated (routes 2026-12-01)",
+    "pricing": "3.5 Flash-Lite free tier used to improve products; paid $0.30/1M in, $2.50/1M out"
+  },
+  "sql": {
+    "result": "PASS",
+    "checks": 20,
+    "engine": "PGlite"
+  },
+  "api": {
+    "suites": 68,
+    "passed": 1035,
+    "failed": 0,
+    "newCases": 40,
+    "build": "PASS",
+    "scopedLint": "PASS",
+    "tscPreExistingSpecErrors": 5
+  },
+  "combinedChecker": {
+    "components": 11,
+    "checks": 17,
+    "result": "PASS"
+  },
+  "existingKeyFormat": "valid (value not shown)",
+  "realGeminiCalls": 1,
+  "hostedWrites": 0,
+  "ownerPending": [],
+  "realEnvChanged": false,
+  "commitPush": false,
+  "correction": {
+    "source": "31-localhost-turnstile-gemini.md (owner decisions recorded 16:46 by another session)",
+    "changes": [
+      "GEMINI_PAYLOAD_POLICY default catalog_only (no free-form question leaves server)",
+      "acceptance script defaults to 1 call"
+    ],
+    "api": {
+      "suites": 68,
+      "passed": 1038,
+      "failed": 0
+    },
+    "geminiCases": 43
+  },
+  "approvedLiveCall": {
+    "approval": "owner chat 05/11/2026: \"Đã xong, gọi 1 lần\" (SQL installed, GEMINI_BILLING_TIER set)",
+    "script": "apps/api/scripts/check-gemini-live.cjs --allow-gemini-calls (default 1 call)",
+    "model": "gemini-3.5-flash-lite",
+    "billingTier": "free",
+    "payloadPolicy": "catalog_only",
+    "store": false,
+    "catalog": "synthetic 6 products",
+    "question": "synthetic: \"vòng tay trầm hương cho nam\"",
+    "result": "PASS",
+    "geminiCalls": 1,
+    "source": "gemini",
+    "pick": "Vòng tay trầm hương nam 12 ly",
+    "totalTokens": 325,
+    "reservedTokens": 749,
+    "latencyMs": 2933,
+    "structuredOutputSupported": true,
+    "durableUsageReadBack": {
+      "environment": "staging",
+      "requests": "1/200",
+      "tokens": "749/300000 (reserved, no refund by design)"
+    },
+    "customerData": false,
+    "keyPrinted": false
+  },
+  "remaining": [
+    
+    "paid tier + production gate before real shoppers",
+    "owner catalog relevance check on real products"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "notificationsSql": {
+    "batch": "P4-02a",
+    "engine": "in-memory PostgreSQL",
+    "checks": 37,
+    "schema": "PASS",
+    "pause": "PASS",
+    "duplicateCaptures": 5,
+    "atomicityScope": "committed_snapshot_capture_and_publication_not_original_order_write",
+    "hostedWrites": 0,
+    "realEmails": 0,
+    "remoteRequests": 0
+  },
+  "notificationsWorkflow": {
+    "batch": "P4-02b",
+    "checks": 19,
+    "result": "PASS",
+    "exactSql": true,
+    "realTsServices": true,
+    "templateRendering": true,
+    "processRestartSimulation": true,
+    "unknownNotRetried": true,
+    "hostedWrites": 0,
+    "realEmails": 0,
+    "simulations": 2,
+    "smtpCalls": 0
+  },
+  "merchantWorkflow": {
+    "batch": "P8-02b",
+    "result": "PASS",
+    "checks": 24,
+    "exactSql": true,
+    "realTsQueueRepositoryConsumer": true,
+    "source": "synthetic_products_service",
+    "abaGenerations": true,
+    "restartDeduplication": true,
+    "unknownNotRetried": true,
+    "enqueueSerialization": "postgres_advisory_lock_not_live_delivery_fencing",
+    "simulations": 3,
+    "googleCalls": 0,
+    "hostedWrites": 0
+  },
+  "date": "2026-11-05",
+  "scope": "local_mock_only",
+  "fullApi": {
+    "suites": 58,
+    "passed": 816,
+    "failed": 0
+  },
+  "webConnections": 26,
+  "mediaSamples": 12,
+  "hostedInstall": "NOT_EXECUTED",
+  "allPhasesComplete": false,
+  "liveReleaseReady": false,
+  "realEnvEdited": false,
+  "commitPush": false,
+  "metadataChecker": {
+    "checks": 8,
+    "result": "PASS",
+    "covers": [
+      "missing",
+      "both_installed",
+      "repeat_install_refused_transaction_rolled_back",
+      "notification_pause",
+      "merchant_pause"
+    ]
+  },
+  "dashboardBrowser": {
+    "result": "PASS",
+    "viewportWidths": [
+      375,
+      1440
+    ],
+    "providers": 11,
+    "healthRequests": 6,
+    "loadingRows": 11,
+    "states": [
+      "ready",
+      "refresh",
+      "error",
+      "retry",
+      "loading",
+      "vi",
+      "en"
+    ],
+    "horizontalOverflow": false,
+    "javascriptErrors": [],
+    "externalRequests": [],
+    "providerRequests": 0,
+    "hostedDatabaseWrites": 0,
+    "fixtureOnly": true
+  },
+  "verification": {
+    "apiBuild": "PASS",
+    "apiScopedLint": "PASS",
+    "webTypecheck": "PASS",
+    "webScopedLint": "PASS",
+    "diffCheck": "PASS",
+    "productionWebBuild": "NOT_RUN"
+  },
+  "remainingCode": [
+    "original_transaction_notification_hooks_and_reconciliation",
+    "live_transports_and_durable_token_budgets",
+    "gsc_pagespeed_durable_history_and_scheduler",
+    "merchant_outbound_version_fencing_full_reconciliation",
+    "hosted_oauth_linking_policy",
+    "runtime_operational_metrics"
+  ]
+}

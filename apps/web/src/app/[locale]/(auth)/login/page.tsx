@@ -1,17 +1,22 @@
 
 'use client';
 
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { legalAcceptance } from '@/lib/legal';
+import { Link } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { oauthCallbackUrl } from '@/lib/oauth-return';
 
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
 import TraditionalFooter from '@/components/traditional/TraditionalFooter';
 import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function LoginPage() {
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -36,15 +41,11 @@ export default function LoginPage() {
         const savedEmail = localStorage.getItem('rememberedEmail');
         const wasRemembered = localStorage.getItem('rememberMe') === 'true';
 
-        console.log('[Remember Me Load] savedEmail:', savedEmail);
-        console.log('[Remember Me Load] wasRemembered:', wasRemembered);
 
         if (savedEmail && wasRemembered) {
             setEmail(savedEmail);
             setRememberMe(true);
-            console.log('[Remember Me Load] ✅ Auto-filled email:', savedEmail);
         } else {
-            console.log('[Remember Me Load] ❌ No saved email found');
         }
     }, []);
 
@@ -55,6 +56,7 @@ export default function LoginPage() {
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (mode === "SIGNUP" && !privacyAccepted) { setError("Vui lòng đọc chính sách và đồng ý tạo tài khoản."); return; }
         setLoading(true);
         setError(null);
 
@@ -69,17 +71,13 @@ export default function LoginPage() {
 
                 // Save email preference for better UX (NOT password - security)
                 // Session is already persistent by default in Supabase
-                console.log('[Remember Me] Checkbox state:', rememberMe);
-                console.log('[Remember Me] Email to save:', email.trim());
 
                 if (rememberMe) {
                     localStorage.setItem('rememberMe', 'true');
                     localStorage.setItem('rememberedEmail', email.trim());
-                    console.log('[Remember Me] ✅ Saved to localStorage');
                 } else {
                     localStorage.removeItem('rememberMe');
                     localStorage.removeItem('rememberedEmail');
-                    console.log('[Remember Me] ❌ Removed from localStorage');
                 }
 
 
@@ -111,6 +109,7 @@ export default function LoginPage() {
                         data: {
                             full_name: email.trim().split('@')[0],
                             avatar_url: '',
+                            legal_acceptance: legalAcceptance(),
                         }
                     }
                 });
@@ -305,6 +304,7 @@ export default function LoginPage() {
                                             </div>
                                         )}
 
+                                        {mode === 'LOGIN' && (
                                         <div className="flex items-center justify-between">
                                             {mode === 'LOGIN' && (
                                                 <div className="flex items-center">
@@ -333,6 +333,9 @@ export default function LoginPage() {
                                                 </div>
                                             )}
                                         </div>
+                                        )}
+
+                                        {mode === "SIGNUP" ? <LegalConsent purpose="account" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={loading} /> : <p className="text-sm"><Link href="/policies/privacy" className="underline underline-offset-4">{locale === "en" ? "How we use account information" : "Cách sử dụng thông tin tài khoản"}</Link></p>}
 
                                         <div>
                                             <button
@@ -365,7 +368,7 @@ export default function LoginPage() {
                                                 onClick={() => {
                                                     supabase.auth.signInWithOAuth({
                                                         provider: 'google',
-                                                        options: { redirectTo: `${window.location.origin}/auth/callback` }
+                                                        options: { redirectTo: oauthCallbackUrl(window.location.origin, locale) }
                                                     });
                                                 }}
                                             >

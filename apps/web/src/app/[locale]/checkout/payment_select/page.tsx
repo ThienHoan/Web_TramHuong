@@ -1,4 +1,6 @@
 "use client";
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
 import { useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
 import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
@@ -24,6 +26,7 @@ import ShippingQuotePanel, {
 } from "@/components/checkout/ShippingQuotePanel";
 
 export default function PaymentSelectPage() {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [shippingSelection, setShippingSelection] = useState<ShippingSelection>(
     { enabled: false, ready: false, quote: null },
   );
@@ -111,6 +114,7 @@ export default function PaymentSelectPage() {
   }, [router, total, loading]);
 
   const handlePlaceOrder = async () => {
+    if (!termsAccepted) return;
     setError(null);
     if (!shippingInfo) {
       router.push("/checkout");
@@ -146,7 +150,7 @@ export default function PaymentSelectPage() {
           ? {
               ...shippingInfo,
               full_address:
-                "Showroom Thiên Phúc - 123 Đường Trầm Hương, Quận 1, TP. HCM",
+                SHOP_CONTACT.address,
               city: "Hồ Chí Minh", // Override specifically for showroom context if needed, or keep user's just for contact?
               // Actually, backend needs shipping info. It's better to keep user contact info but set address to showroom.
               // However, shipping_info usually implies WHERE to ship.
@@ -175,8 +179,8 @@ export default function PaymentSelectPage() {
       // If showroom, we might want to override the full address construction logic from previous step
       if (paymentMethod === "showroom") {
         fullShippingInfo.address =
-          "Showroom Thiên Phúc - 123 Đường Trầm Hương, Quận 1, TP. HCM";
-        fullShippingInfo.city = "Hồ Chí Minh";
+          SHOP_CONTACT.address;
+        fullShippingInfo.city = "Thành phố Huế";
       } else {
         // Ensure we use the full address constructed in previous step, with proper fallback
         fullShippingInfo.address =
@@ -184,6 +188,7 @@ export default function PaymentSelectPage() {
       }
 
       const order = await createOrder({
+        legalAcceptance: legalAcceptance(),
         shippingQuoteReference:
           paymentMethod === "showroom"
             ? undefined
@@ -192,7 +197,7 @@ export default function PaymentSelectPage() {
         shipping_info: fullShippingInfo,
         paymentMethod,
         voucherCode: voucherCode || undefined,
-      });
+      }, session?.user.id || null);
 
       clearCart();
 
@@ -253,7 +258,7 @@ export default function PaymentSelectPage() {
                 type="button"
                 onClick={handlePlaceOrder}
                 disabled={
-                  loading || !items.length || !shippingInfo || quotePending
+                  loading || !items.length || !shippingInfo || quotePending || !termsAccepted
                 }
               >
                 {loading
@@ -266,6 +271,7 @@ export default function PaymentSelectPage() {
               </CheckoutPrimaryButton>
             }
           >
+            <LegalConsent purpose="order" checked={termsAccepted} onChange={setTermsAccepted} disabled={loading} />
             {voucherCode && voucherDiscount > 0 && (
               <p className="checkout-form-note">
                 Mã ưu đãi đã áp dụng: <strong>{voucherCode}</strong>

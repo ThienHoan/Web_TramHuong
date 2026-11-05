@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from './mail.service';
+import { SmtpEmailProvider } from './smtp-email.provider';
 
 describe('transaction mail logging privacy', () => {
   const order = {
@@ -25,7 +26,7 @@ describe('transaction mail logging privacy', () => {
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => {});
     const service = new MailService(
-      { sendMail } as unknown as MailerService,
+      new SmtpEmailProvider({ sendMail } as unknown as MailerService),
       {} as ConfigService,
     );
     await expect(service.sendPaymentSuccess(order)).resolves.toBeUndefined();
@@ -48,7 +49,7 @@ describe('transaction mail logging privacy', () => {
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => {});
     const service = new MailService(
-      { sendMail } as unknown as MailerService,
+      new SmtpEmailProvider({ sendMail } as unknown as MailerService),
       {} as ConfigService,
     );
     await service.sendOrderConfirmation(order);

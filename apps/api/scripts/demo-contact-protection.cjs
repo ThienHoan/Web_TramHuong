@@ -23,11 +23,24 @@ const { CollectionPolicyService } = require('../src/analytics/collection-policy.
 const { LocalDebugEventService, LocalGa4TestLimitError } = require('../src/analytics/local-debug-event.service');
 const { PagespeedService } = require('../src/analytics/pagespeed.service');
 const { MockPagespeedAdapter } = require('../src/analytics/pagespeed.adapter');
+const { CacheModule } = require('@nestjs/cache-manager');
+const { ChatModule } = require('../src/chat/chat.module');
+const { ProductsService } = require('../src/products/products.service');
+const { StorageService } = require('../src/storage/storage.service');
 const { createPurchaseDatabase, seedOrder, capture, OWNER, OTHER, ORDER } = require('./fixtures/purchase-database.cjs');
+const { pgFrom } = require('./fixtures/pg-from.cjs');
 const { randomUUID, createHash } = require('node:crypto');
 
-const apiPort=4401,webPort=4400;
+// QA_API_PORT/QA_WEB_PORT let a second lab run beside an existing one (default 4401/4400).
+const qaPort=(name,fallback)=>{const v=Number(process.env[name]??fallback);if(!Number.isInteger(v)||v<1024||v>65535)throw new Error(name+' must be a port 1024-65535');return v;};
+const apiPort=qaPort('QA_API_PORT',4401),webPort=qaPort('QA_WEB_PORT',4400);
 const analyticsDemo=process.argv.includes('--analytics');
+// QA only: ops metrics panel reads the synthetic PGlite through the real RPC/service.
+const opsFixture=analyticsDemo&&process.argv.includes('--ops-metrics-fixture');
+// QA only: real ContactProtectionService in cloudflare mode with Cloudflare's documented
+// TEST keys and a FAKE siteverify transport; the lab page fakes window.turnstile. No network.
+const turnstileFixture=process.argv.includes('--turnstile-cloudflare-fixture');
+let siteverifyCalls=0,siteverifyAccepted=0;
 const liveFunnel=process.argv.includes('--ga4-funnel-live-test');
 const liveGa4=process.argv.includes('--ga4-live-test')||liveFunnel;
 const limitedFunnelFixture=process.argv.includes('--ga4-funnel-limit-fixture');
@@ -44,7 +57,7 @@ if(liveGa4){
 let analyticsMode=analyticsDemo?'mock':'disabled';
 let purchaseDb,purchaseOrderId=ORDER;
 let mode='mock',saved=0,failSave=false,shortExpiry=false,app,child;
-const config={get:(key)=>Object.hasOwn(ga4Values,key)?ga4Values[key]:key==='FEATURE_GA4_ENABLED'||key==='FEATURE_GA4_LOCAL_BROWSER_TEST_ENABLED'?String(liveGa4||fixtureGa4):key==='FEATURE_GA4_LOCAL_FUNNEL_ENABLED'?String(funnelFixture||liveFunnel):key==='GA4_LOCAL_TEST_ORIGIN'?'http://localhost:4400':key==='NODE_ENV'?'test':key==='FEATURE_TURNSTILE_ENABLED'?'true':['FEATURE_SEARCH_CONSOLE_SYNC_ENABLED','FEATURE_PAGESPEED_AUDIT_ENABLED'].includes(key)?String(analyticsDemo):undefined};
+const config={get:(key)=>Object.hasOwn(ga4Values,key)?ga4Values[key]:key==='FEATURE_GA4_ENABLED'||key==='FEATURE_GA4_LOCAL_BROWSER_TEST_ENABLED'?String(liveGa4||fixtureGa4):key==='FEATURE_GA4_LOCAL_FUNNEL_ENABLED'?String(funnelFixture||liveFunnel):key==='GA4_LOCAL_TEST_ORIGIN'?'http://localhost:4400':key==='NODE_ENV'?'test':key==='FEATURE_TURNSTILE_ENABLED'?'true':key==='FEATURE_INTEGRATION_OPS_METRICS_ENABLED'?String(opsFixture):['FEATURE_SEARCH_CONSOLE_SYNC_ENABLED','FEATURE_PAGESPEED_AUDIT_ENABLED'].includes(key)?String(analyticsDemo):undefined};
 let ga4HttpCount=0;const ga4EventNames=[];
 const localGa4Service=new LocalDebugEventService(config,loadIntegrationRegistry(config),async(url,options)=>{
  const parsed=new URL(String(url));
@@ -66,6 +79,21 @@ function resetProtection(){
  protection=new ContactProtectionService(registry,'test',new IntegrationExecutor(registry),new MockTurnstileAdapter());
 }
 resetProtection();
+const { turnstileLiveConfig } = require('../src/integrations/contact-protection.service');
+const { SiteverifyTurnstileAdapter } = require('../src/integrations/turnstile.adapter');
+function cloudflareFixtureProtection(){
+ const values={FEATURE_TURNSTILE_ENABLED:'true',INTEGRATIONS_ENV:'staging',TURNSTILE_SITE_KEY:'1x00000000000000000000AA',TURNSTILE_SECRET_KEY:'1x0000000000000000000000000000000AA'};
+ const reader={get:(key)=>values[key]};
+ const registry=loadIntegrationRegistry(reader),live=turnstileLiveConfig(reader);
+ const fakeTransport=async(url,init)=>{
+  if(url!=='https://challenges.cloudflare.com/turnstile/v0/siteverify')throw new Error('UNEXPECTED_TARGET');
+  siteverifyCalls++;
+  const ok=new URLSearchParams(String(init.body)).get('response')==='XXXX.DUMMY.TOKEN.XXXX';
+  if(ok)siteverifyAccepted++;
+  return new Response(JSON.stringify({success:ok,action:'test',hostname:'localhost','error-codes':ok?[]:['invalid-input-response']}),{status:200});
+ };
+ return new ContactProtectionService(registry,'development',new IntegrationExecutor(registry),undefined,Date.now,{config:live,adapter:new SiteverifyTurnstileAdapter(live.secret,fakeTransport)});
+}
 const facade={
  status:()=>mode==='unavailable'?{mode:'unavailable'}:protection.status(),
  issue:(origin)=>{
@@ -85,24 +113,59 @@ process.once('SIGTERM',()=>{void stop().then(()=>process.exit(0));});
  if(analyticsDemo){
   purchaseDb=await createPurchaseDatabase();
   await seedOrder(purchaseDb,ORDER,{status:'AWAITING_PAYMENT',payment_status:'pending',transaction_code:null});
+  if(opsFixture){
+   // Synthetic activity, clearly QA-keyed. Real RPC aggregates it; no real provider or DB.
+   await purchaseDb.exec(fs.readFileSync(path.join(__dirname,'../migrations/integration-ops-metrics.sql'),'utf8'));
+   const paid='20000000-0000-4000-8000-0000000000a1';
+   await seedOrder(purchaseDb,paid);await capture(purchaseDb,paid);
+   await purchaseDb.exec(`INSERT INTO integration_outbox(provider,environment,dedupe_key,event_type,operation_kind,state,attempts,last_error_code) VALUES
+    ('resend','mock','qa-ops-fixture-1','payment_success','mutation','ACCEPTED',1,NULL),
+    ('resend','mock','qa-ops-fixture-2','payment_success','mutation','ACCEPTED',1,NULL),
+    ('resend','mock','qa-ops-fixture-3','payment_success','mutation','ACCEPTED',1,NULL),
+    ('resend','mock','qa-ops-fixture-4','payment_success','mutation','UNKNOWN',1,'UNAVAILABLE'),
+    ('merchant','mock','qa-ops-fixture-5','catalog_upsert','mutation','QUEUED',0,NULL),
+    ('merchant','mock','qa-ops-fixture-6','catalog_upsert','mutation','ACCEPTED',1,NULL);
+    UPDATE integration_outbox SET updated_at=clock_timestamp() WHERE dedupe_key LIKE 'qa-ops-fixture-%';`);
+   await purchaseDb.query("SELECT integration_reserve_usage('resend','mock','emails',82,100)");
+   await purchaseDb.query("SELECT integration_reserve_usage('merchant','mock','requests',1,100)");
+   // Synthetic real-call budget rows (staging) so the panel shows the live line.
+   await purchaseDb.exec(fs.readFileSync(path.join(__dirname,'../migrations/integration-live-usage.sql'),'utf8'));
+   await purchaseDb.query("SELECT integration_reserve_live_usage('gemini','requests',1,200)");
+   await purchaseDb.query("SELECT integration_reserve_live_usage('gemini','tokens',749,300000)");
+  }
   await purchaseDb.exec('SET ROLE service_role');
  }
  const purchaseClient={
   auth:{getUser:async token=>({data:{user:token==='seo-admin-fixture'?{id:'seo-admin-fixture'}:token==='purchase-owner-fixture'?{id:OWNER}:token==='purchase-other-fixture'?{id:OTHER}:null},error:null})},
   from:table=>{
+   if(opsFixture&&purchaseDb&&table==='integration_usage_daily')return pgFrom(purchaseDb,{integration_usage_daily:['provider','environment','day','metric','used','hard_limit']})(table);
    if(table!=='users')throw new Error('REAL_DATABASE_FORBIDDEN');
    return{select:()=>({eq:(_key,id)=>({single:async()=>({data:{role:id==='seo-admin-fixture'?'ADMIN':'CUSTOMER',is_banned:false},error:null})})})};
   },
-  rpc:async(name,args)=>{
-   if(!purchaseDb||name!=='integration_record_purchase_mock')throw new Error('REAL_DATABASE_FORBIDDEN');
-   try{return{data:await capture(purchaseDb,args.p_order_id,args.p_actor_id,args.p_consent),error:null};}
-   catch(error){return{data:null,error:{code:error.code,message:'Fixture SQL rejected'}};}
+  rpc:(name,args)=>{
+   if(opsFixture&&purchaseDb&&name==='integration_ops_metrics_mock'){
+    const p=purchaseDb.query('SELECT integration_ops_metrics_mock($1) AS r',[args.p_window_days])
+     .then(r=>({data:r.rows[0].r,error:null}),e=>({data:null,error:{code:e.code,message:'Fixture SQL rejected'}}));
+    p.abortSignal=()=>p;return p;
+   }
+   return purchaseRpc(name,args);
   },
  };
- const module=await Test.createTestingModule({imports:[ContactsModule,AnalyticsModule]})
+ async function purchaseRpc(name,args){
+  if(!purchaseDb||name!=='integration_record_purchase_mock')throw new Error('REAL_DATABASE_FORBIDDEN');
+  try{return{data:await capture(purchaseDb,args.p_order_id,args.p_actor_id,args.p_consent),error:null};}
+  catch(error){return{data:null,error:{code:error.code,message:'Fixture SQL rejected'}};}
+ }
+ const module=await Test.createTestingModule({imports:[ContactsModule,AnalyticsModule,CacheModule.register({isGlobal:true}),ChatModule]})
   .overrideProvider(ConfigService).useValue(config)
+  .overrideProvider(StorageService).useValue({})
+  .overrideProvider(ProductsService).useValue({findAll:async()=>({data:[{
+   id:'00000000-0000-4000-8000-000000000001',slug:'analytics-fixture',price:100000,quantity:100,is_active:true,
+   category_id:null,variants:[],discount_percentage:0,discount_start_date:null,discount_end_date:null,
+   translation:{title:'Sản phẩm mẫu / Sample item',description:'Dữ liệu thử nghiệm tại máy.'},
+  }]})})
   .overrideProvider(SupabaseService).useValue({getClient:()=>{if(analyticsDemo)return purchaseClient;throw new Error('REAL_DATABASE_FORBIDDEN');}})
-  .overrideProvider(ContactProtectionService).useValue(facade)
+  .overrideProvider(ContactProtectionService).useValue(turnstileFixture?cloudflareFixtureProtection():facade)
   .overrideProvider(LocalDebugEventService).useValue(localGa4Service)
   .overrideProvider(PagespeedService).useValue(performanceService)
   .overrideProvider(CollectionPolicyService).useValue({isPurchaseEnabled:()=>analyticsDemo,getPolicy:()=>{
@@ -117,6 +180,7 @@ process.once('SIGTERM',()=>{void stop().then(()=>process.exit(0));});
   }}).compile();
  app=module.createNestApplication({logger:false});
  app.useBodyParser('json',{limit:'8kb'});
+ if(turnstileFixture)app.use('/api/__qa/turnstile',(_req,res)=>res.json({source:'fixture',siteverifyCalls,siteverifyAccepted,saved,cloudflareRequests:0}));
  if(funnelFixture)app.use('/api/__qa/ga4',(_req,res)=>res.json({source:'fixture',requests:ga4HttpCount,names:ga4EventNames,googleRequests:0}));
  if(analyticsDemo)app.use('/api/__qa/pagespeed',(req,res)=>{
   if(req.method==='POST'){
@@ -194,6 +258,11 @@ process.once('SIGTERM',()=>{void stop().then(()=>process.exit(0));});
   fs.mkdirSync(lab,{recursive:true});
   fs.copyFileSync(path.join(webRoot,'scripts/fixtures/analytics-lab.tsx'),path.join(lab,'page.tsx'));
  }
+ if(turnstileFixture){
+  const lab=path.join(scratch,'src/app/[locale]/integration-lab/contact');
+  fs.mkdirSync(lab,{recursive:true});
+  fs.copyFileSync(path.join(webRoot,'scripts/fixtures/turnstile-lab.tsx'),path.join(lab,'page.tsx'));
+ }
  const fonts=path.join(scratch,'font-fixtures.cjs');
  fs.writeFileSync(fonts,`module.exports = new Proxy({}, {get: () => '@font-face{font-family:"Fixture";src:local("Arial");font-style:normal;font-weight:100 900;}'});\n`);
  child=spawn(process.execPath,[path.join(webRoot,'node_modules/next/dist/bin/next'),'dev','--webpack','--hostname','127.0.0.1','--port',String(webPort)],{
@@ -204,5 +273,6 @@ process.once('SIGTERM',()=>{void stop().then(()=>process.exit(0));});
  });
  child.once('exit',()=>{void app.close();});
  console.log(`CONTACT_QA http://localhost:${webPort}/vi/contact API_FIXTURE http://127.0.0.1:${apiPort}/__qa`);
+ if(turnstileFixture)console.log(`TURNSTILE_QA http://localhost:${webPort}/vi/integration-lab/contact`);
  if(analyticsDemo)console.log(`ANALYTICS_QA http://localhost:${webPort}/vi/integration-lab/analytics`);
 })().catch(async(error)=>{console.error(error.message);await stop();process.exitCode=1;});

@@ -7,26 +7,33 @@ import {
   Min,
   IsOptional,
   IsUUID,
+  Max,
+  ArrayMinSize,
+  ArrayMaxSize,
+  MaxLength,
   // IsPhoneNumber,
   // IsEnum,
 } from 'class-validator';
+import { LegalAcceptanceDto } from '../../legal/legal-acceptance';
 import { Type } from 'class-transformer';
 
 class CartItemDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsUUID()
   productId: string;
 
   @IsInt()
   @Min(1)
+  @Max(100)
   quantity: number;
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   variantId?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   variantName?: string;
 }
 
@@ -61,10 +68,19 @@ class ShippingInfoDto {
 }
 
 export class CreateOrderDto {
+  @IsUUID()
+  idempotencyKey: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LegalAcceptanceDto)
+  legalAcceptance?: LegalAcceptanceDto;
+
   @IsOptional()
   @IsUUID()
   shippingQuoteReference?: string;
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items: CartItemDto[];

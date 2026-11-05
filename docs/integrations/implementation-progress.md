@@ -13,16 +13,83 @@ Updated: 05/11/2026 (Asia/Ho_Chi_Minh). Spec: `../TRAMHUONG_MASTER_API_IMPLEMENT
 - [x] Phase0 audit/design gate: hoàn tất với observed ERD + migration decisions dựa metadata thật; giới hạn env, Data API exposure, enum labels, auth triggers và missing account rights được ghi rõ. Đây không phải production readiness signoff.
 - [x] P1-01 config/flags/default mock policy infrastructure (10 non-GHN providers); không phải10 provider adapters đã triển khai.
 - [ ] P1-02 durable quota/outbox/inbox adaptation (depends DB-01), timeout/circuit/log redaction.
-- [x] P1-02a permission migration/rollback + local verification + signup compatibility; remote apply OWNER_REPORTED_SUCCESS03/11/2026; metadata verification pending.
+- [x] P1-02a permission migration/rollback + local verification + signup compatibility; remote apply OWNER_REPORTED_SUCCESS03/11/2026; hosted metadata VERIFIED 05/11 via owner-run combined checker (9/9 PASS, 0 FAIL) — hosted-checker-2026-11-05.json.
 - [x] P1-02b logging privacy: Supabase bootstrap bỏ URL/key-prefix/key-length, SMTP failure bỏ recipient/raw error; regression71tests PASS.
 - [x] P1-02c mock executor timeout/read retry/circuit/concurrency/rate/day budgets + safe telemetry;92tests PASS. Live transports/usage not activated.
 - [x] P1-02d durable outbox/usage additive migration + RPC contracts/pause +57localSQLchecks PASS; hosted apply NOT_EXECUTED, consumers/source transaction hooks pending.
 - [x] P1-02e typed repository + explicit mock consumer:16new tests PASS; no source hooks/cron/live activation.
 - [x] P1-03 Turnstile mock + server policy + existing contact form integration, local browser/HTTP acceptance PASS; Cloudflare live BLOCKED pending rights/keys/wiring/staging acceptance.
+- [x] P9-03 dashboard shows real-call (staging) budget per provider; hosted read-only verified 05/11.
+- [x] P5-03b owner-approved real Gemini call: 1/1 PASS (catalog_only, free, store=false), durable usage read back 05/11.
+- [x] P5-03a Gemini live product selection wired (Interactions API per 05/11 docs, store=false, enum-constrained IDs, redaction, staging gate, durable live budget RPC); SQL20 + 40 cases, full API 68/1035. Real calls 0; owner: install RPC, set billing tier, approve ≤3 synthetic calls.
+- [x] P1-03c owner-approved live siteverify with Cloudflare test keys: 2/2 PASS (accept + 403), 05/11.
+- [x] P1-03b Turnstile cloudflare mode wired (staging gate, test/real key kinds, siteverify via DI transport, explicit-render widget); 36 new cases, full API 67/995, lab browser with fake widget. Approved real calls 0; ~4 unapproved test-key calls during spec development disclosed + Jest network guard added.
 - [x] P2-01a GA4 consent +8pre-purchase funnel mock,35web tests/13policy-RBAC tests and local browser acceptance PASS; defaultOFF.
 - [x] P2-01b authenticated-owner server mock purchase, durable order/payment dedupe, quota and default-OFF subflag; local acceptance PASS.
 - [ ] GA4 hosted install + guest receipt capability + full ecommerce attribution/DebugView acceptance; P1 hosted/source-event gates remain open.
 - [ ] P2 GA4 full gate → GSC → PSI; P3 GHN compatibility review; P4 SMTP/Resend; P5 Gemini/FTS/vector conditional; P6 Google reuse; P7 Cloudinary conditional; P8 Merchant v1 migration; P9 admin acceptance.
+- [x] P4-01 SMTP provider boundary + separately injectable bounded/idempotent Resend mock; SMTP remains transactional default. Local 34 tests/build/scoped lint PASS05/11. P4-02 snapshot capture/mock worker now implemented below; atomic original-source/live delivery remain open.
+- [x] P3-01 repository GHN reuse checkpoint; existing shipping/order regression included in50suites/650testsPASS05/11. Staging transaction/callback/COD acceptance remains open.
+- [x] P8-01 legacy unconditional Content API cron removed; existing ADMIN sync becomes explicit mock-only products/v1 preview. Mapper/service/HTTP44testsPASS05/11; no Google write.
+- [x] P9-01a ADMIN/no-store health API for exactly11providers; configuration/evidence/unknownmetrics separated.10testsPASS05/11. Dashboard UI and integrated release acceptance remain open.
+- [x] P5-01a grounded catalog advisor + local Gemini ID-selection mock;41service/HTTPtestsPASS05/11. Bounded keyword100candidates, not FTS/vector/live model; legacy chat remains separate.
+- [x] P6-01a existing Supabase PKCE callback/Google locale hardening;19offlinewebtestsPASS05/11. Hosted OAuth/same-email linking collision/flag gates remain open.
+- [x] P9-01b read-only ADMIN dashboard panel11providers, VI/EN, mobile/desktop, loading/error/retry/refresh;7webcontracttests+fixturebrowserPASS05/11. Full integrated/live release still open.
+- [x] Final local verification05/11: API52suites/692testsPASS; connections7suites/113testsPASS; web26connections+59analyticsPASS; APIbuild/scopedlint and webtsc/scopedlintPASS. No new migration or live provider activation.
+- [x] P5-02a FTS additive migration/index/roles/pause/metadata package + VI/EN synthetic benchmark, local SQL verified. Hosted installation NOT_EXECUTED.
+- [x] P5-02b typed FTS repository + existing advisor wiring, defaultOFF/local-only; timeout/scope checks and explicit bounded fallback. Final API55suites/757testsPASS05/11.
+- [x] P5-01b existing JSON/SSE chat now uses grounded advisor/catalog; unmanaged Gemini SDK call path removed. VI/EN widget fixture acceptancePASS; no live model activation.
+- [x] P4-02 source snapshot capture + durable mock notification worker + private ADMIN history, SQL37/workflow19checksPASS; original source transaction/live provider still open.
+- [x] P7-01 measured12asset offline codec baseline, source unchanged; Cloudinary conditional deferred pending authorizedCDN/CWVtrial.
+- [x] P8-02 durable mock incremental queue + generation correction for A→B→A, SQL/TS24checksPASS; outboundfencing/sourcehooks/live still open.
+- [x] Latest local verification:58APIsuites/816testsPASS, build/scopedlint, webconnections26/tsc/scopedlintPASS; metadata checker8checksPASS. No all-phases/live signoff.
+- [x] P4-03a/b order-row and accepted-shipment notification sources atomic with outbox under disabled-by-default DB triggers; ADMIN reconcile. Local SQL52+54 PASS. Hosted/live open.
+- [x] P2-02b opt-in durable Search Console MOCK snapshot + global lease + durable budget per attempt; exact SQL50checks, full API62suites/891testsPASS 05/11. Hosted install/OAuth/live/scheduler open.
+- [x] P2-03b opt-in durable PageSpeed MOCK history: DB-clock 24h cache, per-pair lease/CAS, budget per attempt, newest30; exact SQL58checks, full API64suites/924testsPASS 05/11. Hosted install/key/URLs/field/scheduler open.
+- [x] P8-03 Merchant per-product send fence: one in-flight send/product across instances, generation-ordered starts, provable-unsent defer; exact SQL52 two-worker checks +4 mutation checks, full API65suites/940PASS 05/11. Drain now requires the fence migration. Live/read-back reconciliation open.
+- [x] P9-02 admin health panel shows TEST DB mock ops metrics (last success, quota today + alert, 7-day failure share, backlog, Merchant in-flight); integrated 8-migration + rollback test 59 checks; full API66suites/959PASS 05/11. Live provider metrics/staff view/audit log open.
+- [x] P3-PREP live readiness pack: names-only env checker (`check:live`, sentinel no-leak test), generated combined TEST DB checker `verify-installed-all.sql` (10 components, PGlite-verified, in-sync guard), per-provider owner checklist 30-live-readiness.md. No hosted SQL/provider call.
+- [x] P1/P5-PLAN-01 — owner-requested localhost batch allocation/review05/11: P1-03b Turnstile test-key form wiring → P5-01c Gemini Free catalog-only + durable token budget. Owner selected Free; shared-file/dependency/rollback/acceptance boundaries in31-localhost-turnstile-gemini.md. Documentation only; current contact/chat regression6suites/99testsPASS, no real provider call.
+- [ ] P1-03b — implement and offline-test Cloudflare test-key widget/Siteverify wiring on isolated RAM contact fixture, then separately approved bounded Siteverify acceptance. No dependency on installing all other integration SQL; full production Turnstile remains open.
+- [ ] P5-01c — implement Gemini Free transport with catalog-only payload and durable request/token reservations, then separately approved localhost acceptance. Model/account free eligibility and concrete budgets still unverified; existing usage RPC/repository is mock-only. Do not reuse P5-01b ID or relabel mock quota as live.
+- [ ] NEXT owner plan step 3: follow31 for P1-03b then P5-01c; SQL + combined checker apply only to relevant DB-dependent tracks. Google/Merchant/Resend need public HTTPS domain/DNS. Live defaults remain OFF.
+
+## Batch P1/P5-PLAN-01 — localhost Turnstile/Gemini phase update, 05/11/2026
+
+REQUEST: kiểm tra hai dịch vụ và đưa vào phase tương ứng, tránh ảnh hưởng phiên
+khác. OWNER DECISION: Gemini Free for localhost (explicit reply in this chat).
+SCOPE: plan/design/docs only, not runtime implementation or live activation.
+
+SOURCE FINDINGS: Siteverify adapter already exists with fake transport tests,
+but contact service/module/widget still use mock only. Current JSON/SSE chat
+uses grounded advisor; unmanaged Gemini SDK path removed, liveModelAvailable
+false. Registry only allows disabled/mock/blocked; executor and usage repository/
+SQL RPC are mock-only. Thus flags/key presence alone cannot release either live
+transport. P5-01b already names grounded chat wiring; new live batch is P5-01c.
+
+FILES: new31-localhost-turnstile-gemini.md; additive master Phase1/5 entries and
+batch order; remaining-phases17 pointer; live-readiness30 owner Free decision and
+corrected SQL dependency; this progress. No app/source/env/migration edits.
+Boundaries: shared config/module/health files must be integrated sequentially;
+no guarantee of file independence. Other Codex phase chat observed systemError;
+external Claude state not directly accessible. No process/port was stopped,
+restarted or reused. User changes remain in place.
+
+ACTUAL TESTS: existing turnstile.adapter, contact-protection.service,
+catalog-advisor.service/controller, chat.service/controller:6suites/99testsPASS.
+Initial sandbox attempt77PASS/22listenEPERM; approved loopback-only rerun99PASS.
+Providers and catalog/auth dependencies are fake. No new browser/live/hosted DB
+test, no all-phase certification. Official Cloudflare testing/Siteverify and
+Gemini terms/structured-output references checked05/11. Markdown local links,
+phase-ID/Free/status assertions and gitdiffcheck verified for this docs update.
+
+COST/RISK: zero authenticated provider calls, hosted writes, billing, secret
+reads, real.env edits, commit/push. Free tier may process input/output for model
+improvement; batch payload policy is public catalog only, never raw query/history/
+customer PII. Key's actual tier/model/quota still unknown. New batches remain
+unchecked. ROLLBACK: remove only this documentation update; runtime unchanged.
+NEXT: P1-03b offline implementation/fixture acceptance, then request approval for
+the concrete bounded Cloudflare test. P5-01c model/budget/quota design follows.
 
 ## Batch P0-01 — inventory and baseline
 
@@ -51,6 +118,342 @@ DEPENDENCIES: DB-01 metadata gap resolved for design; ENV-01 and access/account/
 Owner báo đã chạy integration-permissions.sql thành công trên Supabase thử nghiệm. Mark apply OWNER_REPORTED_SUCCESS, không phải agent-verified metadata/endpoint acceptance. Không yêu cầu chạy lại migration. Chưa có report sau apply để chứng nhận grants/RLS thực hoặc live OTP/checkout; các kiểm thử local42/28 vẫn là local evidence. SQL-access blocker của agent không còn chặn batch này vì operator đã apply. Historical NOT_APPLIED/PENDING notes below are superseded for this migration only.
 
 ## Resume instructions
+
+### Latest final activation guide — 05/11/2026
+
+Owner asked for the activation guide. Written `33-huong-dan-kich-hoat.md`
+(Vietnamese): status table, the three INTEGRATIONS_ENV modes, pre-checks,
+dashboard metrics, Turnstile (test keys / real keys), Gemini (Free,
+catalog_only, paid before shoppers), GSC/PSI sample data, GA4 state, what each
+not-yet-ready service needs, kill switch/pause, command table. Linked from 23 and
+30. Fix found while writing: dashboard metrics were readable only under
+INTEGRATIONS_ENV=mock while real calls require staging → now mock|staging
+(production still blocked); ops/health 44 tests PASS.
+
+### Earlier P9-03 real-call budget on the dashboard — 05/11/2026
+
+Owner: "Làm luôn". No new SQL. OpsMetricsRepository also reads today's
+staging rows of integration_usage_daily (allowlisted live providers, ≤20,
+strict parse); failure → liveUsageSource 'unavailable' with mock metrics kept.
+Health adds liveUsage per provider + liveUsageSource; web schema/panel show
+"Lời gọi thật hôm nay". Browser fix: live-only providers no longer show "Last
+success: None yet". Tests: 43 ops/health, web 10+19, integrated 65 checks (9
+migrations/pauses), full API 68/1052 PASS. Hosted read-only (2 requests, 0
+writes): Gemini 1/200 · 749/300000, GSC 14, PSI 1. Evidence p9-03-evidence.json.
+
+NEXT: public domain/DNS for Google services and Resend; paid tier + production
+gate before real shoppers use Gemini; final activation guide.
+
+### Earlier approved Gemini live call — 05/11/2026
+
+Owner installed integration-live-usage.sql, set GEMINI_BILLING_TIER, approved 1
+call ("Đã xong, gọi 1 lần"). check-gemini-live.cjs: 1 real Interactions API call,
+gemini-3.5-flash-lite, free tier, catalog_only, store=false, synthetic data →
+PASS, pick "Vòng tay trầm hương nam 12 ly", 325 tokens (749 reserved), 2933 ms;
+structured output confirmed. TEST DB read-back: gemini/staging requests 1/200,
+tokens 749/300000. Evidence p5-03-evidence.json, doc 32.
+
+NEXT: surface live (staging) usage on the ops dashboard; paid tier + production
+gate before real shoppers; Google services need a public domain.
+
+### Earlier P5-03a Gemini live wiring — 05/11/2026
+
+Design 32 before code; official docs read in the built-in browser (terms
+23/03/2026, Interactions API GA June 2026 with store default true, OpenAPI
+create/response/usage, models: gemini-3.5-flash-lite default, 2.5-flash
+deprecated, pricing/free-tier data use). Live mode only with flag + staging +
+development/test + GEMINI_API_KEY + GEMINI_BILLING_TIER + allowlisted model.
+Request: redacted query, ≤20 public candidates (id/title/priceVnd), enum-
+constrained ids, store=false, temperature 0, 256 output tokens, 10 s, 64 KB,
+no retry; durable `integration_reserve_live_usage` (staging rows) reserves
+requests then tokens before the call; any failure → catalog fallback with a
+reason. ChatService now reports liveModelAvailable truthfully. Tests: SQL 20,
+40 unit/HTTP, full API 68/1035. Prepared NOT run: check-gemini-live.cjs (≤3
+synthetic calls). Evidence p5-03-evidence.json.
+
+CORRECTION same day: owner decisions recorded earlier in 31-localhost-turnstile-gemini.md
+(Free localhost, catalog-only payload, max 1 call) → GEMINI_PAYLOAD_POLICY default
+catalog_only (only catalog words from the question + budget), redacted_query opt-in,
+acceptance script defaults to 1 call. Full API 68/1038 PASS after the change.
+
+NEXT owner: install integration-live-usage.sql, set GEMINI_BILLING_TIER=free, approve
+the single synthetic call.
+
+### Earlier approved Turnstile live check — 05/11/2026
+
+Owner approved "Cho phép 2 request". `check-turnstile-live.cjs` (test keys only,
+.env not read): 2 POSTs to Cloudflare siteverify through the real service —
+always-pass → accepted (200, success true, hostname example.com, no action,
+1242 ms); always-fail → 403 (success false, invalid-input-response, 42 ms).
+Live test-key response differs from the docs sample, confirming the
+success-only rule for test keys. First approved real provider call of the
+project for Turnstile; evidence p1-03b-evidence.json, doc 31.
+
+NEXT: optional real widget script load in the browser (needs approval); real
+keys need a public domain + TURNSTILE_ALLOWED_HOSTNAMES + privacy note +
+production gate. Then Gemini live adapter (owner decisions on plan/data).
+
+### Earlier P1-03b Turnstile live wiring (test keys) — 05/11/2026
+
+Design 31 before code (official Cloudflare pages read in the built-in browser;
+web search tool was failing). New `cloudflare` mode: FEATURE_TURNSTILE_ENABLED +
+INTEGRATIONS_ENV=staging + NODE_ENV development/test + TURNSTILE_SITE_KEY/SECRET of
+the same kind (documented test pair, or real + TURNSTILE_ALLOWED_HOSTNAMES).
+Status serves only the public site key; siteverify single call, no retry,
+4 in flight/60 per min/2000 per day; real keys enforce action/hostname/freshness,
+test keys only `success`. Frontend explicit-render widget with reset after submit.
+INCIDENT: during spec development `jest.restoreAllMocks()` removed a global fetch
+spy and ~4 real POSTs reached Cloudflare siteverify with the public test secret
+(no owner key/data/cost). Fixed with TURNSTILE_TRANSPORT DI token, scoped spy
+restore and global Jest `test/no-external-fetch.cjs` (rejects non-loopback fetch
+in every API test; asserted). Full API 67 suites/995 PASS; web tsc/lint PASS; QA
+lab browser (fake window.turnstile, real service, fake siteverify) PASS, 0
+Cloudflare requests. Not rerun: verify-contact-http.cjs (lab restart refused by
+session safety check). Prepared, NOT run: `check:turnstile-live` (2 POSTs, test
+keys only, `.env` not read). Evidence p1-03b-evidence.json.
+
+NEXT: owner approval for the 2 test-key siteverify calls (and optional real
+widget script load), then real keys/domain + privacy note + production gate.
+
+### Earlier owner-approved hosted write smoke — 05/11/2026
+
+Owner approved ("Cho phép ghi thử") one GSC mock sync + one PSI mock audit on
+the TEST DB. `hosted-write-smoke.cjs --allow-test-db-writes`: refuses without
+the flag or unless .env has INTEGRATIONS_ENV=mock + NODE_ENV development/test;
+RPC allowlist (10 names) and 40-request cap; in-process flags only (.env not
+modified). Offline fake-PostgREST harness 10 checks PASS. Hosted run: 4/4 PASS,
+22 requests (15 quota reservations), 0 Google calls; synthetic property 14 days/
+48 rows, 1 PSI sample; fresh-instance readback and ops metrics (GSC 14/100, PSI
+1/100, last success set) match. Read-only recheck 7/7 PASS, anon still 42501.
+This proves PostgREST date[]/jsonb args, hosted timestamptz JSON parsing and
+quota RPC against the real DB. Not done: dashboard UI with real backend/admin
+login. Rows stay in TEST DB (synthetic only); pause does not delete them.
+
+NEXT owner choice: first live provider (Turnstile test keys), or UI check.
+
+### Earlier hosted install verified + read-only hosted smoke — 05/11/2026
+
+Owner ran `test-db-core-bundle.sql` on the TEST DB; combined checker: packages
+1,2,3,6,8,9,10 all PASS, 4/5/7 CHUA_CAI by design, 0 FAIL. Agent then ran
+`hosted-readonly-smoke.cjs` (first agent request to the hosted TEST project,
+read-only, 7 requests, 0 writes): backend reads of ops metrics/GSC/PSI/fence
+parsed by the real app parsers (all stores empty), anon key denied 42501 on
+two RPCs and the outbox table. Offline harness with fake PostgREST + sentinels
+proves no URL/key/message leak and FAIL on anon-readable/malformed. Evidence
+hosted-checker-2026-11-05.json. No env change, no provider call, no commit.
+
+NEXT needs owner decision: bounded synthetic write smoke on TEST DB (GSC mock
+sync + PSI mock audit through real services, then dashboard), or first live
+provider track (Turnstile test keys recommended).
+
+### Earlier hosted checker result + one-file core bundle — 05/11/2026
+
+Owner ran `verify-installed-all.sql` on the TEST DB and pasted the result:
+permission package 9/9 PASS (now metadata-verified), every integration package
+CHUA_CAI, 0 FAIL. Owner also added NODE_ENV=development + INTEGRATIONS_ENV=mock
+(`check:live` confirms, names only). Added generated
+`apps/api/migrations/test-db-core-bundle.sql` (`scripts/build-test-db-bundle.cjs`,
+`pnpm --dir apps/api run test:sql-bundle`): 8 core packages in order, each its own
+transaction, guard refuses non-Supabase/no-orders/partly-installed DBs. PGlite
+20 checks: clean install → expected PASS set; re-run, partial and wrong-DB all
+refused with zero objects created. Column/label compatibility checked against
+04-schema-review and deployed admin-order-integrity trigger. Excluded on purpose:
+notification-source/shipment triggers and catalog FTS. Agent ran no hosted SQL.
+
+NEXT owner runs the bundle once, then the checker again; then first live track.
+
+### Earlier step-3 preparation (live readiness pack) — 05/11/2026
+
+`scripts/check-live-readiness.cjs` (`pnpm --dir apps/api run check:live`) reads
+apps/api/.env + apps/web/.env and prints NAMES with present/empty/missing,
+format verdicts and code status per provider; reuses GoogleDiagnosticsService
+status(). Sentinel test: 0 values leaked in text/JSON. Real run 05/11 16:33:
+NODE_ENV and INTEGRATIONS_ENV missing (start:dev does not set NODE_ENV → mock
+features blocked locally), no flags on; Supabase/SMTP/GHN/GA4 names present;
+GEMINI_API_KEY present but unused by current code; PSI/GSC/Turnstile/Resend/
+Merchant names missing; FRONTEND_URL and NEXT_PUBLIC_SITE_URL missing (no
+public domain). `verify-combined-checker.cjs --write` generates
+`docs/integrations/verify-installed-all.sql` from the 10 checkers; without
+`--write` it fails if stale and proves it on PGlite (16 checks). Owner
+checklist/install order/per-provider needs: 30-live-readiness.md. No hosted
+SQL, provider call, env edit, commit/push.
+
+NEXT depends on owner: SQL install + checker output; choose first live track
+(recommended Turnstile with Cloudflare test keys, then Gemini).
+
+### Earlier P9-02 ops metrics dashboard + integrated rollback — 05/11/2026
+
+Design 29 before code. New TEST DB RPC `integration_ops_metrics_mock(7)`
+(aggregates only; optional stores via to_regclass) + pause + checker. Default
+OFF `FEATURE_INTEGRATION_OPS_METRICS_ENABLED`; on + INTEGRATIONS_ENV=mock →
+health `metricsSource: test_db_mock`; store error → `store_unavailable` (health
+still 200). GSC/PSI numbers only when their persistence flag is on and store
+installed (fixed after browser check showed RAM-mode zeros). Web schema allows
+numbers only with test_db_mock; panel shows per-provider metrics + source footer.
+ACTUAL: integrated test 8 migrations/real services + all 8 pauses, 59 checks,
+rows preserved; 3 mutation checks detected; 19 new unit/HTTP; full API 66/959;
+web health 9 + auth 19; browser VI 1440/EN 375 via QA lab on 4410/4411 (Codex
+lab on 4400/4401 left untouched). Evidence p9-02-evidence.json. `npx prettier`
+in apps/web fetched prettier 3.9.10 into the npm cache (not a project dependency).
+No hosted SQL, provider call, env change, commit/push.
+
+Owner plan steps 1, 2 and the local part of 4 are complete. Step 3 (live
+adapters/hosted SQL/OAuth) needs the owner's accounts and per-call approval.
+
+### Earlier P8-03 Merchant per-product send fence — 05/11/2026
+
+Design 28 before code. New TEST DB migration `integration-merchant-fence.sql`
+(table + 5 service-role RPCs). Drain: preflight (missing/paused fence → 503
+before claim) → payload/source check → `begin_send` (atomic latest-generation
+check + per-product 60s in-flight slot, monotonic started generation) →
+simulate → `end_send` → finish. Busy/fence error → `IntegrationDeferred` →
+`defer` requeues only with proof the generation never started (attempt given
+back, +30s). Generic consumer change is opt-in (`defer` param, `deferred`
+count); other providers unchanged. Fix before tests: payload-key regex checks
+now coalesce NULL. ACTUAL: two-worker exact SQL 52 PASS (order old→new), 4
+mutation checks detected, 16 unit cases, P8-02 workflow 24 (now installs fence),
+notifications 60 Jest + 37 + 19 SQL, foundation 57, full API 65 suites/940 PASS,
+build/scoped lint PASS. Evidence p8-03-evidence.json. No hosted SQL, Google call,
+env change, commit/push. Limits: fence lease vs transport deadline; Merchant has
+no conditional write → read-back reconciliation is a live gate.
+
+Owner plan step 2 (storage/quota/fencing) is now complete locally. NEXT is step
+3 (live adapters, hosted SQL acceptance, OAuth/account rights) which needs the
+owner's accounts/keys and explicit approval for each real call; step 4 Phase 9
+dashboard ops metrics can proceed locally meanwhile.
+
+### Earlier P2-03b durable PageSpeed mock history — 05/11/2026
+
+Design 27 written before code. DefaultOFF `FEATURE_PAGESPEED_PERSISTENCE_ENABLED`;
+flag on → GET/POST use TEST DB, missing/paused store 503 (no RAM fallback).
+DB clock decides 24h cache (no budget/row on hit); per-pair 60s lease, CAS on
+token+version and pair; budget reserved per attempt (hard 100/day); newest 30
+samples per pair; store outage → STORAGE_UNAVAILABLE without retry/circuit.
+Shared helpers extracted to `analytics/mock-store.util.ts` (GSC repository now
+uses them; GSC 70 Jest + 50 SQL rerun PASS). ACTUAL: exact SQL 58 checks PASS
+(+2 mutation checks detected); 33 new unit/HTTP cases; full API 64 suites/924
+PASS; build/scoped lint PASS; web pagespeed 11 + seo 8/tsc/scoped lint PASS.
+Browser not re-run (copy only). Evidence p2-03b-evidence.json; operator steps
+and rollback in 27. No hosted SQL, PSI call, real env change, commit/push.
+
+NEXT P8-03 Merchant outbound per-product fencing (existing merchant queue),
+then account-gated live transports. Do not claim all phases complete.
+
+### Earlier P2-02b durable Search Console mock store — 05/11/2026
+
+Design 26 written before code (previous session); this session finished wiring,
+tests and docs. DefaultOFF `FEATURE_SEARCH_CONSOLE_PERSISTENCE_ENABLED`; flag on
+→ GET/POST use TEST DB snapshot, missing/paused store 503 (no RAM fallback).
+Global 120s lease/generation, CAS on token+version, budget reserved per actual
+read attempt (hard 100/day, shared `integration_usage_daily`). Fixed during
+finish: budget-store outage was misreported as provider UNAVAILABLE (retried,
+counted to circuit) → now STORAGE_UNAVAILABLE, no retry/provider call.
+ACTUAL: exact SQL 50 checks PASS (+ mutation check detects missing REVOKE);
+unit/HTTP 36 new cases; full API 62 suites/891 PASS; build/scoped lint PASS;
+web test:seo 8/tsc/scoped lint PASS. Browser not re-run (one copy sentence).
+Evidence p2-02b-evidence.json; operator steps/rollback in 26. No hosted SQL,
+Google call, real env change, commit/push. Pre-existing: 5 TS errors in older
+spec files (catalog-advisor/notification/shipment specs) under `tsc -p
+tsconfig.json`, not in build; analytics.service.ts prettier debt untouched.
+
+NEXT P2-03b PageSpeed durable history/budget in the same analytics module,
+default OFF; then Merchant outbound per-product fencing; then account-gated
+live transports. Do not claim all phases complete.
+
+### Earlier P4-03a/b complete locally — 05/11/2026
+
+Design24/25 before code. Exact order-source SQL52 +shipmentSQL/actualTSworker54
+checksPASS; full60APIsuites/855testsPASS; APIbuild/scopedlintPASS. Order row write
+and outbox now atomic under explicit disabled-by-default DB trigger opt-in.
+Accepted shipping aggregate CAS/projection and mail event now atomic under its
+separate disabled trigger; no raw/rejected webhook-status email or COD-paid
+inference. Bilingual fixed shipment template, current-source check, UNKNOWN no
+replay, private review/history, ADMIN strict reconcile orders/shipments keyset20.
+Original shipping/order state guards untouched; checkout's other transactions
+remain unchanged. Test files/evidence p4-03-evidence.json. No remoteSQL/env/provider/
+realmail/GHN/billing/DNS/commit/push. Disable DB producers BEFORE grant pause/SMTP
+restore; process kill cannot pause DB triggers.
+
+NEXT durable GSC/PSI persistence and budgets (same analytics module, defaultOFF),
+then account-gated live transports/token policy/merchantfencing/hostedOAuth.
+P4 live transport/webhook/templatecoverage not closed; do not claim all phases done.
+
+### P4-03a source capture checkpoint — 05/11/2026
+
+Design24 before code. New TESTDB-only installer adds disabled order AFTER trigger
+and3service-only helpers; enable/pause/checker explicit, no hosted apply. Exact
+SQL52checksPASS including original admin-order-integrity enum/stock guard, source/
+outbox rollback, disabled default, process hook omitted, invalid recipient review
+preserving payment, store failure rollback, keyset20 pagination, UNKNOWN untouched,
+roles/metadata/repeat refusal/pause. Actual TS repository connected to exact RPC.
+Reconciliation service+projection33unit cases and existing ADMIN HTTP24casesPASS;
+APIbuild/scopedlintPASS. Full816baseline not rerun yet. This closes local order-row
+transaction gap when DB opt-in is enabled, NOT whole checkout atomicity/live send.
+Next P4-03b accepted-shipment notification bridge, then broader regression/docs.
+
+### Latest continuation — P4-02, P7-01, P8-02 (05/11/2026)
+
+Design/implementation/acceptance:20-notification-delivery.md,21-media-benchmark.md,
+22-merchant-delivery.md. Operator guide23-activation-guide.md is CURRENT-SOURCE
+ONLY, not all-phases/live signoff. Evidence p4-p7-p8-evidence.json and per-image
+media-benchmark-evidence.json. FullAPI58suites/816PASS; APIbuild/scopedlint and
+webconnections26/tsc/scopedlintPASS; updatedpanelbrowserVI/EN375/1440PASS,
+screenshotsinspected,0externalrequests/JSerrors. LocalSQLnotification37 +actualTSworkflow19; Merchant
+actualTS/exactSQL24checks incl generations A→B→A, sixcalls→oneevent, restart/
+unknown/roles/pause/metadata. No external email/Google/hostedwrite/env/billing/
+DNS/commit/push. Existing.agent untouched. DefaultsOFF.
+
+Notification snapshot capture/outbox is atomic together but NOT original order/
+payment transaction. Only existing payment/status MailService hooks; confirmation
+manual, GHN notification email integration open. Opt-in suppresses both customer
+SMTP and admin alert (even on failure); defaultoff preserves SMTP. ADMIN source
+capture/drain/list no recipient/HTML inputs/history exposure. Missingstore503.
+Manual TEST DB firstinstall/pause/checker prepared, not executed remotely.
+
+Merchant newRPCs serialize enqueue perSKU and allocate generation, dedupe latest
+captured content only. Worker checks latest generation +fresh mappedsource.
+This is NOT outbound distributed serialization/fencing or source-transaction
+atomicity. Fullcatalog/deletion/schedule/liveaccount/transport remain open.
+12offlineimages/currentWebP+AVIFbaseline measured; allsourcehashes unchanged;
+Cloudinary remainsconditionaldeferred, NOT tested asCDN/provider nor realCWV.
+
+NEXT original-source transactional notifications/reconciliation +live transports/
+durabletokens/quotas/history; hostedSQL/OAuth collision policy/actualaccount
+acceptance. Do not claim allphases complete or say only APIkeys remain. Earlier
+snapshots below remain historical; this continuation takes precedence.
+
+
+### Earlier continuation — P5-02a/b + P5-01b (05/11/2026)
+
+Design/actual acceptance/install/pause/limits: `19-catalog-fts.md`; machine evidence: `p5-02-evidence.json`. This supersedes the earlier statement that legacy ChatService bypasses registry: both existing chat routes now delegate to advisor. Default chat is catalog assistance, not freeform Gemini Q&A. Existing keys are not read/initialized by ChatService. Google OAuth/storage/GHN remain separately configured as before. No commit/push.
+
+MIGRATION P5-02a:3functions/1GIN index on existing translations,service-role-only search RPC, source-writing roles retain pure-helper execution for index maintenance, no source/table/RLS/trigger mutation. Exact SQL58localchecksPASS incl partialfailure rollback, repeatrefusal, pause/metadata, scopefilters/rank, indexeligibility and realrepository→advisor memoryRPC.12syntheticVI/ENbenchmarkexpectedsetsPASS (9nonemptytop5recall1); no semantic/stemming/hostedload claim. First-install manualTESTDBpackage NOT_EXECUTEDremotely, not a pending production approval. CATALOG_FTS_ENABLEDdefaultfalse; mockenvironment/devtestonly+killfalse. Invalid/missing/paused/timeoutRPC→boundedkeywordfallback; validemptyFTSnotreplaced. Source re-read aftermockselection. Vector remainsconditional; ownercatalogbenchmark/hostedinstallationstillopen.
+
+CHAT P5-01b: removed unmanaged SDK constructor/prompts/history/rawproviderlogs from existing ChatService. JSON response/raw_response/text/recommendations and SSEchunk/done compatibility retained; currentwidgetnowpassesvi/enlocale. Groundedtitles/effectiveVNDprices/stock, safe fixedcopy/no-match/unavailable, escapedmarkdown/JSONfences, structuredmaxbudgetphrases, nohistoricalPII/modelnetworkpath. Freeformgenerative/historysemanticsnotimplemented. No newroutes/UIlayout/session/providerdependency. Existingdemo nowincludesrealChatModule withfixturecatalog/cache/storageoverrides,neverAppModule/realenv.
+
+FINALACTUAL: fullAPI55suites/757testsPASS; focusedtest:catalog-search5suites/106PASS+58SQLchecks; webchat4/health7/OAuth19/analytics59PASS; APIbuild/scopedlint/webtsc/scopedlintPASS. BrowserexistingChatWidgetVI/EN,1440/375,2SSEfixturecalls,recommendationsrendered,0JSerrors/0externalrequests/0hostedDBwrites/0modelcalls; screenshot inspected. Productionwebbuild notrun; unchangedSQLdelivery/permissionfixturesnotrerun. Allcurrentchanges remainuncommitted along with previousbatchwork; pre-existing.agentfolder untouched. Mock lab restartedwithnewChatModuleandlefton4400/4401 forreview. Realenv/schema/keys/providerflags/billing/DNS/commerce/shipping unchanged. NEXT operatorFTSmetadataacceptance + ownercatalogbenchmark; then notificationtransactionaloutbox/sourceevents/liveadapters/tokenbudget with existing gates. Fullphase5 and all-live connections still open.
+
+### Earlier continuation — P3/P4/P5/P6/P7/P8/P9 (05/11/2026)
+
+**Current handoff:** `18-connection-status-and-acceptance.md` is the consolidated11provider matrix, operator commands, rollback and exact remaining work. Design was recorded before each module in17. Source/local acceptance delivered; **all live connections/production readiness NOT_COMPLETE**. Do not collapse missing implementation into only missing API keys. `remaining-phases-evidence.json` records actual checks and file manifest. No commit/push.
+
+P3-01: shipping/GHN/COD/tracking reused unchanged. FullAPI regression rechecks existing shipping authorization/state/jobs/order/SePay tests. No carrier call; previous operator province-read evidence retained, not new staging certification. P7 review: existing StorageService/sharp/Next Image retained. Cloudinary and pgvector remain conditional pending their required image/FTS benchmarks; no provider or schema invented.
+
+P8-01: existing MerchantModule/ADMIN route retained, unconditional legacy Content API v2.1 constructor/cron removed. Manual `POST /merchant/sync` requires strict source:mock, flag/local/mock/kill gates. Shared bounded executor, at most20 existing catalog rows, pure products/v1 mapper, shared discount pricing/integer VNDmicros, localized URLs and known stock. Missing/unsafe/variant sources are ineligible with safe reason; no invented GTIN/brand/condition/shipping/approval. GETsync-status is no-store/config-only.33mapper/service+11realHTTPmockauthcasesPASS. Early fixture failures were missing global cache/storage setup; corrected isolated fixture imports/overrides. Initial sandboxHTTPlistenEPERM resolved through approved local execution, not counted as business regression. No new SDK/schema/live sync/provider credentials.
+
+P5-01a: added planned public `/ai/product-advisor` inside existing ChatModule, strict query/locale/budget/category, public throttle metadata. ProductsService reused with100active/in-stock first-page bound; accent-insensitive VI/EN keyword ranking, authoritative prices via sharedcalculator, no cached user queries. Defaultoff/blocked → catalog fallback; local opt-in mock receives only frozen source candidates and selects IDs. Unknown/duplicate/hallucinated IDs cannot supply prices/text; latest catalog re-read removes just-unpublished/out-of-stock and updates price.27service+14HTTPcasesPASS incl budget/privacy/source grounding. No Gemini call/SDK change/embeddings/SQL. Existing ChatService/routes/UI unchanged and outside registry; no claim of legacy PII/token-budget remediation.
+
+P6-01a: retained Supabase SSR/PKCE/cookies/session/RBAC, added pure safe-relative-return/canonical-origin helpers; Google button preserves vi/en locale. Callback ignores forwarded host/proto, requires successful session exchange, fails closed on cookie-write/exchange errors and logs no raw provider payload/redirect.19webtestsPASS with injected Next/Supabase. Test caught exception redirects using internal origin; fixed to retain already-validated canonical and reran. Current NEXT_PUBLIC_SITE_URL is reused, no real env edits. Supabase automatic linking policy is a documented external blocker against master-plan explicit owner proof; no new identity/session table, account merge, hosted settings or live login.
+
+P9-01a/b: health controller in existing IntegrationsModule, ADMIN/no-store11providers exactly; historical evidence vs configuration vs null runtime metrics separated. New flags explicitly do not manage legacy Gemini/OAuth/storage/GHN paths. Dashboard panel reuses flat green admin styles, Button/Skeleton/StatusBadge, has VI/EN and guarded fetch key. No provider toggle/probe, billing stats or revenue source change. API10cases+web7schema/fetchcasesPASS. Browser actual component in isolated existing analytics lab:11providers,1440/375,VI/EN,ready/refresh/error/retry/loading11rows,6healthreads,0JSerrors/0externalrequests/0hostedDBwrites. Screenshots viewed in `.next/connections-qa`. Skillprobe ran both widths/dynamicdesktop; fixed own smallbadge/squeezedbutton/orphantext. Other lab product-hover/fixedwidget/style findings are outside panel and explained in18; no claim all-lab style certification. Source route not added for QA; only existing disposable fixture page extended. Mock lab left on4400/4401 for review, no real stream/key read.
+
+FINALCHECKS: fullAPI52suites/692PASS, `test:connections`7suites/113PASS (one canonical-order dedupe case added after earlier112); webconnections7+19PASS and existinganalytics59PASS. APIbuild/scopedESLintPASS; webtsc/scopedESLintPASS; browserfixturePASS; node syntax/JSON/diff checks. Initial frontendformatter unavailable in webworkspace; reused existing APIformatter, no project dependency installed. Browser tooling2packages installed only `/private/tmp/tramhuong-ui-probe`, cached/localbrowser reused. No migration/RPC edit so SQLfixtures not rerun; no real Google/Supabase/SMTP/GHN/merchant/model request, order/payment/shipment/account write, envreal change, billing/DNS/productiondeployment/commit/push. NEXT verifiedhostedfoundation→atomicnotificationevents/durableusage→liveadapterswithrights; FTSbaseline→conditionalvector; hostedOAuthcollisionpolicy; mediaPOC; integratedstagingE2E. Full release remains open.
+
+### Batch P4-01 — SMTP provider boundary and Resend mock (05/11/2026)
+
+Owner requested continuing other phases. Design/checkpoint `17-remaining-phases.md` written before code and official Resend contracts rechecked. Reused MailModule/MailerService/four templates/registry/executor; added EmailProvider/SmtpEmailProvider/MockResendEmailProvider and contract tests. MailService uses an injected token permanently bound to SMTP in this batch. Resend flag does not reroute any real order email. SMTP accepted/rejected/unknown are explicit; errors remain nonblocking/private and are not retried. Mock adapter coalesces concurrent identical keys, rejects conflicting messages, retains unknown outcomes and stops at100ledger entries without eviction. Memory ledger is not durable idempotency; no fallback after ambiguous acceptance. No network transport, route, cron, schema or new dependency.
+
+ACTUAL: targeted mail/order/payment Jest4suites/34tests PASS; API build PASS; `eslint src/mail --no-fix` PASS. Initial new test used a matcher unavailable in this Jest runtime; corrected to standard call-count+arguments assertions and reran successfully. DI test verifies real MailModule selects SMTP even with Resend mock enabled; six concurrent duplicate sends invoke one simulation. All mail/provider/auth/DB dependencies mocked; no real email/DB/provider/Google call. Full suite and GHN checkpoint follow in next batches. Default flags/env unchanged, no billing/DNS/commit/push. Rollback remove provider token binding and restore MailerService injection; no data cleanup. P4-02/live blocked by hosted outbox installation verification, atomic source events, bounce/reconciliation and provider/domain rights. NEXT P8-01 guarded Merchant products/v1 preview; P9-01a health API.
 
 ### Test handoff — user asks how to verify infrastructure
 

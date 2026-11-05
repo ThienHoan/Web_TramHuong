@@ -28,7 +28,7 @@ export function productPrice(
       new Date(product.discount_start_date) <= now) &&
     (!product.discount_end_date || new Date(product.discount_end_date) >= now);
   const price = active
-    ? Math.round(originalPrice * (1 - product.discount_percentage / 100))
+    ? Math.round((originalPrice * (100 - product.discount_percentage)) / 100)
     : originalPrice;
   if (!Number.isFinite(price) || price < 0)
     throw new Error('PRODUCT_PRICE_INVALID');

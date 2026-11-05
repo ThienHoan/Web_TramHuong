@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Thien Phuc backup (03:15 in the VPS system timezone)
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=5min
+Unit=tramhuong-backup.service
+
+[Install]
+WantedBy=timers.target

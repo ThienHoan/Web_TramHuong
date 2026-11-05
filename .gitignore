@@ -43,4 +43,9 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Operations state, encrypted backups and runtime credentials
+.automation-data/
+ops/automation/*.env
+ops/automation/data/
+
 mcp.json

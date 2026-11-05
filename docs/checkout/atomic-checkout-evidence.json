@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-06",
+  "scope": "atomic checkout + idempotency, local verification only",
+  "api": {
+    "testCheckout": { "jestSuites": 5, "jestTests": 44, "pgliteTests": 10, "result": "PASS" },
+    "fullJest": { "suites": 71, "tests": 1098, "result": "PASS" },
+    "checkoutFilesEslint": "PASS",
+    "productionTypecheck": "PASS"
+  },
+  "postgres": {
+    "engine": "PostgreSQL 17 (postgres:17-alpine, --rm, --network none, tmpfs, no host port)",
+    "independentSessions": 2,
+    "scenarios": [
+      "last_item_one_order_lock_wait_observed",
+      "same_key_parallel_one_commit",
+      "last_voucher_different_products_one_use_lock_wait_observed",
+      "opposite_cart_order_no_deadlock"
+    ],
+    "result": "PASS",
+    "mutationChecks": [
+      { "change": "voucher row lock removed", "caught": true },
+      { "change": "product row lock and stock guard removed", "caught": true }
+    ]
+  },
+  "web": { "testCheckout": 5, "tsc": "PASS", "eslint": "PASS" },
+  "installChecker": {
+    "file": "docs/checkout/verify-installed-checkout.sql",
+    "cases": ["not_installed", "installed", "paused", "anon_execute", "client_read_dedupe_table", "missing_search_path"],
+    "result": "PASS"
+  },
+  "testProjectInstall": {
+    "date": "2026-11-06",
+    "by": "owner, Supabase SQL Editor",
+    "checker": "docs/checkout/verify-installed-checkout.sql",
+    "result": "4/4 PASS (checkout_requests, checkout_lookup_request, checkout_create_order, transition_order)"
+  },
+  "notRun": [
+    "apps/web/scripts/verify-shipping-ui.cjs (browser UI suite)",
+    "an order through the real API on the test project",
+    "deploy of the new API and web"
+  ],
+  "hostedWrites": 0,
+  "externalProviderCalls": 0,
+  "commitPush": false
+}

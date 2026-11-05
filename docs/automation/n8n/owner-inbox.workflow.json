@@ -1,0 +1,85 @@
+{
+  "name": "Thiên Phúc — Operations inbox (configure before publishing)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "owner-alert-hook",
+      "name": "Authenticated owner alert",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "tramhuong-ops-inbox",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tramhuong-ops-inbox",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "project-safe-fields",
+      "name": "Validate metadata only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const d = $json.body;\nconst kinds = ['order.created','contact.created','monitor.down','monitor.recovered','backup.stale','backup.recovered'];\nconst uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nif (!d || d.schemaVersion !== 1 || !uuid.test(d.id) || !kinds.includes(d.kind) || typeof d.sourceId !== 'string' || !(uuid.test(d.sourceId) || ['api','web','database','backup'].includes(d.sourceId)) || typeof d.createdAt !== 'string' || !Number.isFinite(Date.parse(d.createdAt))) throw new Error('INVALID_AUTOMATION_EVENT');\nreturn [{json: {schemaVersion: 1, id: d.id, kind: d.kind, sourceId: d.sourceId, createdAt: d.createdAt}}];"
+      }
+    },
+    {
+      "id": "ack-inbox",
+      "name": "Acknowledge inbox acceptance",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, eventId: $json.id, sink: \"n8n-inbox\" } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Authenticated owner alert": {
+      "main": [
+        [
+          {
+            "node": "Validate metadata only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate metadata only": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge inbox acceptance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "pinData": {}
+}

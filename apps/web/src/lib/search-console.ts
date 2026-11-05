@@ -30,7 +30,8 @@ export const searchConsoleSchema = z.object({
   source: z.literal("mock"),
   mode: z.enum(["disabled", "blocked", "mock"]),
   property: z.literal("sc-domain:mock.example.invalid"),
-  persistence: z.literal("process_memory"),
+  // database = opt-in TEST DB mock snapshot; still synthetic, never live GSC.
+  persistence: z.enum(["process_memory", "database"]),
   schedulerEnabled: z.literal(false),
   topRowsOnly: z.literal(true),
   propertyTotals: z.literal(false),

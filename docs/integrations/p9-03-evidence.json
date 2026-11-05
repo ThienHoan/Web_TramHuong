@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-05",
+  "batch": "P9-03",
+  "scope": "local + hosted read-only",
+  "newSql": false,
+  "api": {
+    "suites": 68,
+    "passed": 1052,
+    "failed": 0,
+    "build": "PASS",
+    "scopedLint": "PASS"
+  },
+  "web": {
+    "integrationHealth": 10,
+    "googleAuth": 19,
+    "tsc": "PASS",
+    "scopedLint": "PASS"
+  },
+  "integratedOps": {
+    "checks": 65,
+    "migrations": 9,
+    "pauses": 9,
+    "liveUsage": "1/200 requests, 749/300000 tokens"
+  },
+  "browser": {
+    "lab": "4420/4421 (new tab)",
+    "viewports": [
+      "vi_1280",
+      "en_375"
+    ],
+    "fixFound": "live-only provider no longer shows 'Last success: None yet'"
+  },
+  "hostedReadOnly": {
+    "requests": 2,
+    "writes": 0,
+    "metricsSource": "test_db_mock",
+    "liveUsageSource": "test_db",
+    "gemini": {
+      "requestsUsed": 1,
+      "requestsLimit": 200,
+      "tokensUsed": 749,
+      "tokensLimit": 300000,
+      "alert": "ok"
+    },
+    "searchConsoleQuota": 14,
+    "pagespeedQuota": 1
+  },
+  "realEnvChanged": false,
+  "commitPush": false
+}

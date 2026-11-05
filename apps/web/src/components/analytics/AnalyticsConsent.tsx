@@ -2,6 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { useState } from "react";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import {
   useAnalyticsSnapshot,
@@ -66,6 +67,7 @@ export function AnalyticsConsent() {
               ? "Bạn có thể đổi lựa chọn tại “Quyền riêng tư phân tích” ở cuối trang."
               : "You can change this using “Analytics privacy preferences” at the bottom of the page."}
           </p>
+          <Link href="/policies/privacy" className="inline-flex min-h-11 items-center text-sm underline underline-offset-4">{vi ? "Chính sách dữ liệu và bên nhận thông tin" : "Privacy notice and service providers"}</Link>
           {snapshot.privacySignal && (
             <p role="status" className="text-sm">
               {vi

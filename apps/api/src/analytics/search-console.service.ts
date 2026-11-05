@@ -15,6 +15,11 @@ import {
   type SearchConsoleMockAdapter,
   type SearchRow,
 } from './search-console.adapter';
+import type {
+  SearchSnapshotStore,
+  SearchSyncLease,
+  StoredSearchSnapshot,
+} from './search-console.repository';
 
 const DAY = 86400000;
 export function searchWindow(now: number): string[] {
@@ -30,12 +35,16 @@ export function searchWindow(now: number): string[] {
   );
 }
 
-function validateRows(value: unknown, date: string): SearchRow[] {
+export function validateSearchRows(
+  value: unknown,
+  date: string,
+  maxRows = 100,
+): SearchRow[] {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('INVALID_RESPONSE');
   const input = (value as { rows?: unknown }).rows;
   if (input === undefined) return [];
-  if (!Array.isArray(input) || input.length > 100)
+  if (!Array.isArray(input) || input.length > maxRows)
     throw new Error('INVALID_RESPONSE');
   return input.map((value: unknown): SearchRow => {
     if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -119,7 +128,8 @@ function aggregate(rows: SearchRow[], keyIndex: 1 | 2) {
     );
 }
 
-// Process-local mock snapshot. There is deliberately no production transport/job.
+// Mock snapshot: process memory by default, or the opt-in TEST DB store when
+// FEATURE_SEARCH_CONSOLE_PERSISTENCE_ENABLED=true. No production transport/job.
 export class SearchConsoleService {
   private days = new Map<string, SearchRow[]>();
   private window: string[] = [];
@@ -128,13 +138,30 @@ export class SearchConsoleService {
   private lastSyncedAt: string | null = null;
   private lastAttemptAt: string | null = null;
   private lastError: string | null = null;
+  private storeSyncing = false;
   constructor(
     private readonly registry: IntegrationRegistry,
     private readonly nodeEnv: string,
     private readonly executor: IntegrationExecutor,
     private readonly adapter: SearchConsoleMockAdapter = new MockSearchConsoleAdapter(),
     private readonly now: () => number = Date.now,
+    private readonly store?: SearchSnapshotStore,
   ) {}
+
+  private restore(snapshot: StoredSearchSnapshot) {
+    this.days = new Map(snapshot.days.map((d) => [d.date, d.rows]));
+    this.window = [...snapshot.window];
+    this.truncatedDays = [...snapshot.truncatedDates];
+    this.lastSyncedAt = snapshot.lastSyncedAt;
+    this.lastAttemptAt = snapshot.lastAttemptAt;
+    this.lastError = snapshot.lastError;
+    this.storeSyncing = snapshot.syncing;
+  }
+  async report() {
+    if (this.mode() === 'mock' && this.store)
+      this.restore(await this.store.read());
+    return this.summary();
+  }
 
   private mode(): 'disabled' | 'blocked' | 'mock' {
     const mode = this.registry.search_console.mode;
@@ -173,9 +200,14 @@ export class SearchConsoleService {
       source: 'mock' as const,
       mode,
       property: MOCK_SEARCH_PROPERTY,
-      persistence: 'process_memory' as const,
+      persistence: this.store
+        ? ('database' as const)
+        : ('process_memory' as const),
       schedulerEnabled: false,
-      blockers: ['VERIFIED_PROPERTY_OAUTH_MISSING', 'DURABLE_STORAGE_PENDING'],
+      blockers: [
+        'VERIFIED_PROPERTY_OAUTH_MISSING',
+        ...(this.store ? [] : ['DURABLE_STORAGE_PENDING']),
+      ],
       scope: 'webmasters.readonly',
       timezone: 'America/Los_Angeles',
       dataState: 'final',
@@ -193,7 +225,7 @@ export class SearchConsoleService {
       lastSyncedAt,
       lastAttemptAt: visible ? this.lastAttemptAt : null,
       lastError: visible ? this.lastError : null,
-      syncing: visible && this.running,
+      syncing: visible && (this.running || this.storeSyncing),
       freshness: !lastSyncedAt
         ? 'never_synced'
         : this.now() - Date.parse(lastSyncedAt) > 26 * 3600000
@@ -242,7 +274,10 @@ export class SearchConsoleService {
       throw new ConflictException('SEARCH_CONSOLE_SYNC_IN_PROGRESS');
     this.running = true;
     this.lastAttemptAt = new Date(this.now()).toISOString();
+    let lease: SearchSyncLease | undefined;
+    let storageFailed = false;
     try {
+      if (this.store) lease = await this.store.begin();
       const window = searchWindow(this.now());
       const staged = new Map<string, SearchRow[]>();
       const truncated: string[] = [];
@@ -254,8 +289,20 @@ export class SearchConsoleService {
             'search_console',
             'search_analytics_query',
             'read',
-            (signal) =>
-              this.adapter.query(
+            async (signal) => {
+              // Durable budget is reserved per attempt, including executor retries.
+              // A store outage is not a provider outage: no retry, no circuit count.
+              if (this.store) {
+                try {
+                  await this.store.reserve();
+                } catch (error) {
+                  if (error instanceof IntegrationFailure) throw error;
+                  storageFailed = true;
+                  throw new IntegrationFailure('REJECTED');
+                }
+              }
+              signal.throwIfAborted();
+              return this.adapter.query(
                 {
                   startDate: date,
                   endDate: date,
@@ -266,9 +313,10 @@ export class SearchConsoleService {
                   startRow: page * 100,
                 },
                 signal,
-              ),
+              );
+            },
           );
-          const batch = validateRows(result.data, date);
+          const batch = validateSearchRows(result.data, date);
           for (const row of batch) {
             const key = JSON.stringify(row.keys);
             if (keys.has(key)) throw new Error('DUPLICATE_ROW');
@@ -281,14 +329,40 @@ export class SearchConsoleService {
         staged.set(date, rows);
       }
       // Atomic replacement; a failed page never advances the previous snapshot.
-      this.days = staged;
-      this.window = window;
-      this.truncatedDays = truncated;
-      this.lastSyncedAt = new Date(this.now()).toISOString();
-      this.lastError = null;
+      if (this.store && lease) {
+        this.restore(
+          await this.store.complete(lease, {
+            window,
+            truncatedDates: truncated,
+            days: window.map((date) => ({
+              date,
+              rows: staged.get(date) ?? [],
+            })),
+          }),
+        );
+      } else {
+        this.days = staged;
+        this.window = window;
+        this.truncatedDays = truncated;
+        this.lastSyncedAt = new Date(this.now()).toISOString();
+        this.lastError = null;
+      }
     } catch (error: unknown) {
+      if (error instanceof ConflictException) throw error;
       this.lastError =
-        error instanceof IntegrationFailure ? error.code : 'INVALID_RESPONSE';
+        storageFailed || error instanceof ServiceUnavailableException
+          ? 'STORAGE_UNAVAILABLE'
+          : error instanceof IntegrationFailure
+            ? error.code
+            : 'INVALID_RESPONSE';
+      if (this.store && lease) {
+        try {
+          await this.store.fail(lease, this.lastError);
+          this.storeSyncing = false;
+        } catch {
+          this.lastError = 'STORAGE_UNAVAILABLE';
+        }
+      }
       throw new HttpException(
         'SEARCH_CONSOLE_' + this.lastError,
         ['RATE_LIMITED', 'QUOTA_EXCEEDED'].includes(this.lastError) ? 429 : 503,
