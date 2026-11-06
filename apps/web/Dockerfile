@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
@@ -7,7 +7,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Enable pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 # Copy manifest files
 COPY package.json pnpm-lock.yaml ./
@@ -22,6 +22,7 @@ COPY . .
 # Note: Next.js collects environment variables at build time for static generation.
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_BASE_URL
+ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_DP_ID
@@ -32,6 +33,8 @@ ARG NEXT_PUBLIC_BANK_NAME
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_DP_ID=$NEXT_PUBLIC_DP_ID
@@ -43,7 +46,7 @@ ENV NEXT_PUBLIC_BANK_NAME=$NEXT_PUBLIC_BANK_NAME
 RUN pnpm build
 
 # Production Stage
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
@@ -58,7 +61,6 @@ RUN adduser --system --uid 1001 nextjs
 # Copy public folder
 COPY --from=builder /app/public ./public
 
-# Set permission for prerender cache
 # Set permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next

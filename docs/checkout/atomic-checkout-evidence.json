@@ -34,9 +34,19 @@
     "checker": "docs/checkout/verify-installed-checkout.sql",
     "result": "4/4 PASS (checkout_requests, checkout_lookup_request, checkout_create_order, transition_order)"
   },
+  "testProjectOrder": {
+    "date": "2026-11-06",
+    "approvedBy": "owner (\"Chạy đi\")",
+    "script": "apps/api/scripts/checkout/hosted-order-test.cjs --allow-test-db-writes",
+    "checks": ["pick_product", "create_order", "stock_minus_one", "replay_same_order", "replay_no_second_deduction", "changed_details_refused", "cancel_all_created", "stock_restored"],
+    "result": "8/8 PASS",
+    "requests": 10,
+    "ordersCreated": 1,
+    "ordersCanceled": 1,
+    "stockNetChange": 0
+  },
   "notRun": [
-    "apps/web/scripts/verify-shipping-ui.cjs (browser UI suite)",
-    "an order through the real API on the test project",
+    "apps/web/scripts/verify-shipping-ui.cjs (browser UI suite; playwright-core not installed)",
     "deploy of the new API and web"
   ],
   "hostedWrites": 0,

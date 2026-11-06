@@ -1,39 +1,64 @@
-version: '3.8'
-
+# Production stack on the VPS (~/tramhuong-deploy). Started by .github/workflows/deploy.yml:
+#   docker compose --env-file deploy.env -f docker-compose.prod.yml up -d
+# deploy.env (OWNER, TAG, DOMAIN) is only used to fill in this file.
+# .env holds the API settings and secrets and is given to the API container only.
 services:
-  api:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/tramhuong-api:latest
-    container_name: tramhuong-api
-    restart: always
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
     ports:
-      - "4000:4000"
-    env_file:
-      - .env
-    logging:
-      driver: "json-file"
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in deploy.env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+    logging: &logging
+      driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - tramhuong-network
+
+  api:
+    image: ghcr.io/${OWNER:?set OWNER}/tramhuong-api:${TAG:-latest}
+    restart: unless-stopped
+    # Not published on the host: only Caddy reaches it on the internal network.
+    expose:
+      - "4000"
+    env_file:
+      - .env
+    environment:
+      PORT: "4000"
+    logging: *logging
     networks:
       - tramhuong-network
 
   web:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/tramhuong-web:latest
-    container_name: tramhuong-web
-    restart: always
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
+    image: ghcr.io/${OWNER:?set OWNER}/tramhuong-web:${TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "3000"
+    # The website needs no secrets at runtime (public settings are baked in at build).
+    environment:
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
     depends_on:
       - api
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    logging: *logging
     networks:
       - tramhuong-network
+
+volumes:
+  caddy_data:
+  caddy_config:
 
 networks:
   tramhuong-network:

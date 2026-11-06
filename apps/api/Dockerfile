@@ -1,44 +1,35 @@
 # Build Stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+# https://github.com/nodejs/docker-node#nodealpine (glibc shims for some native modules)
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Enable pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Pinned pnpm: the lockfile is format 9.0. Never "latest" (a new major can break builds).
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
-# Copy manifest files
 COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies (frozen lockfile for reproducibility)
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
 COPY . .
-
-# Build the application
 RUN pnpm build
 
 # Production Stage
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Enable pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
-# Copy manifest files specifically for production install
 COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile && pnpm store prune
 
-# Install ONLY production dependencies
-RUN pnpm install --prod --frozen-lockfile
-
-# Copy built application
 COPY --from=builder /app/dist ./dist
+
+# Do not run the API as root.
+USER node
 
 EXPOSE 4000
 

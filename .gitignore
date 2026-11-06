@@ -16,6 +16,9 @@ pnpm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+# Filled production settings (template: deploy/env.production.example)
+env.production
+env.production.b64
 .env.production
 !apps/api/.env.example
 

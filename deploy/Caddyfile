@@ -1,0 +1,34 @@
+# HTTPS reverse proxy. Caddy obtains and renews the Let's Encrypt certificate
+# automatically once DNS for DOMAIN and www.DOMAIN points at this server.
+# DOMAIN comes from deploy.env (written by the deploy workflow), e.g. example.com.
+
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# API (NestJS). The /api prefix is kept: the API itself serves under /api.
+	# Caddy replaces any visitor-supplied X-Forwarded-For with the real client IP.
+	@api path /api /api/*
+	handle @api {
+		request_body {
+			max_size 32MB
+		}
+		reverse_proxy api:4000
+	}
+
+	# Website (Next.js).
+	handle {
+		reverse_proxy web:3000
+	}
+}

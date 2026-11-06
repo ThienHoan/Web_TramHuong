@@ -49,8 +49,9 @@
     "demo:automation": "node scripts/automation/demo-server.cjs",
     "automation": "node scripts/automation/cli.cjs",
     "test:automation": "jest --runInBand --runTestsByPath src/automation/automation.spec.ts && node --test scripts/automation/runtime.test.cjs scripts/automation/verify-sql.cjs scripts/automation/workflow.test.cjs",
-    "test:checkout": "jest --runInBand --runTestsByPath src/orders/checkout.spec.ts src/orders/shipping-checkout.spec.ts src/orders/orders.service.spec.ts src/orders/order-validation.spec.ts src/orders/payment-persistence.spec.ts && node --test scripts/checkout/verify-atomic.cjs",
-    "test:checkout-concurrency": "node scripts/checkout/verify-concurrency.cjs --run-docker"
+    "test:checkout": "jest --runInBand --runTestsByPath src/orders/checkout.spec.ts src/orders/shipping-checkout.spec.ts src/orders/orders.service.spec.ts src/orders/order-validation.spec.ts src/orders/payment-persistence.spec.ts && node --test scripts/checkout/verify-atomic.cjs scripts/checkout/verify-hosted-order-test.cjs",
+    "test:checkout-concurrency": "node scripts/checkout/verify-concurrency.cjs --run-docker",
+    "smoke:hosted-order": "node scripts/checkout/hosted-order-test.cjs --allow-test-db-writes"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

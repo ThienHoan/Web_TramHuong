@@ -1,9 +1,16 @@
 name: Build and Deploy to VPS
 
+# Push to main = deploy to production. "Run workflow" on the Actions tab redeploys by hand.
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer push waits for the running one.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -18,15 +25,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Lowercase Repository Owner
-        run: |
-          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
         env:
           GITHUB_REPOSITORY_OWNER: '${{ github.repository_owner }}'
 
-      - name: Make envfile
+      # Only the PUBLIC website settings (NEXT_PUBLIC_*) are needed to build. The
+      # backend secrets in ENV_FILE are never exported to the build steps.
+      - name: Read public build settings
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
         run: |
-          echo "${{ secrets.ENV_FILE }}" | base64 -d > .env
-          grep -v '^#' .env | grep -v '^$' >> $GITHUB_ENV
+          printf '%s' "$ENV_FILE" | base64 -d > /tmp/app.env
+          grep -E '^NEXT_PUBLIC_[A-Z0-9_]+=' /tmp/app.env | sed -E 's/^([A-Z0-9_]+)=["'"'"']?([^"'"'"']*)["'"'"']?\s*$/\1=\2/' >> "$GITHUB_ENV" || true
+          rm -f /tmp/app.env
+          for v in NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY; do
+            grep -q "^$v=." "$GITHUB_ENV" || { echo "::error::ENV_FILE is missing $v"; exit 1; }
+          done
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -44,9 +58,11 @@ jobs:
           context: ./apps/api
           file: ./apps/api/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/tramhuong-api:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/tramhuong-api:${{ github.sha }}
+            ghcr.io/${{ env.OWNER_LC }}/tramhuong-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
 
       - name: Build and push Web image
         uses: docker/build-push-action@v5
@@ -54,12 +70,15 @@ jobs:
           context: ./apps/web
           file: ./apps/web/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/tramhuong-web:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/tramhuong-web:${{ github.sha }}
+            ghcr.io/${{ env.OWNER_LC }}/tramhuong-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_BASE_URL=${{ env.NEXT_PUBLIC_BASE_URL }}
+            NEXT_PUBLIC_SITE_URL=${{ env.NEXT_PUBLIC_SITE_URL }}
             NEXT_PUBLIC_SUPABASE_URL=${{ env.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
             NEXT_PUBLIC_DP_ID=${{ env.NEXT_PUBLIC_DP_ID }}
@@ -72,18 +91,21 @@ jobs:
     name: Deploy to VPS
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
 
     steps:
-      - name: Checkout code (for docker-compose file)
+      - name: Checkout code (for compose and Caddy files)
         uses: actions/checkout@v4
 
-      - name: Copy Nginx Config
+      - name: Copy compose and Caddy config
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "./nginx"
+          source: "docker-compose.prod.yml,deploy/Caddyfile"
           target: "~/tramhuong-deploy"
 
       - name: Deploy using SSH
@@ -93,92 +115,31 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            # Navigate to deployment directory (create if not exists)
-            mkdir -p ~/tramhuong-deploy
+            set -e
             cd ~/tramhuong-deploy
 
-            # 1. Decode ENV_FILE secret to .env
+            # Backend settings and secrets: readable by this user only.
+            umask 077
             echo "${{ secrets.ENV_FILE }}" | base64 -d > .env
-            chmod 600 .env
 
-            # 2. Write docker-compose.prod.yml (Nginx + Apps)
-            # Calculate lowercase owner name for Docker image tags
+            # Values used only to fill in docker-compose.prod.yml.
             OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            printf 'OWNER=%s\nTAG=%s\nDOMAIN=%s\n' "$OWNER_LC" "${{ github.sha }}" "${{ vars.DOMAIN }}" > deploy.env
+            grep -q '^DOMAIN=.' deploy.env || { echo "Set the DOMAIN repository variable"; exit 1; }
 
-            cat <<YAML > docker-compose.prod.yml
-            version: '3.8'
-            
-            services:
-              # Nginx Reverse Proxy
-              nginx:
-                image: nginx:alpine
-                container_name: tramhuong-nginx
-                restart: always
-                ports:
-                  - "80:80"
-                volumes:
-                  - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-                depends_on:
-                  - api
-                  - web
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
-                networks:
-                  - tramhuong-network
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            docker compose --env-file deploy.env -f docker-compose.prod.yml pull
+            docker compose --env-file deploy.env -f docker-compose.prod.yml up -d --remove-orphans
+            docker logout ghcr.io
 
-              api:
-                image: ghcr.io/${OWNER_LC}/tramhuong-api:latest
-                container_name: tramhuong-api
-                restart: always
-                # Internal ports only
-                expose:
-                  - "4000"
-                env_file:
-                  - .env
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
-                networks:
-                  - tramhuong-network
-            
-              web:
-                image: ghcr.io/${OWNER_LC}/tramhuong-web:latest
-                container_name: tramhuong-web
-                restart: always
-                # Internal ports only
-                expose:
-                  - "3000"
-                env_file:
-                  - .env
-                environment:
-                  - PORT=3000
-                depends_on:
-                  - api
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
-                networks:
-                  - tramhuong-network
-            
-            networks:
-              tramhuong-network:
-                driver: bridge
-            YAML
+            # Fail the deploy if the API does not answer within ~60 seconds.
+            for i in $(seq 1 20); do
+              if docker compose --env-file deploy.env -f docker-compose.prod.yml exec -T api \
+                   wget -qO- http://127.0.0.1:4000/api >/dev/null 2>&1; then
+                echo "API is up (version ${{ github.sha }})"; break
+              fi
+              [ "$i" = 20 ] && { echo "API did not start"; docker compose --env-file deploy.env -f docker-compose.prod.yml logs --tail 50 api; exit 1; }
+              sleep 3
+            done
 
-            # 3. Pull latest images
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            
-            docker compose -f docker-compose.prod.yml pull
-
-            # 4. Restart containers
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            
-            # 5. Cleanup
             docker image prune -f

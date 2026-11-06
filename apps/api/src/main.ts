@@ -5,9 +5,18 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { trustProxySetting } from './common/trust-proxy';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+
+  // Behind the reverse proxy every request arrives from the proxy container. Trust
+  // only private/loopback hops so req.ip (rate limits, logs) is the real visitor,
+  // while a visitor-supplied X-Forwarded-For cannot pick its own IP.
+  app.set('trust proxy', trustProxySetting(process.env.TRUST_PROXY));
 
   // Use Pino Logger
   app.useLogger(app.get(Logger));

@@ -1,8 +1,9 @@
 # Đặt hàng nguyên khối và chống tạo đơn trùng
 
 Cập nhật 06/11/2026. Trạng thái: **code và kiểm thử xong; đã cài lên project Supabase thử nghiệm**
-(owner chạy `verify-installed-checkout.sql` ngày 06/11: 4/4 `PASS`). Chưa deploy code mới,
-chưa có đơn thử đi qua API thật.
+(owner chạy `verify-installed-checkout.sql` ngày 06/11: 4/4 `PASS`). Đơn thử qua code API thật
+trên project này ngày 06/11 (`pnpm smoke:hosted-order`, owner cho phép): 8/8 `PASS`, 10 request,
+1 đơn tạo rồi hủy, kho trở về như cũ. Chưa deploy code mới.
 
 > Project thử nghiệm này cũng là project mà web production lấy ảnh sản phẩm
 > (`apps/web/next.config.ts`). Nếu chính project này sẽ thành production thì migration đã có
@@ -90,7 +91,11 @@ Kiểm thử trên PostgreSQL thật cần Docker Desktop đang chạy và có s
 **Chưa chạy:**
 
 - Bộ kiểm thử giao diện trình duyệt `apps/web/scripts/verify-shipping-ui.cjs`. Bộ này kiểm tra từng trường của payload, nên trường mới `idempotencyKey` không làm nó hỏng, nhưng vẫn cần chạy lại trước khi phát hành.
-- Chưa đặt thử một đơn đi qua API thật trên project thử nghiệm. Đã cài migration lên project này (checker 4/4 `PASS`, 06/11).
+- Đơn thử trên project thử nghiệm: đã chạy 06/11, 8/8 `PASS` (xem đầu trang).
+  Script: `apps/api`: `pnpm smoke:hosted-order` (chạy không cờ thì chỉ in kế hoạch).
+  Nó đặt 1 đơn COD khách vãng lai, gửi lại cùng khóa, thử khóa trùng với địa chỉ khác, rồi hủy
+  mọi đơn đã tạo để trả kho (khoảng 11 request, tối đa 16). Đã kiểm thử offline 4 ca, gồm ca DB mất
+  chống trùng: script báo FAIL và vẫn hủy hết đơn, kho về như cũ.
 
 ## Thứ tự triển khai (bắt buộc)
 
