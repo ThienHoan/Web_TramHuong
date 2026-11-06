@@ -60,9 +60,13 @@ export class ProductsController {
   @Roles(Role.ADMIN, Role.STAFF)
   async adminList(@Query() query: Record<string, string>) {
     return this.productsService.findAll(query.locale === 'vi' ? 'vi' : 'en', {
-      include_inactive: query.include_inactive === 'true', search: query.search,
-      category: query.category, sort: query.sort, page: Number(query.page || 1),
-      limit: Math.min(Number(query.limit || 20), 500), stock_status: query.stock_status,
+      include_inactive: query.include_inactive === 'true',
+      search: query.search,
+      category: query.category,
+      sort: query.sort,
+      page: Number(query.page || 1),
+      limit: Math.min(Number(query.limit || 20), 500),
+      stock_status: query.stock_status,
     });
   }
 
@@ -82,7 +86,11 @@ export class ProductsController {
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  @UseInterceptors(FilesInterceptor('files',5,{limits:{fileSize:5*1024*1024,files:5}}))
+  @UseInterceptors(
+    FilesInterceptor('files', 5, {
+      limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+    }),
+  )
   async create(
     @Body() body: CreateProductDto,
     @UploadedFiles() files?: Array<Express.Multer.File>,
@@ -96,7 +104,11 @@ export class ProductsController {
   @Patch(':id')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  @UseInterceptors(FilesInterceptor('files',5,{limits:{fileSize:5*1024*1024,files:5}}))
+  @UseInterceptors(
+    FilesInterceptor('files', 5, {
+      limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+    }),
+  )
   async update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,

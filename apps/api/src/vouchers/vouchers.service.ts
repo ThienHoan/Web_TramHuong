@@ -27,19 +27,33 @@ export class VouchersService {
     private readonly supabase: SupabaseClient<Database>,
   ) {}
 
-  private validateConfiguration(data: { discount_type?: string; discount_amount?: number; start_date?: string; end_date?: string }) {
-    if (!Number.isFinite(data.discount_amount) || Number(data.discount_amount) <= 0 ||
-      (data.discount_type === 'PERCENTAGE' && Number(data.discount_amount) > 100)) {
+  private validateConfiguration(data: {
+    discount_type?: string;
+    discount_amount?: number;
+    start_date?: string;
+    end_date?: string;
+  }) {
+    if (
+      !Number.isFinite(data.discount_amount) ||
+      Number(data.discount_amount) <= 0 ||
+      (data.discount_type === 'PERCENTAGE' &&
+        Number(data.discount_amount) > 100)
+    ) {
       throw new BadRequestException('Giá trị giảm giá không hợp lệ');
     }
-    if (new Date(data.end_date!).getTime() <= new Date(data.start_date!).getTime()) {
+    if (
+      new Date(data.end_date!).getTime() <= new Date(data.start_date!).getTime()
+    ) {
       throw new BadRequestException('Ngày kết thúc phải sau ngày bắt đầu');
     }
   }
 
   // 1. Admin: Create Voucher
   async createVoucher(data: CreateVoucherDto): Promise<VoucherRow> {
-    this.validateConfiguration({ ...data, discount_amount: data.discount_value ?? data.discount_amount });
+    this.validateConfiguration({
+      ...data,
+      discount_amount: data.discount_value ?? data.discount_amount,
+    });
     // Map frontend 'discount_amount' to DB 'discount_value'
     const discountValue = data.discount_value ?? data.discount_amount;
 
@@ -123,8 +137,10 @@ export class VouchersService {
     // Map discount_amount -> discount_value if present
     const { discount_value, ...fields } = updates;
     const updateData: Record<string, unknown> = { ...fields };
-    if (discount_value !== undefined) updateData.discount_amount = discount_value;
-    if (updates.code !== undefined) updateData.code = updates.code.trim().toUpperCase();
+    if (discount_value !== undefined)
+      updateData.discount_amount = discount_value;
+    if (updates.code !== undefined)
+      updateData.code = updates.code.trim().toUpperCase();
     const current = await this.getVoucher(id);
     this.validateConfiguration({ ...current, ...updateData });
     // if (updates.discount_amount !== undefined) {

@@ -35,12 +35,41 @@ jobs:
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}
         run: |
-          printf '%s' "$ENV_FILE" | base64 -d > /tmp/app.env
-          grep -E '^NEXT_PUBLIC_[A-Z0-9_]+=' /tmp/app.env | sed -E 's/^([A-Z0-9_]+)=["'"'"']?([^"'"'"']*)["'"'"']?\s*$/\1=\2/' >> "$GITHUB_ENV" || true
+          # ENV_FILE may be base64 (recommended) or pasted as plain text.
+          if ! printf '%s' "$ENV_FILE" | base64 -d > /tmp/app.env 2>/dev/null || ! grep -q '=' /tmp/app.env; then
+            printf '%s\n' "$ENV_FILE" > /tmp/app.env
+            echo "::warning::ENV_FILE is not base64; reading it as plain text"
+          fi
+          # Tolerates CRLF line endings, "export ", spaces around "=" and quotes.
+          python3 - > /tmp/public.env <<'PY'
+          import re
+          found = {}
+          for line in open('/tmp/app.env', encoding='utf-8-sig', errors='replace'):
+              m = re.match(r'\s*(?:export\s+)?(NEXT_PUBLIC_[A-Z0-9_]+)\s*=\s*(.*?)\s*$', line.rstrip('\r\n'))
+              if not m:
+                  continue
+              value = m.group(2)
+              if len(value) >= 2 and value[0] == value[-1] and value[0] in '"\'':
+                  value = value[1:-1]
+              found[m.group(1)] = value
+          # New Supabase naming: a publishable key works as the anon key.
+          if not found.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') and found.get('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'):
+              found['NEXT_PUBLIC_SUPABASE_ANON_KEY'] = found['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']
+          for name, value in found.items():
+              print(f'{name}={value}')
+          PY
           rm -f /tmp/app.env
+          missing=""
           for v in NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY; do
-            grep -q "^$v=." "$GITHUB_ENV" || { echo "::error::ENV_FILE is missing $v"; exit 1; }
+            grep -q "^$v=." /tmp/public.env || missing="$missing $v"
           done
+          if [ -n "$missing" ]; then
+            echo "::error::ENV_FILE is missing or has an empty value for:$missing"
+            echo "Public names found (values hidden): $(cut -d= -f1 /tmp/public.env | tr '\n' ' ')"
+            exit 1
+          fi
+          cat /tmp/public.env >> "$GITHUB_ENV"
+          rm -f /tmp/public.env
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -110,17 +139,24 @@ jobs:
 
       - name: Deploy using SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
+          envs: ENV_FILE
           script: |
             set -e
             cd ~/tramhuong-deploy
 
             # Backend settings and secrets: readable by this user only.
+            # ENV_FILE may be base64 (recommended) or plain text; strip Windows line endings.
             umask 077
-            echo "${{ secrets.ENV_FILE }}" | base64 -d > .env
+            if ! printf '%s' "$ENV_FILE" | base64 -d > .env 2>/dev/null || ! grep -q '=' .env; then
+              printf '%s\n' "$ENV_FILE" > .env
+            fi
+            sed -i 's/\r$//' .env
 
             # Values used only to fill in docker-compose.prod.yml.
             OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')

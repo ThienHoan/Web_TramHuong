@@ -23,7 +23,10 @@ export class CreateVoucherDto {
   @IsIn(['PERCENTAGE', 'FIXED_AMOUNT'])
   discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT';
 
-  @ValidateIf(o => o.discount_value !== undefined || o.discount_amount === undefined)
+  @ValidateIf(
+    (o: { discount_value?: number; discount_amount?: number }) =>
+      o.discount_value !== undefined || o.discount_amount === undefined,
+  )
   @IsNumber()
   @Min(0.01)
   discount_value?: number;

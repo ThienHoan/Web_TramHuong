@@ -4,11 +4,15 @@ import { SupabaseService } from '../supabase/supabase.service';
 describe('post visibility', () => {
   const setup = () => {
     const query = {
-      select: jest.fn().mockReturnThis(), order: jest.fn().mockReturnThis(), eq: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
       range: jest.fn().mockResolvedValue({ data: [], count: 0, error: null }),
       single: jest.fn().mockResolvedValue({ data: {}, error: null }),
     };
-    const service = new PostsService({ getClient: () => ({ from: () => query }) } as unknown as SupabaseService);
+    const service = new PostsService({
+      getClient: () => ({ from: () => query }),
+    } as unknown as SupabaseService);
     return { query, service };
   };
   it('ignores public requests to list drafts', async () => {

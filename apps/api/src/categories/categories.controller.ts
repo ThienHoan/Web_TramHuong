@@ -43,9 +43,15 @@ export class CategoriesController {
   @Get('admin/list')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  async adminList(@Query('locale') locale: string, @Query('page') page?: string, @Query('limit') limit?: string) {
+  async adminList(
+    @Query('locale') locale: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
     return this.categoriesService.findAll(locale === 'vi' ? 'vi' : 'en', {
-      include_inactive: true, page: Number(page || 1), limit: Number(limit || 20),
+      include_inactive: true,
+      page: Number(page || 1),
+      limit: Number(limit || 20),
     });
   }
 

@@ -25,7 +25,10 @@ export class UsersService {
     }
 
     if (options.search) {
-      const search = options.search.toLowerCase().replace(/[,().%_]/g, ' ').trim();
+      const search = options.search
+        .toLowerCase()
+        .replace(/[,().%_]/g, ' ')
+        .trim();
       query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
     }
 
@@ -64,7 +67,8 @@ export class UsersService {
   }
 
   async updateUserRole(id: string, role: string) {
-    if (!['ADMIN', 'STAFF', 'CUSTOMER'].includes(role)) throw new BadRequestException('Invalid role');
+    if (!['ADMIN', 'STAFF', 'CUSTOMER'].includes(role))
+      throw new BadRequestException('Invalid role');
     await this.findOne(id);
     const client = this.supabase.getClient();
     const { error } = await client.from('users').update({ role }).eq('id', id);
@@ -73,7 +77,8 @@ export class UsersService {
   }
 
   async toggleBan(id: string, isBanned: boolean) {
-    if (typeof isBanned !== 'boolean') throw new BadRequestException('is_banned must be boolean');
+    if (typeof isBanned !== 'boolean')
+      throw new BadRequestException('is_banned must be boolean');
     await this.findOne(id);
     const client = this.supabase.getClient();
     const { error } = await client
@@ -101,10 +106,25 @@ export class UsersService {
     },
   ) {
     const client = this.supabase.getClient();
-    const { full_name, phone_number, province, district, ward, street_address, avatar_url } = data;
+    const {
+      full_name,
+      phone_number,
+      province,
+      district,
+      ward,
+      street_address,
+      avatar_url,
+    } = data;
     const safeData = Object.fromEntries(
-      Object.entries({ full_name, phone_number, province, district, ward, street_address, avatar_url })
-        .filter(([, value]) => value !== undefined),
+      Object.entries({
+        full_name,
+        phone_number,
+        province,
+        district,
+        ward,
+        street_address,
+        avatar_url,
+      }).filter(([, value]) => value !== undefined),
     );
     const { error } = await client.from('users').update(safeData).eq('id', id);
 

@@ -101,8 +101,13 @@ export class UsersController {
 
   @Patch(':id/role')
   @Roles(Role.ADMIN)
-  async updateRole(@Param('id') id: string, @Body('role') role: string, @Request() req: AuthenticatedRequest) {
-    if (req.user?.id === id && role !== Role.ADMIN) throw new BadRequestException('Cannot remove your own admin access');
+  async updateRole(
+    @Param('id') id: string,
+    @Body('role') role: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    if (req.user?.id === id && role !== String(Role.ADMIN))
+      throw new BadRequestException('Cannot remove your own admin access');
     return this.usersService.updateUserRole(id, role);
   }
 
@@ -113,7 +118,8 @@ export class UsersController {
     @Body('is_banned') isBanned: boolean,
     @Request() req: AuthenticatedRequest,
   ) {
-    if (req.user?.id === id && isBanned) throw new BadRequestException('Cannot ban your own account');
+    if (req.user?.id === id && isBanned)
+      throw new BadRequestException('Cannot ban your own account');
     return this.usersService.toggleBan(id, isBanned);
   }
 }

@@ -11,7 +11,13 @@ import { VouchersModule } from '../vouchers/vouchers.module';
 import { ShippingModule } from '../shipping/shipping.module';
 
 @Module({
-  imports: [SupabaseModule, CartModule, MailModule, VouchersModule,ShippingModule],
+  imports: [
+    SupabaseModule,
+    CartModule,
+    MailModule,
+    VouchersModule,
+    ShippingModule,
+  ],
   controllers: [OrdersController],
   providers: [OrdersService, OrderCleanupService],
   exports: [OrdersService], // Export for UsersModule

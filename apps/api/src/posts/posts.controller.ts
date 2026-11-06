@@ -36,9 +36,16 @@ export class PostsController {
   @Get('admin/list')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  async adminList(@Query('page') page?: number, @Query('limit') limit?: number,
-    @Query('search') search?: string, @Query('status') status?: string) {
-    return this.postsService.findAll({ page, limit, search, status: status || 'all' }, true);
+  async adminList(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.postsService.findAll(
+      { page, limit, search, status: status || 'all' },
+      true,
+    );
   }
 
   @Get('admin/:id')

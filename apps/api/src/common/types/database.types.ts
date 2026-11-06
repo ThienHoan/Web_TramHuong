@@ -1,4 +1,7 @@
-import type { IntegrationTables, IntegrationFunctions } from '../../integrations/integration-database.types';
+import type {
+  IntegrationTables,
+  IntegrationFunctions,
+} from '../../integrations/integration-database.types';
 
 export type Json =
   | string
@@ -12,14 +15,50 @@ export type Database = {
   public: {
     Tables: IntegrationTables & {
       shipping_records: {
-        Row: {id:string;key:string;kind:string;state:string;owner_id:string|null;order_id:string|null;data:Json;version:number;created_at:string;updated_at:string};
-        Insert: {key:string;kind:string;state:string;data:Json;owner_id?:string|null;order_id?:string|null};
-        Update: {state?:string;data?:Json;version?:number};Relationships:[];
+        Row: {
+          id: string;
+          key: string;
+          kind: string;
+          state: string;
+          owner_id: string | null;
+          order_id: string | null;
+          data: Json;
+          version: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          kind: string;
+          state: string;
+          data: Json;
+          owner_id?: string | null;
+          order_id?: string | null;
+        };
+        Update: { state?: string; data?: Json; version?: number };
+        Relationships: [];
       };
       admin_catalog_imports: {
-        Row: {request_id:string;actor_id:string;payload_hash:string;result:Json;created_at:string};
-        Insert: {request_id:string;actor_id:string;payload_hash:string;result:Json;created_at?:string};
-        Update: {request_id?:string;actor_id?:string;payload_hash?:string;result?:Json};
+        Row: {
+          request_id: string;
+          actor_id: string;
+          payload_hash: string;
+          result: Json;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          actor_id: string;
+          payload_hash: string;
+          result: Json;
+          created_at?: string;
+        };
+        Update: {
+          request_id?: string;
+          actor_id?: string;
+          payload_hash?: string;
+          result?: Json;
+        };
         Relationships: [];
       };
       products: {
@@ -546,17 +585,55 @@ export type Database = {
     };
     Functions: IntegrationFunctions & {
       catalog_search: {
-        Args: {p_query:string;p_locale:string;p_min_price?:number;p_max_price?:number;p_category_id?:string|null;p_limit?:number};
+        Args: {
+          p_query: string;
+          p_locale: string;
+          p_min_price?: number;
+          p_max_price?: number;
+          p_category_id?: string | null;
+          p_limit?: number;
+        };
         Returns: Json;
       };
-      shipping_attach_snapshot:{Args:{p_order_id:string;p_total:number;p_snapshot:Json};Returns:Json};
-      shipping_complete_cod:{Args:{p_ship_key:string;p_ship_version:number;p_action_key:string;p_action_version:number;p_amount:number};Returns:Json};
-      shipping_reserve_shipment:{Args:{p_order_id:string;p_key:string;p_data:Json};Returns:Json};
+      shipping_attach_snapshot: {
+        Args: { p_order_id: string; p_total: number; p_snapshot: Json };
+        Returns: Json;
+      };
+      shipping_complete_cod: {
+        Args: {
+          p_ship_key: string;
+          p_ship_version: number;
+          p_action_key: string;
+          p_action_version: number;
+          p_amount: number;
+        };
+        Returns: Json;
+      };
+      shipping_reserve_shipment: {
+        Args: { p_order_id: string; p_key: string; p_data: Json };
+        Returns: Json;
+      };
       shipping_write_record: {
-        Args:{p_key:string;p_kind:string;p_state:string;p_data:Json;p_expected_version:number;p_owner_id:string|null;p_order_id:string|null};Returns:Json;
+        Args: {
+          p_key: string;
+          p_kind: string;
+          p_state: string;
+          p_data: Json;
+          p_expected_version: number;
+          p_owner_id: string | null;
+          p_order_id: string | null;
+        };
+        Returns: Json;
       };
       admin_import_catalog_row: {
-        Args: {p_resource:string;p_row:Json;p_mode:string;p_request_id:string;p_actor_id:string;p_hash:string};
+        Args: {
+          p_resource: string;
+          p_row: Json;
+          p_mode: string;
+          p_request_id: string;
+          p_actor_id: string;
+          p_hash: string;
+        };
         Returns: Json;
       };
       transition_order: {

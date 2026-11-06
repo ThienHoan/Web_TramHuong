@@ -75,9 +75,14 @@ export class OrderCleanupService {
 
       // The database trigger restores stock inside this status update.
       // 2. Update order status to EXPIRED
-      const { error: updateOrderError } = await this.client.rpc('transition_order', {
-        p_id: orderId, p_status: 'EXPIRED', p_expected_status: 'AWAITING_PAYMENT',
-      });
+      const { error: updateOrderError } = await this.client.rpc(
+        'transition_order',
+        {
+          p_id: orderId,
+          p_status: 'EXPIRED',
+          p_expected_status: 'AWAITING_PAYMENT',
+        },
+      );
 
       if (updateOrderError) {
         throw updateOrderError;
