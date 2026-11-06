@@ -160,8 +160,8 @@ jobs:
 
             # Values used only to fill in docker-compose.prod.yml.
             OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-            printf 'OWNER=%s\nTAG=%s\nDOMAIN=%s\n' "$OWNER_LC" "${{ github.sha }}" "${{ vars.DOMAIN }}" > deploy.env
-            grep -q '^DOMAIN=.' deploy.env || { echo "Set the DOMAIN repository variable"; exit 1; }
+            printf 'OWNER=%s\nTAG=%s\nDOMAIN=%s\n' "$OWNER_LC" "${{ github.sha }}" "${{ vars.DOMAIN || secrets.DOMAIN }}" > deploy.env
+            grep -q '^DOMAIN=.' deploy.env || { echo "Set DOMAIN (Settings > Secrets and variables > Actions > Variables), e.g. example.com"; exit 1; }
 
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             docker compose --env-file deploy.env -f docker-compose.prod.yml pull
