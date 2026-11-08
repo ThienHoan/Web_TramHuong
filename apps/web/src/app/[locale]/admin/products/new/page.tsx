@@ -2,7 +2,15 @@
 
 import { API_URL } from "@/services/base-http";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { useLocale } from 'next-intl';
+import { ArrowLeft, Loader2, Plus } from 'lucide-react';
+import { Link } from '@/i18n/routing';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { adminMoney } from '@/components/admin/admin-format';
 import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Category } from '@/lib/types';
@@ -11,7 +19,24 @@ import { ImageUploader } from '@/components/admin/ImageUploader';
 import { toast } from 'sonner';
 
 
+function Field({ id, label, required, hint, children }: { id: string; label: string; required?: boolean; hint?: string; children: ReactNode }) {
+    return <div className="product-field">
+        <label htmlFor={id}>{label}{required && <span className="text-red-700" aria-hidden="true"> *</span>}</label>
+        {children}
+        {hint && <p id={`${id}-hint`}>{hint}</p>}
+    </div>;
+}
+
+function FormSection({ id, title, description, children }: { id: string; title: string; description?: string; children: ReactNode }) {
+    return <Card className="product-form-section" role="region" aria-labelledby={id}>
+        <CardHeader><CardTitle><h2 id={id}>{title}</h2></CardTitle>{description && <CardDescription>{description}</CardDescription>}</CardHeader>
+        <CardContent className="space-y-5">{children}</CardContent>
+    </Card>;
+}
+
 export default function NewProductPage() {
+    const locale = useLocale();
+    const t = (vi: string, en: string) => locale === 'en' ? en : vi;
     const { session } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -28,7 +53,6 @@ export default function NewProductPage() {
     const [titleVi, setTitleVi] = useState('');
     const [descVi, setDescVi] = useState('');
     const [images, setImages] = useState<string[]>([]); // Multiple images
-    // const [isFeatured, setIsFeatured] = useState(false); // Legacy replacement
     const [featuredSection, setFeaturedSection] = useState<string>(''); // section enum
 
     // Discount fields
@@ -40,18 +64,14 @@ export default function NewProductPage() {
     useEffect(() => {
         if (session) {
             setAccessToken(session.access_token);
-            getCategories('en', true).then(data => {
+            getCategories(locale, true).then(data => {
                 setCategories(data);
-                if (data.length > 0) {
-                    setCategory(data[0].slug);
-                }
             }).catch(err => console.error('Failed to load categories', err));
         }
-    }, [session]);
+    }, [session, locale]);
 
 
 
-    // ...
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,12 +79,13 @@ export default function NewProductPage() {
 
         // Validate at least one image
         if (images.length === 0) {
-            toast.error('Please upload at least one product image');
+            toast.error(t('Vui lòng thêm ít nhất một ảnh sản phẩm.', 'Please add at least one product image.'));
+            document.getElementById('product-images')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
         setLoading(true);
-        const toastId = toast.loading('Creating product...');
+        const toastId = toast.loading(t('Đang tạo sản phẩm…', 'Creating product…'));
 
         try {
             const payload = {
@@ -77,7 +98,7 @@ export default function NewProductPage() {
                 desc_en: descEn,
                 title_vi: titleVi,
                 desc_vi: descVi,
-                images, // Array of URLs from Supabase Storage
+                images,
                 featured_section: featuredSection || null,
                 discount_percentage: parseFloat(discountPercentage),
                 discount_start_date: discountStartDate || null,
@@ -94,216 +115,82 @@ export default function NewProductPage() {
             });
 
             if (res.ok) {
-                toast.success('Product created successfully', { id: toastId });
+                toast.success(t('Đã tạo sản phẩm', 'Product created successfully'), { id: toastId });
                 router.push('/admin/products');
                 router.refresh();
             } else {
                 const err = await res.json();
-                toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
+                toast.error(`${t('Không thể tạo sản phẩm', 'Could not create product')}: ${err.message || t('Vui lòng thử lại.', 'Please try again.')}`, { id: toastId });
             }
         } catch {
-            toast.error('Failed to create product', { id: toastId });
+            toast.error(t('Không thể tạo sản phẩm. Vui lòng thử lại.', 'Could not create product. Please try again.'), { id: toastId });
         } finally {
             setLoading(false);
-            // toast.dismiss(toastId); // success/error updates id, so no need to dismiss manually if handled
         }
     };
 
+    const sellingPrice = Number(price || 0) * (1 - Number(discountPercentage || 0) / 100);
+
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded shadow">
-            <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Core Info */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Slug (Unique URL)</label>
-                        <input required type="text" className="w-full border p-2 rounded"
-                            value={slug} onChange={e => setSlug(e.target.value)} placeholder="e.g. zen-bracelet-01" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Price ($)</label>
-                        <input required type="number" step="0.01" className="w-full border p-2 rounded"
-                            value={price} onChange={e => setPrice(e.target.value)} />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-                        <input
-                            type="number"
-                            placeholder="0"
-                            className="w-full border p-2 rounded"
-                            value={quantity}
-                            onChange={e => setQuantity(e.target.value)}
-                            required
-                            min="0"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Display Section (Home Page)</label>
-                        <select
-                            className="w-full border p-2 rounded"
-                            value={featuredSection}
-                            onChange={e => setFeaturedSection(e.target.value)}
-                        >
-                            <option value="">Standard (Default)</option>
-                            <option value="chapter_1">⭐️ Chapter I: Featured / High End</option>
-                            <option value="chapter_2">🌿 Chapter II: Daily Ritual</option>
-                            <option value="chapter_3">🎁 Chapter III: Gift Sets</option>
-                        </select>
-                        <p className="text-xs text-gray-500 mt-1">Select where this product should appear on the homepage.</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Category</label>
-                        <select
-                            className="w-full border p-2 rounded capitalize"
-                            value={category}
-                            onChange={e => setCategory(e.target.value)}
-                            required
-                        >
-                            <option value="" disabled>Select Category</option>
-                            {categories.map(cat => {
-                                const name = cat.translations?.find(t => t.locale === 'en')?.name || cat.slug;
-                                return (
-                                    <option key={cat.id} value={cat.slug}>{name}</option>
-                                );
-                            })}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Style</label>
-                        <select className="w-full border p-2 rounded" value={style} onChange={e => setStyle(e.target.value)}>
-                            <option value="zen">Zen (Minimal)</option>
-                            <option value="traditional">Traditional (Vietnam)</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Discount Section */}
-                <div className="border-t pt-4 mt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-700 uppercase">⚡ Giảm Giá & Khuyến Mãi</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Giảm giá (%)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                className="w-full border p-2 rounded"
-                                value={discountPercentage}
-                                onChange={e => setDiscountPercentage(e.target.value)}
-                                placeholder="0"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">0-100%</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Bắt đầu (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                className="w-full border p-2 rounded"
-                                value={discountStartDate}
-                                onChange={e => setDiscountStartDate(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Kết thúc (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                className="w-full border p-2 rounded"
-                                value={discountEndDate}
-                                onChange={e => setDiscountEndDate(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Preview */}
-                    {parseInt(discountPercentage) > 0 && (
-                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700 mb-2">📊 Preview giá bán:</p>
-                            <div className="flex items-center gap-3">
-                                <span className="text-gray-500 line-through text-lg">
-                                    {parseFloat(price || '0').toLocaleString()}₫
-                                </span>
-                                <span className="text-2xl font-bold text-red-600">
-                                    {(parseFloat(price || '0') * (1 - parseInt(discountPercentage) / 100)).toLocaleString()}₫
-                                </span>
-                                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                    -{discountPercentage}%
-                                </span>
+        <section className="admin-page product-create-page">
+            <Link href="/admin/products" className="product-back-link"><ArrowLeft size={16} aria-hidden="true" />{t('Sản phẩm', 'Products')}</Link>
+            <header className="admin-page-heading">
+                <div><h1>{t('Thêm sản phẩm', 'Add product')}</h1><p>{t('Thêm nội dung, hình ảnh và thông tin bán hàng cho sản phẩm mới.', 'Add content, images and selling details for your new product.')}</p></div>
+                <span className="product-required-note"><span className="text-red-700">*</span> {t('Thông tin bắt buộc', 'Required fields')}</span>
+            </header>
+            <form onSubmit={handleSubmit} aria-busy={loading}>
+                <fieldset disabled={loading} className="product-form-grid">
+                    <div className="product-form-main">
+                        <FormSection id="product-content" title={t('Thông tin sản phẩm', 'Product information')} description={t('Tên và mô tả hiển thị theo ngôn ngữ khách hàng chọn.', 'Names and descriptions are displayed in the customer’s chosen language.')}>
+                            <div className="product-language-group">
+                                <h3>{t('Tiếng Việt', 'Vietnamese')}</h3>
+                                <Field id="title-vi" label={t('Tên sản phẩm', 'Product name')} required><Input id="title-vi" name="title_vi" required value={titleVi} onChange={e => setTitleVi(e.target.value)} /></Field>
+                                <Field id="desc-vi" label={t('Mô tả sản phẩm', 'Product description')}><textarea id="desc-vi" name="desc_vi" rows={5} value={descVi} onChange={e => setDescVi(e.target.value)} /></Field>
                             </div>
-                            <p className="text-xs text-gray-600 mt-2">
-                                💰 Tiết kiệm: {(parseFloat(price || '0') * parseInt(discountPercentage) / 100).toLocaleString()}₫
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* English Trans */}
-                <div className="border-t pt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase">English Translation</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Title (EN)</label>
-                            <input required type="text" className="w-full border p-2 rounded"
-                                value={titleEn} onChange={e => setTitleEn(e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description (EN)</label>
-                            <textarea className="w-full border p-2 rounded" rows={3}
-                                value={descEn} onChange={e => setDescEn(e.target.value)} />
-                        </div>
+                            <div className="product-language-group">
+                                <h3>{t('Tiếng Anh', 'English')}</h3>
+                                <Field id="title-en" label={t('Tên sản phẩm (tiếng Anh)', 'Product name (English)')} required><Input id="title-en" name="title_en" required value={titleEn} onChange={e => setTitleEn(e.target.value)} /></Field>
+                                <Field id="desc-en" label={t('Mô tả (tiếng Anh)', 'Description (English)')}><textarea id="desc-en" name="desc_en" rows={5} value={descEn} onChange={e => setDescEn(e.target.value)} /></Field>
+                            </div>
+                            <Field id="product-slug" label={t('Đường dẫn sản phẩm', 'Product URL handle')} required hint={t('Dùng chữ thường không dấu, số và dấu gạch ngang. Ví dụ: vong-tram-huong.', 'Use lowercase letters, numbers and hyphens. Example: agarwood-bracelet.')}><Input id="product-slug" name="slug" required aria-describedby="product-slug-hint" value={slug} onChange={e => setSlug(e.target.value)} placeholder="vong-tram-huong" /></Field>
+                        </FormSection>
+                        <FormSection id="product-images" title={t('Hình ảnh sản phẩm', 'Product images')} description={t('Thêm tối đa 5 ảnh. Ảnh đầu tiên được dùng làm ảnh đại diện.', 'Add up to 5 images. The first image is the product’s main image.')}>
+                            <ImageUploader images={images} onChange={setImages} maxImages={5} disabled={loading} />
+                        </FormSection>
                     </div>
-                </div>
-
-                {/* Vietnamese Trans */}
-                <div className="border-t pt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase">Vietnamese Translation</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Title (VI)</label>
-                            <input required type="text" className="w-full border p-2 rounded"
-                                value={titleVi} onChange={e => setTitleVi(e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description (VI)</label>
-                            <textarea className="w-full border p-2 rounded" rows={3}
-                                value={descVi} onChange={e => setDescVi(e.target.value)} />
-                        </div>
+                    <div className="product-form-side">
+                        <FormSection id="product-pricing" title={t('Giá & tồn kho', 'Pricing & inventory')}>
+                            <Field id="product-price" label={t('Giá bán (VND)', 'Price (VND)')} required><Input id="product-price" name="price" required type="number" min="0" step="0.01" value={price} onChange={e => setPrice(e.target.value)} /></Field>
+                            <Field id="product-quantity" label={t('Số lượng tồn kho', 'Stock quantity')} required><Input id="product-quantity" name="quantity" required type="number" min="0" step="1" value={quantity} onChange={e => setQuantity(e.target.value)} /></Field>
+                        </FormSection>
+                        <FormSection id="product-organization" title={t('Phân loại & hiển thị', 'Organization & display')}>
+                            <Field id="product-category" label={t('Danh mục', 'Category')} required>
+                                <Select required value={category} onValueChange={setCategory} disabled={loading || categories.length === 0}>
+                                    <SelectTrigger id="product-category"><SelectValue placeholder={t('Chọn danh mục', 'Select category')} /></SelectTrigger>
+                                    <SelectContent className="admin-menu">{categories.map(cat => <SelectItem key={cat.id} value={cat.slug}>{cat.translations?.find(item => item.locale === locale)?.name || cat.slug}</SelectItem>)}</SelectContent>
+                                </Select>
+                                {categories.length === 0 && <p>{t('Chưa có danh mục để chọn.', 'No categories available.')}</p>}
+                            </Field>
+                            <Field id="product-style" label={t('Phong cách', 'Style')}>
+                                <Select value={style} onValueChange={setStyle} disabled={loading}><SelectTrigger id="product-style"><SelectValue /></SelectTrigger><SelectContent className="admin-menu"><SelectItem value="zen">{t('Zen · Tối giản', 'Zen · Minimal')}</SelectItem><SelectItem value="traditional">{t('Truyền thống · Việt Nam', 'Traditional · Vietnam')}</SelectItem></SelectContent></Select>
+                            </Field>
+                            <Field id="product-section" label={t('Vị trí trên trang chủ', 'Homepage section')}>
+                                <Select value={featuredSection || 'standard'} onValueChange={value => setFeaturedSection(value === 'standard' ? '' : value)} disabled={loading}><SelectTrigger id="product-section"><SelectValue /></SelectTrigger><SelectContent className="admin-menu"><SelectItem value="standard">{t('Mặc định', 'Standard')}</SelectItem><SelectItem value="chapter_1">{t('Chương I · Nổi bật', 'Chapter I · Featured')}</SelectItem><SelectItem value="chapter_2">{t('Chương II · Nghi thức hằng ngày', 'Chapter II · Daily ritual')}</SelectItem><SelectItem value="chapter_3">{t('Chương III · Bộ quà tặng', 'Chapter III · Gift sets')}</SelectItem></SelectContent></Select>
+                            </Field>
+                        </FormSection>
+                        <FormSection id="product-discounts" title={t('Khuyến mãi', 'Promotion')} description={t('Để mức giảm 0% nếu không áp dụng khuyến mãi.', 'Leave the discount at 0% when no promotion applies.')}>
+                            <Field id="product-discount" label={t('Giảm giá (%)', 'Discount (%)')}><Input id="product-discount" name="discount_percentage" type="number" min="0" max="100" value={discountPercentage} onChange={e => setDiscountPercentage(e.target.value)} /></Field>
+                            <Field id="discount-start" label={t('Bắt đầu', 'Starts at')} hint={t('Không bắt buộc', 'Optional')}><Input id="discount-start" name="discount_start_date" type="datetime-local" value={discountStartDate} onChange={e => setDiscountStartDate(e.target.value)} /></Field>
+                            <Field id="discount-end" label={t('Kết thúc', 'Ends at')} hint={t('Không bắt buộc', 'Optional')}><Input id="discount-end" name="discount_end_date" type="datetime-local" value={discountEndDate} onChange={e => setDiscountEndDate(e.target.value)} /></Field>
+                            <div className="product-price-preview" aria-live="polite"><span>{t('Giá sau giảm', 'Price after discount')}</span><strong>{adminMoney(sellingPrice, locale)}</strong>{Number(discountPercentage) > 0 && <del>{adminMoney(Number(price || 0), locale)}</del>}</div>
+                        </FormSection>
                     </div>
-                </div>
-
-                {/* Product Images */}
-                <div className="border-t pt-4">
-                    <h3 className="block text-sm font-medium mb-3">Product Images</h3>
-                    <ImageUploader
-                        images={images}
-                        onChange={setImages}
-                        maxImages={5}
-                        disabled={loading}
-                    />
-                    <p className="text-xs text-gray-500 mt-2">Upload up to 5 images. First image will be the primary product image.</p>
-                </div>
-
-                <div className="pt-4 flex gap-4">
-                    <button type="submit" disabled={loading}
-                        className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 disabled:opacity-50">
-                        {loading ? 'Creating...' : 'Create Product'}
-                    </button>
-                    <button type="button" onClick={() => router.back()} className="px-6 py-2 border rounded hover:bg-gray-50">
-                        Cancel
-                    </button>
-                </div>
+                </fieldset>
+                <footer className="product-form-actions">
+                    <p>{t('Kiểm tra thông tin trước khi tạo sản phẩm.', 'Review the details before creating the product.')}</p>
+                    <div><Button type="button" variant="outline" disabled={loading} onClick={() => router.push('/admin/products')}>{t('Hủy', 'Cancel')}</Button><Button type="submit" disabled={loading || !category}>{loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Plus aria-hidden="true" />}{loading ? t('Đang tạo…', 'Creating…') : t('Tạo sản phẩm', 'Create product')}</Button></div>
+                </footer>
             </form>
-        </div>
+        </section>
     );
 }

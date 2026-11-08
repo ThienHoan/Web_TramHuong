@@ -55,6 +55,26 @@ jobs:
           # New Supabase naming: a publishable key works as the anon key.
           if not found.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') and found.get('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'):
               found['NEXT_PUBLIC_SUPABASE_ANON_KEY'] = found['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']
+          # NEXT_PUBLIC_* values are shipped to every visitor's browser: refuse secrets.
+          import base64, json, sys
+          def is_secret(value):
+              if 'sb_secret_' in value:
+                  return True
+              parts = value.split('.')
+              if len(parts) == 3 and value.startswith('eyJ'):
+                  try:
+                      claims = json.loads(base64.urlsafe_b64decode(parts[1] + '=' * (-len(parts[1]) % 4)))
+                      return claims.get('role') == 'service_role'
+                  except Exception:
+                      return False
+              return False
+          problems = [n for n, v in found.items() if is_secret(v)]
+          url = found.get('NEXT_PUBLIC_SUPABASE_URL', '')
+          if url and not re.fullmatch(r'https://[a-z0-9]{20}\.supabase\.co/?', url):
+              problems.append('NEXT_PUBLIC_SUPABASE_URL (must look like https://<20-letter project id>.supabase.co)')
+          if problems:
+              print('::error::Unsafe or malformed public settings: ' + ', '.join(problems), file=sys.stderr)
+              sys.exit(3)
           for name, value in found.items():
               print(f'{name}={value}')
           PY

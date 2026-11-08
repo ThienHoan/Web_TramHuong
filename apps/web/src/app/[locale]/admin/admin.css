@@ -1680,3 +1680,47 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Product creation: scoped to this editor so existing admin forms keep their layout. */
+.product-create-page { max-width: 1440px; margin-inline: auto; }
+.product-back-link { min-height: 32px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--muted-foreground); font-size: 13px; }
+.product-back-link:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 4px; }
+.product-required-note { color: var(--muted-foreground); font-size: 12px; white-space: nowrap; }
+.product-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); align-items: start; gap: 24px; min-width: 0; border: 0; padding: 0; margin: 0; }
+.product-form-main, .product-form-side { display: grid; gap: 24px; min-width: 0; }
+.product-form-section { border-color: var(--border); border-radius: 12px; gap: 20px; box-shadow: none; min-width: 0; }
+.product-form-section h2 { font-size: 15px; font-weight: 600; line-height: 1.5; }
+.product-form-section [data-slot="card-description"] { font-size: 13px; line-height: 1.7; text-wrap: pretty; }
+.product-language-group { display: grid; gap: 16px; }
+.product-language-group + .product-language-group { padding-top: 20px; border-top: 1px solid var(--border); }
+.product-language-group h3 { font-size: 12px; font-weight: 600; color: var(--muted-foreground); }
+.product-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.product-field > label { width: fit-content; font-size: 13px; font-weight: 500; line-height: 1.5; cursor: pointer; }
+.product-field > p { color: var(--muted-foreground); font-size: 12px; line-height: 1.6; text-wrap: pretty; }
+.admin-route-content .product-field :is(input, textarea, [data-slot="select-trigger"]) { width: 100%; min-width: 0; max-width: 100%; min-height: 40px; border: 1px solid var(--input); border-radius: 12px; background: var(--card); padding: 10px 12px; font-size: 14px; box-shadow: none; }
+.product-field textarea { resize: vertical; outline: none; }
+.admin-route-content .product-field :is(input, textarea, [data-slot="select-trigger"]):focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 2px #5c79621a; }
+.product-price-preview { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; padding-top: 16px; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.product-price-preview > span { flex-basis: 100%; color: var(--muted-foreground); font-size: 12px; }
+.product-price-preview strong { font-size: 20px; font-weight: 600; overflow-wrap: anywhere; }
+.product-price-preview del { color: var(--muted-foreground); font-size: 13px; overflow-wrap: anywhere; }
+.product-form-actions { position: sticky; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+.product-form-actions > p { color: var(--muted-foreground); font-size: 12px; text-wrap: pretty; }
+.product-form-actions > div { display: flex; gap: 10px; flex-shrink: 0; }
+.product-create-page .product-form-actions [data-slot="button"] { height: 44px; min-height: 44px; border-radius: 12px; cursor: pointer; }
+.product-form-actions button:disabled { cursor: not-allowed; }
+@media (max-width: 1100px) { .product-form-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 639px) {
+  .product-create-page .admin-page-heading { align-items: flex-start; gap: 12px; }
+  .product-create-page .admin-page-heading h1 { font-size: 20px; }
+  .product-required-note { white-space: normal; }
+  .product-form-section [data-slot="card-header"], .product-form-section [data-slot="card-content"] { padding-inline: 16px; }
+  .admin-route-content .product-field :is(input, textarea, [data-slot="select-trigger"]) { font-size: 16px; min-height: 44px; }
+  .product-form-actions { padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .product-form-actions > p { display: none; }
+  .product-form-actions > div { width: 100%; }
+  .product-form-actions button { flex: 1; }
+}
+
+.product-create-page .admin-page-heading p { color: var(--muted-foreground); }
+.admin-workspace-footer { color: #657068; }
