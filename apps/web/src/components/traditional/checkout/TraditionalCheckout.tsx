@@ -54,6 +54,8 @@ export default function TraditionalCheckout() {
           province: field("province") || field("city"),
           district: field("district"),
           ward: field("ward"),
+          shippingProvinceId: field("shippingProvinceId"),
+          shippingWardCode: field("shippingWardCode"),
         });
       }
       const savedVoucher = localStorage.getItem("checkout_voucher_code") || "";
@@ -162,7 +164,7 @@ export default function TraditionalCheckout() {
     }
   };
   const discount = appliedVoucher?.discountAmount || 0,
-    shipping = ghnCheckout ? null : total >= 300000 ? 0 : 30000;
+    shipping = ghnCheckout !== false ? null : total >= 300000 ? 0 : 30000;
   return (
     <div className="atelier-page">
       <TraditionalHeader />
@@ -175,11 +177,11 @@ export default function TraditionalCheckout() {
             discount={discount}
             shipping={shipping}
             total={Math.max(0, total - discount) + (shipping || 0)}
-            estimated={ghnCheckout}
+            estimated={ghnCheckout !== false}
             onQuantityChange={updateQuantity}
             onRemove={removeItem}
             hint={
-              ghnCheckout
+              ghnCheckout !== false
                 ? "Phí giao hàng sẽ được xác nhận ở bước tiếp theo, trước khi bạn đặt hàng."
                 : "Kiểm tra lại sản phẩm và thông tin trước khi tiếp tục."
             }
@@ -189,6 +191,7 @@ export default function TraditionalCheckout() {
                   type="submit"
                   form="checkout-recipient-form"
                   disabled={
+                    ghnCheckout === undefined ||
                     loading ||
                     verifyingVoucher ||
                     (!!appliedVoucher && appliedVoucher.subtotal !== total)
@@ -250,9 +253,11 @@ export default function TraditionalCheckout() {
               <GuestCheckoutForm
                 showSubmit={false}
                 onSubmit={continueCheckout}
-                requireLegacyAddress={!ghnCheckout}
+                requireLegacyAddress={ghnCheckout === false}
+                ghnAddress={ghnCheckout === true}
                 initialValues={initialInfo}
                 busy={
+                  ghnCheckout === undefined ||
                   loading ||
                   verifyingVoucher ||
                   (!!appliedVoucher && appliedVoucher.subtotal !== total)

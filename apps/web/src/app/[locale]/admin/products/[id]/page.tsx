@@ -195,7 +195,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded shadow">
+        <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow">
             <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -203,15 +203,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">Slug</label>
-                        <input required type="text" className="w-full border p-2 rounded"
+                        <input required type="text" className="w-full border p-2 rounded-md"
                             value={slug} onChange={e => setSlug(e.target.value)} />
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Price ($)</label>
                         <div className="flex gap-2">
-                            <input required type="number" step="0.01" className="w-1/2 border p-2 rounded" placeholder="Sale Price"
+                            <input required type="number" step="0.01" className="w-1/2 border p-2 rounded-md" placeholder="Sale Price"
                                 value={price} onChange={e => setPrice(e.target.value)} />
-                            <input type="number" step="0.01" className="w-1/2 border p-2 rounded" placeholder="Orig. Price (Optional)"
+                            <input type="number" step="0.01" className="w-1/2 border p-2 rounded-md" placeholder="Orig. Price (Optional)"
                                 value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} />
                         </div>
                     </div>
@@ -221,7 +221,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     <div>
                         <label className="block text-sm font-medium mb-1">Category</label>
                         <select
-                            className="w-full border p-2 rounded capitalize"
+                            className="w-full border p-2 rounded-md capitalize"
                             value={category}
                             onChange={e => setCategory(e.target.value)}
                             required
@@ -237,7 +237,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Style</label>
-                        <select className="w-full border p-2 rounded" value={style} onChange={e => setStyle(e.target.value)}>
+                        <select className="w-full border p-2 rounded-md" value={style} onChange={e => setStyle(e.target.value)}>
                             <option value="zen">Zen (Minimal)</option>
                             <option value="traditional">Traditional (Vietnam)</option>
                             <option value="both">Both</option>
@@ -251,7 +251,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <input
                             type="number"
                             placeholder="0"
-                            className="w-full border p-2 rounded"
+                            className="w-full border p-2 rounded-md"
                             value={quantity}
                             onChange={e => setQuantity(e.target.value)}
                             required
@@ -264,7 +264,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     <div>
                         <label className="block text-sm font-medium mb-1">Display Section (Home Page)</label>
                         <select
-                            className="w-full border p-2 rounded"
+                            className="w-full border p-2 rounded-md"
                             value={featuredSection}
                             onChange={e => setFeaturedSection(e.target.value)}
                         >
@@ -283,12 +283,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     <div className="space-y-3">
                         <div>
                             <label className="block text-sm font-medium mb-1">Title (EN)</label>
-                            <input required type="text" className="w-full border p-2 rounded"
+                            <input required type="text" className="w-full border p-2 rounded-md"
                                 value={titleEn} onChange={e => setTitleEn(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Description (EN)</label>
-                            <textarea className="w-full border p-2 rounded" rows={3}
+                            <textarea className="w-full border p-2 rounded-md" rows={3}
                                 value={descEn} onChange={e => setDescEn(e.target.value)} />
                         </div>
                     </div>
@@ -300,12 +300,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     <div className="space-y-3">
                         <div>
                             <label className="block text-sm font-medium mb-1">Title (VI)</label>
-                            <input required type="text" className="w-full border p-2 rounded"
+                            <input required type="text" className="w-full border p-2 rounded-md"
                                 value={titleVi} onChange={e => setTitleVi(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Description (VI)</label>
-                            <textarea className="w-full border p-2 rounded" rows={3}
+                            <textarea className="w-full border p-2 rounded-md" rows={3}
                                 value={descVi} onChange={e => setDescVi(e.target.value)} />
                         </div>
                     </div>
@@ -321,7 +321,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 type="number"
                                 min="0"
                                 max="100"
-                                className="w-full border p-2 rounded"
+                                className="w-full border p-2 rounded-md"
                                 value={discountPercentage}
                                 onChange={e => setDiscountPercentage(e.target.value)}
                                 placeholder="0"
@@ -333,7 +333,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             <label className="block text-sm font-medium mb-1">Bắt đầu (Optional)</label>
                             <input
                                 type="datetime-local"
-                                className="w-full border p-2 rounded"
+                                className="w-full border p-2 rounded-md"
                                 value={discountStartDate}
                                 onChange={e => setDiscountStartDate(e.target.value)}
                             />
@@ -343,7 +343,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             <label className="block text-sm font-medium mb-1">Kết thúc (Optional)</label>
                             <input
                                 type="datetime-local"
-                                className="w-full border p-2 rounded"
+                                className="w-full border p-2 rounded-md"
                                 value={discountEndDate}
                                 onChange={e => setDiscountEndDate(e.target.value)}
                             />
@@ -383,7 +383,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             <p className="text-xs text-gray-500 mb-2">Current Images (First is Main)</p>
                             <div className="flex flex-wrap gap-4">
                                 {currentImages.map((img, idx) => (
-                                    <div key={img} className="relative group w-24 h-24 border rounded overflow-hidden">
+                                    <div key={img} className="relative group w-24 h-24 border rounded-xl overflow-hidden">
                                         <ProductImage src={img} alt={`Img ${idx}`} />
                                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                             {/* Set Main */}
@@ -416,12 +416,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     setNewFiles([...newFiles, ...Array.from(e.target.files)]);
                                 }
                             }}
-                            className="w-full border p-2 rounded bg-gray-50" />
+                            className="w-full border p-2 rounded-md bg-gray-50" />
                     </div>
                     {newFiles.length > 0 && (
                         <div className="flex flex-wrap gap-4">
                             {newFiles.map((file, idx) => (
-                                <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+                                <div key={idx} className="relative w-20 h-20 border rounded-xl overflow-hidden">
                                     <Image src={URL.createObjectURL(file)} alt="Preview" width={80} height={80} className="w-full h-full object-cover" />
                                     <button aria-label="Đóng" type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
                                         className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl">
@@ -438,35 +438,35 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
                         Variants & Options
                         <button type="button" onClick={() => setVariants([...variants, { name: '', price: 0, description: '' }])}
-                            className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add Variant</button>
+                            className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add Variant</button>
                     </h3>
                     <div className="space-y-2">
                         {variants.map((v, idx) => (
                             <div key={idx} className="flex gap-2 items-start">
-                                <input type="text" placeholder="Name (e.g. 30cm)" className="flex-1 border p-2 rounded text-sm"
+                                <input type="text" placeholder="Name (e.g. 30cm)" className="flex-1 border p-2 rounded-md text-sm"
                                     value={v.name} onChange={e => {
                                         const newV = [...variants]; newV[idx].name = e.target.value; setVariants(newV);
                                     }} />
-                                <input type="number" placeholder="Price (Empty = Base)" className="w-24 border p-2 rounded text-sm"
+                                <input type="number" placeholder="Price (Empty = Base)" className="w-24 border p-2 rounded-md text-sm"
                                     value={v.price ?? ''} onChange={e => {
                                         const val = e.target.value;
                                         const newV = [...variants];
                                         newV[idx].price = val === '' ? null : Number(val);
                                         setVariants(newV);
                                     }} />
-                                <input type="number" placeholder="Orig. Price" className="w-24 border p-2 rounded text-sm"
+                                <input type="number" placeholder="Orig. Price" className="w-24 border p-2 rounded-md text-sm"
                                     value={v.original_price ?? ''} onChange={e => {
                                         const val = e.target.value;
                                         const newV = [...variants];
                                         newV[idx].original_price = val === '' ? null : Number(val);
                                         setVariants(newV);
                                     }} />
-                                <input type="text" placeholder="Desc/Short" className="flex-1 border p-2 rounded text-sm"
+                                <input type="text" placeholder="Desc/Short" className="flex-1 border p-2 rounded-md text-sm"
                                     value={v.description} onChange={e => {
                                         const newV = [...variants]; newV[idx].description = e.target.value; setVariants(newV);
                                     }} />
                                 <button aria-label="Xóa" type="button" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
-                                    className="p-2 text-red-500 hover:bg-red-50 rounded">
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-md">
                                     <AppIcon name="delete" className="text-lg" />
                                 </button>
                             </div>
@@ -482,14 +482,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
                             Specs (English)
                             <button type="button" onClick={() => setSpecsEn([...specsEn, { key: '', value: '' }])}
-                                className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add</button>
+                                className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add</button>
                         </h3>
                         <div className="space-y-2">
                             {specsEn.map((s, idx) => (
                                 <div key={idx} className="flex gap-2">
-                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded text-sm"
+                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded-md text-sm"
                                         value={s.key} onChange={e => { const n = [...specsEn]; n[idx].key = e.target.value; setSpecsEn(n); }} />
-                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded text-sm"
+                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded-md text-sm"
                                         value={s.value} onChange={e => { const n = [...specsEn]; n[idx].value = e.target.value; setSpecsEn(n); }} />
                                     <button type="button" onClick={() => setSpecsEn(specsEn.filter((_, i) => i !== idx))} className="text-red-500">×</button>
                                 </div>
@@ -501,14 +501,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
                             Specs (Vietnamese)
                             <button type="button" onClick={() => setSpecsVi([...specsVi, { key: '', value: '' }])}
-                                className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">+ Add</button>
+                                className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add</button>
                         </h3>
                         <div className="space-y-2">
                             {specsVi.map((s, idx) => (
                                 <div key={idx} className="flex gap-2">
-                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded text-sm"
+                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded-md text-sm"
                                         value={s.key} onChange={e => { const n = [...specsVi]; n[idx].key = e.target.value; setSpecsVi(n); }} />
-                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded text-sm"
+                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded-md text-sm"
                                         value={s.value} onChange={e => { const n = [...specsVi]; n[idx].value = e.target.value; setSpecsVi(n); }} />
                                     <button type="button" onClick={() => setSpecsVi(specsVi.filter((_, i) => i !== idx))} className="text-red-500">×</button>
                                 </div>
@@ -519,10 +519,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
                 <div className="pt-4 flex gap-4">
                     <button type="submit" disabled={submitting}
-                        className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 disabled:opacity-50">
+                        className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50">
                         {submitting ? 'Updating...' : 'Update Product'}
                     </button>
-                    <button type="button" onClick={() => router.back()} className="px-6 py-2 border rounded hover:bg-gray-50">
+                    <button type="button" onClick={() => router.back()} className="px-6 py-2 border rounded-md hover:bg-gray-50">
                         Cancel
                     </button>
                 </div>
@@ -577,11 +577,11 @@ function SeedReviewForm({ productId }: { productId: string }) {
     };
 
     return (
-        <form onSubmit={handleSeed} className="bg-gray-50 p-6 rounded border border-gray-200">
+        <form onSubmit={handleSeed} className="bg-gray-50 p-6 rounded-xl border border-gray-200">
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Reviewer Name</label>
-                    <input required type="text" className="w-full border p-2 rounded"
+                    <input required type="text" className="w-full border p-2 rounded-md"
                         placeholder="e.g. Nguyen Van A"
                         value={name} onChange={e => setName(e.target.value)} />
                 </div>
@@ -600,7 +600,7 @@ function SeedReviewForm({ productId }: { productId: string }) {
 
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Avatar URL (Optional)</label>
-                <input type="url" className="w-full border p-2 rounded"
+                <input type="url" className="w-full border p-2 rounded-md"
                     placeholder="https://example.com/avatar.jpg"
                     value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} />
                 <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate from name.</p>
@@ -608,12 +608,12 @@ function SeedReviewForm({ productId }: { productId: string }) {
 
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Comment</label>
-                <textarea required className="w-full border p-2 rounded" rows={2}
+                <textarea required className="w-full border p-2 rounded-md" rows={2}
                     placeholder="Very good product..."
                     value={comment} onChange={e => setComment(e.target.value)} />
             </div>
             <button type="submit" disabled={loading}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 w-full">
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 w-full">
                 {loading ? 'Seeding...' : 'Add Fake Review'}
             </button>
         </form>

@@ -225,7 +225,7 @@ export default function LoginPage() {
                             ) : (
                                 <>
                                     {messageParam === 'password_reset_success' && (
-                                        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-3 rounded mb-4 text-sm font-medium border border-green-200 dark:border-green-800">
+                                        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-3 rounded-xl mb-4 text-sm font-medium border border-green-200 dark:border-green-800">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-lg">✅</span>
                                                 <span>{t("Mật khẩu đã được đặt lại. Vui lòng đăng nhập bằng mật khẩu mới.", "Your password has been reset. Please sign in with the new one.")}</span>
@@ -233,7 +233,7 @@ export default function LoginPage() {
                                         </div>
                                     )}
                                     {error && (
-                                        <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium border border-red-100">
+                                        <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm font-medium border border-red-100">
                                             {error === 'EMAIL_EXISTS' ? (
                                                 <>
                                                     <p>{t("Email này đã được đăng ký. Bạn có thể:", "This email is already registered. You can:")}</p>

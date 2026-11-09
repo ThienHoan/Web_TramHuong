@@ -239,7 +239,7 @@ export default function ChatWidget() {
     if (isPreview) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
+        <div data-chat-widget className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -266,12 +266,12 @@ export default function ChatWidget() {
                             <div className="flex items-center gap-1">
                                 <button
                                         onClick={handleClearHistory}
-                                        className="hover:bg-white/20 p-1.5 rounded transition-colors"
+                                        className="hover:bg-white/20 p-1.5 rounded-md transition-colors"
                                         title={locale === 'en' ? 'Clear conversation on this device' : 'Xóa lịch sử chat trên thiết bị này'}
                                     >
                                         <Trash2 size={16} />
                                     </button>
-                                <button aria-label={locale === "en" ? "Close AI assistant" : "Đóng trợ lý AI"} onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded transition-colors">
+                                <button aria-label={locale === "en" ? "Close AI assistant" : "Đóng trợ lý AI"} onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded-md transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -281,7 +281,6 @@ export default function ChatWidget() {
                         <div
                             className="flex-1 overflow-y-auto p-4 bg-slate-50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent overscroll-y-contain"
                             ref={scrollRef}
-                            data-lenis-prevent
                         >
                             {messages.length === 0 && !streamingContent && (
                                 <div className="text-center mt-10 space-y-4">

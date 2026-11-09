@@ -99,7 +99,7 @@ export default function ContactPage() {
                                 </li>
                             ))}
                         </ul>
-                        <div className="relative mt-10 hidden aspect-[4/3] overflow-hidden rounded-[4px] lg:block">
+                        <div className="relative mt-10 hidden aspect-[4/3] overflow-hidden rounded-xl lg:block">
                             <Image src="/editorial/ritual.webp" alt="" fill sizes="50vw" className="object-cover" />
                         </div>
                     </div>

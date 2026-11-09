@@ -25,6 +25,7 @@ import {
   type PreviewOptions,
 } from "./types";
 import "./experience-lab.css";
+import type { ExperienceShoppingLinks } from "@/lib/experience-shopping";
 
 const CONCEPTS = [
   {
@@ -77,9 +78,11 @@ const getMotionPreference = () =>
 export default function ExperienceLab({
   initialMode = "bracelet",
   embedded = false,
+  shoppingLinks,
 }: {
   initialMode?: PreviewMode;
   embedded?: boolean;
+  shoppingLinks?: ExperienceShoppingLinks;
 }) {
   const [mode, setMode] = useState<PreviewMode>(initialMode);
   const [options, setOptions] = useState<PreviewOptions>(DEFAULT_OPTIONS);
@@ -408,7 +411,7 @@ export default function ExperienceLab({
               Hình 3D minh họa hình dáng và sắc độ. Xem ảnh thật ở từng sản phẩm
               trước khi chọn mua.
             </p>
-            <Link href="/products">
+            <Link href={shoppingLinks?.[mode] || "/products"}>
               Xem sản phẩm thật <ArrowUpRight size={16} />
             </Link>
           </div>
@@ -420,7 +423,7 @@ export default function ExperienceLab({
             Đây là các mẫu trải nghiệm để chọn hướng UI. Hình dáng và sắc gỗ
             mang tính minh họa, chưa đại diện cho một mã sản phẩm cụ thể.
           </p>
-          <Link href="/products">
+          <Link href={shoppingLinks?.[mode] || "/products"}>
             Ghé bộ sưu tập hiện tại <ArrowUpRight size={16} />
           </Link>
         </div>

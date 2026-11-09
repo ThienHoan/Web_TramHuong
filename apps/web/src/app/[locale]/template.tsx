@@ -7,7 +7,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
     return (
         <motion.div
             variants={pageTransition}
-            initial="initial"
+            initial={false}
             animate="animate"
             exit="exit"
             className="w-full"

@@ -339,10 +339,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 text-xs text-text-main/50 flex-wrap">
-                                                            <span className="px-2 py-0.5 rounded bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">{t("Số lượng:", "Quantity:")} {item.quantity}</span>
-                                                            {item.variant_name && <span className="bg-trad-bg-warm px-2 py-0.5 rounded border border-trad-border-warm">{item.variant_name}</span>}
+                                                            <span className="px-2 py-0.5 rounded-md bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">{t("Số lượng:", "Quantity:")} {item.quantity}</span>
+                                                            {item.variant_name && <span className="bg-trad-bg-warm px-2 py-0.5 rounded-md border border-trad-border-warm">{item.variant_name}</span>}
                                                             {hasDiscount && !isExpiredOrCanceled && (
-                                                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                                                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
                                                                     -{Math.round((discountAmount / originalPrice) * 100)}%
                                                                 </span>
                                                             )}

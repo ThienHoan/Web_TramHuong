@@ -118,7 +118,7 @@ export default function EditVoucherPage({ params }: { params: Promise<{ id: stri
                 </button>
                 <div className="flex items-center gap-3">
                     <h1 className="text-3xl font-bold text-gray-900">Chỉnh Sửa Mã Giảm Giá</h1>
-                    <span className="bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded text-sm font-bold">{formData.code}</span>
+                    <span className="bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded-md text-sm font-bold">{formData.code}</span>
                 </div>
             </div>
 

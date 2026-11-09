@@ -31,6 +31,8 @@ interface ShippingInfo {
   province: string;
   district: string;
   ward: string;
+  shippingProvinceId: string;
+  shippingWardCode: string;
 }
 
 interface Division {
@@ -41,6 +43,7 @@ interface Division {
 import ShippingQuotePanel, {
   type ShippingSelection,
 } from "@/components/checkout/ShippingQuotePanel";
+import ShippingAddressFields from "@/components/checkout/ShippingAddressFields";
 
 import { useShippingAvailability } from "@/hooks/useShippingAvailability";
 
@@ -69,6 +72,8 @@ export default function ZenCheckout() {
     province: "",
     district: "",
     ward: "",
+    shippingProvinceId: "",
+    shippingWardCode: "",
   });
 
   // Location State
@@ -88,8 +93,9 @@ export default function ZenCheckout() {
   const [loadingD, setLoadingD] = useState(false);
   const [loadingW, setLoadingW] = useState(false);
 
-  // Fetch Provinces on Mount
+  // Fetch the standard address list only when GHN is not handling delivery
   useEffect(() => {
+    if (ghnCheckout !== false) return;
     setLoadingP(true);
     fetch("https://provinces.open-api.vn/api/?depth=1")
       .then((res) => res.json())
@@ -101,7 +107,7 @@ export default function ZenCheckout() {
         console.error(err);
         setLoadingP(false);
       });
-  }, []);
+  }, [ghnCheckout]);
 
   // Fetch Districts
   useEffect(() => {
@@ -186,10 +192,12 @@ export default function ZenCheckout() {
       !shippingInfo.fullName ||
       !shippingInfo.phone ||
       !shippingInfo.address ||
-      (!ghnCheckout &&
+      (ghnCheckout === false &&
         (!shippingInfo.province ||
           !shippingInfo.district ||
-          !shippingInfo.ward))
+          !shippingInfo.ward)) ||
+      (ghnCheckout === true &&
+        (!shippingInfo.shippingProvinceId || !shippingInfo.shippingWardCode))
     ) {
       setCheckoutError(
         "Enter the recipient name, phone number and complete delivery address.",
@@ -207,6 +215,16 @@ export default function ZenCheckout() {
     setStep("payment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Sent with both the delivery quote and the order, which must match exactly.
+  const deliveryAddress = [
+    shippingInfo.address.trim(),
+    shippingInfo.ward,
+    shippingInfo.district,
+    shippingInfo.province,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const handleCompleteOrder = async () => {
     if (!termsAccepted) return;
@@ -243,16 +261,7 @@ export default function ZenCheckout() {
             if (!p.startsWith("+")) return "+84" + p;
             return p;
           })(shippingInfo.phone),
-          address: ghnCheckout
-            ? shippingInfo.address.trim()
-            : [
-                shippingInfo.address.trim(),
-                shippingInfo.ward,
-                shippingInfo.district,
-                shippingInfo.province,
-              ]
-                .filter(Boolean)
-                .join(", "),
+          address: deliveryAddress,
           city: shippingSelection.quote?.provinceName || shippingInfo.province,
           email: user?.email, // Optional
         },
@@ -287,12 +296,12 @@ export default function ZenCheckout() {
 
   const quotePending =
     step === "shipping"
-      ? ghnCheckout
+      ? ghnCheckout !== false
       : !shippingSelection.ready ||
         (shippingSelection.enabled && !shippingSelection.quote);
   const editDetails = () => {
     setStep("shipping");
-    setShippingSelection({ enabled: ghnCheckout, ready: false, quote: null });
+    setShippingSelection({ enabled: ghnCheckout === true, ready: false, quote: null });
     setCheckoutError("");
   };
   return (
@@ -329,7 +338,11 @@ export default function ZenCheckout() {
                       : "Place order · pay on delivery"}
                 </CheckoutPrimaryButton>
               ) : items.length ? (
-                <CheckoutPrimaryButton type="submit" form="zen-recipient-form">
+                <CheckoutPrimaryButton
+                  type="submit"
+                  form="zen-recipient-form"
+                  disabled={ghnCheckout === undefined}
+                >
                   Continue to delivery & payment
                 </CheckoutPrimaryButton>
               ) : undefined
@@ -405,18 +418,37 @@ export default function ZenCheckout() {
                       id="address"
                       autoComplete="shipping address-line1"
                       required
-                      maxLength={1024}
+                      maxLength={900}
                       value={shippingInfo.address}
                       onChange={handleInputChange}
                       placeholder="House, street, apartment or village"
                     />
                     <p className="checkout-field-help">
-                      {ghnCheckout
-                        ? "You'll choose your province and ward in the next step."
-                        : "Include your house number or building name."}
+                      Include your house number or building name.
                     </p>
                   </div>
-                  {!ghnCheckout && (
+                  {ghnCheckout === true && (
+                    <ShippingAddressFields
+                      idPrefix="zen"
+                      value={{
+                        provinceId: shippingInfo.shippingProvinceId,
+                        provinceName: shippingInfo.province,
+                        wardCode: shippingInfo.shippingWardCode,
+                        wardName: shippingInfo.ward,
+                      }}
+                      onChange={(next) =>
+                        setShippingInfo((prev) => ({
+                          ...prev,
+                          province: next.provinceName,
+                          district: "",
+                          ward: next.wardName,
+                          shippingProvinceId: next.provinceId,
+                          shippingWardCode: next.wardCode,
+                        }))
+                      }
+                    />
+                  )}
+                  {ghnCheckout === false && (
                     <>
                       <div className="checkout-field">
                         <label htmlFor="zen-province">Province / city</label>
@@ -502,7 +534,7 @@ export default function ZenCheckout() {
                   <p>
                     {shippingInfo.phone}
                     <br />
-                    {shippingInfo.address}
+                    {deliveryAddress}
                   </p>
                 </div>
                 <button
@@ -517,7 +549,7 @@ export default function ZenCheckout() {
             <CheckoutCard
               number="02"
               title="How would you like to pay?"
-              description="Choose a method before calculating delivery."
+              description="Your delivery fee updates with the method you choose."
             >
               <PaymentOptions
                 value={paymentMethod}
@@ -531,12 +563,12 @@ export default function ZenCheckout() {
               number="03"
               title={
                 shippingSelection.enabled
-                  ? "Delivery address & carrier"
+                  ? "Delivery & carrier"
                   : "Delivery"
               }
               description={
-                ghnCheckout
-                  ? "Select your province and ward to complete your address."
+                shippingSelection.enabled
+                  ? "Calculated from the address you entered."
                   : "Your delivery fee is included in the order summary."
               }
             >
@@ -545,8 +577,17 @@ export default function ZenCheckout() {
                 recipient={{
                   name: shippingInfo.fullName,
                   phone: shippingInfo.phone,
-                  address: shippingInfo.address,
+                  address: deliveryAddress,
                 }}
+                destination={
+                  shippingInfo.shippingProvinceId && shippingInfo.shippingWardCode
+                    ? {
+                        provinceId: shippingInfo.shippingProvinceId,
+                        provinceName: shippingInfo.province,
+                        wardCode: shippingInfo.shippingWardCode,
+                      }
+                    : null
+                }
                 paymentMethod={paymentMethod}
                 onChange={setShippingSelection}
               />

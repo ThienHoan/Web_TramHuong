@@ -594,7 +594,7 @@ export default function ShippingAdminPage() {
         <label>
           {en ? "Rows" : "Số dòng"}{" "}
           <select
-            className="rounded border p-2"
+            className="rounded-md border p-2"
             value={limit}
             onChange={(e) => {
               setLimit(Number(e.target.value));

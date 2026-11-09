@@ -1,372 +1,126 @@
-'use client';
+"use client";
 
-import { Product } from '@/types/product';
-import { Link } from '@/i18n/routing';
-import ProductImage from '../ui/ProductImage';
-import { ProductPrice } from '@/components/ui/ProductPrice';
-import { useCurrency } from '@/hooks/useCurrency';
-import { useState, useEffect } from 'react';
-import TraditionalHeader from './TraditionalHeader';
-import TraditionalFooter from './TraditionalFooter';
-import TraditionalProductCard from './TraditionalProductCard';
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel"
-import EmptyState from '../ui/empty-state';
-import { AppIcon } from "@/components/icons/AppIcon";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { ArrowDown, ArrowRight, ArrowUpRight, ChevronDown, Leaf, Search } from "lucide-react";
+import { Link } from "@/i18n/routing";
+import type { Category, Product } from "@/types/product";
+import TraditionalHeader from "./TraditionalHeader";
+import TraditionalFooter from "./TraditionalFooter";
+import ShopCatalogFilters, { ShopCategoryLinks } from "@/components/shop/ShopCatalogFilters";
+import ShopProductCard from "@/components/shop/ShopProductCard";
+import { collectionChapters } from "@/lib/collections";
+import { allProductsHref, parseCatalogFilters } from "@/lib/catalog";
+import { experienceShoppingLinks } from "@/lib/experience-shopping";
+import { formatVnd, priceRange } from "@/lib/commerce";
+import "./collections.css";
+import "@/components/shop/shop.css";
 
-export default function TraditionalProductList({ products }: { products: Product[] }) {
-    const { formatPrice } = useCurrency();
-    const [scrolled, setScrolled] = useState(false);
-    const [activeSection, setActiveSection] = useState('chuong-1');
+const chapters = [
+  { id: "chuong-1", number: "I", label: "Thượng Hạng", note: "Chậm ngắm chất trầm.", image: "/editorial/preview-bracelet.webp" },
+  { id: "chuong-2", number: "II", label: "An Yên", note: "Nghi thức cho góc nhà.", image: "/editorial/ritual.webp" },
+  { id: "chuong-3", number: "III", label: "Tâm Giao", note: "Món quà gửi người thương.", image: "/editorial/wood.webp" },
+];
+const allProducts = allProductsHref("vi");
+const filters = parseCatalogFilters({ sort: "newest" });
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+export default function TraditionalProductList({ products, categories = [] }: {
+  products: Product[];
+  categories?: Category[];
+}) {
+  const [activeSection, setActiveSection] = useState("chuong-1");
+  const grouped = collectionChapters(products);
+  const shoppingLinks = experienceShoppingLinks(categories);
+  const gift = grouped.chapter_3[0];
+  const giftTitle = gift?.translation?.title || gift?.title || "";
+  const giftPrice = gift ? priceRange(gift) : null;
 
-    useEffect(() => {
-        const sections = ['chuong-1', 'chuong-2', 'chuong-3'];
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveSection(entry.target.id);
-                    }
-                });
-            },
-            {
-                rootMargin: '-20% 0px -50% 0px', // Trigger when section is near center/top
-                threshold: 0.1
-            }
-        );
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) setActiveSection(entry.target.id);
+      }
+    }, { rootMargin: "-150px 0px -45% 0px", threshold: 0 });
+    for (const chapter of chapters) {
+      const section = document.getElementById(chapter.id);
+      if (section) observer.observe(section);
+    }
+    return () => observer.disconnect();
+  }, []);
 
-        sections.forEach((id) => {
-            const element = document.getElementById(id);
-            if (element) observer.observe(element);
-        });
+  return <div className="atelier-page shop-commerce collection-page">
+    <TraditionalHeader />
+    <main>
+      <div className="tp-container">
+        <nav aria-label="Đường dẫn" className="shop-breadcrumb"><Link href="/">Trang chủ</Link><span>/</span><span>Bộ sưu tập</span></nav>
+        <header className="collection-intro">
+          <div><p className="shop-kicker">PHẨM VẬT TỪ THIÊN NHIÊN</p><h1>Chọn một làn hương.<br /><em>Giữ một khoảng yên.</em></h1></div>
+          <div className="collection-intro-copy"><p>Vòng trầm để mang theo, hương trầm cho góc nhà, hay một món quà gửi người thương. Chậm rãi khám phá từng bộ sưu tập theo cách của bạn.</p><Link href={allProducts} className="tp-text-link">Xem toàn bộ sản phẩm <ArrowUpRight size={17} /></Link></div>
+        </header>
+        <nav className="collection-gateway" aria-label="Khám phá theo chương">
+          {chapters.map(chapter => <a key={chapter.id} href={`#${chapter.id}`} className="collection-gateway-tile" onClick={() => setActiveSection(chapter.id)}>
+            <Image src={chapter.image} alt="" fill sizes="(max-width: 767px) 74vw, 31vw" />
+            <span className="collection-gateway-copy"><span>CHƯƠNG {chapter.number}</span><strong>{chapter.label}</strong><span>{chapter.note}</span></span>
+            <ArrowDown size={16} aria-hidden="true" />
+          </a>)}
+        </nav>
+        <details className="collection-search" id="tim-san-pham">
+          <summary><span><Search size={17} aria-hidden="true" /><strong>Tìm & lọc sản phẩm</strong><span>Theo tên, loại trầm hoặc ngân sách</span></span><ChevronDown size={18} aria-hidden="true" /></summary>
+          <div><nav className="shop-category-links" aria-label="Danh mục sản phẩm"><ShopCategoryLinks categories={categories} filters={filters} locale="vi" /></nav><ShopCatalogFilters filters={filters} locale="vi" /></div>
+        </details>
+      </div>
 
-        return () => observer.disconnect();
-    }, []);
+      <nav className="collection-chapter-nav" aria-label="Các chương của bộ sưu tập">
+        <div className="tp-container">
+          {chapters.map(chapter => <a key={chapter.id} href={`#${chapter.id}`} aria-current={activeSection === chapter.id ? "location" : undefined} onClick={() => setActiveSection(chapter.id)}><span>{chapter.number}</span>{chapter.label}</a>)}
+        </div>
+      </nav>
 
-    // Helper to filter products
-    // Chapter 1: Featured / High End
-    const highEndProducts = products.filter(p => p.featured_section === 'chapter_1' || (p.is_featured && !p.featured_section)).slice(0, 8);
-    // Fallback logic for Chapter 1
-    const displayProducts1 = highEndProducts.length > 0 ? highEndProducts : products.filter(p => Number(p.price) > 1000000).slice(0, 4);
+      <section className="collection-chapter" id="chuong-1" aria-labelledby="chapter-one-title">
+        <div className="tp-container collection-split">
+          <div className="collection-chapter-copy">
+            <p className="shop-kicker">CHƯƠNG I · THƯỢNG HẠNG</p>
+            <h2 id="chapter-one-title">Chậm ngắm<br /><em>chất trầm.</em></h2>
+            <p>Một sắc gỗ, một đường vân, một cách thưởng hương. Mỗi phẩm vật gợi mở một góc nhìn riêng về thế giới trầm hương.</p>
+            <p>Hãy bắt đầu từ hình ảnh, chất liệu và thông số của từng sản phẩm. Thiên Phúc sẵn lòng cùng bạn tìm hiểu trước khi lựa chọn.</p>
+            <Link href={allProducts} className="tp-text-link">Khám phá phẩm trầm <ArrowUpRight size={17} /></Link>
+            <div className="collection-chapter-note"><Leaf size={18} aria-hidden="true" /><p>Chọn từ sự thấu hiểu.<br /><span>Xem kỹ phẩm vật, rồi tìm hương hợp với mình.</span></p></div>
+          </div>
+          {grouped.chapter_1.length ? <div className="collection-product-pair">{grouped.chapter_1.slice(0, 4).map(product => <ShopProductCard key={product.id} product={product} />)}</div> : <figure className="collection-mood"><Image src="/editorial/preview-bracelet.webp" alt="Mô hình vòng trầm minh họa hình dáng và sắc gỗ" fill sizes="(max-width: 767px) 92vw, 50vw" /><figcaption>Đôi nét vân gỗ. Một vẻ riêng.</figcaption></figure>}
+        </div>
+      </section>
 
-    // Chapter 2: Daily Ritual (An Yên)
-    const ritualProducts = products.filter(p => p.featured_section === 'chapter_2');
+      <div className="collection-pause">
+        <Image src="/editorial/forest.webp" alt="" fill sizes="100vw" />
+        <p>Một làn hương.<br /><em>Một nhịp sống chậm.</em></p>
+      </div>
 
-    // Chapter 3: Gifting (Quà Tặng)
-    const giftProducts = products.filter(p => p.featured_section === 'chapter_3');
+      <section className="collection-chapter collection-ritual" id="chuong-2" aria-labelledby="chapter-two-title">
+        <div className="tp-container">
+          <header className="collection-centered-heading"><p className="shop-kicker">CHƯƠNG II · AN YÊN</p><h2 id="chapter-two-title">Nghi thức <em>an yên.</em></h2><p>Một lư trầm, một góc nhà, một chút thời gian cho riêng mình. Tìm phẩm trầm phù hợp với những nghi thức nhỏ mỗi ngày.</p></header>
+          <div className="collection-ritual-layout">
+            <article className="collection-ritual-story">
+              <div><Leaf size={24} aria-hidden="true" /><h3>Mang hương về góc nhà.</h3><p>Chọn kiểu hương bạn muốn thưởng, tìm dụng cụ phù hợp và đọc hướng dẫn trước khi dùng. Một nghi thức giản đơn bắt đầu từ những lựa chọn vừa vặn.</p><Link href={shoppingLinks.ritual} className="tp-text-link">Tìm hương cho không gian <ArrowUpRight size={17} /></Link></div>
+              <div className="collection-ritual-photo"><Image src="/editorial/ritual.webp" alt="Lư gốm trong một góc thưởng trầm" fill sizes="(max-width: 767px) 92vw, 40vw" /></div>
+            </article>
+            {grouped.chapter_2.length ? <div className="collection-product-pair">{grouped.chapter_2.slice(0, 6).map(product => <ShopProductCard key={product.id} product={product} />)}</div> : <div className="collection-ritual-empty"><p className="shop-kicker">CÙNG CHỌN MỘT LÀN HƯƠNG</p><h3>Bắt đầu từ cách bạn muốn thưởng trầm.</h3><p>Khám phá nhang, nụ xông và phụ kiện trong danh mục, hoặc hỏi Thiên Phúc để cùng lựa chọn.</p><Link href={shoppingLinks.ritual} className="tp-text-link">Xem danh mục thưởng hương <ArrowUpRight size={17} /></Link></div>}
+          </div>
+        </div>
+      </section>
 
-    const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-        e.preventDefault();
-        const element = document.getElementById(id);
-        if (element) {
-            const headerOffset = 100;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-            setActiveSection(id);
-        }
-    };
+      <section className="collection-chapter collection-gifts" id="chuong-3" aria-labelledby="chapter-three-title">
+        <div className="tp-container">
+          <header className="collection-gift-heading"><div><p className="shop-kicker">CHƯƠNG III · TÂM GIAO</p><h2 id="chapter-three-title">Tâm giao <em>gửi trao.</em></h2></div><p>Một món quà được chọn bằng sự quan tâm.<br />Một làn hương thay lời muốn nói.</p></header>
+          <div className="collection-gift-hero">
+            <div className={`collection-gift-photo ${gift ? "collection-gift-photo-product" : ""}`}><Image src={gift?.images?.[0] || "/editorial/wood.webp"} alt={gift ? giftTitle : "Làn khói nhẹ trên bề mặt gỗ mộc"} fill sizes="(max-width: 767px) 92vw, 50vw" /></div>
+            <div className="collection-gift-copy"><p className="shop-kicker">MỘT MÓN QUÀ CÓ Ý NGHĨA</p><h3>{giftTitle || "Gửi hương, gửi một lời quan tâm."}</h3><p>{gift?.translation?.short_description || "Dành tặng người thân, một người bạn hay người đã đồng hành cùng bạn. Cùng Thiên Phúc chọn phẩm trầm, cách dùng và hình thức quà phù hợp với người nhận."}</p>{giftPrice && <p className="collection-gift-price">{giftPrice.max > giftPrice.min ? "Từ " : ""}{formatVnd(giftPrice.min, "vi")}</p>}<Link href={gift ? `/products/${gift.slug}` : shoppingLinks.gift} className="shop-btn">{gift ? "Khám phá bộ quà" : "Cùng chọn món quà"}<ArrowUpRight size={17} /></Link></div>
+          </div>
+          {grouped.chapter_3.length > 1 && <div className="collection-gift-products">{grouped.chapter_3.slice(1, 4).map(product => <ShopProductCard key={product.id} product={product} />)}</div>}
+        </div>
+      </section>
 
-    return (
-        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary selection:text-white">
-            <TraditionalHeader />
-
-            <section className="atelier-catalog-intro">
-                <div><p>Phẩm vật từ thiên nhiên</p><h1>Chọn một làn hương.<br /><em>Giữ một khoảng yên.</em></h1></div>
-                <p>Vòng trầm để mang theo, hương trầm cho góc nhà, hay một món quà gửi người thương. Khám phá từng bộ sưu tập theo cách của bạn.</p>
-            </section>
-
-            {/* Sticky Chapter Nav - Adjustment for new header height (80px) */}
-            <div className={`sticky top-20 z-40 w-full border-b border-trad-border-warm transition-all duration-300 ${scrolled ? 'bg-trad-bg-light/95 backdrop-blur-md shadow-md py-2' : 'bg-trad-bg-light py-4'}`}>
-                <div className="container mx-auto px-4 md:px-8 xl:px-20">
-                    <nav className="flex justify-center md:justify-start space-x-2 md:space-x-8 overflow-x-auto no-scrollbar">
-                        {[
-                            { id: 'chuong-1', label: 'Chương I: Thượng Hạng' },
-                            { id: 'chuong-2', label: 'Chương II: An Yên' },
-                            { id: 'chuong-3', label: 'Chương III: Tâm Giao' }
-                        ].map((item, index) => (
-                            <a
-                                key={item.id}
-                                href={`#${item.id}`}
-                                onClick={(e) => scrollToSection(e, item.id)}
-                                className={`relative px-4 py-2 text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap group ${activeSection === item.id
-                                    ? 'text-trad-primary'
-                                    : 'text-trad-text-muted hover:text-trad-primary'
-                                    }`}
-                            >
-                                <span className={`mr-2 ${index === 0 ? 'hidden' : 'inline'} text-trad-border-warm group-hover:text-trad-primary`}>•</span>
-                                {item.label}
-                                <span className={`absolute bottom-0 left-0 h-0.5 w-full bg-trad-primary transform transition-transform duration-300 ${activeSection === item.id ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
-                            </a>
-                        ))}
-                    </nav>
-                </div>
-            </div>
-
-            <main>
-                {/* Chapter 1 */}
-                <section className="relative py-20 lg:py-24 scroll-mt-32" id="chuong-1">
-                    <div className="container mx-auto px-4 md:px-8 xl:px-20">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-                            <div className="lg:col-span-5 lg:sticky lg:top-48 h-fit">
-                                <div className="mb-6 flex items-center gap-2 text-trad-primary">
-                                    <AppIcon name="filter_vintage" className="" />
-                                    <span className="text-sm font-bold uppercase tracking-widest">Cao Cấp Nhất</span>
-                                </div>
-                                <h2 className="mb-6 text-4xl font-bold text-trad-text-main lg:text-5xl">
-                                    Nụ Trầm <span className="text-trad-primary italic block mt-2">Thượng Hạng</span>
-                                </h2>
-                                <div className="prose prose-lg text-trad-text-main/80 mb-8 font-light text-justify">
-                                    <p className="first-letter:float-left first-letter:mr-3 first-letter:mt-[-4px] first-letter:text-6xl first-letter:font-bold first-letter:leading-none first-letter:text-trad-primary first-letter:font-display">
-                                        Được tuyển chọn từ những phôi trầm có tuổi tích hương trên 15 năm, dòng sản phẩm Thượng Hạng mang hương thơm ngọt sâu, đầm ấm đặc trưng. Không gian thưởng trầm như lắng đọng, đưa tâm trí về trạng thái thiền định sâu sắc nhất.
-                                    </p>
-                                    <p className="text-base mt-4 italic text-trad-text-muted">
-                                        Thích hợp cho không gian thờ cúng trang trọng, bàn trà đạo hoặc quà tặng đối tác cao cấp.
-                                    </p>
-                                </div>
-                                <div className="mt-8 rounded-lg border border-trad-border-warm bg-white p-6 shadow-sm">
-                                    <h3 className="mb-3 font-display text-lg font-bold text-trad-text-main">Bạn đang tìm kiếm?</h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        <button className="rounded-full border border-trad-primary bg-trad-primary px-4 py-1.5 text-xs font-bold text-white transition-colors">Tất cả</button>
-                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Hộp gỗ</button>
-                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Hộp giấy</button>
-                                        <button className="rounded-full border border-trad-border-warm bg-transparent px-4 py-1.5 text-xs font-bold text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors">Nụ tháp</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="lg:col-span-7">
-                                {displayProducts1.length > 0 ? (
-                                    <>
-                                        {displayProducts1.length > 3 ? (
-                                            <div className="col-span-full">
-                                                <Carousel
-                                                    opts={{
-                                                        align: "start",
-                                                        loop: true,
-                                                        dragFree: true,
-                                                    }}
-                                                    className="w-full"
-                                                >
-                                                    <CarouselContent className="-ml-4">
-                                                        {displayProducts1.map((product) => (
-                                                            <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                                                                <TraditionalProductCard product={product} />
-                                                            </CarouselItem>
-                                                        ))}
-                                                    </CarouselContent>
-                                                    <CarouselPrevious className="left-0 -translate-x-1/2" />
-                                                    <CarouselNext className="right-0 translate-x-1/2" />
-                                                </Carousel>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                                {displayProducts1.map((product) => (
-                                                    <TraditionalProductCard key={product.id} product={product} />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="col-span-full">
-                                        <EmptyState
-                                            title="Đang cập nhật sản phẩm"
-                                            description="Bộ sưu tập này đang được chuẩn bị. Quý khách vui lòng quay lại sau."
-                                            icon="inventory_2"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="mt-10 flex justify-center">
-                            <Link className="inline-flex items-center justify-center rounded-sm border border-trad-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-trad-primary transition-all hover:bg-trad-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 group" href="/products/catalog">
-                                Xem tất cả sản phẩm
-                                <AppIcon name="arrow_forward" className="ml-2 text-lg transition-transform group-hover:translate-x-1" />
-                            </Link>
-                        </div>
-                    </div>
-
-                </section>
-
-                {/* Chapter 2 Divider */}
-                < div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('/editorial/forest.webp')" }
-                }>
-                    <div className="absolute inset-0 bg-black/40"></div>
-                    <div className="relative z-10 text-center text-white px-4">
-                        <AppIcon name="self_improvement" className="text-4xl mb-2 opacity-80" />
-                        <p className="font-display text-2xl md:text-3xl italic font-medium">&quot;Hương trầm tỏa ra, phiền muộn tan biến.&quot;</p>
-                    </div>
-                </div >
-
-                {/* Chapter 2: The Daily Ritual (An Yên) */}
-                < section className="bg-trad-bg-warm/50 py-20 lg:py-24 scroll-mt-20" id="chuong-2" >
-                    <div className="container mx-auto px-4 md:px-8 xl:px-20">
-                        <div className="mb-12 flex flex-col items-center text-center">
-                            <span className="mb-2 font-display text-4xl text-trad-primary/40">II</span>
-                            <h2 className="text-3xl font-bold text-trad-text-main lg:text-4xl">Nghi Thức An Yên</h2>
-                            <div className="mt-4 h-px w-24 bg-trad-red-900/30"></div>
-                            <p className="mt-4 max-w-2xl text-trad-text-main/70">
-                                &quot;Trầm hương không chỉ là mùi hương, mà là người bạn đồng hành trong từng khoảnh khắc sống. Để mỗi sáng mai thức dậy là một khởi đầu thanh khiết, và mỗi tối trở về là sự buông bỏ muộn phiền.&quot;
-                            </p>
-                        </div>
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                            {/* Static Hero Card */}
-                            <div className="col-span-1 md:col-span-2 relative overflow-hidden rounded-lg bg-trad-red-900 p-8 text-white shadow-md flex flex-col justify-center min-h-[300px]">
-                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
-                                <div className="absolute -right-10 -bottom-10 opacity-20">
-                                    <AppIcon name="spa" className="text-[200px]" />
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="mb-3 font-display text-2xl font-bold">Lựa chọn cho gia đình</h3>
-                                    <p className="mb-6 text-trad-cream/90 max-w-md">
-                                        Xem thành phần và hướng dẫn của từng sản phẩm trước khi chọn. Với người nhạy cảm với khói hoặc mùi hương, hãy cân nhắc điều kiện sử dụng phù hợp.
-                                    </p>
-                                    <ul className="space-y-2 mb-6 text-sm">
-                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Dùng ở nơi thông thoáng, theo hướng dẫn</li>
-                                        <li className="flex items-center gap-2"><AppIcon name="check_circle" className="text-trad-gold" /> Không để hương đang cháy gần vật dễ bắt lửa</li>
-                                    </ul>
-                                    <Link className="inline-block border-b border-white pb-1 font-bold hover:text-trad-gold hover:border-trad-gold transition-colors" href="/contact">Hỏi thêm về sản phẩm</Link>
-                                </div>
-                            </div>
-
-                            {/* Dynamic Products */}
-                            {ritualProducts.length > 0 ? (
-                                ritualProducts.slice(0, 6).map((product) => (
-                                    <div key={product.id} className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm flex flex-col">
-                                        <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
-                                            <ProductImage
-                                                src={product.images?.[0] || ''}
-                                                alt={product.translation?.title || 'Sản phẩm'}
-                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
-                                        </div>
-                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors line-clamp-1">
-                                            <Link href={`/products/${product.slug}`}>{product.translation?.title}</Link>
-                                        </h3>
-                                        <p className="text-xs text-trad-text-muted mt-1 mb-3 line-clamp-1">
-                                            {product.translation?.description || 'Hương thơm an yên'}
-                                        </p>
-                                        <div className="mt-auto flex items-center justify-between">
-                                            {/* Use hook for discount */}
-                                            <ProductPrice product={product} size="sm" theme="traditional" />
-                                            <Link href={`/products/${product.slug}`}>
-                                                <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                    <AppIcon name="add" className="text-sm" />
-                                                </button>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="col-span-full py-12 text-center text-trad-text-muted">Sản phẩm đang được cập nhật.</p>
-                            )}
-                        </div>
-                    </div>
-                </section >
-
-                {/* Chapter 3: Premium Gifting */}
-                < section className="bg-trad-red-900 text-trad-bg-light py-24 lg:py-32 scroll-mt-20 relative overflow-hidden" id="chuong-3" >
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] opacity-20"></div>
-                    <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-black/20 to-transparent"></div>
-
-                    <div className="container mx-auto px-4 md:px-8 xl:px-20 relative z-10">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4 border-b border-white/10 pb-6">
-                            <div>
-                                <span className="font-display text-5xl text-white/20 block mb-2">III</span>
-                                <h2 className="text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">Tâm Giao Gửi Trao</h2>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-white/60 italic max-w-sm ml-auto">&quot;Món quà quý không nằm ở giá trị vật chất, mà ở tấm lòng và sự tinh tế của người trao.&quot;</p>
-                            </div>
-                        </div>
-
-                        {/* Hero Gift Set (Using the first giftProduct or fallback) */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-stone-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10 mb-16">
-                            {giftProducts.length > 0 ? (
-                                <>
-                                    <div className="relative min-h-[400px] lg:min-h-full">
-                                        <ProductImage
-                                            src={giftProducts[0].images?.[0] || ''}
-                                            alt={giftProducts[0].translation?.title || 'Gift Set'}
-                                            className="absolute inset-0 h-full w-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-transparent to-transparent lg:hidden"></div>
-                                    </div>
-                                    <div className="p-10 lg:p-16 flex flex-col justify-center">
-                                        <div className="inline-block px-3 py-1 bg-amber-900/50 text-amber-400 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-widest mb-6 w-fit">
-                                            Phiên Bản Đặc Biệt
-                                        </div>
-                                        <h3 className="font-display text-4xl lg:text-5xl font-bold text-amber-100 mb-6">{giftProducts[0].translation?.title}</h3>
-                                        <p className="text-white/70 text-lg leading-relaxed mb-8 font-light line-clamp-3">
-                                            {giftProducts[0].translation?.description || 'Món quà ý nghĩa, gửi trọn tâm tình.'}
-                                        </p>
-
-                                        {/* Action */}
-                                        <div className="flex items-center gap-6 mt-6">
-                                            <div className="text-3xl font-bold text-amber-400">{formatPrice(Number(giftProducts[0].price))}</div>
-                                            <Link href={`/products/${giftProducts[0].slug}`} className="flex-1">
-                                                <button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-900/50 transition-all transform hover:-translate-y-1">
-                                                    ĐẶT MUA NGAY
-                                                </button>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="p-10 text-white/50 col-span-2 text-center">Chưa có Gift set nổi bật.</div>
-                            )}
-                        </div>
-
-                        {/* Smaller Gift Options Grid (Remaining items) */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {giftProducts.slice(1, 4).map((product, i) => (
-                                <Link key={i} href={`/products/${product.slug}`}>
-                                    <div className="group bg-stone-800 rounded-xl p-6 border border-white/5 hover:border-amber-500/30 transition-all hover:bg-stone-750 cursor-pointer h-full">
-                                        <div className="h-48 rounded-lg overflow-hidden bg-stone-900 mb-4 relative">
-                                            <ProductImage src={product.images?.[0] || ''} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt={product.slug || 'Product'} />
-                                        </div>
-                                        <h4 className="text-xl font-display font-bold text-white group-hover:text-amber-400 transition-colors mb-2">{product.translation?.title || product.slug}</h4>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-white/60 text-sm">Quà tặng cao cấp</span>
-                                            <span className="text-amber-400 font-bold">{formatPrice(Number(product.price))}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                </section >
-
-                {/* Newsletter */}
-                < section className="relative overflow-hidden bg-trad-red-900 py-16 text-center text-white" >
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10"></div>
-                    <div className="container relative z-10 mx-auto px-4">
-                        <AppIcon name="mark_email_unread" className="mb-4 text-5xl opacity-80" />
-                        <h2 className="mb-4 font-display text-3xl font-bold">Thư Hương Từ Thiên Phúc</h2>
-                        <p className="mx-auto mb-8 max-w-lg text-trad-bg-light/80">
-                            Khám phá câu chuyện trầm hương, cách lựa chọn và những nghi thức nhỏ mỗi ngày.
-                        </p>
-                        <p className="text-sm leading-relaxed">Đăng ký bản tin chưa được mở. Bạn có thể đọc các bài viết tại Chuyện hương trầm.</p>
-                    </div>
-                </section >
-            </main >
-
-            <TraditionalFooter />
-        </div >
-    );
+      <aside className="collection-closing tp-container"><p className="shop-kicker">TIẾP TỤC THEO CÁCH CỦA BẠN</p><h2>Đã tìm được<br /><em>làn hương của mình?</em></h2><div><Link href={allProducts} className="shop-btn">Xem toàn bộ sản phẩm <ArrowRight size={17} /></Link><Link href="/contact" className="tp-text-link">Nhờ Thiên Phúc tư vấn <ArrowUpRight size={17} /></Link></div><Link href="/blog" className="tp-text-link collection-journal-link">Đọc thêm Chuyện hương trầm <ArrowUpRight size={15} /></Link></aside>
+    </main>
+    <TraditionalFooter />
+  </div>;
 }

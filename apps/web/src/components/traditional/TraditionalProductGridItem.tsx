@@ -48,7 +48,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
         <div className="atelier-product rounded-xl border border-trad-border-warm bg-white text-trad-text-main shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col overflow-hidden">
             <div className="atelier-product-image relative aspect-[4/5] w-full overflow-hidden bg-trad-bg-warm">
                 {isActive && (
-                    <span className="absolute left-2 top-2 z-10 rounded bg-trad-red-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
+                    <span className="absolute left-2 top-2 z-10 rounded-md bg-trad-red-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
                         -{discountPercent}%
                     </span>
                 )}

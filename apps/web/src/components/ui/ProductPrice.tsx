@@ -105,7 +105,7 @@ export function ProductPrice({
                     {formatPrice(isActive ? finalPrice : originalPrice)}
                 </p>
                 {isActive && showBadge && (
-                    <span className={`${sizes.badge} ${styles.badge} font-bold rounded`}>
+                    <span className={`${sizes.badge} ${styles.badge} font-bold rounded-md`}>
                         -{discountPercent}%
                     </span>
                 )}

@@ -60,11 +60,11 @@ export default function Header() {
                                 className={`flex items-center gap-2 ${linkHoverClass} text-sm`}
                             >
                                 <span>{profile?.full_name || user.email?.split('@')[0]}</span>
-                                {role === 'ADMIN' && <span className="text-[10px] bg-red-600 text-white px-1 rounded">ADMIN</span>}
+                                {role === 'ADMIN' && <span className="text-[10px] bg-red-600 text-white px-1 rounded-md">ADMIN</span>}
                             </button>
 
                             {menuOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-white text-black text-sm rounded shadow-lg py-1 border border-gray-100">
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-white text-black text-sm rounded-xl shadow-lg py-1 border border-gray-100">
                                     <Link href="/account/profile" className="block px-4 py-2 hover:bg-gray-100">My Profile</Link>
                                     <Link href="/account/reviews" className="block px-4 py-2 hover:bg-gray-100">My Reviews</Link>
                                     <Link href="/account/orders" className="block px-4 py-2 hover:bg-gray-100">My Orders</Link>
@@ -81,13 +81,13 @@ export default function Header() {
                             )}
                         </div>
                     ) : (
-                        <Link href="/login" className={`text-sm border ${isHome ? 'border-zen-900/30' : 'border-white/30'} px-4 py-1.5 rounded hover:bg-zen-secondary hover:text-white transition-colors`}>
+                        <Link href="/login" className={`text-sm border ${isHome ? 'border-zen-900/30' : 'border-white/30'} px-4 py-1.5 rounded-md hover:bg-zen-secondary hover:text-white transition-colors`}>
                             Login
                         </Link>
                     )}
 
                     {/* Lang Switcher (Strict Theme Coupling) */}
-                    <Link href={pathname} locale="vi" className={`text-xs opacity-50 hover:opacity-100 uppercase font-bold border ${isHome ? 'border-zen-900/30' : 'border-white/30'} px-2 py-1 rounded`}>
+                    <Link href={pathname} locale="vi" className={`text-xs opacity-50 hover:opacity-100 uppercase font-bold border ${isHome ? 'border-zen-900/30' : 'border-white/30'} px-2 py-1 rounded-md`}>
                         VI
                     </Link>
                 </div>

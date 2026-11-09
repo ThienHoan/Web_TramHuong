@@ -2,22 +2,16 @@
 
 // import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import ProductImage from '../ui/ProductImage';
-import { ProductPrice } from '@/components/ui/ProductPrice';
 // import { useCurrency } from '@/hooks/useCurrency';
 import ZenFooter from './ZenFooter';
 import ScrollReveal from '../ui/ScrollReveal';
-import { Product } from '@/types/product';
+import { Product, Category } from '@/types/product';
+import ShopDiscovery from '@/components/shop/ShopDiscovery';
 import Image from 'next/image';
 import HomeHero from '../traditional/home/HomeHero';
 import { AppIcon } from "@/components/icons/AppIcon";
 
-export default function ZenHome({ products }: { products: Product[] }) {
-    // Filter for "Zen" affinity products or just take first few for demo
-    const zenProducts = products.filter(p => !p.style_affinity || p.style_affinity === 'zen' || p.style_affinity === 'both').slice(0, 3);
-    // Fill with fallback if not enough
-    const displayProducts = zenProducts.length > 0 ? zenProducts : products.slice(0, 3);
-
+export default function ZenHome({ products, categories = [] }: { products: Product[]; categories?: Category[] }) {
     return (
         <div className="bg-zen-50 dark:bg-zinc-950 font-zen-sans text-zen-800 antialiased selection:bg-zen-secondary selection:text-white">
 
@@ -25,48 +19,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
 
             <main className="relative z-10 bg-zen-50 dark:bg-zinc-950">
 
-                {/* Product Showcase */}
-                <section className="py-24 lg:py-32" id="shop">
-                    <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-20 border-b border-zen-200 dark:border-zinc-800 pb-6">
-                            <div>
-                                <h2 className="text-4xl font-zen-display font-thin text-zen-900 dark:text-white mb-2">Curated Artifacts</h2>
-                                <p className="text-[10px] tracking-superwide uppercase text-zen-secondary dark:text-gray-400">Best Sellers Selection</p>
-                            </div>
-                            <Link href="/products" className="hidden md:flex items-center gap-2 text-xs uppercase tracking-widest hover:text-zen-secondary transition-colors mt-4 md:mt-0 pb-1">
-                                View All Products <AppIcon name="arrow_forward" className="text-sm" />
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-                            {displayProducts.map((product, idx) => (
-                                <Link key={product.id} href={`/products/${product.slug}`} className={`group cursor-pointer animate-[fadeIn_1.5s_ease-out_forwards]`} style={{ animationDelay: `${(idx + 1) * 100}ms` }}>
-                                    <div className="relative aspect-[4/5] overflow-hidden bg-zen-100 dark:bg-zinc-900 mb-6 shadow-xl shadow-zen-200/40 dark:shadow-black/20 rounded-sm">
-                                        <ProductImage
-                                            src={product.images?.[0] || ''}
-                                            alt={product.translation?.title || product.title || 'Product'}
-                                            className="h-full w-full object-cover transition-transform duration-[2s] group-hover:scale-110 opacity-95 group-hover:opacity-100"
-                                        />
-                                        <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] uppercase tracking-widest text-zen-secondary font-medium rounded-sm">
-                                            {product.slug?.includes('cones') ? 'Premium Wood' : (product.category?.slug === 'burners' ? 'Calming' : 'Meditation')}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-center text-center space-y-2">
-                                        <h3 className="text-xl font-zen-display font-light uppercase tracking-wide text-zen-900 dark:text-white group-hover:text-zen-secondary transition-colors">
-                                            {product.translation?.title}
-                                        </h3>
-                                        <ProductPrice product={product} size="sm" theme="zen" />
-                                        <button className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] uppercase tracking-widest border-b border-zen-800 pb-0.5">View Details</button>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                        <div className="mt-12 text-center md:hidden">
-                            <Link href="/products" className="inline-block text-xs border-b border-zen-800 pb-1 uppercase tracking-widest dark:text-white dark:border-white">
-                                View All
-                            </Link>
-                        </div>
-                    </div>
-                </section>
+                <ShopDiscovery products={products} categories={categories} locale="en" />
 
                 {/* Story Section */}
                 <section className="py-24 bg-zen-50 dark:bg-[#151515] relative overflow-hidden" id="story">

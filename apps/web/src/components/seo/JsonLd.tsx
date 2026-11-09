@@ -1,7 +1,8 @@
 import React from 'react';
+import { SITE_URL } from '@/lib/seo';
 
 const JsonLd = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tramhuongthienphuchue.com';
+    const baseUrl = SITE_URL;
 
     // Using @graph to link entities
     const schema = {
@@ -19,7 +20,7 @@ const JsonLd = () => {
                 },
                 'potentialAction': {
                     '@type': 'SearchAction',
-                    'target': `${baseUrl}/search?q={search_term_string}`,
+                    'target': `${baseUrl}/vi/products?search={search_term_string}`,
                     'query-input': 'required name=search_term_string'
                 }
             },
@@ -63,13 +64,13 @@ const JsonLd = () => {
                     }
                 ],
                 'sameAs': [
-                    'https://www.facebook.com/tramhuongthienphuc',
+                    'https://www.facebook.com/profile.php?id=61585286954215',
                 ],
                 'contactPoint': {
                     '@type': 'ContactPoint',
                     'telephone': '+84-356-176-878',
                     'contactType': 'customer service',
-                    'areaServed': ['VN', 'US', 'JP'],
+                    'areaServed': ['VN'],
                     'availableLanguage': ['Vietnamese', 'English']
                 }
             }

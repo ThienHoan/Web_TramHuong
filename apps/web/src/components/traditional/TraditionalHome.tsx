@@ -8,25 +8,31 @@ import TraditionalHeader from "./TraditionalHeader";
 import TraditionalFooter from "./TraditionalFooter";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import HomeHero from "./home/HomeHero";
-import HomeCollections from "./home/HomeCollections";
 import HomeStory from "./home/HomeStory";
-import HomeProducts from "./home/HomeProducts";
+import HomeCollections from "./home/HomeCollections";
 import HomeJourney from "./home/HomeJourney";
-import LandingTextMotion from "./home/LandingTextMotion";
 import dynamic from "next/dynamic";
+import { experienceShoppingLinks } from "@/lib/experience-shopping";
+import ShopDiscovery from "@/components/shop/ShopDiscovery";
+import LandingTextMotion from "./home/LandingTextMotion";
+
+import type { Category, Product } from "@/types/product";
+import type { BlogPost } from "@/types/blog";
+
 const AgarwoodExperience = dynamic(
   () => import("@/components/experience-lab/ExperienceLab"),
 );
-import type { Product } from "@/types/product";
-import type { BlogPost } from "@/types/blog";
 
 export default function TraditionalHome({
   products,
   posts = [],
+  categories = [],
 }: {
   products: Product[];
+  categories?: Category[];
   posts?: BlogPost[];
 }) {
+  const shoppingLinks = experienceShoppingLinks(categories);
   return (
     <div className="atelier-page tp-home">
       <LandingTextMotion />
@@ -46,11 +52,11 @@ export default function TraditionalHome({
             </span>
           </div>
         </div>
-        <HomeCollections products={products} />
-        <HomeJourney />
+        <ShopDiscovery products={products} categories={categories} />
+        <HomeCollections products={products} categories={categories} />
+        <HomeJourney shoppingLinks={shoppingLinks} />
         <HomeStory />
-        <AgarwoodExperience embedded initialMode="ritual" />
-        <HomeProducts products={products} />
+        <AgarwoodExperience embedded initialMode="ritual" shoppingLinks={shoppingLinks} />
         <section className="tp-ritual" aria-labelledby="ritual-heading">
           <div className="tp-ritual-image">
             <Image

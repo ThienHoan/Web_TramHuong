@@ -43,6 +43,9 @@ export default function PaymentSelectPage() {
     city?: string;
     address?: string;
     full_address?: string;
+    province?: string;
+    shippingProvinceId?: string;
+    shippingWardCode?: string;
   }
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
 
@@ -252,7 +255,7 @@ export default function PaymentSelectPage() {
             estimated={quotePending}
             hint={
               quotePending
-                ? "Hoàn tất địa chỉ và tính phí giao hàng để có thể đặt hàng."
+                ? "Phí giao hàng cần được tính xong trước khi đặt hàng."
                 : paymentMethod === "sepay"
                   ? "Mã QR thanh toán sẽ xuất hiện sau khi bạn đặt hàng."
                   : "Kiểm tra thông tin bên dưới trước khi xác nhận."
@@ -307,7 +310,7 @@ export default function PaymentSelectPage() {
         <CheckoutCard
           number="02"
           title="Cách nhận hàng & thanh toán"
-          description="Chọn trước để phí giao hàng được tính đúng theo đơn của bạn."
+          description="Phí giao hàng tự cập nhật theo lựa chọn của bạn."
         >
           <PaymentOptions
             value={paymentMethod}
@@ -328,12 +331,12 @@ export default function PaymentSelectPage() {
             number="03"
             title={
               shippingSelection.enabled
-                ? "Địa chỉ giao hàng & vận chuyển"
+                ? "Vận chuyển & phí giao hàng"
                 : "Giao hàng đến bạn"
             }
             description={
               shippingSelection.enabled
-                ? "Chọn tỉnh/thành và phường/xã để hoàn tất địa chỉ nhận."
+                ? "Phí được tính theo địa chỉ bạn đã nhập."
                 : "Phí giao hàng hiển thị trong tổng đơn bên cạnh."
             }
           >
@@ -346,6 +349,15 @@ export default function PaymentSelectPage() {
                   address:
                     shippingInfo.full_address || shippingInfo.address || "",
                 }}
+                destination={
+                  shippingInfo.shippingProvinceId && shippingInfo.shippingWardCode
+                    ? {
+                        provinceId: shippingInfo.shippingProvinceId,
+                        provinceName: shippingInfo.province || shippingInfo.city || "",
+                        wardCode: shippingInfo.shippingWardCode,
+                      }
+                    : null
+                }
                 paymentMethod={paymentMethod}
                 voucherCode={voucherCode || undefined}
                 onChange={setShippingSelection}

@@ -95,7 +95,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
     return (
         <div className="max-w-2xl mx-auto py-8">
             <h1 className="text-2xl font-bold mb-6">Edit Category</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
+            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow">
 
                 <div className="flex gap-4">
                     <div className="flex-1">
@@ -105,7 +105,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                             required
                             value={slug}
                             onChange={e => setSlug(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                         />
                     </div>
                     <div className="flex items-end pb-2">
@@ -129,7 +129,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                             required
                             value={nameEn}
                             onChange={e => setNameEn(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                         />
                     </div>
                     <div>
@@ -139,7 +139,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                             required
                             value={nameVi}
                             onChange={e => setNameVi(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                         />
                     </div>
                 </div>
@@ -150,7 +150,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                         <textarea
                             value={descEn}
                             onChange={e => setDescEn(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                             rows={3}
                         />
                     </div>
@@ -159,7 +159,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                         <textarea
                             value={descVi}
                             onChange={e => setDescVi(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                             rows={3}
                         />
                     </div>
@@ -168,7 +168,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50"
+                    className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
                 >
                     {submitting ? 'Updating...' : 'Update Category'}
                 </button>

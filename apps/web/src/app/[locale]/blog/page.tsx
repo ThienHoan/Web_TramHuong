@@ -173,7 +173,7 @@ export default async function BlogListPage({
                                             className="object-cover transition-transform duration-500 group-hover:scale-110"
                                         />
                                     </div>
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-trad-text-main text-xs font-bold px-2 py-1 rounded shadow-sm">
+                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-trad-text-main text-xs font-bold px-2 py-1 rounded-xl shadow-sm">
                                         {CATEGORIES.find(c => c.id === post.category)?.name || post.category}
                                     </div>
                                 </div>

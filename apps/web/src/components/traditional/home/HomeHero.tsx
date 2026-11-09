@@ -60,16 +60,16 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
           </h1>
           <p className="tp-hero-description">
             {en
-              ? "Make room for a slower moment. Discover the quiet beauty of Vietnamese agarwood with Thien Phuc."
-              : "Giữa những bộn bề, dành cho mình một chút tĩnh lặng. Khám phá trầm hương Việt cùng Thiên Phúc."}
+              ? "Explore Vietnamese agarwood at Thien Phuc. See product photos, prices and options, and ask us to help you choose."
+              : "Khám phá trầm hương Việt tại Thiên Phúc. Xem hình ảnh, giá bán và phân loại; cùng chọn phẩm trầm phù hợp với bạn."}
           </p>
           <div className="tp-hero-actions">
             <Link href="/products" className="tp-button">
-              {en ? "Discover the collection" : "Khám phá bộ sưu tập"}{" "}
+              {en ? "Shop agarwood" : "Chọn sản phẩm trầm hương"}{" "}
               <ArrowUpRight size={18} />
             </Link>
-            <a href={en ? "#story" : "#hanh-trinh-huong"} className="tp-text-link">
-              {en ? "The story of agarwood" : "Bước vào thế giới trầm"}{" "}
+            <a href={en ? "#chon-san-pham" : "#hanh-trinh-huong"} className="tp-text-link">
+              {en ? "Browse products & prices" : "Khám phá trầm qua trải nghiệm"}{" "}
               <ArrowDown size={16} />
             </a>
           </div>
@@ -156,7 +156,7 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
       </div>
       <div className="tp-container tp-hero-bottom">
         <span>{en ? "THIEN PHUC AGARWOOD" : "TRẦM HƯƠNG THIÊN PHÚC"}</span>
-        <a href={en ? "#shop" : "#bo-suu-tap"}>
+        <a href="#chon-san-pham">
           {en ? "Scroll to discover" : "Cuộn để khám phá"}{" "}
           <ArrowDown size={14} />
         </a>

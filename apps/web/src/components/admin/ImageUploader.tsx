@@ -208,13 +208,13 @@ export function ImageUploader({
 
                             {/* Primary Badge */}
                             {index === 0 && (
-                                <div className="absolute bottom-2 left-2 bg-primary text-white px-2 py-1 rounded text-xs font-bold shadow-md">
+                                <div className="absolute bottom-2 left-2 bg-primary text-white px-2 py-1 rounded-xl text-xs font-bold shadow-md">
                                     {t('Ảnh đại diện', 'Main image')}
                                 </div>
                             )}
 
                             {/* Index Badge */}
-                            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded-xl text-xs font-medium">
                                 {index + 1}
                             </div>
                         </div>

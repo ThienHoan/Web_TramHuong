@@ -59,7 +59,7 @@ function OrderResult({ order }: { order: OrderLookupResult }) {
             <ul className="flex flex-col gap-3">
                 {items.map((item, index) => (
                     <li key={`${item.title}-${index}`} className="flex items-center gap-3">
-                        <div className="relative size-14 shrink-0 overflow-hidden rounded-[3px] bg-trad-bg-warm">
+                        <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-trad-bg-warm">
                             {item.image && <Image src={item.image} alt="" fill sizes="56px" className="object-cover" />}
                         </div>
                         <div className="min-w-0 flex-1">

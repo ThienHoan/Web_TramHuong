@@ -13,6 +13,14 @@ interface ProductApiResponse {
     meta?: PaginationMeta;
 }
 
+function normalizeProduct(product: Product, locale: string): Product {
+    const category = product.category;
+    return { ...product, stock: product.quantity ?? product.stock ?? 0,
+        translation: product.translation || product.translations?.find(t => t.locale === locale) || product.translations?.[0],
+        category: category ? { ...category, translation: category.translation || category.translations?.find(t => t.locale === locale) || category.translations?.[0] } : undefined,
+    };
+}
+
 export const productService = {
     async getProducts(locale: string, options?: {
         category?: string;
@@ -59,13 +67,13 @@ export const productService = {
             if (Array.isArray(data)) {
                 // Should not happen if backend returns meta, but for safety
                 return {
-                    data: data.map((p: Product) => ({ ...p, stock: p.quantity ?? 0 })),
+                    data: data.map((p: Product) => normalizeProduct(p, locale)),
                     meta: undefined
                 };
             }
 
             const items: Product[] = data.data || [];
-            const mappedItems = items.map((p: Product) => ({ ...p, stock: p.quantity ?? 0 }));
+            const mappedItems = items.map((p: Product) => normalizeProduct(p, locale));
 
             return {
                 data: mappedItems,
@@ -84,7 +92,7 @@ export const productService = {
 
             if (!data) return null;
             // Map quantity to stock
-            return { ...data, stock: data.quantity ?? 0 };
+            return normalizeProduct(data, locale);
         } catch (e) {
             console.error("Fetch Error:", e);
             return null;

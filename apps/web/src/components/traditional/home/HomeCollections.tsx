@@ -4,26 +4,28 @@ import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
-import type { Product } from "@/types/product";
+import type { Category, Product } from "@/types/product";
 import { IncenseConeIcon } from "@/components/icons/BrandIcons";
+import { allProductsHref } from "@/lib/catalog";
 
-export default function HomeCollections({ products }: { products: Product[] }) {
+export default function HomeCollections({ products, categories: catalogCategories = [] }: { products: Product[]; categories?: Category[] }) {
   const [ref, api] = useEmblaCarousel({
     align: "start",
     loop: false,
     dragFree: true,
     containScroll: "trimSnaps",
   });
-  const categories = Array.from(
+  const derivedCategories = Array.from(
     new Map(
       products
-        .filter((p) => p.category?.is_active)
+        .filter((p) => p.category && p.category.is_active !== false)
         .map((p) => [
           p.category!.id,
           { ...p.category!, image: p.category!.image || p.images?.[0] },
         ]),
     ).values(),
   ).slice(0, 6);
+  const categories = (catalogCategories.length ? catalogCategories.filter(c => c.is_active !== false) : derivedCategories).slice(0, 6);
   const collections = categories.length
     ? categories.map((c) => ({
         title:
@@ -31,7 +33,7 @@ export default function HomeCollections({ products }: { products: Product[] }) {
           c.translations?.find((t) => t.locale === "vi")?.name ||
           c.slug,
         image: c.image || "/editorial/ritual.webp",
-        href: `/products?category=${encodeURIComponent(c.slug)}`,
+        href: `/products/category/${c.slug}`,
       }))
     : [
         {
@@ -118,7 +120,7 @@ export default function HomeCollections({ products }: { products: Product[] }) {
         </div>
         <div className="tp-gallery-footer">
           <span>KÉO ĐỂ KHÁM PHÁ</span>
-          <Link href="/products" className="tp-text-link">
+          <Link href={allProductsHref("vi")} className="tp-text-link">
             Tất cả sản phẩm <ArrowUpRight size={16} />
           </Link>
         </div>

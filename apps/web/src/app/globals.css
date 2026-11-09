@@ -102,6 +102,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: 0.375rem;
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
@@ -111,7 +112,13 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  /* One corner scale for both storefronts, account pages and administration. */
+  --radius: 0.75rem;
+  --ui-radius-small: calc(var(--radius) - 4px);
+  --ui-radius-control: calc(var(--radius) - 2px);
+  --ui-radius-card: calc(var(--radius) + 4px);
+  --ui-radius-media: calc(var(--radius) + 4px);
+  --ui-radius-overlay: calc(var(--radius) + 8px);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -190,6 +197,16 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Defaults for native controls and older screens. Component classes can
+     still choose circles, segmented controls or another corner treatment. */
+  :where(button, a, select, textarea, input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="color"], [type="file"])) {
+    border-radius: var(--ui-radius-control);
+  }
+
+  :where(button, [role="button"]):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
   }
 }
 

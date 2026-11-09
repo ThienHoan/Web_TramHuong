@@ -120,6 +120,6 @@ export function cartAnalyticsItems(
     item_id: item.id,
     price: item.price,
     quantity: item.quantity,
-    ...(item.variantId ? { item_variant: item.variantId } : {}),
+    ...(identifier(item.variantId) ? { item_variant: item.variantId } : {}),
   }));
 }

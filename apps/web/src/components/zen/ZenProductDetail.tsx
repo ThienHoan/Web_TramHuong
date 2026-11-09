@@ -195,7 +195,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                         {/* Left Column: Product Gallery */}
                         <div className="lg:col-span-7 flex flex-col gap-6 group/gallery">
                             {/* Main Image */}
-                            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-md bg-zen-green-100 dark:bg-white/5">
+                            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-zen-green-100 dark:bg-white/5">
                                 <ProductImage
                                     src={activeImage}
                                     alt={product.translation?.title || 'Product Image'}
@@ -419,7 +419,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                 ) : reviews.length > 0 ? (
                                                     <>
                                                         {currentReviews.map((review) => (
-                                                            <div key={review.id} className="p-8 bg-white dark:bg-white/5 shadow-xl shadow-zen-green-100/50 dark:shadow-none rounded-sm border border-transparent hover:border-zen-green-100 transition-all">
+                                                            <div key={review.id} className="p-8 bg-white dark:bg-white/5 shadow-xl shadow-zen-green-100/50 dark:shadow-none rounded-xl border border-transparent hover:border-zen-green-100 transition-all">
                                                                 <div className="flex justify-between items-start mb-4">
                                                                     <div>
                                                                         <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-zen-green-900 dark:text-white mb-1">
@@ -514,7 +514,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                                 {relatedProducts.map((p) => (
                                     <Link key={p.id} href={`/products/${p.slug}`} className="group cursor-pointer">
-                                        <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-md bg-zen-green-100 dark:bg-white/5">
+                                        <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl bg-zen-green-100 dark:bg-white/5">
                                             {p.images?.[0] ? (
                                                 <ProductImage
                                                     src={p.images[0]}

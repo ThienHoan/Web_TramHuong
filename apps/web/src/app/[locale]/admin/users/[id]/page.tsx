@@ -144,7 +144,7 @@ export default function AdminUserDetailPage() {
                             <div className="mt-4 flex gap-4 text-sm">
                                 <div>
                                     <span className="block text-gray-400 text-xs uppercase">Role</span>
-                                    <span className="font-medium bg-gray-100 px-2 py-1 rounded">{user.role}</span>
+                                    <span className="font-medium bg-gray-100 px-2 py-1 rounded-md">{user.role}</span>
                                 </div>
                                 <div>
                                     <span className="block text-gray-400 text-xs uppercase">Joined</span>
@@ -152,7 +152,7 @@ export default function AdminUserDetailPage() {
                                 </div>
                                 <div>
                                     <span className="block text-gray-400 text-xs uppercase">Status</span>
-                                    <span className={`font-medium px-2 py-1 rounded ${user.is_banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                    <span className={`font-medium px-2 py-1 rounded-md ${user.is_banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                         {user.is_banned ? 'Banned' : 'Active'}
                                     </span>
                                 </div>

@@ -72,12 +72,12 @@ export default function OrderDetailPage() {
                     <h1 className="text-2xl font-bold mb-2">Order #{order.id}</h1>
                     <div className="flex gap-4 text-sm text-gray-500 mb-6">
                         <span>Date: {new Date(order.created_at).toLocaleString()}</span>
-                        <span className="px-2 py-0.5 rounded bg-gray-100 font-medium text-black">{order.status}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-gray-100 font-medium text-black">{order.status}</span>
                     </div>
 
                     {/* Payment Deadline Info */}
                     {order.payment_deadline && (
-                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
                             <div className="flex items-center gap-2 text-sm">
                                 <span className="font-medium text-yellow-900">Payment Deadline:</span>
                                 <span className={order.expired_at ? 'text-red-600 font-medium' : 'text-gray-700'}>
@@ -131,7 +131,7 @@ export default function OrderDetailPage() {
                                 <tr key={idx}>
                                     <td className="p-3">
                                         <div className="flex items-center gap-3">
-                                            {item.image && <Image src={item.image} alt="" width={40} height={40} className="w-10 h-10 object-cover rounded" />}
+                                            {item.image && <Image src={item.image} alt="" width={40} height={40} className="w-10 h-10 object-cover rounded-md" />}
                                             <span className="text-sm font-medium">{item.title}</span>
                                         </div>
                                     </td>

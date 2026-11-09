@@ -140,6 +140,7 @@
   flex: 1;
   height: 1px;
   background: #c4b8a4;
+  border-radius: var(--ui-radius-small);
 }
 .journey-progress span {
   display: block;
@@ -206,7 +207,7 @@
 .journey-enhanced .journey-world-image {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: var(--ui-radius-media);
   border: 1px solid #ab987766;
   box-shadow: 0 16px 32px #3a2d1714;
   background: #29392f;
@@ -328,7 +329,7 @@
   background: #34473b;
   color: #fff9eb;
   padding: 14px 20px;
-  border-radius: 3px;
+  border-radius: var(--ui-radius-control);
   font-size: 12px;
 }
 .journey-selected-action a:hover {
@@ -529,7 +530,7 @@
   padding: 24px 26px;
   border: 1px solid #b6c4a732;
   background: #1c30242b;
-  border-radius: 2px;
+  border-radius: var(--ui-radius-card);
   min-width: 0;
 }
 .journey-inspector-top {
@@ -633,6 +634,7 @@
   font-size: 10px;
   border: 1px solid #b6c4a735;
   cursor: pointer;
+  border-radius: var(--ui-radius-small);
 }
 .journey-light-picker button[aria-pressed="true"] {
   background: #d0c2a2;
@@ -707,6 +709,7 @@
   color: #acb9a2;
   border-bottom: 2px solid transparent;
   cursor: pointer;
+  border-radius: var(--ui-radius-small);
 }
 .journey-scene-nav button + button {
   border-left: 1px solid #b6c4a72b;

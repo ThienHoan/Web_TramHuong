@@ -138,7 +138,7 @@ export default function ResetPasswordPage() {
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
                         onClick={() => router.push('/auth/forgot-password')}
-                        className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
+                        className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800"
                     >
                         Request New Link
                     </button>
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
                 <p className="text-gray-600 mb-6">{t("Nhập mật khẩu mới của bạn bên dưới.", "Enter your new password below.")}</p>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm">
                         {error}
                     </div>
                 )}
@@ -205,7 +205,7 @@ export default function ResetPasswordPage() {
                     </div>
 
                     {/* Password Requirements */}
-                    <div className="bg-gray-50 p-3 rounded text-sm">
+                    <div className="bg-gray-50 p-3 rounded-xl text-sm">
                         <p className="font-medium mb-2">{t("Yêu cầu mật khẩu:", "Password requirements:")}</p>
                         <ul className="space-y-1 text-gray-600">
                             <li className={password.length >= 8 ? 'text-green-600' : ''}>

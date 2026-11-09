@@ -2,27 +2,7 @@ import { useLocale } from 'next-intl';
 
 export const useCurrency = () => {
     const locale = useLocale();
-    const EXCHANGE_RATE = 25000;
-
-    const formatPrice = (amountInVND: number) => {
-        if (locale === 'vi') {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND);
-        }
-        // Convert VND to USD
-        const amountInUSD = amountInVND / EXCHANGE_RATE;
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amountInUSD);
-    };
-
-    const convertPrice = (amountInVND: number) => {
-        if (locale === 'vi') {
-            return amountInVND;
-        }
-        return amountInVND / EXCHANGE_RATE;
-    };
-
-    return {
-        formatPrice,
-        convertPrice,
-        currency: locale === 'vi' ? 'VND' : 'USD'
-    };
+    // Orders are charged in VND; show the payable currency in every language.
+    const formatPrice = (amount: number) => new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(amount);
+    return { formatPrice, convertPrice: (amount: number) => amount, currency: 'VND' };
 };

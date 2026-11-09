@@ -95,7 +95,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                                 <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
                                     Chi tiết lỗi (Dev only)
                                 </summary>
-                                <pre className="mt-2 p-3 bg-gray-100 rounded text-xs text-red-600 overflow-auto max-h-40">
+                                <pre className="mt-2 p-3 bg-gray-100 rounded-xl text-xs text-red-600 overflow-auto max-h-40">
                                     {this.state.error.message}
                                     {'\n'}
                                     {this.state.error.stack}

@@ -17,14 +17,14 @@ import type { PreviewController } from "@/components/experience-lab/types";
 import { DEFAULT_OPTIONS } from "@/components/experience-lab/types";
 import "./home-journey.css";
 
-const worlds = [
+const baseWorlds = [
   {
     title: "Mang hương theo mình.",
     tag: "VÒNG TRẦM",
     image: "/editorial/preview-bracelet.webp",
     text: "Sắc gỗ trầm lắng, từng nét vân riêng. Một phẩm vật nhỏ luôn ở bên bạn.",
     detail: "Chạm vào chất gỗ",
-    href: "/products/catalog",
+    href: "/products",
   },
   {
     title: "Dành hương cho nhà.",
@@ -32,7 +32,7 @@ const worlds = [
     image: "/editorial/ritual.webp",
     text: "Một lư trầm, một góc quen. Mời thiên nhiên vào khoảng nghỉ giữa ngày.",
     detail: "Tìm góc bình yên",
-    href: "/products/catalog",
+    href: "/products",
   },
   {
     title: "Gửi hương đến người.",
@@ -72,7 +72,11 @@ const tones = [
   { name: "Nâu mật", color: "#c0a274" },
 ];
 
-export default function HomeJourney() {
+export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { bracelet: string; ritual: string; gift: string } }) {
+  const worlds = baseWorlds.map((world, index) => ({
+    ...world,
+    href: index === 0 ? shoppingLinks?.bracelet || "/products" : index === 1 ? shoppingLinks?.ritual || "/products" : shoppingLinks?.gift || "/contact",
+  }));
   const root = useRef<HTMLDivElement>(null);
   const horizontal = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -698,7 +702,7 @@ export default function HomeJourney() {
                   <ArrowUpRight size={18} />
                 </Link>
               </div>
-              <Link className="journey-explore" href="/products/catalog">
+              <Link className="journey-explore" href={shoppingLinks?.bracelet || "/products"}>
                 Tìm vòng trầm phù hợp
                 <ArrowUpRight size={18} />
               </Link>

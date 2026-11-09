@@ -18,20 +18,20 @@ function ErrorContent() {
         {error_description || 'An error occurred during authentication.'}
       </p>
       {error && (
-        <p className="mb-6 text-sm text-gray-500 font-mono bg-gray-100 p-2 rounded">
+        <p className="mb-6 text-sm text-gray-500 font-mono bg-gray-100 p-2 rounded-md">
           Code: {error}
         </p>
       )}
       <div className="space-y-3">
         <Link
           href="/vi/login"
-          className="block w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition-colors"
+          className="block w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors"
         >
           Return to Login
         </Link>
         <Link
           href="/vi"
-          className="block w-full border border-gray-300 py-2 rounded hover:bg-gray-50 transition-colors"
+          className="block w-full border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition-colors"
         >
           Back to Home
         </Link>

@@ -18,7 +18,7 @@ export default function ZenProductCard({ product }: ZenProductCardProps) {
     const { attachProductLink, selectProduct } = useProductCardAnalytics(product.id, finalPrice);
     return (
         <Link ref={attachProductLink} onClick={selectProduct} href={`/products/${product.slug}`} className="group flex flex-col gap-4 cursor-pointer">
-            <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg bg-zen-green-100">
+            <div className="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-zen-green-100">
                 <div className="absolute inset-0">
                     <ProductImage
                         src={product.images?.[0] || ''}

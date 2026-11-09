@@ -13,7 +13,6 @@ import { NetworkStatusProvider } from '@/components/providers/NetworkStatusProvi
 import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
-import SmoothScroll from '@/components/ui/SmoothScroll';
 import MotionProvider from '@/components/providers/MotionProvider';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
@@ -25,11 +24,13 @@ import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { AnalyticsConsent } from '@/components/analytics/AnalyticsConsent';
 
 const geistSans = Geist({
+  preload: false,
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
+  preload: false,
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -48,6 +49,7 @@ const playfairDisplay = Playfair_Display({
 });
 
 const cormorantGaramond = Cormorant_Garamond({
+  preload: false,
   weight: ['300', '400', '500', '600', '700'],
   variable: "--font-zen-display",
   subsets: ["latin", "vietnamese"],
@@ -55,6 +57,7 @@ const cormorantGaramond = Cormorant_Garamond({
 });
 
 const montserrat = Montserrat({
+  preload: false,
   weight: ['100', '200', '300', '400', '500'],
   variable: "--font-zen-sans",
   subsets: ["latin", "vietnamese"],
@@ -62,13 +65,14 @@ const montserrat = Montserrat({
 });
 
 const manrope = Manrope({
+  preload: false,
   weight: ['200', '300', '400', '500', '600', '700', '800'],
   variable: "--font-manrope",
   subsets: ["latin", "vietnamese"],
   display: 'swap',
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://tramhuongthienphuchue.com').replace(/\/+$/, '');
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -88,8 +92,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const siteName = locale === 'vi' ? 'Trầm Hương Thiên Phúc' : 'Thiên Phúc Agarwood';
   const defaultTitle = locale === 'vi' ? 'Thiên Phúc — Trầm hương Việt | Hương Việt. Nếp an yên.' : 'Thiên Phúc — Vietnamese Agarwood';
   const description = locale === 'vi'
-    ? 'Trải nghiệm sự giao thoa giữa Thiền và Truyền Thống. Tinh hoa trầm hương Việt Nam.'
-    : 'Experience the dual sensation of Agarwood. Zen minimalism meets Traditional heritage.';
+    ? 'Trầm hương Thiên Phúc tại Huế. Khám phá hình ảnh, giá bán, phân loại và cách dùng; nhận tư vấn để chọn phẩm trầm phù hợp.'
+    : 'Explore Vietnamese agarwood from Thien Phuc in Hue. Browse product photos, prices and options, and get advice before ordering.';
 
   return {
     metadataBase: new URL(baseUrl),
@@ -195,7 +199,6 @@ export default async function RootLayout({
                     <MotionProvider>
                     <JsonLd />
                     {locale !== 'vi' ? <ZenHeader locale={locale} /> : null}
-                    <SmoothScroll />
                     {children}
                     <AnalyticsConsent />
                     <ChatWidget />

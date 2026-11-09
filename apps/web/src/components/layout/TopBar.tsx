@@ -1,56 +1,49 @@
 'use client';
 
-import { Phone, Truck, Gift, Sparkles } from 'lucide-react';
-
-const messages = [
-    { icon: Truck, text: "Miễn phí vận chuyển đơn từ 300.000 ₫" },
-    { icon: Phone, text: "Hotline: 0356.176.878" },
-    { icon: Gift, text: "Cùng Thiên Phúc chọn hương cho bạn" },
-    { icon: Sparkles, text: "Thiên Phúc · Hương Việt, nếp an yên" },
-];
-
-const MessageSet = () => (
-    <>
-        {messages.map((item, idx) => (
-            <span key={idx} className="inline-flex items-center gap-2 text-white/90 shrink-0">
-                <item.icon size={14} className="text-amber-300" />
-                <span>{item.text}</span>
-                <span className="text-amber-400 mx-8">✦</span>
-            </span>
-        ))}
-    </>
-);
+import { useState } from 'react';
+import { useLocale } from 'next-intl';
+import { Leaf, Pause, Phone, Play, Truck } from 'lucide-react';
+import { Link } from '@/i18n/routing';
+import { SHOP_CONTACT } from '@/lib/legal';
 
 export default function TopBar() {
-    return (
-        <div className="tp-announcement bg-trad-red-900 text-white text-xs py-2 overflow-hidden relative">
-            <div className="flex items-center gap-0 animate-scroll hover:[animation-play-state:paused]">
-                {/* Triple the content for truly seamless loop */}
-                <div className="flex items-center shrink-0">
-                    <MessageSet />
-                </div>
-                <div className="tp-announcement-copy flex items-center shrink-0" aria-hidden="true">
-                    <MessageSet />
-                </div>
-                <div className="tp-announcement-copy flex items-center shrink-0" aria-hidden="true">
-                    <MessageSet />
-                </div>
-            </div>
+  const en = useLocale() !== 'vi';
+  const [paused, setPaused] = useState(false);
+  const brand = en ? 'Thien Phuc · Vietnamese agarwood, everyday peace' : 'Thiên Phúc · Hương Việt, nếp an yên';
+  const advice = en ? 'Choose agarwood with Thien Phuc' : 'Cùng Thiên Phúc chọn phẩm trầm phù hợp';
+  const shipping = en ? 'Delivery & payment' : 'Giao hàng & thanh toán';
 
-            <style jsx>{`
-                @keyframes scroll {
-                    0% {
-                        transform: translateX(0);
-                    }
-                    100% {
-                        transform: translateX(-33.333%);
-                    }
-                }
-                .animate-scroll {
-                    animation: scroll 20s linear infinite;
-                    width: max-content;
-                }
-            `}</style>
+  return (
+    <section
+      className="tp-announcement shop-announcement"
+      aria-label={en ? 'Updates from Thien Phuc' : 'Thông tin từ Thiên Phúc'}
+      data-paused={paused}
+    >
+      <div className="shop-announcement-viewport">
+        <div className="shop-announcement-track">
+          {[false, true].map(copy => (
+            <div className="shop-announcement-group" key={String(copy)} aria-hidden={copy || undefined} inert={copy || undefined}>
+              <span className="shop-announcement-item"><Leaf size={14} aria-hidden="true" />{brand}</span>
+              <span className="shop-announcement-separator" aria-hidden="true">✦</span>
+              <a className="shop-announcement-item" href={`tel:${SHOP_CONTACT.phone}`}><Phone size={14} aria-hidden="true" />Hotline: 0356.176.878</a>
+              <span className="shop-announcement-separator" aria-hidden="true">✦</span>
+              <Link className="shop-announcement-item" href="/contact">{advice}</Link>
+              <span className="shop-announcement-separator" aria-hidden="true">✦</span>
+              <Link className="shop-announcement-item" href="/policies/shipping"><Truck size={14} aria-hidden="true" />{shipping}</Link>
+              <span className="shop-announcement-separator" aria-hidden="true">✦</span>
+            </div>
+          ))}
         </div>
-    );
+      </div>
+      <button
+        type="button"
+        className="shop-announcement-toggle"
+        onClick={() => setPaused(value => !value)}
+        aria-pressed={paused}
+        aria-label={paused ? (en ? 'Resume announcements' : 'Tiếp tục dòng thông báo') : (en ? 'Pause announcements' : 'Tạm dừng dòng thông báo')}
+      >
+        {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
+      </button>
+    </section>
+  );
 }

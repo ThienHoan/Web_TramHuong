@@ -261,3 +261,9 @@ test('session ID is RAM-only, matches requests, and survives stop for DebugView 
 test('consent, expiry, auth, policy and frontend cap report why session stopped',async()=>{
  for(const reason of ['consent','expired','auth','disabled','session_limit']){const f=funnelFixture();f.session.setEnabled(true);f.session.start('admin');if(reason==='consent')f.tracker.setConsent('denied');else if(reason==='expired'){f.tick(15*60000);f.tracker.track('view_item',params);}else if(reason==='auth')f.session.authChanged('other');else if(reason==='disabled')f.session.setEnabled(false);else for(let i=0;i<20;i++){f.tracker.track('add_to_cart',params);await settle();}assert.equal(f.session.getSnapshot().active,false);assert.equal(f.session.getSnapshot().stopReason,reason);f.session.stop();}
 });
+
+test('legacy catalog variant names never leak or discard an otherwise valid cart event', () => {
+  const items = cartAnalyticsItems([{id: 'product-1', price: 30000, quantity: 1, variantId: 'Nhang 30cm'}]);
+  assert.equal(items[0].item_variant, undefined);
+  assert.ok(ecommerceParameters('add_to_cart', { items }));
+});

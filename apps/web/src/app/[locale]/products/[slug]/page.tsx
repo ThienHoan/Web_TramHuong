@@ -1,106 +1,27 @@
-import { getProduct, getProducts } from '@/lib/api-client';
-import ZenProductDetail from '@/components/zen/ZenProductDetail';
+import { getProduct, getProducts, getReviews } from '@/lib/api-client';
 import TraditionalProductDetail from '@/components/traditional/TraditionalProductDetail';
-// import ReviewsSection from '@/components/reviews/ReviewsSection';
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
-
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
-    const { locale, slug } = await params;
-    const product = await getProduct(slug, locale);
-
-    if (!product) {
-        return {
-            title: 'Product Not Found',
-        };
-    }
-
-    const title = product.translation?.title || 'Trầm Hương';
-    const description = product.translation?.description || '';
-    const imageUrl = product.images?.[0] || '/placeholder.jpg';
-
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            images: [{ url: imageUrl }],
-        },
-        alternates: {
-            canonical: `/${locale}/products/${slug}`
-        }
-    };
-}
-
-import ProductJsonLd from '@/components/seo/ProductJsonLd';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { cache } from 'react';
+import { firstAvailableVariant, variantKey } from '@/lib/commerce';
+import { plainDescription } from '@/lib/seo';
 
-export default async function ProductPage({
-    params
-}: {
-    params: Promise<{ locale: string; slug: string }>;
-}) {
-    const { locale, slug } = await params;
-    const product = await getProduct(slug, locale);
-
-    if (!product) {
-        notFound();
-    }
-
-    // Fetch related products for Zen layout (Other Treasures)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-    let relatedProducts: any[] = [];
-
-    // Try fetching by category first
-    if (product.category_id) {
-        const allRelated = await getProducts(locale, { categoryId: product.category_id, limit: 6 });
-        // Filter out current product
-        relatedProducts = allRelated.filter(p => p.id !== product.id);
-    }
-
-    // If we don't have enough related products, fetch more general products
-    if (relatedProducts.length < 4) {
-        const moreProducts = await getProducts(locale, { limit: 8 });
-        // Filter out current product and any we already have
-        const existingIds = new Set(relatedProducts.map(p => p.id));
-        existingIds.add(product.id);
-
-        const additional = moreProducts.filter(p => !existingIds.has(p.id));
-        relatedProducts = [...relatedProducts, ...additional];
-    }
-
-    // Take top 4
-    relatedProducts = relatedProducts.slice(0, 4);
-
-    if (locale === 'vi') {
-        return (
-            <>
-                <ProductJsonLd product={product} />
-                <BreadcrumbJsonLd
-                    items={[
-                        { name: locale === 'vi' ? 'Trang chủ' : 'Home', item: '/' },
-                        { name: locale === 'vi' ? 'Sản phẩm' : 'Products', item: '/products' },
-                        { name: product.translation?.title || product.title || 'Sản phẩm', item: `/products/${product.slug}` }
-                    ]}
-                />
-                <TraditionalProductDetail product={product} />
-                {/* <ReviewsSection productId={product.id} /> REMOVED to avoid duplication with UI in TraditionalProductDetail */}
-            </>
-        );
-    }
-
-    return (
-        <>
-            <ProductJsonLd product={product} />
-            <BreadcrumbJsonLd
-                items={[
-                    { name: locale === 'vi' ? 'Trang chủ' : 'Home', item: '/' },
-                    { name: locale === 'vi' ? 'Sản phẩm' : 'Products', item: '/products' },
-                    { name: product.translation?.title || product.title || 'Product', item: `/products/${product.slug}` }
-                ]}
-            />
-            <ZenProductDetail product={product} relatedProducts={relatedProducts} />
-        </>
-    );
+const loadProduct=cache(getProduct);
+type Props={params:Promise<{locale:string;slug:string}>;searchParams:Promise<{variant?:string}>};
+export async function generateMetadata({params}:Props):Promise<Metadata> {
+  const {locale,slug}=await params, product=await loadProduct(slug,locale);
+  if(!product)return {title:locale==='vi'?'Không tìm thấy sản phẩm':'Product not found',robots:{index:false,follow:true}};
+  const title=product.translation?.title || product.title || 'Thiên Phúc';
+  const description=plainDescription(product.translation?.short_description || product.translation?.description,locale==='vi'?`Xem hình ảnh, giá bán và phân loại ${title} tại Thiên Phúc. Tư vấn trước khi mua, đặt hàng không cần tài khoản.`:`Explore photos, prices and options for ${title} at Thien Phuc. Ask for advice and checkout without an account.`);
+  return {title,description,openGraph:{title,description,url:`/${locale}/products/${slug}`,images:product.images?.[0]?[{url:product.images[0],alt:title}]:undefined},alternates:{canonical:`/${locale}/products/${slug}`,languages:{vi:`/vi/products/${slug}`,en:`/en/products/${slug}`}}};
+}
+export default async function ProductPage({params,searchParams}:Props) {
+  const {locale,slug}=await params, product=await loadProduct(slug,locale);
+  if(!product || product.is_active===false)notFound();
+  const [{variant:requested},reviews,related]=await Promise.all([searchParams,getReviews(product.id),getProducts(locale,{categoryId:product.category_id,limit:5})]);
+  const match=product.variants?.findIndex((v,index)=>variantKey(v,index)===requested) ?? -1;
+  const variantIndex=match>=0?match:firstAvailableVariant(product);
+  const ratedProduct={...product,rating_average:Number(reviews.meta?.average||0),review_count:reviews.meta?.total||0};
+  return <><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Sản phẩm':'Products',item:`/${locale}/products`},{name:product.translation?.title||product.title||'Thiên Phúc',item:`/${locale}/products/${slug}`}]}/><TraditionalProductDetail key={`${product.id}-${requested||''}`} product={ratedProduct} relatedProducts={related.filter(p=>p.id!==product.id).slice(0,4)} initialReviews={reviews} initialVariantIndex={variantIndex}/></>;
 }

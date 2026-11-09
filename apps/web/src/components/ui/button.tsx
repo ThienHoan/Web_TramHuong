@@ -19,7 +19,7 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        traditional: "bg-trad-red-900 text-trad-amber-100 border-2 border-trad-amber-700 hover:bg-trad-red-950 hover:border-trad-amber-600 shadow-md font-serif font-bold text-lg tracking-wide rounded-sm",
+        traditional: "bg-trad-red-900 text-trad-amber-100 border-2 border-trad-amber-700 hover:bg-trad-red-950 hover:border-trad-amber-600 shadow-md font-serif font-bold text-lg tracking-wide rounded-md",
         zen: "bg-zen-50 border border-zen-800 text-zen-900 hover:bg-zen-800 hover:text-zen-50 transition-all duration-500 ease-out uppercase tracking-[0.2em] text-xs font-light",
       },
       size: {

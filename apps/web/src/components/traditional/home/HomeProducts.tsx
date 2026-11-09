@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
+import { firstAvailableVariant, productStock, variantKey } from "@/lib/commerce";
 import Image from "next/image";
 import { ArrowUpRight, Eye, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
@@ -17,24 +19,29 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useProductDiscount } from "@/hooks/useProductDiscount";
 import type { Product } from "@/types/product";
 
-function QuickView({
+export function ProductQuickView({
   product,
   onClose,
 }: {
   product: Product;
   onClose: () => void;
 }) {
-  const [variantIndex, setVariantIndex] = useState(0);
+  const en = useLocale() !== "vi";
+  const t = (vi: string, english: string) => en ? english : vi;
+  const [variantIndex, setVariantIndex] = useState(firstAvailableVariant(product));
   const [adding, setAdding] = useState(false);
   const variant = product.variants?.[variantIndex];
-  const { addItem } = useCart();
+  const key = variant ? variantKey(variant, variantIndex) : undefined;
+  const { addItem, items } = useCart();
   const { finalPrice, originalPrice, savings } = useProductDiscount(
     product,
     variant ? Number(variant.price) : undefined,
   );
   const title =
     product.translation?.title || product.title || "Trầm hương Thiên Phúc";
-  const available = (variant?.stock ?? product.stock) > 0;
+  const cartQuantity = items.filter(item => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0);
+  const variantQuantity = items.filter(item => item.productId === product.id && (item.variantId || "") === (key || "")).reduce((sum, item) => sum + item.quantity, 0);
+  const available = product.is_active !== false && Math.min(productStock(product, variant) - variantQuantity, productStock(product) - cartQuantity) > 0;
 
   const addToCart = async () => {
     if (!available || adding) return;
@@ -48,14 +55,14 @@ function QuickView({
         original_price: originalPrice,
         discount_amount: savings,
         image: product.images?.[0] || "/placeholder.png",
-        variantId: variant?.name || variant?.id,
+        variantId: key,
         variantName: variant?.name,
         quantity: 1,
       });
-      toast.success("Đã thêm vào giỏ hàng", { description: title });
+      toast.success(t("Đã thêm vào giỏ hàng", "Added to your cart"), { description: title });
       onClose();
     } catch {
-      toast.error("Chưa thể thêm sản phẩm. Vui lòng thử lại.");
+      toast.error(t("Chưa thể thêm sản phẩm. Vui lòng thử lại.", "Could not add this item. Please try again."));
     } finally {
       setAdding(false);
     }
@@ -72,11 +79,11 @@ function QuickView({
         />
       </div>
       <div className="tp-quick-copy">
-        <p className="tp-eyebrow">THIÊN PHÚC · TUYỂN CHỌN</p>
+        <p className="tp-eyebrow">THIÊN PHÚC · {t("TUYỂN CHỌN", "COLLECTION")}</p>
         <DialogTitle className="tp-quick-title">{title}</DialogTitle>
         <DialogDescription className="tp-quick-description">
           {product.translation?.short_description ||
-            "Khám phá sắc hương và những chi tiết của sản phẩm trầm hương Thiên Phúc."}
+            t("Khám phá sắc hương và những chi tiết của sản phẩm trầm hương Thiên Phúc.", "Explore the details of this Thien Phuc agarwood product.")}
         </DialogDescription>
         <ProductPrice
           product={product}
@@ -85,7 +92,7 @@ function QuickView({
         />
         {!!product.variants?.length && (
           <label className="tp-variant-label">
-            Lựa chọn sản phẩm
+            {t("Lựa chọn sản phẩm", "Choose an option")}
             <select
               value={variantIndex}
               onChange={(e) => setVariantIndex(Number(e.target.value))}
@@ -95,7 +102,7 @@ function QuickView({
                   {v.name ||
                     Object.values(v.attributes || {}).join(" · ") ||
                     v.sku}
-                  {v.stock <= 0 ? " — Hết hàng" : ""}
+                  {productStock(product, v) <= 0 ? t(" — Hết hàng", " — Sold out") : ""}
                 </option>
               ))}
             </select>
@@ -107,17 +114,17 @@ function QuickView({
           disabled={!available || adding}
         >
           {adding
-            ? "Đang thêm…"
+            ? t("Đang thêm…", "Adding…")
             : available
-              ? "Thêm vào giỏ hàng"
-              : "Tạm hết hàng"}
+              ? t("Thêm vào giỏ hàng", "Add to cart")
+              : t("Tạm hết hàng", "Currently unavailable")}
         </button>
         <Link
           href={`/products/${product.slug}`}
           className="tp-text-link"
           onClick={onClose}
         >
-          Xem chi tiết sản phẩm <ArrowUpRight size={16} />
+          {t("Xem chi tiết sản phẩm", "View product details")} <ArrowUpRight size={16} />
         </Link>
       </div>
     </>
@@ -227,9 +234,9 @@ export default function HomeProducts({ products }: { products: Product[] }) {
           if (!open) setSelected(null);
         }}
       >
-        <DialogContent className="tp-quick-view" data-lenis-prevent>
+        <DialogContent className="tp-quick-view">
           {selected && (
-            <QuickView
+            <ProductQuickView
               key={selected.id}
               product={selected}
               onClose={() => setSelected(null)}

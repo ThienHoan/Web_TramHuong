@@ -1,4 +1,6 @@
 import React from 'react';
+import { getLocale } from 'next-intl/server';
+import { absoluteUrl } from '@/lib/seo';
 
 interface BreadcrumbItem {
     name: string;
@@ -7,10 +9,12 @@ interface BreadcrumbItem {
 
 interface BreadcrumbJsonLdProps {
     items: BreadcrumbItem[];
+    locale?: string;
 }
 
-const BreadcrumbJsonLd = ({ items }: BreadcrumbJsonLdProps) => {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tramhuongthienphuchue.com';
+const BreadcrumbJsonLd = async ({ items, locale: requestedLocale }: BreadcrumbJsonLdProps) => {
+    const locale = requestedLocale || await getLocale();
+
 
     const breadcrumbList = {
         '@context': 'https://schema.org',
@@ -19,7 +23,7 @@ const BreadcrumbJsonLd = ({ items }: BreadcrumbJsonLdProps) => {
             '@type': 'ListItem',
             'position': index + 1,
             'name': crumb.name,
-            'item': crumb.item.startsWith('http') ? crumb.item : `${baseUrl}${crumb.item === '/' ? '' : crumb.item}`
+            'item': absoluteUrl(crumb.item.startsWith('http') || /^\/(vi|en)(\/|$)/.test(crumb.item) ? crumb.item : `/${locale}${crumb.item === '/' ? '' : crumb.item}`)
         }))
     };
 

@@ -65,7 +65,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
 
             {/* Hero Image */}
             <div className="w-full max-w-[1200px] px-4 md:px-10 mb-20">
-                <div className="w-full aspect-[16/9] md:aspect-[21/9] rounded-lg overflow-hidden relative group">
+                <div className="w-full aspect-[16/9] md:aspect-[21/9] rounded-xl overflow-hidden relative group">
                     <div className="absolute inset-0 bg-black/10 z-10 transition-opacity group-hover:opacity-0"></div>
                     <Image
                         src={post.cover_image || '/editorial/preview-ritual.webp'}
@@ -155,7 +155,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                             {relatedPosts.map((rel) => (
                                 <Link key={rel.id} href={`/blog/${rel.slug}`} className="group flex flex-col gap-4">
-                                    <div className="w-full aspect-[4/3] overflow-hidden rounded-md bg-gray-100 relative">
+                                    <div className="w-full aspect-[4/3] overflow-hidden rounded-xl bg-gray-100 relative">
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10"></div>
                                         <Image
                                             src={rel.cover_image || '/editorial/preview-bracelet.webp'}

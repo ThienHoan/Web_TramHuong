@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CheckoutPrimaryButton } from "@/components/checkout/CheckoutUI";
 import TraditionalLocationSelector from "./TraditionalLocationSelector";
+import ShippingAddressFields from "@/components/checkout/ShippingAddressFields";
 
 export interface GuestSubmitData {
   name: string;
@@ -12,16 +13,20 @@ export interface GuestSubmitData {
   district: string;
   ward: string;
   full_address: string;
+  shippingProvinceId?: string;
+  shippingWardCode?: string;
 }
 export default function GuestCheckoutForm({
   onSubmit,
   requireLegacyAddress = true,
+  ghnAddress = false,
   initialValues,
   busy = false,
   showSubmit = true,
 }: {
   onSubmit: (data: GuestSubmitData) => void;
   requireLegacyAddress?: boolean;
+  ghnAddress?: boolean;
   initialValues?: Partial<GuestSubmitData>;
   busy?: boolean;
   showSubmit?: boolean;
@@ -35,8 +40,13 @@ export default function GuestCheckoutForm({
     province: draft.province ?? initialValues?.province ?? "",
     district: draft.district ?? initialValues?.district ?? "",
     ward: draft.ward ?? initialValues?.ward ?? "",
+    shippingProvinceId:
+      draft.shippingProvinceId ?? initialValues?.shippingProvinceId ?? "",
+    shippingWardCode:
+      draft.shippingWardCode ?? initialValues?.shippingWardCode ?? "",
   };
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [addressUnavailable, setAddressUnavailable] = useState(false);
   const change = (key: "name" | "phone" | "address", value: string) => {
     setData((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: "" }));
@@ -55,6 +65,12 @@ export default function GuestCheckoutForm({
       (!data.province || !data.district || !data.ward)
     )
       invalid.location = "Chọn đầy đủ tỉnh/thành, quận/huyện và phường/xã.";
+    if (ghnAddress && !addressUnavailable) {
+      if (!data.shippingProvinceId)
+        invalid.province = "Chọn tỉnh/thành để tính phí giao hàng.";
+      else if (!data.shippingWardCode)
+        invalid.ward = "Chọn phường/xã để tính phí giao hàng.";
+    }
     setErrors(invalid);
     const first = Object.keys(invalid)[0];
     if (first) {
@@ -70,11 +86,9 @@ export default function GuestCheckoutForm({
         : phone.startsWith("84")
           ? "+" + phone
           : phone,
-      full_address: requireLegacyAddress
-        ? [data.address.trim(), data.ward, data.district, data.province].join(
-            ", ",
-          )
-        : data.address.trim(),
+      full_address: [data.address.trim(), data.ward, data.district, data.province]
+        .filter(Boolean)
+        .join(", "),
     });
   };
   return (
@@ -140,7 +154,7 @@ export default function GuestCheckoutForm({
             id="guest-address"
             autoComplete="shipping address-line1"
             required
-            maxLength={1024}
+            maxLength={900}
             value={data.address}
             onChange={(e) => change("address", e.target.value)}
             placeholder="Số nhà, tên đường, tòa nhà hoặc thôn/xóm"
@@ -159,12 +173,39 @@ export default function GuestCheckoutForm({
             </p>
           ) : (
             <p className="checkout-field-help" id="guest-address-help">
-              {requireLegacyAddress
-                ? "Nhập địa chỉ chi tiết để nhân viên dễ tìm đến bạn."
-                : "Bạn sẽ chọn tỉnh/thành và phường/xã ở bước giao hàng tiếp theo."}
+              Nhập địa chỉ chi tiết để nhân viên dễ tìm đến bạn.
             </p>
           )}
         </div>
+        {ghnAddress && (
+          <ShippingAddressFields
+            idPrefix="guest"
+            value={{
+              provinceId: data.shippingProvinceId || "",
+              provinceName: data.province,
+              wardCode: data.shippingWardCode || "",
+              wardName: data.ward,
+            }}
+            suggested={{
+              province: initialValues?.province,
+              ward: initialValues?.ward,
+            }}
+            provinceError={errors.province}
+            wardError={errors.ward}
+            onUnavailable={setAddressUnavailable}
+            onChange={(next) => {
+              setData((current) => ({
+                ...current,
+                province: next.provinceName,
+                district: "",
+                ward: next.wardName,
+                shippingProvinceId: next.provinceId,
+                shippingWardCode: next.wardCode,
+              }));
+              setErrors((current) => ({ ...current, province: "", ward: "" }));
+            }}
+          />
+        )}
         {requireLegacyAddress && (
           <div className="checkout-legacy-location" id="guest-location">
             <TraditionalLocationSelector

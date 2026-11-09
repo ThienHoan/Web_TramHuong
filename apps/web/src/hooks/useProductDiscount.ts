@@ -56,7 +56,7 @@ export function useProductDiscount(
             (!product.discount_start_date || new Date(product.discount_start_date) <= now) &&
             (!product.discount_end_date || new Date(product.discount_end_date) >= now);
 
-        const discountPercent = product.discount_percentage || 0;
+        const discountPercent = Math.min(100, Math.max(0, Number(product.discount_percentage) || 0));
         const finalPrice = isActive
             ? Math.round(originalPrice * (1 - discountPercent / 100))
             : originalPrice;

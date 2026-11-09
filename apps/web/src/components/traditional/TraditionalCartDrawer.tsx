@@ -37,7 +37,7 @@ export default function TraditionalCartDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="tp-cart-drawer" data-lenis-prevent>
+      <SheetContent className="tp-cart-drawer">
         <div className="tp-cart-heading">
           <SheetTitle className="font-serif text-3xl">
             {en ? "Your shopping bag" : "Giỏ hàng của bạn"}
@@ -115,8 +115,8 @@ export default function TraditionalCartDrawer() {
               </div>
               <p>
                 {en
-                  ? "Shipping is calculated at checkout."
-                  : "Phí vận chuyển được tính khi thanh toán."}
+                  ? "Delivery is calculated before placing your order. No account required."
+                  : "Phí giao hàng được hiển thị trước khi đặt. Không cần tạo tài khoản."}
               </p>
               <Link
                 href="/checkout"

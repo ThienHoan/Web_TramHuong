@@ -153,7 +153,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
             <div>
                 <label className="block text-sm font-medium mb-1">Province / City</label>
                 <select
-                    className="w-full border p-2 rounded bg-white disabled:bg-gray-100"
+                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
                     onChange={(e) => handleProvinceChange(Number(e.target.value))}
                     value={selectedProvince?.code || ''}
                     disabled={loadingP}
@@ -169,7 +169,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
             <div className={!selectedProvince ? 'opacity-50' : ''}>
                 <label className="block text-sm font-medium mb-1">District</label>
                 <select
-                    className="w-full border p-2 rounded bg-white disabled:bg-gray-100"
+                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
                     onChange={(e) => handleDistrictChange(Number(e.target.value))}
                     value={selectedDistrict?.code || ''}
                     disabled={!selectedProvince || loadingD}
@@ -185,7 +185,7 @@ export default function LocationSelector({ onLocationChange, initialProvince, in
             <div className={!selectedDistrict ? 'opacity-50' : ''}>
                 <label className="block text-sm font-medium mb-1">Ward / Commune</label>
                 <select
-                    className="w-full border p-2 rounded bg-white disabled:bg-gray-100"
+                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
                     onChange={(e) => handleWardChange(Number(e.target.value))}
                     value={selectedWard?.code || ''}
                     disabled={!selectedDistrict || loadingW}

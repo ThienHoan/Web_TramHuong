@@ -17,7 +17,7 @@ export default function ProductImage({ src, alt, className, ...props }: ProductI
                 alt={alt || "Product image"}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-opacity duration-500 opacity-0 animate-[fadeIn_0.5s_ease-in_forwards]"
+                className="object-cover"
                 onLoad={(event) => {
                     const img = event.target as HTMLImageElement;
                     img.classList.remove('opacity-0');

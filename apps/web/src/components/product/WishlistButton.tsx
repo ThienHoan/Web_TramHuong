@@ -3,10 +3,13 @@
 import { useWishlist } from '../providers/WishlistProvider';
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
+import { useLocale } from 'next-intl';
 
 export default function WishlistButton({ productId, className = '' }: { productId: string, className?: string }) {
     const { items, toggle } = useWishlist();
     const isLiked = items.has(productId);
+    const en = useLocale() !== 'vi';
+    const label = isLiked ? (en ? 'Remove from wishlist' : 'Bỏ khỏi yêu thích') : (en ? 'Add to wishlist' : 'Thêm vào yêu thích');
     const [loading, setLoading] = useState(false); // Added loading state
 
     const handleClick = async (e: React.MouseEvent) => { // Moved handleClick definition outside JSX
@@ -20,9 +23,11 @@ export default function WishlistButton({ productId, className = '' }: { productI
 
     return (
         <button
+            type="button"
             onClick={handleClick} // Used the defined handleClick function
             className={`p-2 rounded-full transition-all hover:bg-gray-100 ${className} group`}
-            title={isLiked ? "Remove from wishlist" : "Add to wishlist"}
+            title={label}
+            aria-label={label}
             aria-pressed={isLiked} disabled={loading} // Added disabled state based on loading
         >
             <Heart size={24} aria-hidden="true" fill={isLiked ? "red" : "none"} stroke={isLiked ? "red" : "currentColor"} className={`transition-transform duration-200 ${isLiked ? 'scale-110' : 'group-hover:scale-110'}`} />

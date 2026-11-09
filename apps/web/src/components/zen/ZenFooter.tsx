@@ -21,18 +21,18 @@ export default function ZenFooter() {
                     <div className="md:col-span-2 lg:col-span-2">
                         <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">Shop</h4>
                         <ul className="space-y-4">
-                            <li><Link href="/products?category=incense" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Incense</Link></li>
-                            <li><Link href="/products?category=bracelets" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Bracelets</Link></li>
-                            <li><Link href="/products?category=burners" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Burners</Link></li>
-                            <li><Link href="/products?category=gifts" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Gift Sets</Link></li>
+                            <li><Link href="/products" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">All products</Link></li>
+                            <li><Link href="/contact" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Product advice</Link></li>
+                            <li><Link href="/policies/shipping" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Delivery &amp; payment</Link></li>
+                            <li><Link href="/order-lookup" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Track an order</Link></li>
                         </ul>
                     </div>
                     <div className="md:col-span-2 lg:col-span-2">
                         <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">About</h4>
                         <ul className="space-y-4">
-                            <li><Link href="/about" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Our Story</Link></li>
+                            <li><Link href="/#story" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Our Story</Link></li>
                             <li><Link href="/blog" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Journal</Link></li>
-                            <li><Link href="/sustainability" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Sustainability</Link></li>
+                            <li><Link href="/partnership" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Partnerships</Link></li>
                             <li><Link href="/contact" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Contact</Link></li>
                         </ul>
                     </div>

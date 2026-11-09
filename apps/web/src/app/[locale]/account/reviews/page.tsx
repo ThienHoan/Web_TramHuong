@@ -54,7 +54,7 @@ export default function MyReviewsPage() {
             <h1 className="text-3xl font-bold mb-8">My Reviews</h1>
 
             {reviews.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded">
+                <div className="text-center py-12 bg-gray-50 rounded-xl">
                     <p className="text-gray-500 mb-4">You haven&apos;t reviewed any products yet.</p>
                     <Link href="/products" className="text-black underline font-medium">Start Shopping</Link>
                 </div>
@@ -63,7 +63,7 @@ export default function MyReviewsPage() {
                     {reviews.map((review) => (
                         <div key={review.id} className="bg-white p-6 rounded-lg shadow-sm border flex gap-6">
                             {/* Product Image */}
-                            <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded overflow-hidden relative">
+                            <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden relative">
                                 {review.product && (
                                     <ProductImage
                                         src={review.product.images?.[0] || review.product.image}

@@ -236,7 +236,6 @@ export default function TraditionalHeader() {
           <SheetContent
             side="left"
             id="traditional-mobile-menu"
-            data-lenis-prevent
             className="tp-nav-drawer bg-trad-bg-light overflow-y-auto"
           >
             <SheetTitle className="font-serif text-2xl">

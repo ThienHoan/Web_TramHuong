@@ -1,115 +1,39 @@
-import { getProductsPaginated } from '@/lib/api-client';
-import ZenProductList from '@/components/zen/ZenProductList';
+import type { Metadata } from 'next';
+import { getProductsPaginated, getCategories } from '@/lib/api-client';
+import ShopCatalog from '@/components/shop/ShopCatalog';
 import TraditionalProductList from '@/components/traditional/TraditionalProductList';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
-import { Metadata } from 'next';
+import { parseCatalogFilters, type SearchValues } from '@/lib/catalog';
+import { catalogResults } from '@/lib/catalog-results';
+import type { Product } from '@/types/product';
+import { isCollectionOverview } from '@/lib/collections';
 
-export async function generateMetadata({ params, searchParams }: {
-    params: Promise<{ locale: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}): Promise<Metadata> {
-    const { locale } = await params;
-    const resolvedSearchParams = await searchParams;
-    const page = typeof resolvedSearchParams.page === 'string' ? Number(resolvedSearchParams.page) : 1;
-
-    const pageTitle = page > 1
-        ? (locale === 'vi' ? ` – Trang ${page}` : ` – Page ${page}`)
-        : '';
-
-    const title = locale === 'vi'
-        ? `Danh Mục Sản Phẩm${pageTitle}`
-        : `Zen Collection${pageTitle}`;
-
-    const description = locale === 'vi'
-        ? 'Khám phá bộ sưu tập trầm hương truyền thống cao cấp.'
-        : 'Discover our minimalist collection of agarwood artifacts.';
-
-    // Canonical logic
-    let canonical = `/${locale}/products`;
-    if (page > 1) {
-        canonical += `?page=${page}`;
-    }
-
-    return {
-        title,
-        description,
-        alternates: {
-            canonical
-        }
-    };
+type Props={params:Promise<{locale:string}>;searchParams:Promise<SearchValues>};
+export async function generateMetadata({params,searchParams}:Props):Promise<Metadata> {
+  const {locale}=await params, f=parseCatalogFilters(await searchParams), en=locale!=='vi';
+  const filtered=!!(f.search||f.category||f.min_price||f.max_price||f.sort!=='recommended');
+  const path=`/${locale}/products${f.page>1?`?page=${f.page}`:''}`;
+  return {title:`${en?'Vietnamese Agarwood · Products & Prices':'Sản phẩm trầm hương · Hình ảnh & giá bán'}${f.page>1?` · ${en?'Page':'Trang'} ${f.page}`:''}`,description:en?'Explore Thien Phuc agarwood. Compare photos, prices and product options, and get advice before ordering.':'Khám phá trầm hương Thiên Phúc: xem hình ảnh, giá bán, phân loại và thông số sản phẩm. Tìm sản phẩm theo nhu cầu, ngân sách và nhận tư vấn trước khi mua.',alternates:{canonical:path,languages:{vi:`/vi/products${f.page>1?`?page=${f.page}`:''}`,en:`/en/products${f.page>1?`?page=${f.page}`:''}`}},robots:filtered?{index:false,follow:true}:undefined};
 }
-
-export default async function ProductsPage({
-    params,
-    searchParams,
-}: {
-    params: Promise<{ locale: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-    const { locale } = await params;
-    const resolvedSearchParams = await searchParams;
-
-    // Parse filters
-    const category = typeof resolvedSearchParams.category === 'string' ? resolvedSearchParams.category : undefined;
-    const minPrice = typeof resolvedSearchParams.min_price === 'string' ? Number(resolvedSearchParams.min_price) : undefined;
-    const maxPrice = typeof resolvedSearchParams.max_price === 'string' ? Number(resolvedSearchParams.max_price) : undefined;
-    const sortParam = typeof resolvedSearchParams.sort === 'string' ? resolvedSearchParams.sort : undefined;
-    const page = typeof resolvedSearchParams.page === 'string' ? Number(resolvedSearchParams.page) : 1;
-
-    // Map sort param to API format (field:direction)
-    let apiSort = undefined;
-    if (sortParam === 'price-asc') apiSort = 'price:asc';
-    else if (sortParam === 'price-desc') apiSort = 'price:desc';
-    else if (sortParam === 'newest') apiSort = 'created_at:desc';
-    else if (sortParam === 'recommended') apiSort = undefined; // Default
-
-    const { data: products, meta } = await getProductsPaginated(locale, {
-        limit: 12, // Reduced from 100 for proper pagination
-        category: category !== 'all' ? category : undefined,
-        min_price: minPrice,
-        max_price: maxPrice,
-        sort: apiSort,
-        page
-    });
-
-    if (locale === 'vi') {
-        // TraditionalProductList (landing style) usually doesn't need pagination, 
-        // but if we reuse it for listing, we should pass it. 
-        // Note: TraditionalProductList implementation as seen earlier is a Landing-style scroll page sections. 
-        // Pagination might look weird there or it wasn't designed for it. 
-        // BUT user asked for ?page=n on /products too.
-        // Let's check TraditionalProductList signature if we updated it. 
-        // We did NOT update TraditionalProductList, only TraditionalProductCatalog.
-        // So I will just pass products and ignore meta for now OR switch to Catalog component if params exist.
-        // Actually, for consistency, the user might expect Catalog style on /products if they are browsing pages.
-        // However, /products in VI might be the "Showcase" landing page.
-        // If sorting or pagination is active, maybe we should switch to Catalog view?
-        // Current logic: return TraditionalProductList.
-        // I'll keep it as is, but if TraditionalProductList doesn't support pagination, user won't see controls. 
-        // The implementation_plan said "Use getProductsPaginated". 
-        // The prompt said "?page=n cho /products và /products/catalog".
-        return (
-            <>
-                <BreadcrumbJsonLd
-                    items={[
-                        { name: 'Trang chủ', item: '/' },
-                        { name: 'Sản phẩm', item: '/products' }
-                    ]}
-                />
-                <TraditionalProductList products={products} />
-            </>
-        );
+export default async function ProductsPage({params,searchParams}:Props) {
+  const {locale}=await params, filters=parseCatalogFilters(await searchParams);
+  const categories=await getCategories(locale);
+  const category=categories.find(c=>c.slug===filters.category || c.id===filters.category);
+  const sort=filters.sort==='price-asc'?'price:asc':filters.sort==='price-desc'?'price:desc':filters.sort==='newest'?'created_at:desc':undefined;
+  const options={category:category?.slug || filters.category || undefined, sort};
+  let result;
+  if(filters.search || filters.min_price || filters.max_price || filters.sort.startsWith('price-')) {
+    // Cached API pages let search ignore Vietnamese accents and budgets match
+    // actual discounted variant prices, rather than the parent's base price.
+    const candidates:Product[]=[], seen=new Set<string>();
+    for(let page=1;;page++) {
+      const response=await getProductsPaginated(locale,{...options,sort:filters.sort==='newest'?'created_at:desc':undefined,limit:100,page});
+      const fresh=response.data.filter(p=>!seen.has(p.id));
+      fresh.forEach(p=>{seen.add(p.id);candidates.push(p);});
+      if(!fresh.length || page>=(response.meta?.last_page || 1))break;
     }
-
-    return (
-        <>
-            <BreadcrumbJsonLd
-                items={[
-                    { name: 'Home', item: '/' },
-                    { name: 'Collection', item: '/products' }
-                ]}
-            />
-            <ZenProductList products={products} pagination={meta} />
-        </>
-    );
+    result=catalogResults(candidates,filters);
+  } else result=await getProductsPaginated(locale,{...options,limit:12,page:filters.page});
+  const {data:products,meta}=result;
+  return <><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Bộ sưu tập':'Products',item:`/${locale}/products`},...(category?[{name:category.translation?.name || category.slug,item:`/${locale}/products/category/${category.slug}`}]:[])]}/>{isCollectionOverview(locale,filters) ? <TraditionalProductList products={products} categories={categories}/> : <ShopCatalog products={products} categories={categories} filters={filters} pagination={meta} locale={locale}/>}</>;
 }

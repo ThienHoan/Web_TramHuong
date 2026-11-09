@@ -58,7 +58,7 @@ export default function NewCategoryPage() {
     return (
         <div className="max-w-2xl mx-auto py-8">
             <h1 className="text-2xl font-bold mb-6">Create New Category</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
+            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow">
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Slug (URL identifier)</label>
@@ -67,7 +67,7 @@ export default function NewCategoryPage() {
                         required
                         value={slug}
                         onChange={e => setSlug(e.target.value)}
-                        className="w-full border rounded p-2"
+                        className="w-full border rounded-md p-2"
                         placeholder="e.g. agarwood-incense"
                     />
                 </div>
@@ -80,7 +80,7 @@ export default function NewCategoryPage() {
                             required
                             value={nameEn}
                             onChange={e => setNameEn(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                         />
                     </div>
                     <div>
@@ -90,7 +90,7 @@ export default function NewCategoryPage() {
                             required
                             value={nameVi}
                             onChange={e => setNameVi(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                         />
                     </div>
                 </div>
@@ -101,7 +101,7 @@ export default function NewCategoryPage() {
                         <textarea
                             value={descEn}
                             onChange={e => setDescEn(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                             rows={3}
                         />
                     </div>
@@ -110,7 +110,7 @@ export default function NewCategoryPage() {
                         <textarea
                             value={descVi}
                             onChange={e => setDescVi(e.target.value)}
-                            className="w-full border rounded p-2"
+                            className="w-full border rounded-md p-2"
                             rows={3}
                         />
                     </div>
@@ -119,7 +119,7 @@ export default function NewCategoryPage() {
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50"
+                    className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
                 >
                     {submitting ? 'Creating...' : 'Create Category'}
                 </button>

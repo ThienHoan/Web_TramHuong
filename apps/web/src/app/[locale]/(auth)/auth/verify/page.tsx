@@ -277,7 +277,7 @@ export default function VerifyPage() {
                     </p>
                     <button
                         onClick={() => router.push('/login')}
-                        className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
+                        className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800"
                     >
                         {t("Quay lại đăng nhập", "Back to sign in")}
                     </button>
@@ -325,7 +325,7 @@ export default function VerifyPage() {
                     </div>
 
                     {/* Password Requirements */}
-                    <div className="bg-gray-50 p-3 rounded text-sm">
+                    <div className="bg-gray-50 p-3 rounded-xl text-sm">
                         <p className="font-medium mb-2">{t("Yêu cầu mật khẩu:", "Password requirements:")}</p>
                         <ul className="space-y-1 text-gray-600">
                             <li className={password.length >= 8 ? 'text-green-600' : ''}>

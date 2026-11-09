@@ -108,7 +108,7 @@ export default function AdminBlogEditPage() {
                         <label className="block text-sm font-medium mb-1">Cover Image URL</label>
                         <input {...register('cover_image')} className="w-full border rounded-md p-2" placeholder="https://..." />
                         {watch('cover_image') && (
-                            <div className="mt-2 relative w-full h-40 bg-gray-100 rounded overflow-hidden">
+                            <div className="mt-2 relative w-full h-40 bg-gray-100 rounded-xl overflow-hidden">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={watch('cover_image')} alt="Preview" className="w-full h-full object-cover" />
                             </div>

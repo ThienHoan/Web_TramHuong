@@ -166,14 +166,14 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
                             {posts.filter(p => p.id !== featuredPost?.id).map((post) => (
                                 <Link key={post.id} href={`/blog/${post.slug}`} className="group flex flex-col gap-4 cursor-pointer">
-                                    <div className="overflow-hidden rounded-lg aspect-[4/3] w-full bg-zen-100 relative">
+                                    <div className="overflow-hidden rounded-xl aspect-[4/3] w-full bg-zen-100 relative">
                                         <Image
                                             src={post.cover_image || '/editorial/ritual.webp'}
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
-                                        <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase text-zen-900 dark:text-white">
+                                        <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-xl text-[10px] font-bold tracking-widest uppercase text-zen-900 dark:text-white">
                                             {post.category || 'Article'}
                                         </div>
                                     </div>

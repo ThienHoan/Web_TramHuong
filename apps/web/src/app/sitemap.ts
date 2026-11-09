@@ -1,76 +1,29 @@
-import { MetadataRoute } from 'next';
-import { getProducts, getPosts } from '@/lib/api-client';
+import type { MetadataRoute } from 'next';
+import { getProductsPaginated, getPosts, getCategories } from '@/lib/api-client';
+import { absoluteUrl } from '@/lib/seo';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tramhuongthienphuchue.com';
-const locales = ['vi', 'en'];
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const sitemapEntries: MetadataRoute.Sitemap = [];
-
-    // 1. Static Routes
-    const staticPaths = [
-        '/',
-        '/about',
-        '/products',
-        '/products/catalog',
-        '/blog',
-        '/contact'
-    ];
-
-    for (const locale of locales) {
-        for (const path of staticPaths) {
-            const url = `${baseUrl}/${locale}${path === '/' ? '' : path}`;
-
-            sitemapEntries.push({
-                url,
-                lastModified: new Date(),
-                changeFrequency: path.includes('products') ? 'weekly' : 'monthly',
-                priority: path === '/' ? 1 : 0.8,
-            });
-        }
+const locales=['vi','en'];
+const validDate=(value?:string)=>value&&!Number.isNaN(Date.parse(value))?new Date(value):undefined;
+export default async function sitemap():Promise<MetadataRoute.Sitemap> {
+  const entries:MetadataRoute.Sitemap=[];
+  for(const locale of locales){
+    for(const path of ['','/products','/blog','/contact','/partnership']) entries.push({url:absoluteUrl(`/${locale}${path}`),alternates:{languages:Object.fromEntries(locales.map(lang=>[lang,absoluteUrl(`/${lang}${path}`)]))}});
+    const categories=await getCategories(locale);
+    for(const category of categories.filter(c=>c.is_active)) entries.push({url:absoluteUrl(`/${locale}/products/category/${category.slug}`),alternates:{languages:Object.fromEntries(locales.map(lang=>[lang,absoluteUrl(`/${lang}/products/category/${category.slug}`)]))}});
+    const seen=new Set<string>();
+    for(let page=1;;page++){
+      const {data,meta}=await getProductsPaginated(locale,{limit:100,page});
+      const fresh=data.filter(p=>p.is_active!==false&&!seen.has(p.id));
+      for(const product of fresh){seen.add(product.id);entries.push({url:absoluteUrl(`/${locale}/products/${product.slug}`),lastModified:validDate(product.updated_at),images:product.images?.map(absoluteUrl),alternates:{languages:Object.fromEntries(locales.map(lang=>[lang,absoluteUrl(`/${lang}/products/${product.slug}`)]))}});}
+      if(!fresh.length||page>=(meta?.last_page||1))break;
     }
-
-    try {
-        // 2. Dynamic Products
-        for (const locale of locales) {
-            const products = await getProducts(locale).catch(() => []);
-            if (Array.isArray(products)) {
-                products.forEach((product) => {
-                    const productImages = product.images ? product.images.map(img =>
-                        img.startsWith('http') ? img : `${baseUrl}${img}`
-                    ) : undefined;
-
-                    sitemapEntries.push({
-                        url: `${baseUrl}/${locale}/products/${product.slug}`,
-                        lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
-                        changeFrequency: 'weekly',
-                        priority: 0.9,
-                        images: productImages
-                    });
-                });
-            }
-        }
-
-        // 3. Dynamic Posts
-        const postsResponse = await getPosts({ limit: 100 }).catch(() => null);
-        const posts = postsResponse?.data || [];
-
-        if (Array.isArray(posts)) {
-            for (const locale of locales) {
-                posts.forEach((post) => {
-                    sitemapEntries.push({
-                        url: `${baseUrl}/${locale}/blog/${post.slug}`,
-                        lastModified: post.published_at ? new Date(post.published_at) : (post.created_at ? new Date(post.created_at) : new Date()),
-                        changeFrequency: 'weekly',
-                        priority: 0.7,
-                    });
-                });
-            }
-        }
-
-    } catch (error) {
-        console.error('Sitemap generation error:', error);
-    }
-
-    return sitemapEntries;
+  }
+  const seenPosts=new Set<string>();
+  for(let page=1;;page++){
+    const {data,meta}=await getPosts({status:'published',limit:100,page});
+    const fresh=data.filter(post=>!seenPosts.has(post.id));
+    for(const post of fresh){seenPosts.add(post.id);for(const locale of locales)entries.push({url:absoluteUrl(`/${locale}/blog/${post.slug}`),lastModified:validDate(post.published_at||post.created_at)});}
+    if(!fresh.length||page>=(meta.totalPages||1))break;
+  }
+  return entries;
 }

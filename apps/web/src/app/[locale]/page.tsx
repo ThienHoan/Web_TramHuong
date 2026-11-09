@@ -1,4 +1,4 @@
-import { getProducts, getPosts } from '@/lib/api-client';
+import { getProducts, getPosts, getCategories } from '@/lib/api-client';
 import dynamic from 'next/dynamic';
 
 // Dynamic import for code splitting - only load the theme user needs
@@ -11,15 +11,16 @@ export default async function Home({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [products, blogResponse] = await Promise.all([
-    getProducts(locale),
+  const [products, blogResponse, categories] = await Promise.all([
+    getProducts(locale, { limit: 12 }),
     locale === 'vi' ? getPosts({ limit: 3, status: 'published' }) : Promise.resolve(null),
+    getCategories(locale),
   ]);
   const posts = blogResponse?.data || [];
 
   if (locale === 'vi') {
-    return <TraditionalHome products={products} posts={posts} />;
+    return <TraditionalHome products={products} posts={posts} categories={categories} />;
   }
 
-  return <ZenHome products={products} />;
+  return <ZenHome products={products} categories={categories} />;
 }

@@ -88,7 +88,7 @@ export default function CheckoutSuccessPage() {
                             <ul className="flex flex-col gap-3">
                                 {order.items.map((item, index) => (
                                     <li key={`${item.title}-${index}`} className="flex items-center gap-3">
-                                        <div className="size-14 shrink-0 overflow-hidden rounded-[3px] bg-trad-bg-warm">
+                                        <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-trad-bg-warm">
                                             <ProductImage src={item.image} alt="" className="h-full w-full object-cover" />
                                         </div>
                                         <div className="min-w-0 flex-1">

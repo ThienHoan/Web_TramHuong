@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: '/admin/',
+                disallow: ['/admin/', '/vi/admin/', '/en/admin/', '/api/'],
             },
             // Block AI training bots
             {

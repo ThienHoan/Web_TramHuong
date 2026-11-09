@@ -60,6 +60,10 @@ SplitText giữ aria-label của tiêu đề; matchMedia hoàn nguyên markup v�
 - Lượt đo sau thay đổi không còn long task ở các đoạn đo; khoảng frame tối đa ở gallery khoảng 77ms. Đây là số đo cục bộ trên dev server, không phải cam kết FPS cho mọi thiết bị.
 - Kiểm tra nút mở 3D nhúng, tự mở 3D lab, sắc gỗ/ánh sáng, reset, mobile và reduced-motion đạt; không ghi nhận pageerror.
 
+### Cuộn theo trình duyệt
+
+Đã gỡ Lenis trên toàn website vì cuộn mượt làm trang nặng. Cuộn chuột dùng cơ chế gốc của trình duyệt; các hiệu ứng theo cuộn của GSAP ScrollTrigger vẫn giữ. Thuộc tính `data-lenis-prevent` không còn tác dụng và đã được xóa.
+
 ### Nhịp kết thúc cảnh vòng trầm
 
 Tiến trình cuộn có bốn nhịp: toàn cảnh → tách hạt → cận cảnh → lùi camera/ghép vòng. Khoảng 80–97% tiến trình dành cho nhịp kết thúc, để mô hình trở về toàn cảnh trước khi section hết sticky. Bảng thông tin thu nhẹ và hiện lời chuyển tiếp; cuộn ngược khôi phục từng cảnh. Các nút góc nhìn chọn điểm nằm trước nhịp kết thúc nên vẫn có thể dừng để xem cận cảnh.

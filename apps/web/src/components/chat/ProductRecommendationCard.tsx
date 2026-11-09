@@ -45,7 +45,7 @@ export default function ProductRecommendationCard({ product }: ProductCardProps)
                     </span>
                     <Link
                         href={`/products/${product.slug}`}
-                        className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary hover:text-white transition-colors"
+                        className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-md hover:bg-primary hover:text-white transition-colors"
                     >
                         Xem
                     </Link>
