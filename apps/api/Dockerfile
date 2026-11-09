@@ -16,6 +16,8 @@ COPY . .
 RUN pnpm build
 
 # Production Stage
+# Keep sharp at 0.34.x: from 0.35 its Alpine x64 binary refuses CPUs without
+# x86-64-v2, and the production VPS is one of them (the API crashes at startup).
 FROM node:22-alpine AS runner
 
 WORKDIR /app

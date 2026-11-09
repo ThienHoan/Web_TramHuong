@@ -53,6 +53,15 @@ describe('private shipping evidence boundary', () => {
   });
   const file = (buffer: Buffer, mimetype = 'image/png') =>
     ({ buffer, mimetype }) as Express.Multer.File;
+  it.each([
+    ['SVG', '<svg xmlns="http://www.w3.org/2000/svg"></svg>'],
+    ['HEIF', '\0\0\0\x18ftypheic'],
+  ])('refuses %s bytes that claim to be a PNG', async (_name, body) => {
+    await expect(
+      service.upload('ticket', actor, [file(Buffer.from(body, 'latin1'))]),
+    ).rejects.toThrow('INVALID_EVIDENCE_IMAGE');
+    expect(upload).not.toHaveBeenCalled();
+  });
   it('checks ownership before reading or writing evidence', async () => {
     owned.mockRejectedValue(new Error('SHIPMENT_NOT_FOUND'));
     await expect(

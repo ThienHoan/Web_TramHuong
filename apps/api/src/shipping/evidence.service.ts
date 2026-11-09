@@ -9,6 +9,13 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { LogisticsRepository } from './logistics.repository';
 import { ShippingOperationsService } from './operations.service';
 import type { Actor } from './fulfillment.service';
+const JPEG_SIGNATURE = [0xff, 0xd8, 0xff];
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const isJpegOrPng = (buffer: Buffer) =>
+  [JPEG_SIGNATURE, PNG_SIGNATURE].some((signature) =>
+    signature.every((byte, index) => buffer[index] === byte),
+  );
+
 @Injectable()
 export class ShippingEvidenceService {
   private readonly bucket = 'shipping-evidence';
@@ -46,6 +53,10 @@ export class ShippingEvidenceService {
           !['image/jpeg', 'image/png'].includes(file.mimetype)
         )
           throw new BadRequestException('EVIDENCE_JPEG_PNG_MAX_2MB');
+        // Any signed-in customer can reach this, and the declared type is theirs
+        // to choose. Check the real bytes so only these two decoders are exposed.
+        if (!isJpegOrPng(file.buffer))
+          throw new BadRequestException('INVALID_EVIDENCE_IMAGE');
         const image = sharp(file.buffer, { limitInputPixels: 16000000 });
         const meta = await image.metadata();
         if (!['jpeg', 'png'].includes(meta.format || ''))
