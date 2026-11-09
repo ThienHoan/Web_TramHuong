@@ -271,9 +271,7 @@ describe('GeminiInteractionsAdapter (fake transport only)', () => {
           reject(new Error('aborted')),
         ),
       );
-    await expect(
-      run(transport as unknown as typeof fetch, 20),
-    ).rejects.toMatchObject({ code: 'TIMEOUT' });
+    await expect(run(transport, 20)).rejects.toMatchObject({ code: 'TIMEOUT' });
   });
   it('refuses a disallowed model at construction', () => {
     expect(
@@ -450,7 +448,7 @@ describe('CatalogAdvisorService live path', () => {
     ],
   ])('%s → catalog results with reason', async (_n, select, reason) => {
     const { service } = setup(live, {
-      select: select as GeminiSelector['select'],
+      select: select,
     });
     const result = await service.advise(ask);
     expect(result).toMatchObject({

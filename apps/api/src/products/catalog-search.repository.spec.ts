@@ -45,7 +45,7 @@ describe('catalog FTS repository opt-in and read-only boundary', () => {
     [{ ...enabled, NODE_ENV: 'production' }, 'blocked'],
     [{ CATALOG_FTS_ENABLED: true, NODE_ENV: '' }, 'blocked'],
   ])('blocks DB access for configuration %j', async (config, mode) => {
-    const { repo, getClient } = setup(config as Record<string, unknown>);
+    const { repo, getClient } = setup(config);
     expect(repo.mode).toBe(mode);
     expect(await repo.search(input)).toMatchObject({ status: 'fallback' });
     expect(getClient).not.toHaveBeenCalled();

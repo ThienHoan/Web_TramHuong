@@ -1,7 +1,6 @@
 'use client';
 
 import { Product } from '@/types/product';
-import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import ProductImage from '../ui/ProductImage';
 import { ProductPrice } from '@/components/ui/ProductPrice';

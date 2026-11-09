@@ -54,7 +54,7 @@ export class WishlistService {
       const { error } = await this.client
         .from('wishlists')
         .delete()
-        .eq('id', (existing as { id: string }).id);
+        .eq('id', existing.id);
 
       if (error) throw new BadRequestException(error.message);
       return { isLiked: false };

@@ -23,8 +23,7 @@ export interface PagespeedLease {
   latestMeasuredAt: string | null;
 }
 export type PagespeedBegin =
-  | { cached: true }
-  | ({ cached: false } & PagespeedLease);
+  { cached: true } | ({ cached: false } & PagespeedLease);
 export interface StoredPagespeedReport {
   targetId: string;
   strategy: AuditStrategy;

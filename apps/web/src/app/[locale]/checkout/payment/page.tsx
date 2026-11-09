@@ -67,7 +67,7 @@ export default function CheckoutPaymentPage() {
     const { session } = useAuth();
     const orderId = searchParams.get('id');
     const [order, setOrder] = useState<Partial<Order> | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(Boolean(orderId));
     const [failed, setFailed] = useState(false);
     const [remaining, setRemaining] = useState<number | null>(null);
     const [waiting, setWaiting] = useState(false);
@@ -86,7 +86,7 @@ export default function CheckoutPaymentPage() {
     }, [orderId, router]);
 
     useEffect(() => {
-        if (!orderId) { setLoading(false); return; }
+        if (!orderId) return;
         if (session?.access_token) setAccessToken(session.access_token);
         let active = true;
         void check().then((data) => {

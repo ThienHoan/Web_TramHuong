@@ -106,10 +106,11 @@ export class GhnProvider
               (parentId !== undefined && row.parent_id !== parentId)
             )
               throw new Error('Wrong address hierarchy');
+            const scheme: AddressScheme = 'two_level';
             return {
               id: String(integer(row._id, 1)),
               name: string(row.name),
-              scheme: 'two_level' as AddressScheme,
+              scheme,
               level,
               parentId: String(integer(row.parent_id, 1)),
               status: integer(row.status, 1, 10),

@@ -100,9 +100,7 @@ export class SupportDto extends ActionDto {
 }
 export class DecisionDto extends ActionDto {
   @IsIn(['approve', 'reject', 'receive']) decision:
-    | 'approve'
-    | 'reject'
-    | 'receive';
+    'approve' | 'reject' | 'receive';
 }
 export class ReceiptDto extends ActionDto {
   @IsIn(['bank_confirmed', 'collected']) type: 'bank_confirmed' | 'collected';
@@ -110,17 +108,11 @@ export class ReceiptDto extends ActionDto {
 }
 export class TicketActionDto extends ActionDto {
   @IsIn(['send', 'reply', 'refresh', 'note']) operation:
-    | 'send'
-    | 'reply'
-    | 'refresh'
-    | 'note';
+    'send' | 'reply' | 'refresh' | 'note';
 }
 export class ConfigureDto {
   @IsIn(['warehouse', 'profile', 'inventory', 'promotion']) kind:
-    | 'warehouse'
-    | 'profile'
-    | 'inventory'
-    | 'promotion';
+    'warehouse' | 'profile' | 'inventory' | 'promotion';
   @IsOptional() @IsUUID() id?: string;
   @IsInt() @Min(0) version: number;
   @IsOptional() @IsUUID() productId?: string;

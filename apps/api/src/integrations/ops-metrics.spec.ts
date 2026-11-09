@@ -468,9 +468,7 @@ describe('live (staging) usage on the dashboard', () => {
   ])(
     '%s → live labelled unavailable, mock metrics still shown',
     async (_n, result) => {
-      const report = await service(
-        repo(result as { data: unknown; error: unknown }).repo,
-      ).report();
+      const report = await service(repo(result).repo).report();
       expect(report).toMatchObject({
         metricsSource: 'test_db_mock',
         liveUsageSource: 'unavailable',

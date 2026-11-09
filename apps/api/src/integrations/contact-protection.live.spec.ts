@@ -170,10 +170,7 @@ describe('Turnstile live gate and verification', () => {
   ])(
     'test keys: %s → %d, single call, no retry',
     async (_name, verify, status) => {
-      const { service, verifyMock } = make(
-        base,
-        verify as () => Promise<TurnstileVerification>,
-      );
+      const { service, verifyMock } = make(base, verify);
       await expect(
         service.verify('XXXX.DUMMY.TOKEN.XXXX'),
       ).rejects.toMatchObject({ status });

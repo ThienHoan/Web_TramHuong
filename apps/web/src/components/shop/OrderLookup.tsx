@@ -94,16 +94,11 @@ function OrderResult({ order }: { order: OrderLookupResult }) {
 export default function OrderLookup() {
     const searchParams = useSearchParams();
     const { t } = useBilingual();
-    const [orderCode, setOrderCode] = useState('');
+    const [orderCode, setOrderCode] = useState(searchParams.get('code') ?? '');
     const [contact, setContact] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<OrderLookupResult | null>(null);
-
-    useEffect(() => {
-        const code = searchParams.get('code');
-        if (code) setOrderCode(code);
-    }, [searchParams]);
 
     const submit = async (event: React.FormEvent) => {
         event.preventDefault();

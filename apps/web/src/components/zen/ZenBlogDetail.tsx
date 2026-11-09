@@ -140,7 +140,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                         <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 mb-3">
                             {post.author?.full_name || 'Zen Team'} writes about the intersection of traditional Vietnamese incense culture and modern mindfulness practices.
                         </p>
-                        <a className="text-xs font-bold tracking-widest uppercase text-primary hover:text-[#5bc115]" href="/en/blog">Read more from {post.author?.full_name || 'Author'} →</a>
+                        <Link className="text-xs font-bold tracking-widest uppercase text-primary hover:text-[#5bc115]" href="/blog">Read more from {post.author?.full_name || 'Author'} →</Link>
                     </div>
                 </div>
             </div>

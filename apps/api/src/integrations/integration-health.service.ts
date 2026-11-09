@@ -25,12 +25,7 @@ function emptyMetrics() {
     quotaUsed: null as number | null,
     quotaLimit: null as number | null,
     quotaAlert: null as
-      | 'ok'
-      | 'warn_60'
-      | 'warn_80'
-      | 'warn_95'
-      | 'exhausted'
-      | null,
+      'ok' | 'warn_60' | 'warn_80' | 'warn_95' | 'exhausted' | null,
     backlog: null as {
       queued: number;
       working: number;
@@ -287,9 +282,7 @@ export class IntegrationHealthService {
       policyScope: 'new_integration_paths_only',
       financialSource: 'internal_database',
       metricsSource: 'unavailable_no_runtime_probe' as
-        | 'unavailable_no_runtime_probe'
-        | 'test_db_mock'
-        | 'store_unavailable',
+        'unavailable_no_runtime_probe' | 'test_db_mock' | 'store_unavailable',
       metricsObservedAt: null as string | null,
       metricsWindowDays: null as number | null,
       liveUsageSource: null as 'test_db' | 'unavailable' | null,
