@@ -1,5 +1,6 @@
 'use client';
 
+import { Notice } from '@/components/ui/notice';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -140,7 +141,7 @@ export default function OrderLookup() {
                             <input required value={contact} onChange={(event) => setContact(event.target.value)} autoComplete="on" />
                             <span className="shop-hint">{t('Dùng đúng thông tin bạn đã nhập khi đặt hàng.', 'Use the same details you entered at checkout.')}</span>
                         </label>
-                        {error && <p role="alert" className="shop-error">{error}</p>}
+                        {error && <Notice tone="error">{error}</Notice>}
                         <button type="submit" disabled={loading} className="w-full">
                             {loading ? t('Đang tra cứu…', 'Looking up…') : t('Tra cứu', 'Find my order')}
                         </button>

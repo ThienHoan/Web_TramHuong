@@ -121,7 +121,7 @@ export default async function BlogListPage({
                                 <div className="w-full lg:w-3/5 bg-gray-200 relative overflow-hidden min-h-[300px] lg:min-h-[400px]">
                                     <div className="absolute inset-0">
                                         <Image
-                                            src={featuredPost.cover_image || '/editorial/preview-ritual.webp'}
+                                            src={featuredPost.cover_image || '/photos/journal.webp'}
                                             alt={featuredPost.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -167,7 +167,7 @@ export default async function BlogListPage({
                                 <div className="relative aspect-[4/3] overflow-hidden">
                                     <div className="absolute inset-0">
                                         <Image
-                                            src={post.cover_image || '/editorial/preview-bracelet.webp'}
+                                            src={post.cover_image || '/photos/journal-2.webp'}
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-500 group-hover:scale-110"

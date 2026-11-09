@@ -10,7 +10,7 @@ export default function ShopProductGrid({products,locale}:{products:Product[];lo
   return <div className="shop-product-grid">
     {products.map(product=><ShopProductCard key={product.id} product={product}/>)}
     {products.length>0 && products.length<4 && <Link href="/contact" className="shop-shelf-note" data-count={products.length}>
-      <Image src="/editorial/ritual.webp" alt="" fill sizes="(max-width:767px) 92vw, 70vw"/>
+      <Image src="/photos/shelf.webp" alt="" fill sizes="(max-width:767px) 92vw, 70vw"/>
       <span className="shop-shelf-note-copy">
         <strong>{t('Chưa biết chọn loại nào?','Not sure where to start?')}</strong>
         <span>{t('Thiên Phúc sẵn lòng cùng bạn tìm hiểu chất liệu, mùi hương và cách sử dụng trước khi mua.','Ask us about materials, scent and how to use a product before buying.')}</span>

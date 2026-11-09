@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -206,12 +207,7 @@ export default function ShipmentTrackingPage() {
         ) : (
           <>
             {error && (
-              <p
-                role="alert"
-                className="my-4 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
-              >
-                {error}
-              </p>
+              <Notice tone="warning" className="my-4">{error}</Notice>
             )}
             {data && (
               <>

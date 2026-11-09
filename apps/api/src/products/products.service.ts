@@ -508,6 +508,7 @@ export class ProductsService {
       }
     }
     if (body.slug) updateData.slug = body.slug;
+    if (body.style) updateData.style = body.style;
     if (typeof body.category !== 'undefined') {
       if (body.category) {
         const { data: catData } = await client
@@ -526,6 +527,22 @@ export class ProductsService {
     if (body.is_active !== undefined)
       updateData.is_active =
         String(body.is_active) === 'true' || body.is_active === true;
+    // Storefront cards assume a visible product has at least one image.
+    if (updateData.is_active === true || updateData.images?.length === 0) {
+      const { data: current, error } = await client
+        .from('products')
+        .select('images,is_active')
+        .eq('id', id)
+        .single();
+      if (error || !current)
+        throw new BadRequestException('Không tìm thấy sản phẩm');
+      const visible = updateData.is_active ?? current.is_active;
+      const images = updateData.images ?? current.images;
+      if (visible && !images?.length)
+        throw new BadRequestException(
+          'Sản phẩm cần ít nhất 1 ảnh để hiển thị. Hãy thêm ảnh trước khi kích hoạt.',
+        );
+    }
     if (body.is_featured !== undefined)
       updateData.is_featured =
         String(body.is_featured) === 'true' || body.is_featured === true;
@@ -684,9 +701,21 @@ export class ProductsService {
       case 'archive':
         updateData = { is_active: false };
         break;
-      case 'restore':
+      case 'restore': {
+        const { data, error } = await client
+          .from('products')
+          .select('images')
+          .in('id', ids);
+        if (error)
+          throw new BadRequestException(`Bulk update failed: ${error.message}`);
+        const missing = (data ?? []).filter((p) => !p.images?.length).length;
+        if (missing)
+          throw new BadRequestException(
+            `${missing} sản phẩm chưa có ảnh nên chưa thể hiển thị. Hãy thêm ảnh hoặc bỏ chọn các sản phẩm đó.`,
+          );
         updateData = { is_active: true };
         break;
+      }
       case 'update_category':
         if (!payload?.category)
           throw new BadRequestException(

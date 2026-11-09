@@ -1,28 +1,26 @@
 'use client';
 
+import { refreshCatalog } from '@/app/actions/catalog';
 import { API_URL } from "@/services/base-http";
 
 import { useEffect, useState, use } from 'react';
+import { Save } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
 import { CategoryTranslation } from '@/lib/types';
-
+import { AdminFormLoading, AdminFormPage, useAdminText } from '@/components/admin/AdminForm';
+import { categoryPayload, CategoryForm, emptyCategory } from '@/components/admin/CategoryForm';
 
 export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
+    const { t } = useAdminText();
     const { session } = useAuth();
     const router = useRouter();
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
-    // Form State
-    const [slug, setSlug] = useState('');
-    const [nameEn, setNameEn] = useState('');
-    const [nameVi, setNameVi] = useState('');
-    const [descEn, setDescEn] = useState('');
-    const [descVi, setDescVi] = useState('');
-    const [isActive, setIsActive] = useState(true);
+    const [draft, setDraft] = useState(emptyCategory);
 
     useEffect(() => {
         if (session && id) {
@@ -31,28 +29,25 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
             })
                 .then(res => res.json())
                 .then(data => {
-                    setSlug(data.slug);
-                    setIsActive(data.is_active);
-
-                    const en = data.translations?.find((t: CategoryTranslation) => t.locale === 'en');
-                    const vi = data.translations?.find((t: CategoryTranslation) => t.locale === 'vi');
-
-                    if (en) {
-                        setNameEn(en.name);
-                        setDescEn(en.description || '');
-                    }
-                    if (vi) {
-                        setNameVi(vi.name);
-                        setDescVi(vi.description || '');
-                    }
+                    const en = data.translations?.find((item: CategoryTranslation) => item.locale === 'en');
+                    const vi = data.translations?.find((item: CategoryTranslation) => item.locale === 'vi');
+                    setDraft({
+                        slug: data.slug,
+                        isActive: data.is_active,
+                        nameEn: en?.name || '',
+                        descEn: en?.description || '',
+                        nameVi: vi?.name || '',
+                        descVi: vi?.description || '',
+                    });
                     setLoading(false);
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Failed to load category');
+                    toast.error(t('Không thể tải danh mục', 'Failed to load category'));
+                    router.push('/admin/categories');
                 });
         }
-    }, [id, session]);
+    }, [id, session, router, t]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -66,113 +61,43 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
                     'Authorization': `Bearer ${session.access_token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    slug,
-                    name_en: nameEn,
-                    name_vi: nameVi,
-                    description_en: descEn,
-                    description_vi: descVi,
-                    is_active: isActive
-                })
+                body: JSON.stringify(categoryPayload(draft))
             });
 
             if (!res.ok) {
                 const error = await res.json();
-                throw new Error(error.message || 'Failed to update category');
+                throw new Error(error.message || t('Không thể cập nhật danh mục', 'Failed to update category'));
             }
 
+            await refreshCatalog().catch(() => undefined);
+            toast.success(t('Đã cập nhật danh mục', 'Category updated'));
             router.push('/admin/categories');
             router.refresh();
         } catch (error: unknown) {
-            alert(error instanceof Error ? error.message : 'An error occurred');
+            toast.error(error instanceof Error ? error.message : t('Đã có lỗi xảy ra', 'An error occurred'));
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) return <div>Loading Category...</div>;
+    if (loading) return <AdminFormLoading />;
 
     return (
-        <div className="max-w-2xl mx-auto py-8">
-            <h1 className="text-2xl font-bold mb-6">Edit Category</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow">
-
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Slug (URL identifier)</label>
-                        <input
-                            type="text"
-                            required
-                            value={slug}
-                            onChange={e => setSlug(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                        />
-                    </div>
-                    <div className="flex items-end pb-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={isActive}
-                                onChange={e => setIsActive(e.target.checked)}
-                                className="w-5 h-5"
-                            />
-                            <span className="text-sm font-medium">Active</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Name (English)</label>
-                        <input
-                            type="text"
-                            required
-                            value={nameEn}
-                            onChange={e => setNameEn(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Name (Vietnamese)</label>
-                        <input
-                            type="text"
-                            required
-                            value={nameVi}
-                            onChange={e => setNameVi(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Description (English)</label>
-                        <textarea
-                            value={descEn}
-                            onChange={e => setDescEn(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                            rows={3}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Description (Vietnamese)</label>
-                        <textarea
-                            value={descVi}
-                            onChange={e => setDescVi(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                            rows={3}
-                        />
-                    </div>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
-                >
-                    {submitting ? 'Updating...' : 'Update Category'}
-                </button>
-            </form>
-        </div>
+        <AdminFormPage
+            backHref="/admin/categories"
+            backLabel={t('Danh mục', 'Categories')}
+            title={t('Sửa danh mục', 'Edit category')}
+            description={t('Cập nhật tên, mô tả và trạng thái hiển thị của danh mục.', 'Update the category’s names, descriptions and visibility.')}
+        >
+            <CategoryForm
+                value={draft}
+                onChange={changes => setDraft(previous => ({ ...previous, ...changes }))}
+                onSubmit={handleSubmit}
+                busy={submitting}
+                submitLabel={t('Lưu thay đổi', 'Save changes')}
+                busyLabel={t('Đang lưu…', 'Saving…')}
+                icon={<Save aria-hidden="true" />}
+            />
+        </AdminFormPage>
     );
 }

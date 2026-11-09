@@ -125,7 +125,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 <div className="container mx-auto px-4 mb-16 max-w-5xl">
                     <div className="relative aspect-video w-full rounded-xl overflow-hidden shadow-2xl border-4 border-white">
                         <Image
-                            src={post.cover_image || '/editorial/forest.webp'}
+                            src={post.cover_image || '/photos/journal.webp'}
                             alt={post.title}
                             fill
                             className="object-cover transform hover:scale-105 transition-transform duration-700"
@@ -151,8 +151,8 @@ export default async function BlogDetailPage({ params }: PageProps) {
                     {/* Author Bio */}
                     <div className="mt-12 bg-white p-8 rounded-xl shadow-sm border border-trad-primary/10 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
                         <Image
-                            src="/editorial/ritual.webp"
-                            alt="Nghệ nhân Thiên Phúc"
+                            src="/photos/shelf.webp"
+                            alt="Thiên Phúc"
                             width={96}
                             height={96}
                             className="rounded-full object-cover border-4 border-trad-primary/20"
@@ -186,7 +186,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                                     <article className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full border border-gray-100 flex flex-col">
                                         <div className="relative overflow-hidden aspect-[4/3]">
                                             <Image
-                                                src={rel.cover_image || '/editorial/wood.webp'}
+                                                src={rel.cover_image || '/photos/journal-2.webp'}
                                                 alt={rel.title}
                                                 fill
                                                 className="object-cover transform group-hover:scale-110 transition-transform duration-500"

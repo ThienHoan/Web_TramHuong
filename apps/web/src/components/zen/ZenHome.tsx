@@ -50,9 +50,9 @@ export default function ZenHome({ products, categories = [] }: { products: Produ
                             <div className="relative mt-12">
                                 <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-xl">
                                     <Image
-                                        alt="Artisan hands carving wood"
+                                        alt="Agarwood sticks and raw wood"
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
-                                        src="/editorial/wood.webp"
+                                        src="/photos/story-wood.webp"
                                         width={400}
                                         height={600}
                                     />
@@ -64,9 +64,9 @@ export default function ZenHome({ products, categories = [] }: { products: Produ
                             <div className="relative">
                                 <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-xl">
                                     <Image
-                                        alt="Close up of incense texture"
+                                        alt="Incense cones beside raw agarwood"
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
-                                        src="/editorial/preview-gallery.webp"
+                                        src="/photos/story-time.webp"
                                         width={400}
                                         height={600}
                                     />

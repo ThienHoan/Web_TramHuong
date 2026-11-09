@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import PreviewCanvas from "./PreviewCanvas";
-import ReferencePanel from "./ReferencePanel";
 import { LotusIcon } from "@/components/icons/BrandIcons";
 import {
   DEFAULT_OPTIONS,
@@ -416,7 +415,6 @@ export default function ExperienceLab({
             </Link>
           </div>
         )}
-        {!embedded && <ReferencePanel />}
         <div className="lab-comparison-note">
           <span>01 — 03</span>
           <p>

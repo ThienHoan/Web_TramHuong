@@ -1,5 +1,7 @@
 'use client';
 
+import { useAdminText } from '@/components/admin/AdminForm';
+import { toast } from 'sonner';
 import { API_URL } from "@/services/base-http";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -26,6 +28,7 @@ interface User {
 export default function AdminUserDetailPage() {
     const { id } = useParams();
     const { session, loading: authLoading } = useAuth();
+    const { t } = useAdminText();
     const router = useRouter();
 
     const [user, setUser] = useState<User | null>(null);
@@ -104,10 +107,10 @@ export default function AdminUserDetailPage() {
                 setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: updatedOrder.status } : o));
             } else {
                 const err = await res.json();
-                alert(`Failed: ${err.message}`);
+                toast.error(err.message || t('Không thể cập nhật trạng thái đơn hàng', 'Could not update the order status'));
             }
         } catch {
-            alert('Connection Error updating status');
+            toast.error(t('Mất kết nối khi cập nhật trạng thái đơn hàng', 'Connection lost while updating the order status'));
         }
     };
 

@@ -8,6 +8,13 @@ import type { Category, Product } from "@/types/product";
 import { IncenseConeIcon } from "@/components/icons/BrandIcons";
 import { allProductsHref } from "@/lib/catalog";
 
+const CATEGORY_PHOTOS: Record<string, string> = {
+  "nu-tram": "/photos/category-nu-tram.webp",
+  "nhang-bot": "/photos/category-nhang-bot.webp",
+  "phu-kien": "/photos/category-phu-kien.webp",
+  "qua-tang": "/photos/category-qua-tang.webp",
+};
+
 export default function HomeCollections({ products, categories: catalogCategories = [] }: { products: Product[]; categories?: Category[] }) {
   const [ref, api] = useEmblaCarousel({
     align: "start",
@@ -32,23 +39,23 @@ export default function HomeCollections({ products, categories: catalogCategorie
           c.translation?.name ||
           c.translations?.find((t) => t.locale === "vi")?.name ||
           c.slug,
-        image: c.image || "/editorial/ritual.webp",
+        image: c.image || CATEGORY_PHOTOS[c.slug] || "/photos/shelf.webp",
         href: `/products/category/${c.slug}`,
       }))
     : [
         {
           title: "Một góc tĩnh lặng",
-          image: "/editorial/forest.webp",
+          image: "/photos/category-nu-tram.webp",
           href: "/products",
         },
         {
           title: "Nghi thức thưởng hương",
-          image: "/editorial/ritual.webp",
+          image: "/photos/ritual-corner.webp",
           href: "/products",
         },
         {
           title: "Hương cho không gian",
-          image: "/editorial/wood.webp",
+          image: "/photos/category-qua-tang.webp",
           href: "/products",
         },
       ];

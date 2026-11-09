@@ -4,6 +4,18 @@
   --brand-brass: #b99b67;
   --brand-paper: #f8f5ee;
   --brand-ink: #302e28;
+  --status-success: #345a3a;
+  --status-success-bg: #e9f0e7;
+  --status-success-line: #cfdcca;
+  --status-error: #923d2e;
+  --status-error-bg: #faece8;
+  --status-error-line: #efd3ca;
+  --status-warning: #7d5a1e;
+  --status-warning-bg: #f7eeda;
+  --status-warning-line: #e9dabb;
+  --status-info: #29392f;
+  --status-info-bg: #edf0e8;
+  --status-info-line: #d8ded0;
 }
 .brand-lockup {
   display: inline-flex;

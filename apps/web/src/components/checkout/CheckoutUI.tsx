@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from '@/components/ui/notice';
 import type { ReactNode } from "react";
 import { useLocale } from "next-intl";
 import {
@@ -116,9 +117,7 @@ export function CheckoutCard({
 
 export function CheckoutNotice({ children }: { children: ReactNode }) {
   return (
-    <p className="checkout-error" role="alert">
-      {children}
-    </p>
+    <Notice tone="error">{children}</Notice>
   );
 }
 

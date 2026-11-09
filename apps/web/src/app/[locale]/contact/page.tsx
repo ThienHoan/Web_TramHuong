@@ -1,5 +1,6 @@
 'use client';
 
+import { Notice } from '@/components/ui/notice';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -100,7 +101,7 @@ export default function ContactPage() {
                             ))}
                         </ul>
                         <div className="relative mt-10 hidden aspect-[4/3] overflow-hidden rounded-xl lg:block">
-                            <Image src="/editorial/ritual.webp" alt="" fill sizes="50vw" className="object-cover" />
+                            <Image src="/photos/contact-shop.webp" alt={t('Mặt tiền cửa hàng Thiên Phúc', 'Thien Phuc storefront')} fill sizes="50vw" className="object-cover" />
                         </div>
                     </div>
 
@@ -129,7 +130,7 @@ export default function ContactPage() {
                         </label>
                         <LegalConsent purpose="contact" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
                         <ContactProtection protection={protection} locale={en ? 'en' : 'vi'} disabled={isSubmitting} />
-                        {submissionError && <p role="alert" className="shop-error">{submissionError}</p>}
+                        {submissionError && <Notice tone="error">{submissionError}</Notice>}
                         <button type="submit" disabled={isSubmitting || !protection.canSubmit || !privacyAccepted} className="w-full">
                             {isSubmitting ? t('Đang gửi…', 'Sending…') : t('Gửi lời nhắn', 'Send message')}
                         </button>

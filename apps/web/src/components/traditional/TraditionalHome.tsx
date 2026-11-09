@@ -60,8 +60,8 @@ export default function TraditionalHome({
         <section className="tp-ritual" aria-labelledby="ritual-heading">
           <div className="tp-ritual-image">
             <Image
-              src="/editorial/ritual.webp"
-              alt="Lư gốm và làn hương trong một nghi thức thưởng trầm"
+              src="/photos/ritual.webp"
+              alt="Khay nụ trầm và tách trà trong một nghi thức thưởng trầm"
               fill
               sizes="(max-width: 767px) 100vw, 50vw"
             />
@@ -112,7 +112,7 @@ export default function TraditionalHome({
                     >
                       <div className="tp-journal-image">
                         <Image
-                          src={post.cover_image || "/editorial/forest.webp"}
+                          src={post.cover_image || "/photos/journal.webp"}
                           alt={post.title}
                           fill
                           sizes="(max-width: 767px) 90vw, 30vw"

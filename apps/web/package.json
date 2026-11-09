@@ -13,7 +13,8 @@
     "test:google-auth": "node scripts/test-google-auth.cjs",
     "test:chat": "node scripts/test-chat-contract.cjs",
     "test:connections": "node scripts/test-integration-health.cjs && node scripts/test-google-auth.cjs",
-    "test:checkout": "node --test scripts/test-checkout-attempt.cjs"
+    "test:checkout": "node --test scripts/test-checkout-attempt.cjs",
+    "test:auth-provider": "node --test scripts/test-auth-provider.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

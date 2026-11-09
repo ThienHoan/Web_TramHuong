@@ -12,7 +12,6 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -24,9 +23,8 @@ import { Role } from '../auth/role.enum';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // Not cached here: the web app caches this and clears it when an admin changes the catalog.
   @Get()
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(120000) // 2 minutes cache for product listing
   async findAll(
     @Query('locale') locale: string,
     @Query('include_inactive') include_inactive?: string,

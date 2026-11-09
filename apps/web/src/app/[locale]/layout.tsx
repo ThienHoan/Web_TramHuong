@@ -206,10 +206,7 @@ export default async function RootLayout({
                     </MotionProvider>
                   </ErrorBoundary>
                 </NetworkStatusProvider>
-                <Toaster position="top-center" toastOptions={{
-                  className: 'md:right-4', // Custom class if needed for desktop offset
-                  style: { margin: '0 auto' } // Ensure clear centering
-                }} closeButton />
+                <Toaster />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

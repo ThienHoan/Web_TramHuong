@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useState } from "react";
 import useSWR from "swr";
 import { useLocale } from "next-intl";
@@ -91,8 +92,7 @@ export function SearchConsolePanel({ token }: { token: string }) {
             {t("Đang tải trạng thái SEO…", "Loading SEO status…")}
           </p>
         )}
-        {error && (
-          <p role="alert">
+        {error && (<Notice tone="error">
             {t(
               "Không tải được SEO. Kiểm tra phiên admin và API, rồi thử lại.",
               "Cannot load SEO. Check admin session and API, then retry.",
@@ -100,16 +100,14 @@ export function SearchConsolePanel({ token }: { token: string }) {
             <Button variant="link" onClick={() => void mutate()}>
               {t("Thử lại", "Retry")}
             </Button>
-          </p>
-        )}
-        {syncError && <p role="alert">{syncError}</p>}
-        {data?.lastError && !syncError && (
-          <p role="status">
+          </Notice>)}
+        {syncError && <Notice tone="error">{syncError}</Notice>}
+        {data?.lastError && !syncError && (<Notice tone="warning" role="status">
             {t(
               "Lần đồng bộ trước thất bại; dữ liệu thành công gần nhất được giữ lại.",
               "Last sync failed; the last successful data is retained.",
             )}
-          </p>
+          </Notice>
         )}
         {data?.mode === "blocked" && (
           <p>

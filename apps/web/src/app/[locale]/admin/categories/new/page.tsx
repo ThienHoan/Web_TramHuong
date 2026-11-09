@@ -1,23 +1,22 @@
 'use client';
 
+import { refreshCatalog } from '@/app/actions/catalog';
 import { API_URL } from "@/services/base-http";
 
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from '@/i18n/routing';
-
+import { AdminFormPage, useAdminText } from '@/components/admin/AdminForm';
+import { categoryPayload, CategoryForm, emptyCategory } from '@/components/admin/CategoryForm';
 
 export default function NewCategoryPage() {
+    const { t } = useAdminText();
     const { session } = useAuth();
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
-
-    // Form State
-    const [slug, setSlug] = useState('');
-    const [nameEn, setNameEn] = useState('');
-    const [nameVi, setNameVi] = useState('');
-    const [descEn, setDescEn] = useState('');
-    const [descVi, setDescVi] = useState('');
+    const [draft, setDraft] = useState(emptyCategory);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,99 +30,41 @@ export default function NewCategoryPage() {
                     'Authorization': `Bearer ${session.access_token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    slug,
-                    name_en: nameEn,
-                    name_vi: nameVi,
-                    description_en: descEn,
-                    description_vi: descVi,
-                    is_active: true
-                })
+                body: JSON.stringify(categoryPayload(draft))
             });
 
             if (!res.ok) {
                 const error = await res.json();
-                throw new Error(error.message || 'Failed to create category');
+                throw new Error(error.message || t('Không thể tạo danh mục', 'Could not create category'));
             }
 
+            await refreshCatalog().catch(() => undefined);
+            toast.success(t('Đã tạo danh mục', 'Category created'));
             router.push('/admin/categories');
             router.refresh();
         } catch (error: unknown) {
-            alert(error instanceof Error ? error.message : 'An error occurred');
+            toast.error(error instanceof Error ? error.message : t('Đã có lỗi xảy ra', 'An error occurred'));
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-2xl mx-auto py-8">
-            <h1 className="text-2xl font-bold mb-6">Create New Category</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow">
-
-                <div>
-                    <label className="block text-sm font-medium mb-1">Slug (URL identifier)</label>
-                    <input
-                        type="text"
-                        required
-                        value={slug}
-                        onChange={e => setSlug(e.target.value)}
-                        className="w-full border rounded-md p-2"
-                        placeholder="e.g. agarwood-incense"
-                    />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Name (English)</label>
-                        <input
-                            type="text"
-                            required
-                            value={nameEn}
-                            onChange={e => setNameEn(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Name (Vietnamese)</label>
-                        <input
-                            type="text"
-                            required
-                            value={nameVi}
-                            onChange={e => setNameVi(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Description (English)</label>
-                        <textarea
-                            value={descEn}
-                            onChange={e => setDescEn(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                            rows={3}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Description (Vietnamese)</label>
-                        <textarea
-                            value={descVi}
-                            onChange={e => setDescVi(e.target.value)}
-                            className="w-full border rounded-md p-2"
-                            rows={3}
-                        />
-                    </div>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
-                >
-                    {submitting ? 'Creating...' : 'Create Category'}
-                </button>
-            </form>
-        </div>
+        <AdminFormPage
+            backHref="/admin/categories"
+            backLabel={t('Danh mục', 'Categories')}
+            title={t('Thêm danh mục', 'Add category')}
+            description={t('Tạo nhóm sản phẩm mới cho cửa hàng.', 'Create a new product group for your store.')}
+        >
+            <CategoryForm
+                value={draft}
+                onChange={changes => setDraft(previous => ({ ...previous, ...changes }))}
+                onSubmit={handleSubmit}
+                busy={submitting}
+                submitLabel={t('Tạo danh mục', 'Create category')}
+                busyLabel={t('Đang tạo…', 'Creating…')}
+                icon={<Plus aria-hidden="true" />}
+            />
+        </AdminFormPage>
     );
 }

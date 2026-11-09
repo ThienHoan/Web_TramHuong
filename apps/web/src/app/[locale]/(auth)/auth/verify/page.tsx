@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Notice } from '@/components/ui/notice';
 import { checkSession, updatePassword } from '@/app/actions/auth'; // Import server actions
 import { useBilingual } from '@/hooks/useBilingual';
 
@@ -341,9 +341,7 @@ export default function VerifyPage() {
                     </div>
 
                     {passwordError && (
-                        <Alert variant="destructive">
-                            <AlertDescription>{passwordError}</AlertDescription>
-                        </Alert>
+                        <Notice tone="error">{passwordError}</Notice>
                     )}
 
                     <Button type="submit" disabled={submitting} className="w-full">

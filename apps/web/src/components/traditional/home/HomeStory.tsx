@@ -16,22 +16,22 @@ const chapters = [
     number: "01",
     title: "Từ một vết thương",
     text: "Trong thân cây dó bầu, nhựa cây dần tích tụ quanh những tổn thương. Đó là khởi đầu của hành trình tạo trầm.",
-    image: "/editorial/wood.webp",
-    alt: "Làn hương mảnh bên bề mặt gỗ mộc",
+    image: "/photos/story-wood.webp",
+    alt: "Que trầm và mảnh gỗ trầm trên mặt gỗ",
   },
   {
     number: "02",
     title: "Thời gian kết hương",
     text: "Qua thời gian, phần gỗ thấm nhựa mang một sắc hương riêng. Trầm kể câu chuyện của đất, của cây và sự chờ đợi.",
-    image: "/editorial/forest.webp",
-    alt: "Nụ trầm và làn khói trên lư đồng",
+    image: "/photos/story-time.webp",
+    alt: "Nụ trầm và mảnh trầm bên hộp Nụ Thảo Dược",
   },
   {
     number: "03",
     title: "Chạm đến an yên",
     text: "Từ rừng cây đến một góc nhỏ trong nhà. Một làn hương, một nghi thức giản đơn để trở về với hiện tại.",
-    image: "/editorial/ritual.webp",
-    alt: "Lư gốm mộc trong không gian thưởng trầm",
+    image: "/photos/story-calm.webp",
+    alt: "Hộp trầm Thiên Phúc đặt trên phiến đá bên hồ",
   },
 ];
 

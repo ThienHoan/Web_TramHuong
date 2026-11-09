@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useId } from "react";
 import { useLocale } from "next-intl";
 import useSWR from "swr";
@@ -220,13 +221,13 @@ export function IntegrationHealthPanel({
         </Button>
       </header>
       {error ? (
-        <div className="space-y-3 p-4 sm:p-5" role="alert">
-          <p>
+        <div className="space-y-3 p-4 sm:p-5">
+          <Notice tone="error">
             {t(
               "Chưa tải được trạng thái kết nối. Hãy kiểm tra phiên admin và thử lại.",
               "Unable to load connection status. Check your admin session and retry.",
             )}
-          </p>
+          </Notice>
           <Button
             variant="outline"
             className="h-11! min-h-11! md:h-10! md:min-h-10!"

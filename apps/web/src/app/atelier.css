@@ -105,7 +105,7 @@ body:not(.dark) {
 .atelier-admin-content :is(.shadow,.shadow-sm,.shadow-md) { box-shadow: none; }
 .atelier-login { display: grid; grid-template-columns: 1fr 1fr; padding: 0; background: #f8f5ee; }
 .atelier-login > .absolute { display: none; }
-.atelier-login-story { min-height: 720px; padding: 80px 10%; display: flex; flex-direction: column; justify-content: end; color: #fffdf8; background: linear-gradient(0deg,#1f2b25ed,#1f2b2510),url('/editorial/ritual.webp') center/cover; }
+.atelier-login-story { min-height: 720px; padding: 80px 10%; display: flex; flex-direction: column; justify-content: end; color: #fffdf8; background: linear-gradient(0deg,#1f2b25ed,#1f2b2510),url('/photos/login.webp') center/cover; }
 .atelier-login-story p { font-size: 10px; letter-spacing: .2em; margin-bottom: auto; }
 .atelier-login-story h2 { font: 400 clamp(36px,3.4vw,56px)/1.25 var(--font-serif),Georgia,serif; margin-bottom: 28px; }
 .atelier-login-story span { font-size: 13px; line-height: 1.9; max-width: 300px; color: #e2e4d8; }
@@ -141,7 +141,7 @@ body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):disable
 .shop-field { display: flex; flex-direction: column; gap: 8px; color: #302e28; font-size: 14px; font-weight: 500; }
 .shop-field input, .shop-field select, .shop-field textarea { width: 100%; padding: 10px 14px; font-weight: 400; }
 .shop-hint { color: #70695e; font-size: 13px; font-weight: 400; line-height: 1.6; }
-.shop-error { color: #8f3526; font-size: 14px; line-height: 1.6; }
+.shop-error { color: var(--status-error); font-size: 14px; line-height: 1.6; }
 .shop-link { color: #34473b; text-decoration: underline; text-underline-offset: 3px; }
 .shop-link:hover { color: #785538; }
 .shop-status { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 12px; border: 1px solid #ddd5c7; border-radius: var(--ui-radius-small); background: #f4f0e7; color: #4b463c; font-size: 13px; font-weight: 500; }

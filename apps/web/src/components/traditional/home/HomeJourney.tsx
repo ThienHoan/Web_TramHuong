@@ -21,7 +21,7 @@ const baseWorlds = [
   {
     title: "Mang hương theo mình.",
     tag: "VÒNG TRẦM",
-    image: "/editorial/preview-bracelet.webp",
+    image: "/photos/story-wood.webp",
     text: "Sắc gỗ trầm lắng, từng nét vân riêng. Một phẩm vật nhỏ luôn ở bên bạn.",
     detail: "Chạm vào chất gỗ",
     href: "/products",
@@ -29,7 +29,7 @@ const baseWorlds = [
   {
     title: "Dành hương cho nhà.",
     tag: "NGHI THỨC THƯỞNG TRẦM",
-    image: "/editorial/ritual.webp",
+    image: "/photos/chapter-calm.webp",
     text: "Một lư trầm, một góc quen. Mời thiên nhiên vào khoảng nghỉ giữa ngày.",
     detail: "Tìm góc bình yên",
     href: "/products",
@@ -37,7 +37,7 @@ const baseWorlds = [
   {
     title: "Gửi hương đến người.",
     tag: "MỘT MÓN QUÀ CÓ Ý NGHĨA",
-    image: "/editorial/forest.webp",
+    image: "/photos/chapter-gift.webp",
     text: "Trao một làn hương, gửi một lời quan tâm. Chọn món quà cho người bạn thương.",
     detail: "Cùng chọn món quà",
     href: "/contact",
@@ -686,18 +686,18 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
               <div className="journey-reference">
                 <div>
                   <Image
-                    src="/references/annhien/bracelet-detail.jpg"
-                    alt="Ảnh tham khảo bề mặt hạt trầm thật"
+                    src="/photos/story-wood.webp"
+                    alt="Mảnh trầm và que trầm của Thiên Phúc"
                     fill
                     sizes="88px"
                   />
                 </div>
                 <p>
-                  Quan sát chất gỗ thật<small>Ảnh tham khảo · An Nhiên</small>
+                  Quan sát chất gỗ thật<small>Ảnh thật · Thiên Phúc</small>
                 </p>
                 <Link
                   href="/3d-lab?mau=bracelet"
-                  aria-label="Xem ảnh tham khảo và mô hình vòng trầm"
+                  aria-label="Xem mô hình vòng trầm"
                 >
                   <ArrowUpRight size={18} />
                 </Link>

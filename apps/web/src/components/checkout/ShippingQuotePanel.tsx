@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import { buildUrl, fetchWithAuth } from "@/services/base-http";
@@ -192,15 +193,15 @@ export default function ShippingQuotePanel({
   if (!ready)
     return (
       <section aria-label={en ? "Shipping quote" : "Báo giá vận chuyển"}>
-        <p
-          className={setupError ? "checkout-error" : "checkout-form-note"}
-          role={setupError ? "alert" : "status"}
-        >
-          {setupError ||
-            (en
+        {setupError ? (
+          <Notice tone="error">{setupError}</Notice>
+        ) : (
+          <p className="checkout-form-note" role="status">
+            {en
               ? "Loading delivery options…"
-              : "Đang tải thông tin giao hàng…")}
-        </p>
+              : "Đang tải thông tin giao hàng…"}
+          </p>
+        )}
       </section>
     );
   if (!enabled) return null;
@@ -237,9 +238,7 @@ export default function ShippingQuotePanel({
         </p>
       )}
       {message && (
-        <p role="alert" className="checkout-error">
-          {message}
-        </p>
+        <Notice tone="error">{message}</Notice>
       )}
       {error && destination && warehouse && (
         <button

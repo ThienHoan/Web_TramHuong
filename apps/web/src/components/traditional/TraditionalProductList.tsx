@@ -17,9 +17,9 @@ import "./collections.css";
 import "@/components/shop/shop.css";
 
 const chapters = [
-  { id: "chuong-1", number: "I", label: "Thượng Hạng", note: "Chậm ngắm chất trầm.", image: "/editorial/preview-bracelet.webp" },
-  { id: "chuong-2", number: "II", label: "An Yên", note: "Nghi thức cho góc nhà.", image: "/editorial/ritual.webp" },
-  { id: "chuong-3", number: "III", label: "Tâm Giao", note: "Món quà gửi người thương.", image: "/editorial/wood.webp" },
+  { id: "chuong-1", number: "I", label: "Thượng Hạng", note: "Chậm ngắm chất trầm.", image: "/photos/chapter-premium.webp" },
+  { id: "chuong-2", number: "II", label: "An Yên", note: "Nghi thức cho góc nhà.", image: "/photos/chapter-calm.webp" },
+  { id: "chuong-3", number: "III", label: "Tâm Giao", note: "Món quà gửi người thương.", image: "/photos/chapter-gift.webp" },
 ];
 const allProducts = allProductsHref("vi");
 const filters = parseCatalogFilters({ sort: "newest" });
@@ -86,12 +86,12 @@ export default function TraditionalProductList({ products, categories = [] }: {
             <Link href={allProducts} className="tp-text-link">Khám phá phẩm trầm <ArrowUpRight size={17} /></Link>
             <div className="collection-chapter-note"><Leaf size={18} aria-hidden="true" /><p>Chọn từ sự thấu hiểu.<br /><span>Xem kỹ phẩm vật, rồi tìm hương hợp với mình.</span></p></div>
           </div>
-          {grouped.chapter_1.length ? <div className="collection-product-pair">{grouped.chapter_1.slice(0, 4).map(product => <ShopProductCard key={product.id} product={product} />)}</div> : <figure className="collection-mood"><Image src="/editorial/preview-bracelet.webp" alt="Mô hình vòng trầm minh họa hình dáng và sắc gỗ" fill sizes="(max-width: 767px) 92vw, 50vw" /><figcaption>Đôi nét vân gỗ. Một vẻ riêng.</figcaption></figure>}
+          {grouped.chapter_1.length ? <div className="collection-product-pair">{grouped.chapter_1.slice(0, 4).map(product => <ShopProductCard key={product.id} product={product} />)}</div> : <figure className="collection-mood"><Image src="/photos/story-wood.webp" alt="Que trầm và mảnh gỗ trầm trên mặt gỗ" fill sizes="(max-width: 767px) 92vw, 50vw" /><figcaption>Đôi nét vân gỗ. Một vẻ riêng.</figcaption></figure>}
         </div>
       </section>
 
       <div className="collection-pause">
-        <Image src="/editorial/forest.webp" alt="" fill sizes="100vw" />
+        <Image src="/photos/banner-nature.webp" alt="" fill sizes="100vw" />
         <p>Một làn hương.<br /><em>Một nhịp sống chậm.</em></p>
       </div>
 
@@ -101,7 +101,7 @@ export default function TraditionalProductList({ products, categories = [] }: {
           <div className="collection-ritual-layout">
             <article className="collection-ritual-story">
               <div><Leaf size={24} aria-hidden="true" /><h3>Mang hương về góc nhà.</h3><p>Chọn kiểu hương bạn muốn thưởng, tìm dụng cụ phù hợp và đọc hướng dẫn trước khi dùng. Một nghi thức giản đơn bắt đầu từ những lựa chọn vừa vặn.</p><Link href={shoppingLinks.ritual} className="tp-text-link">Tìm hương cho không gian <ArrowUpRight size={17} /></Link></div>
-              <div className="collection-ritual-photo"><Image src="/editorial/ritual.webp" alt="Lư gốm trong một góc thưởng trầm" fill sizes="(max-width: 767px) 92vw, 40vw" /></div>
+              <div className="collection-ritual-photo"><Image src="/photos/ritual-corner.webp" alt="Khay nụ trầm và ấm xông trong một góc thưởng trầm" fill sizes="(max-width: 767px) 92vw, 40vw" /></div>
             </article>
             {grouped.chapter_2.length ? <div className="collection-product-pair">{grouped.chapter_2.slice(0, 6).map(product => <ShopProductCard key={product.id} product={product} />)}</div> : <div className="collection-ritual-empty"><p className="shop-kicker">CÙNG CHỌN MỘT LÀN HƯƠNG</p><h3>Bắt đầu từ cách bạn muốn thưởng trầm.</h3><p>Khám phá nhang, nụ xông và phụ kiện trong danh mục, hoặc hỏi Thiên Phúc để cùng lựa chọn.</p><Link href={shoppingLinks.ritual} className="tp-text-link">Xem danh mục thưởng hương <ArrowUpRight size={17} /></Link></div>}
           </div>
@@ -112,7 +112,7 @@ export default function TraditionalProductList({ products, categories = [] }: {
         <div className="tp-container">
           <header className="collection-gift-heading"><div><p className="shop-kicker">CHƯƠNG III · TÂM GIAO</p><h2 id="chapter-three-title">Tâm giao <em>gửi trao.</em></h2></div><p>Một món quà được chọn bằng sự quan tâm.<br />Một làn hương thay lời muốn nói.</p></header>
           <div className="collection-gift-hero">
-            <div className={`collection-gift-photo ${gift ? "collection-gift-photo-product" : ""}`}><Image src={gift?.images?.[0] || "/editorial/wood.webp"} alt={gift ? giftTitle : "Làn khói nhẹ trên bề mặt gỗ mộc"} fill sizes="(max-width: 767px) 92vw, 50vw" /></div>
+            <div className={`collection-gift-photo ${gift ? "collection-gift-photo-product" : ""}`}><Image src={gift?.images?.[0] || "/photos/category-qua-tang.webp"} alt={gift ? giftTitle : "Các hộp nụ trầm Thiên Phúc"} fill sizes="(max-width: 767px) 92vw, 50vw" /></div>
             <div className="collection-gift-copy"><p className="shop-kicker">MỘT MÓN QUÀ CÓ Ý NGHĨA</p><h3>{giftTitle || "Gửi hương, gửi một lời quan tâm."}</h3><p>{gift?.translation?.short_description || "Dành tặng người thân, một người bạn hay người đã đồng hành cùng bạn. Cùng Thiên Phúc chọn phẩm trầm, cách dùng và hình thức quà phù hợp với người nhận."}</p>{giftPrice && <p className="collection-gift-price">{giftPrice.max > giftPrice.min ? "Từ " : ""}{formatVnd(giftPrice.min, "vi")}</p>}<Link href={gift ? `/products/${gift.slug}` : shoppingLinks.gift} className="shop-btn">{gift ? "Khám phá bộ quà" : "Cùng chọn món quà"}<ArrowUpRight size={17} /></Link></div>
           </div>
           {grouped.chapter_3.length > 1 && <div className="collection-gift-products">{grouped.chapter_3.slice(1, 4).map(product => <ShopProductCard key={product.id} product={product} />)}</div>}

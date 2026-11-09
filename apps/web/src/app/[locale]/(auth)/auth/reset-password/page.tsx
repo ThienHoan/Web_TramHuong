@@ -1,5 +1,7 @@
 'use client';
 
+import { Notice } from '@/components/ui/notice';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
@@ -108,7 +110,7 @@ export default function ResetPasswordPage() {
             } catch (redirectErr: unknown) {
                 console.error('[Reset Password] Error during redirect flow:', redirectErr);
                 // Even if redirect fails, show success and let user manually go to login
-                alert('Password updated successfully! Please login with your new password.');
+                toast.success(t("Đã đổi mật khẩu. Vui lòng đăng nhập bằng mật khẩu mới.", "Password updated. Please sign in with your new password."));
                 router.push('/login');
             }
         } catch (err: unknown) {
@@ -154,9 +156,7 @@ export default function ResetPasswordPage() {
                 <p className="text-gray-600 mb-6">{t("Nhập mật khẩu mới của bạn bên dưới.", "Enter your new password below.")}</p>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm">
-                        {error}
-                    </div>
+                    <Notice tone="error" className="mb-4">{error}</Notice>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">

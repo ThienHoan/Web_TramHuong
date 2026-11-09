@@ -185,7 +185,7 @@ export default function WishlistPage() {
                                     transition={{ delay: index * 0.1 }}
                                     className="group flex flex-col"
                                 >
-                                    <div className="relative aspect-[3/4] overflow-hidden bg-trad-bg-warm mb-6 rounded-sm">
+                                    <div className="relative aspect-[3/2] overflow-hidden bg-trad-bg-warm mb-6 rounded-sm">
                                         {item.product && (
                                             <>
                                                 <ProductImage

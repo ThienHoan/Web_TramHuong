@@ -169,7 +169,8 @@ export class StorageService {
     const references = await this.supabase
       .from('products')
       .select('id')
-      .contains('images', [publicUrl])
+      // products.images is jsonb, which needs a JSON literal rather than a Postgres array.
+      .contains('images', JSON.stringify([publicUrl]))
       .limit(1);
     if (references.error)
       throw new BadRequestException(

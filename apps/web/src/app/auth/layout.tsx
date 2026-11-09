@@ -36,7 +36,7 @@ export default async function AuthRootLayout({
                         <CartProvider>
                             <WishlistProvider>
                                 {children}
-                                <Toaster position="top-center" closeButton />
+                                <Toaster />
                             </WishlistProvider>
                         </CartProvider>
                     </AuthProvider>

@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { buildUrl, fetchWithAuth } from "@/services/base-http";
@@ -234,9 +235,7 @@ export default function ShipmentPreparationDialog({
             </select>
           </Label>
           {error && (
-            <p role="alert" className="text-sm text-red-700">
-              {error}
-            </p>
+            <Notice tone="error">{error}</Notice>
           )}
           <Button disabled={busy} type="submit">
             {busy

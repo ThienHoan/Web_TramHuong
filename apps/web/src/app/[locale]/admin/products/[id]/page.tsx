@@ -1,91 +1,123 @@
 'use client';
 
+import { refreshCatalog } from '@/app/actions/catalog';
 import { API_URL } from "@/services/base-http";
 
-import { useEffect, useState, use } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useRef, useState, use } from 'react';
+import { Plus, Save, X } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
 import { getCategories, setAccessToken } from '@/lib/api-client';
+import { MAX_SOURCE_IMAGE_BYTES, shrinkImageIfNeeded } from '@/lib/shrink-image';
 import { useAuth } from '@/components/providers/AuthProvider';
-import ProductImage from '@/components/ui/ProductImage';
 import { Category } from '@/lib/types';
 import { toast } from 'sonner';
-import { AppIcon } from "@/components/icons/AppIcon";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { AdminCheck, AdminFormActions, AdminFormGroup, AdminFormLoading, AdminFormPage, AdminFormSection, useAdminText } from '@/components/admin/AdminForm';
+import { emptyProduct, ProductForm } from '@/components/admin/ProductForm';
+import { ImageDropzone, ImageTile, ImageTileGrid } from '@/components/admin/ImageUploader';
 
+const MAX_IMAGES = 5;
+const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+
+type Spec = { key: string; value: string };
+type Variant = { name: string; price: number | null; original_price?: number | null; description: string };
+
+function SpecList({ title, items, onChange }: { title: string; items: Spec[]; onChange: (items: Spec[]) => void }) {
+    const { t } = useAdminText();
+    const update = (index: number, changes: Partial<Spec>) => onChange(items.map((item, i) => (i === index ? { ...item, ...changes } : item)));
+    return (
+        <AdminFormGroup
+            title={title}
+            action={<Button type="button" size="sm" variant="outline" onClick={() => onChange([...items, { key: '', value: '' }])}><Plus aria-hidden="true" />{t('Thêm', 'Add')}</Button>}
+        >
+            {items.length > 0 ? (
+                <div className="admin-form-repeat">
+                    {items.map((item, index) => (
+                        <div key={index} className="admin-form-repeat-row">
+                            <Input aria-label={t('Tên thông số', 'Specification name')} placeholder={t('Tên thông số', 'Name')} value={item.key} onChange={e => update(index, { key: e.target.value })} />
+                            <Input aria-label={t('Giá trị thông số', 'Specification value')} placeholder={t('Giá trị', 'Value')} value={item.value} onChange={e => update(index, { value: e.target.value })} />
+                            <Button type="button" size="icon" variant="ghost" aria-label={t('Xóa thông số', 'Remove specification')} onClick={() => onChange(items.filter((_, i) => i !== index))}><X aria-hidden="true" /></Button>
+                        </div>
+                    ))}
+                </div>
+            ) : <p className="admin-form-empty">{t('Chưa có thông số.', 'No specifications yet.')}</p>}
+        </AdminFormGroup>
+    );
+}
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    // Force refresh
+    const { t, locale } = useAdminText();
     const { session } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
 
-    // Form State
-    const [slug, setSlug] = useState('');
-    const [price, setPrice] = useState('');
-    const [originalPrice, setOriginalPrice] = useState('');
-    const [category, setCategory] = useState('');
-    const [style, setStyle] = useState('both');
-    const [quantity, setQuantity] = useState('0');
-    const [titleEn, setTitleEn] = useState('');
-    const [descEn, setDescEn] = useState('');
-    const [titleVi, setTitleVi] = useState('');
-    const [descVi, setDescVi] = useState('');
+    const [draft, setDraft] = useState({ ...emptyProduct, style: 'both' });
+    const [isActive, setIsActive] = useState(false);
     const [currentImages, setCurrentImages] = useState<string[]>([]);
     const [newFiles, setNewFiles] = useState<File[]>([]);
-    const [variants, setVariants] = useState<{ name: string; price: number | null; original_price?: number | null; description: string }[]>([]);
-    const [specsEn, setSpecsEn] = useState<{ key: string; value: string }[]>([]);
-    const [specsVi, setSpecsVi] = useState<{ key: string; value: string }[]>([]);
-    // const [isFeatured, setIsFeatured] = useState(false);
-    const [featuredSection, setFeaturedSection] = useState<string>('');
+    const [variants, setVariants] = useState<Variant[]>([]);
+    const [specsEn, setSpecsEn] = useState<Spec[]>([]);
+    const [specsVi, setSpecsVi] = useState<Spec[]>([]);
 
-    // Discount fields
-    const [discountPercentage, setDiscountPercentage] = useState('0');
-    const [discountStartDate, setDiscountStartDate] = useState('');
-    const [discountEndDate, setDiscountEndDate] = useState('');
+    const previews = useMemo(() => newFiles.map(file => URL.createObjectURL(file)), [newFiles]);
+    useEffect(() => () => previews.forEach(url => URL.revokeObjectURL(url)), [previews]);
+
+    const token = session?.access_token;
+    const loadedProductId = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!session) return;
+        if (!token) return;
+        setAccessToken(token);
+        getCategories(locale, true).then(data => {
+            setCategories(data);
+            setDraft(previous => ({ ...previous, category: previous.category || data[0]?.slug || '' }));
+        });
+    }, [token, locale]);
 
-        // Fetch Categories first
-        // Fetch Categories first
-        if (session.access_token) {
-            setAccessToken(session.access_token);
-            getCategories('en', true).then(data => setCategories(data));
-        }
+    // Load once per product: a token refresh must not overwrite unsaved edits.
+    useEffect(() => {
+        if (!token || loadedProductId.current === id) return;
+        loadedProductId.current = id;
 
-        // Fetch Product
         fetch(`${API_URL}/products/admin/${id}`, {
-            headers: { 'Authorization': `Bearer ${session.access_token}` },
+            headers: { 'Authorization': `Bearer ${token}` },
             cache: 'no-store'
         })
             .then(res => res.json())
             .then(data => {
-                setSlug(data.slug);
-                setPrice(data.price.toString());
-                setOriginalPrice(data.original_price?.toString() || '');
-                setQuantity(data.quantity?.toString() || '0');
                 const catSlug = (data.category && typeof data.category === 'object') ? data.category.slug : data.category;
-                setCategory(catSlug || (categories.length > 0 ? categories[0].slug : ''));
-                setStyle(data.style_affinity || 'both');
-                // setIsFeatured(!!data.is_featured);
-                setFeaturedSection(data.featured_section || (data.is_featured ? 'chapter_1' : ''));
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
+                const tEn = data.translations?.find((item: any) => item.locale === 'en');
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
+                const tVi = data.translations?.find((item: any) => item.locale === 'vi');
+
+                setDraft(previous => ({
+                    ...previous,
+                    slug: data.slug,
+                    price: data.price.toString(),
+                    originalPrice: data.original_price?.toString() || '',
+                    quantity: data.quantity?.toString() || '0',
+                    category: catSlug || previous.category,
+                    style: data.style || data.style_affinity || 'both',
+                    featuredSection: data.featured_section || (data.is_featured ? 'chapter_1' : ''),
+                    titleEn: tEn?.title || '',
+                    descEn: tEn?.description || '',
+                    titleVi: tVi?.title || '',
+                    descVi: tVi?.description || '',
+                    discountPercentage: data.discount_percentage?.toString() || '0',
+                    // Convert DB timestamps to datetime-local format
+                    discountStartDate: data.discount_start_date ? new Date(data.discount_start_date).toISOString().slice(0, 16) : '',
+                    discountEndDate: data.discount_end_date ? new Date(data.discount_end_date).toISOString().slice(0, 16) : '',
+                }));
+                setIsActive(data.is_active === true);
 
                 // Support images array primarily
-                const imgs = data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []);
-                setCurrentImages(imgs);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-                const tEn = data.translations?.find((t: any) => t.locale === 'en');
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-                const tVi = data.translations?.find((t: any) => t.locale === 'vi');
-
-                setTitleEn(tEn?.title || '');
-                setDescEn(tEn?.description || '');
-                setTitleVi(tVi?.title || '');
-                setDescVi(tVi?.description || '');
+                setCurrentImages(data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []));
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
                 const parseSpecs = (raw: any) => {
@@ -105,52 +137,47 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setSpecsVi(parseSpecs(tVi?.specifications));
                 setVariants(Array.isArray(data.variants) ? data.variants : []);
 
-                // Load discount data
-                setDiscountPercentage(data.discount_percentage?.toString() || '0');
-                // Convert DB timestamp to datetime-local format
-                if (data.discount_start_date) {
-                    const start = new Date(data.discount_start_date);
-                    setDiscountStartDate(start.toISOString().slice(0, 16));
-                }
-                if (data.discount_end_date) {
-                    const end = new Date(data.discount_end_date);
-                    setDiscountEndDate(end.toISOString().slice(0, 16));
-                }
-
                 setLoading(false);
             })
             .catch(err => {
                 console.error(err);
-                alert('Failed to load product');
+                toast.error(t('Không thể tải sản phẩm', 'Failed to load product'));
                 router.push('/admin/products');
             });
 
-    }, [id, session, router, categories]);
+    }, [id, token, router, t]);
 
+    const addFiles = (files: File[]) => {
+        const accepted = files.filter(file => IMAGE_TYPES.has(file.type) && file.size <= MAX_SOURCE_IMAGE_BYTES);
+        if (accepted.length < files.length) toast.error(t('Chỉ nhận ảnh JPEG, PNG, WebP, AVIF tối đa 50 MB.', 'Only JPEG, PNG, WebP or AVIF images up to 50 MB are accepted.'));
+        const room = Math.max(0, MAX_IMAGES - currentImages.length - newFiles.length);
+        if (accepted.length > room) toast.error(t(`Mỗi sản phẩm tối đa ${MAX_IMAGES} ảnh.`, `Each product can have up to ${MAX_IMAGES} images.`));
+        setNewFiles([...newFiles, ...accepted.slice(0, room)]);
+    };
 
-
-    // ...
+    const updateVariant = (index: number, changes: Partial<Variant>) => setVariants(variants.map((variant, i) => (i === index ? { ...variant, ...changes } : variant)));
+    const nullableNumber = (value: string) => (value === '' ? null : Number(value));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session) return;
         setSubmitting(true);
-        const toastId = toast.loading('Updating product...');
+        const toastId = toast.loading(t('Đang lưu sản phẩm…', 'Saving product…'));
 
         try {
             const formData = new FormData();
-            formData.append('slug', slug);
-            formData.append('price', price);
-            formData.append('original_price', originalPrice);
-            formData.append('quantity', quantity);
-            formData.append('category', category);
-            formData.append('style', style);
-            formData.append('title_en', titleEn);
-            formData.append('desc_en', descEn);
-            formData.append('title_vi', titleVi);
-            formData.append('desc_vi', descVi);
-            // formData.append('is_featured', String(isFeatured));
-            formData.append('featured_section', featuredSection || '');
+            formData.append('slug', draft.slug);
+            formData.append('price', draft.price);
+            formData.append('original_price', draft.originalPrice);
+            formData.append('quantity', draft.quantity);
+            formData.append('category', draft.category);
+            formData.append('style', draft.style);
+            formData.append('title_en', draft.titleEn);
+            formData.append('desc_en', draft.descEn);
+            formData.append('title_vi', draft.titleVi);
+            formData.append('desc_vi', draft.descVi);
+            formData.append('featured_section', draft.featuredSection || '');
+            formData.append('is_active', String(isActive));
 
             formData.append('variants', JSON.stringify(variants));
 
@@ -160,12 +187,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             formData.append('specifications_vi', JSON.stringify(specsViObj));
 
             // Discount fields
-            formData.append('discount_percentage', discountPercentage);
-            if (discountStartDate) formData.append('discount_start_date', discountStartDate);
-            if (discountEndDate) formData.append('discount_end_date', discountEndDate);
+            formData.append('discount_percentage', draft.discountPercentage);
+            if (draft.discountStartDate) formData.append('discount_start_date', draft.discountStartDate);
+            if (draft.discountEndDate) formData.append('discount_end_date', draft.discountEndDate);
 
             formData.append('keep_images', JSON.stringify(currentImages));
-            newFiles.forEach(f => formData.append('files', f));
+            for (const file of newFiles) formData.append('files', await shrinkImageIfNeeded(file));
 
             // Note: Patch request in NestJS with FileInterceptor requires Multipart
             const res = await fetch(`${API_URL}/products/${id}`, {
@@ -178,362 +205,109 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             });
 
             if (res.ok) {
-                toast.success('Product updated successfully', { id: toastId });
+                await refreshCatalog().catch(() => undefined);
+                toast.success(t('Đã lưu sản phẩm', 'Product saved'), { id: toastId });
                 router.push('/admin/products');
                 router.refresh();
             } else {
                 const err = await res.json();
-                toast.error(`Error: ${err.message || 'Unknown error'}`, { id: toastId });
+                toast.error(err.message || t('Không thể lưu sản phẩm', 'Could not save product'), { id: toastId });
             }
         } catch {
-            toast.error('Failed to update product', { id: toastId });
+            toast.error(t('Không thể lưu sản phẩm', 'Could not save product'), { id: toastId });
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <AdminFormLoading />;
 
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow">
-            <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Core Info */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Slug</label>
-                        <input required type="text" className="w-full border p-2 rounded-md"
-                            value={slug} onChange={e => setSlug(e.target.value)} />
+        <AdminFormPage
+            backHref="/admin/products"
+            backLabel={t('Sản phẩm', 'Products')}
+            title={t('Sửa sản phẩm', 'Edit product')}
+            description={t('Cập nhật nội dung, hình ảnh và thông tin bán hàng của sản phẩm.', 'Update the product’s content, images and selling details.')}
+        >
+            <ProductForm
+                value={draft}
+                onChange={changes => setDraft(previous => ({ ...previous, ...changes }))}
+                categories={categories}
+                busy={submitting}
+                onSubmit={handleSubmit}
+                showOriginalPrice
+                status={<AdminCheck id="product-active" label={t('Hiển thị trên website', 'Show on website')} hint={t('Sản phẩm cần ít nhất 1 ảnh để hiển thị.', 'A product needs at least 1 image to be shown.')} checked={isActive} onChange={e => setIsActive(e.target.checked)} />}
+                images={
+                    <div className="space-y-4">
+                        <ImageDropzone onFiles={addFiles} count={currentImages.length + newFiles.length} maxImages={MAX_IMAGES} disabled={submitting} />
+                        {(currentImages.length > 0 || newFiles.length > 0) && (
+                            <ImageTileGrid>
+                                {currentImages.map((image, index) => (
+                                    <ImageTile
+                                        key={image}
+                                        src={image}
+                                        index={index}
+                                        disabled={submitting}
+                                        onRemove={() => setCurrentImages(currentImages.filter(item => item !== image))}
+                                        onMakeMain={() => setCurrentImages([image, ...currentImages.filter(item => item !== image)])}
+                                    />
+                                ))}
+                                {newFiles.map((file, index) => (
+                                    <ImageTile
+                                        key={previews[index]}
+                                        src={previews[index]}
+                                        index={currentImages.length + index}
+                                        disabled={submitting}
+                                        onRemove={() => setNewFiles(newFiles.filter(item => item !== file))}
+                                    />
+                                ))}
+                            </ImageTileGrid>
+                        )}
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Price ($)</label>
-                        <div className="flex gap-2">
-                            <input required type="number" step="0.01" className="w-1/2 border p-2 rounded-md" placeholder="Sale Price"
-                                value={price} onChange={e => setPrice(e.target.value)} />
-                            <input type="number" step="0.01" className="w-1/2 border p-2 rounded-md" placeholder="Orig. Price (Optional)"
-                                value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Category</label>
-                        <select
-                            className="w-full border p-2 rounded-md capitalize"
-                            value={category}
-                            onChange={e => setCategory(e.target.value)}
-                            required
-                        >
-                            <option value="" disabled>Select Category</option>
-                            {categories.map(cat => {
-                                const name = cat.translations?.find(t => t.locale === 'en')?.name || cat.slug;
-                                return (
-                                    <option key={cat.id} value={cat.slug}>{name}</option>
-                                );
-                            })}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Style</label>
-                        <select className="w-full border p-2 rounded-md" value={style} onChange={e => setStyle(e.target.value)}>
-                            <option value="zen">Zen (Minimal)</option>
-                            <option value="traditional">Traditional (Vietnam)</option>
-                            <option value="both">Both</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-                        <input
-                            type="number"
-                            placeholder="0"
-                            className="w-full border p-2 rounded-md"
-                            value={quantity}
-                            onChange={e => setQuantity(e.target.value)}
-                            required
-                            min="0"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Display Section (Home Page)</label>
-                        <select
-                            className="w-full border p-2 rounded-md"
-                            value={featuredSection}
-                            onChange={e => setFeaturedSection(e.target.value)}
-                        >
-                            <option value="">Standard (Default)</option>
-                            <option value="chapter_1">⭐️ Chapter I: Featured / High End</option>
-                            <option value="chapter_2">🌿 Chapter II: Daily Ritual</option>
-                            <option value="chapter_3">🎁 Chapter III: Gift Sets</option>
-                        </select>
-                        <p className="text-xs text-gray-500 mt-1">Select where this product should appear on the homepage.</p>
-                    </div>
-                </div>
-
-                {/* English Trans */}
-                <div className="border-t pt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase">English Translation</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Title (EN)</label>
-                            <input required type="text" className="w-full border p-2 rounded-md"
-                                value={titleEn} onChange={e => setTitleEn(e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description (EN)</label>
-                            <textarea className="w-full border p-2 rounded-md" rows={3}
-                                value={descEn} onChange={e => setDescEn(e.target.value)} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Vietnamese Trans */}
-                <div className="border-t pt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase">Vietnamese Translation</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Title (VI)</label>
-                            <input required type="text" className="w-full border p-2 rounded-md"
-                                value={titleVi} onChange={e => setTitleVi(e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description (VI)</label>
-                            <textarea className="w-full border p-2 rounded-md" rows={3}
-                                value={descVi} onChange={e => setDescVi(e.target.value)} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Discount Section */}
-                <div className="border-t pt-4 mt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-700 uppercase">⚡ Giảm Giá & Khuyến Mãi</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Giảm giá (%)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                className="w-full border p-2 rounded-md"
-                                value={discountPercentage}
-                                onChange={e => setDiscountPercentage(e.target.value)}
-                                placeholder="0"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">0-100%</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Bắt đầu (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                className="w-full border p-2 rounded-md"
-                                value={discountStartDate}
-                                onChange={e => setDiscountStartDate(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Kết thúc (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                className="w-full border p-2 rounded-md"
-                                value={discountEndDate}
-                                onChange={e => setDiscountEndDate(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Preview */}
-                    {parseInt(discountPercentage) > 0 && (
-                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700 mb-2">📊 Preview giá bán:</p>
-                            <div className="flex items-center gap-3">
-                                <span className="text-gray-500 line-through text-lg">
-                                    {parseFloat(price || '0').toLocaleString()}₫
-                                </span>
-                                <span className="text-2xl font-bold text-red-600">
-                                    {(parseFloat(price || '0') * (1 - parseInt(discountPercentage) / 100)).toLocaleString()}₫
-                                </span>
-                                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                    -{discountPercentage}%
-                                </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mt-2">
-                                💰 Tiết kiệm: {(parseFloat(price || '0') * parseInt(discountPercentage) / 100).toLocaleString()}₫
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Image */}
-                {/* Images */}
-                <div className="border-t pt-4">
-                    <label className="block text-sm font-medium mb-3">Product Images</label>
-
-                    {/* Current Images */}
-                    {currentImages.length > 0 && (
-                        <div className="mb-4">
-                            <p className="text-xs text-gray-500 mb-2">Current Images (First is Main)</p>
-                            <div className="flex flex-wrap gap-4">
-                                {currentImages.map((img, idx) => (
-                                    <div key={img} className="relative group w-24 h-24 border rounded-xl overflow-hidden">
-                                        <ProductImage src={img} alt={`Img ${idx}`} />
-                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                            {/* Set Main */}
-                                            {idx !== 0 && (
-                                                <button type="button" onClick={() => {
-                                                    const newOrder = [img, ...currentImages.filter(i => i !== img)];
-                                                    setCurrentImages(newOrder);
-                                                }} className="text-white hover:text-yellow-400" title="Set as Main">
-                                                    <AppIcon name="star" className="" />
-                                                </button>
-                                            )}
-                                            {idx === 0 && <AppIcon name="star" className="text-yellow-400" />}
-                                            {/* Delete */}
-                                            <button type="button" onClick={() => setCurrentImages(currentImages.filter(i => i !== img))}
-                                                className="text-white hover:text-red-400" title="Remove">
-                                                <AppIcon name="delete" className="" />
-                                            </button>
-                                        </div>
+                }
+                extraMain={<>
+                    <AdminFormSection
+                        id="product-variants"
+                        title={t('Phân loại hàng', 'Variants')}
+                        description={t('Ví dụ các kích thước 30cm, 40cm. Để trống giá để dùng giá bán chính.', 'For example sizes such as 30cm or 40cm. Leave the price blank to use the main price.')}
+                        action={<Button type="button" size="sm" variant="outline" onClick={() => setVariants([...variants, { name: '', price: 0, description: '' }])}><Plus aria-hidden="true" />{t('Thêm phân loại', 'Add variant')}</Button>}
+                    >
+                        {variants.length > 0 ? (
+                            <div className="admin-form-repeat">
+                                {variants.map((variant, index) => (
+                                    <div key={index} className="admin-form-repeat-row admin-form-repeat-row--variant">
+                                        <Input aria-label={t('Tên phân loại', 'Variant name')} placeholder={t('Tên, ví dụ 30cm', 'Name, e.g. 30cm')} value={variant.name} onChange={e => updateVariant(index, { name: e.target.value })} />
+                                        <Input aria-label={t('Giá bán', 'Price')} type="number" min="0" placeholder={t('Giá bán', 'Price')} value={variant.price ?? ''} onChange={e => updateVariant(index, { price: nullableNumber(e.target.value) })} />
+                                        <Input aria-label={t('Giá gốc', 'Original price')} type="number" min="0" placeholder={t('Giá gốc', 'Original price')} value={variant.original_price ?? ''} onChange={e => updateVariant(index, { original_price: nullableNumber(e.target.value) })} />
+                                        <Input aria-label={t('Mô tả ngắn', 'Short description')} placeholder={t('Mô tả ngắn', 'Short description')} value={variant.description} onChange={e => updateVariant(index, { description: e.target.value })} />
+                                        <Button type="button" size="icon" variant="ghost" aria-label={t('Xóa phân loại', 'Remove variant')} onClick={() => setVariants(variants.filter((_, i) => i !== index))}><X aria-hidden="true" /></Button>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
-
-                    {/* New Files */}
-                    <div className="mb-2">
-                        <input type="file" accept="image/*" multiple
-                            onChange={e => {
-                                if (e.target.files) {
-                                    setNewFiles([...newFiles, ...Array.from(e.target.files)]);
-                                }
-                            }}
-                            className="w-full border p-2 rounded-md bg-gray-50" />
-                    </div>
-                    {newFiles.length > 0 && (
-                        <div className="flex flex-wrap gap-4">
-                            {newFiles.map((file, idx) => (
-                                <div key={idx} className="relative w-20 h-20 border rounded-xl overflow-hidden">
-                                    <Image src={URL.createObjectURL(file)} alt="Preview" width={80} height={80} className="w-full h-full object-cover" />
-                                    <button aria-label="Đóng" type="button" onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
-                                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl">
-                                        <AppIcon name="close" className="text-xs" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* VARIANTS EDITOR */}
-                <div className="border-t pt-4">
-                    <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
-                        Variants & Options
-                        <button type="button" onClick={() => setVariants([...variants, { name: '', price: 0, description: '' }])}
-                            className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add Variant</button>
-                    </h3>
-                    <div className="space-y-2">
-                        {variants.map((v, idx) => (
-                            <div key={idx} className="flex gap-2 items-start">
-                                <input type="text" placeholder="Name (e.g. 30cm)" className="flex-1 border p-2 rounded-md text-sm"
-                                    value={v.name} onChange={e => {
-                                        const newV = [...variants]; newV[idx].name = e.target.value; setVariants(newV);
-                                    }} />
-                                <input type="number" placeholder="Price (Empty = Base)" className="w-24 border p-2 rounded-md text-sm"
-                                    value={v.price ?? ''} onChange={e => {
-                                        const val = e.target.value;
-                                        const newV = [...variants];
-                                        newV[idx].price = val === '' ? null : Number(val);
-                                        setVariants(newV);
-                                    }} />
-                                <input type="number" placeholder="Orig. Price" className="w-24 border p-2 rounded-md text-sm"
-                                    value={v.original_price ?? ''} onChange={e => {
-                                        const val = e.target.value;
-                                        const newV = [...variants];
-                                        newV[idx].original_price = val === '' ? null : Number(val);
-                                        setVariants(newV);
-                                    }} />
-                                <input type="text" placeholder="Desc/Short" className="flex-1 border p-2 rounded-md text-sm"
-                                    value={v.description} onChange={e => {
-                                        const newV = [...variants]; newV[idx].description = e.target.value; setVariants(newV);
-                                    }} />
-                                <button aria-label="Xóa" type="button" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
-                                    className="p-2 text-red-500 hover:bg-red-50 rounded-md">
-                                    <AppIcon name="delete" className="text-lg" />
-                                </button>
-                            </div>
-                        ))}
-                        {variants.length === 0 && <p className="text-sm text-gray-400 italic">No variants defined.</p>}
-                    </div>
-                </div>
-
-                {/* SPECIFICATIONS EDITOR */}
-                <div className="border-t pt-4 grid grid-cols-2 gap-8">
-                    {/* Specs EN */}
-                    <div>
-                        <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
-                            Specs (English)
-                            <button type="button" onClick={() => setSpecsEn([...specsEn, { key: '', value: '' }])}
-                                className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add</button>
-                        </h3>
-                        <div className="space-y-2">
-                            {specsEn.map((s, idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded-md text-sm"
-                                        value={s.key} onChange={e => { const n = [...specsEn]; n[idx].key = e.target.value; setSpecsEn(n); }} />
-                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded-md text-sm"
-                                        value={s.value} onChange={e => { const n = [...specsEn]; n[idx].value = e.target.value; setSpecsEn(n); }} />
-                                    <button type="button" onClick={() => setSpecsEn(specsEn.filter((_, i) => i !== idx))} className="text-red-500">×</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    {/* Specs VI */}
-                    <div>
-                        <h3 className="font-bold mb-3 text-sm text-gray-500 uppercase flex justify-between items-center">
-                            Specs (Vietnamese)
-                            <button type="button" onClick={() => setSpecsVi([...specsVi, { key: '', value: '' }])}
-                                className="text-xs bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200">+ Add</button>
-                        </h3>
-                        <div className="space-y-2">
-                            {specsVi.map((s, idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <input type="text" placeholder="Key" className="w-1/3 border p-1 rounded-md text-sm"
-                                        value={s.key} onChange={e => { const n = [...specsVi]; n[idx].key = e.target.value; setSpecsVi(n); }} />
-                                    <input type="text" placeholder="Value" className="flex-1 border p-1 rounded-md text-sm"
-                                        value={s.value} onChange={e => { const n = [...specsVi]; n[idx].value = e.target.value; setSpecsVi(n); }} />
-                                    <button type="button" onClick={() => setSpecsVi(specsVi.filter((_, i) => i !== idx))} className="text-red-500">×</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="pt-4 flex gap-4">
-                    <button type="submit" disabled={submitting}
-                        className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50">
-                        {submitting ? 'Updating...' : 'Update Product'}
-                    </button>
-                    <button type="button" onClick={() => router.back()} className="px-6 py-2 border rounded-md hover:bg-gray-50">
-                        Cancel
-                    </button>
-                </div>
-            </form >
+                        ) : <p className="admin-form-empty">{t('Chưa có phân loại.', 'No variants yet.')}</p>}
+                    </AdminFormSection>
+                    <AdminFormSection id="product-specs" title={t('Thông số sản phẩm', 'Specifications')}>
+                        <SpecList title={t('Tiếng Việt', 'Vietnamese')} items={specsVi} onChange={setSpecsVi} />
+                        <SpecList title={t('Tiếng Anh', 'English')} items={specsEn} onChange={setSpecsEn} />
+                    </AdminFormSection>
+                </>}
+                actions={<AdminFormActions
+                    cancelHref="/admin/products"
+                    note={t('Kiểm tra thông tin trước khi lưu sản phẩm.', 'Review the details before saving the product.')}
+                    submitLabel={t('Lưu thay đổi', 'Save changes')}
+                    busyLabel={t('Đang lưu…', 'Saving…')}
+                    busy={submitting}
+                    disabled={!draft.category}
+                    icon={<Save aria-hidden="true" />}
+                />}
+            />
 
             {/* SEED REVIEW SECTION */}
             < div className="mt-12 border-t pt-8" >
                 <h2 className="text-xl font-bold mb-6 text-gray-800">Seed Fake Review (Buffing)</h2>
                 <SeedReviewForm productId={id} />
             </div >
-        </div >
+        </AdminFormPage>
     );
 }
 

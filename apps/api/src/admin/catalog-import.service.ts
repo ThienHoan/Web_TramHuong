@@ -148,7 +148,9 @@ export class CatalogImportService {
         if (!available.has(row.data.category || ''))
           row.errors.push('Danh mục chưa tồn tại. Hãy nhập danh mục trước.');
         if (row.action === 'create' && !row.data.images.length)
-          row.errors.push('Sản phẩm mới cần ít nhất một ảnh');
+          row.warnings.push(
+            'Chưa có ảnh: sản phẩm sẽ ở trạng thái ẩn cho tới khi thêm ảnh và kích hoạt',
+          );
         if (row.action === 'update' && !row.data.images.length)
           row.warnings.push('Giữ nguyên ảnh hiện tại');
         for (const source of row.data.images) {
@@ -270,8 +272,6 @@ export class CatalogImportService {
         .maybeSingle();
       if (category.error || !category.data)
         throw new BadRequestException('Danh mục không tồn tại');
-      if (!existing.data && !data.images.length)
-        throw new BadRequestException('Sản phẩm mới cần ít nhất một ảnh');
     }
     const uploaded: { url: string; path: string; reused?: boolean }[] = [];
     let cleanup = true;
@@ -305,6 +305,11 @@ export class CatalogImportService {
       if (error) {
         if (/^(PGRST|22|23|40)/.test(error.code || '')) cleanup = true;
         if (error.code === 'PGRST202') throw configurationError();
+        // The previous SQL function still refuses products without images.
+        if (error.message?.includes('Product image required'))
+          throw new BadRequestException(
+            'Database chưa được cập nhật để nhập sản phẩm chưa có ảnh. Hãy chạy lại admin-catalog-import.sql.',
+          );
         throw new BadRequestException(
           'Không thể lưu dòng nhập: ' + error.message,
         );

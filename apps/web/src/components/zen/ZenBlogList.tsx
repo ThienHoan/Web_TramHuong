@@ -93,7 +93,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                     <div className="w-full lg:w-3/5 h-[400px] lg:h-[500px] overflow-hidden relative">
                                         <div className="absolute inset-0 bg-black/10 z-10 transition-opacity group-hover:bg-black/0"></div>
                                         <Image
-                                            src={featuredPost.cover_image || '/editorial/forest.webp'}
+                                            src={featuredPost.cover_image || '/photos/journal.webp'}
                                             alt={featuredPost.title}
                                             fill
                                             className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -168,7 +168,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                 <Link key={post.id} href={`/blog/${post.slug}`} className="group flex flex-col gap-4 cursor-pointer">
                                     <div className="overflow-hidden rounded-xl aspect-[4/3] w-full bg-zen-100 relative">
                                         <Image
-                                            src={post.cover_image || '/editorial/ritual.webp'}
+                                            src={post.cover_image || '/photos/journal-2.webp'}
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"

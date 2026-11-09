@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useRef, useState } from "react";
 import {
   FileSpreadsheet,
@@ -29,6 +30,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { API_URL } from "@/services/base-http";
+import {
+  MAX_SOURCE_IMAGE_BYTES,
+  shrinkImageIfNeeded,
+} from "@/lib/shrink-image";
 
 type Resource = "products" | "categories";
 interface RowData {
@@ -155,7 +160,7 @@ export default function CatalogImportDialog({
     const rejected: string[] = [];
     for (const file of Array.from(files)) {
       if (
-        file.size > 5 * 1024 * 1024 ||
+        file.size > MAX_SOURCE_IMAGE_BYTES ||
         !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(
           file.type,
         )
@@ -232,13 +237,14 @@ export default function CatalogImportDialog({
         body.append("mode", mode);
         body.append("request_id", row.requestId!);
         body.append("row", JSON.stringify(row.data));
-        row.data.images.forEach((source) => {
-          if (!source.startsWith("https://")) {
-            const file = assets.get(fileKey(source));
-            if (file) body.append("images", file, file.name);
-          }
-        });
         try {
+          for (const source of row.data.images) {
+            if (source.startsWith("https://")) continue;
+            const file = assets.get(fileKey(source));
+            if (!file) continue;
+            const ready = await shrinkImageIfNeeded(file);
+            body.append("images", ready, ready.name);
+          }
           const result = (await (await request("row", body)).json()) as {
             action: "created" | "updated" | "skipped";
           };
@@ -395,8 +401,8 @@ export default function CatalogImportDialog({
                   </strong>
                   <span>
                     {t(
-                      "Tên file khớp cột anh_1 … anh_5; mỗi ảnh ≤ 5 MB.",
-                      "Match filenames in anh_1 … anh_5; up to 5 MB each.",
+                      "Không bắt buộc. Tên file khớp cột anh_1 … anh_5; ảnh lớn sẽ tự thu nhỏ.",
+                      "Optional. Match filenames in anh_1 … anh_5; large photos are shrunk automatically.",
                     )}
                   </span>
                   <input
@@ -451,8 +457,8 @@ export default function CatalogImportDialog({
             {resource === "products" && (
               <p className="admin-import-note">
                 {t(
-                  "Có thể dùng link HTTPS hoặc link từng ảnh Google Drive có quyền tải. Hệ thống sẽ nén ảnh WebP, tạo ảnh thu nhỏ và lưu về Supabase. Ảnh HEIC cần chuyển sang JPEG trước khi chọn.",
-                  "Public HTTPS and downloadable Google Drive image links are supported. Images are optimized to WebP with thumbnails and saved to Supabase. Convert HEIC photos to JPEG first.",
+                  "Có thể để trống cột ảnh: sản phẩm mới sẽ ở trạng thái ẩn, thêm ảnh rồi kích hoạt sau. Cũng có thể dùng link HTTPS hoặc link từng ảnh Google Drive có quyền tải. Hệ thống sẽ nén ảnh WebP, tạo ảnh thu nhỏ và lưu về Supabase. Ảnh HEIC cần chuyển sang JPEG trước khi chọn.",
+                  "Image columns may be left blank: new products stay hidden until you add images and activate them. Public HTTPS and downloadable Google Drive image links are also supported. Images are optimized to WebP with thumbnails and saved to Supabase. Convert HEIC photos to JPEG first.",
                 )}
               </p>
             )}
@@ -497,32 +503,26 @@ export default function CatalogImportDialog({
               </Button>
             </div>
             {mode === "update" && (
-              <p className="admin-import-warning">
+              <Notice tone="warning" className="mt-3">
                 {t(
                   "Chế độ cập nhật sẽ ghi đè tên, giá, tồn kho và danh mục. Ảnh, mô tả để trống sẽ giữ nguyên. Biến thể, SEO và các trường khác không thay đổi.",
                   "Update mode replaces names, prices, inventory and category. Empty images/descriptions preserve existing values. Variants, SEO and other fields remain unchanged.",
                 )}
-              </p>
+              </Notice>
             )}
             {error && (
-              <div className="admin-import-error" role="alert">
-                <AlertCircle size={17} />
-                <span>{error}</span>
-              </div>
+              <Notice tone="error" className="mt-4">{error}</Notice>
             )}
             {preview && (
               <>
                 {!preview.configured && (
-                  <div className="admin-import-error" role="alert">
-                    <AlertCircle size={17} />
-                    <span>
+                  <Notice tone="error" className="mt-4">
                       {(!en && preview.configurationMessage) ||
                         t(
                           "Chức năng nhập chưa được cấu hình trên database. Cần áp dụng file SQL nhập danh mục trước khi xác nhận.",
                           "Database import is not configured yet. Apply the catalog import migration before confirming.",
                         )}
-                    </span>
-                  </div>
+                    </Notice>
                 )}
                 <div className="admin-import-summary">
                   <span>

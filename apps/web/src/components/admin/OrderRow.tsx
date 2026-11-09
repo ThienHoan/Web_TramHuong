@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 
@@ -43,14 +44,21 @@ export default function OrderRow({ order, onStatusUpdate }: OrderRowProps) {
     const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newStatus = e.target.value;
 
-        // Confirmation for Cancellation
+        const apply = async () => {
+            setIsLoading(true);
+            try { await onStatusUpdate(order.id, newStatus); } finally { setIsLoading(false); }
+        };
+
+        // Cancelling restocks the items, so it waits for an explicit confirmation.
         if (newStatus === 'CANCELED') {
-            const confirmed = window.confirm('Are you sure you want to CANCEL this order? This will RESTOCK the items.');
-            if (!confirmed) return;
+            toast.warning(en ? 'Cancel this order and restock its items?' : 'Hủy đơn này và hoàn lại tồn kho?', {
+                duration: 10000,
+                action: { label: en ? 'Cancel order' : 'Hủy đơn', onClick: () => void apply() },
+            });
+            return;
         }
 
-        setIsLoading(true);
-        try { await onStatusUpdate(order.id, newStatus); } finally { setIsLoading(false); }
+        await apply();
     };
 
     return (

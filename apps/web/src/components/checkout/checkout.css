@@ -4,7 +4,7 @@
   --checkout-ink: var(--brand-ink, #302e28);
   --checkout-line: #e2e3d9;
   --checkout-muted: #6d7269;
-  --checkout-error: #a83232;
+  --checkout-error: var(--status-error);
   background: var(--checkout-paper);
   color: var(--checkout-ink);
   min-height: 70vh;
@@ -230,15 +230,6 @@
   color: var(--checkout-error);
   font-size: 12px;
   line-height: 1.6;
-}
-.checkout-error {
-  border: 1px solid #e5c2bf;
-  background: #fff7f5;
-  color: var(--checkout-error);
-  padding: 13px 16px;
-  border-radius: var(--ui-radius-control);
-  font-size: 13px;
-  line-height: 1.65;
 }
 .checkout-primary {
   width: 100%;

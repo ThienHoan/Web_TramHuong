@@ -1,6 +1,7 @@
 
 'use client';
 
+import { Notice } from '@/components/ui/notice';
 import { LegalConsent } from '@/components/legal/LegalConsent';
 import { legalAcceptance } from '@/lib/legal';
 import { Link } from '@/i18n/routing';
@@ -194,7 +195,7 @@ export default function LoginPage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
                 <div className="atelier-login-form relative w-full max-w-md">
                     <div className="bg-white dark:bg-[#1e150f] rounded-xl shadow-xl border border-[#e8dbce] dark:border-[#3e2b1e] overflow-hidden">
-                        <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("/editorial/preview-ritual.webp")' }}>
+                        <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("/photos/login.webp")' }}>
                             <div className="absolute bottom-4 left-6">
                                 <h1 className="text-2xl font-bold text-white tracking-wide shadow-black drop-shadow-md">
                                     {showCheckEmail ? t('Kiểm tra Email', 'Check your email') : (mode === 'LOGIN' ? t('Đăng nhập', 'Sign in') : mode === 'SIGNUP' ? t('Đăng ký', 'Sign up') : t('Quên mật khẩu', 'Forgot password'))}
@@ -225,15 +226,10 @@ export default function LoginPage() {
                             ) : (
                                 <>
                                     {messageParam === 'password_reset_success' && (
-                                        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-3 rounded-xl mb-4 text-sm font-medium border border-green-200 dark:border-green-800">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg">✅</span>
-                                                <span>{t("Mật khẩu đã được đặt lại. Vui lòng đăng nhập bằng mật khẩu mới.", "Your password has been reset. Please sign in with the new one.")}</span>
-                                            </div>
-                                        </div>
+                                        <Notice tone="success" className="mb-4">{t("Mật khẩu đã được đặt lại. Vui lòng đăng nhập bằng mật khẩu mới.", "Your password has been reset. Please sign in with the new one.")}</Notice>
                                     )}
                                     {error && (
-                                        <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm font-medium border border-red-100">
+                                        <Notice tone="error" className="mb-4">
                                             {error === 'EMAIL_EXISTS' ? (
                                                 <>
                                                     <p>{t("Email này đã được đăng ký. Bạn có thể:", "This email is already registered. You can:")}</p>
@@ -241,15 +237,15 @@ export default function LoginPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMode('LOGIN'); setError(null); }}
-                                                            className="text-xs underline font-bold hover:text-red-700"
+                                                            
                                                         >
                                                             → {t("Đăng nhập ngay", "Sign in")}
                                                         </button>
-                                                        <span className="text-red-400">•</span>
+                                                        <span aria-hidden="true">•</span>
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
-                                                            className="text-trad-primary hover:underline font-medium text-sm"
+                                                            
                                                         >
                                                             → {t("Quên mật khẩu?", "Forgot password?")}
                                                         </button>
@@ -258,7 +254,7 @@ export default function LoginPage() {
                                             ) : (
                                                 error
                                             )}
-                                        </div>
+                                        </Notice>
                                     )}
                                     <form onSubmit={handleAuth} className="space-y-6">
                                         <div className="space-y-2">

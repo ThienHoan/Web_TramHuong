@@ -1,5 +1,6 @@
 'use client';
 
+import { Notice } from '@/components/ui/notice';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -94,7 +95,7 @@ export default function PartnershipPage() {
             <ShopHeader />
             <main className="flex flex-1 flex-col">
                 <section className="relative flex min-h-[380px] items-end overflow-hidden lg:min-h-[460px]">
-                    <Image src="/editorial/forest.webp" alt="" fill priority sizes="100vw" className="object-cover" />
+                    <Image src="/photos/partners.webp" alt="" fill priority sizes="100vw" className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1f2b25]/85 via-[#1f2b25]/35 to-transparent" />
                     <div className="relative z-10 mx-auto w-full max-w-[1120px] px-5 pb-10 pt-16 lg:pb-14">
                         <p className="shop-eyebrow !text-[#d4c29c]">{t('Hợp tác', 'Partnership')}</p>
@@ -156,7 +157,7 @@ export default function PartnershipPage() {
                         </label>
                         <LegalConsent purpose="partnership" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
                         <ContactProtection protection={protection} locale={en ? 'en' : 'vi'} disabled={isSubmitting} />
-                        {submissionError && <p role="alert" className="shop-error">{submissionError}</p>}
+                        {submissionError && <Notice tone="error">{submissionError}</Notice>}
                         <button type="submit" disabled={isSubmitting || !privacyAccepted || !protection.canSubmit} className="w-full">
                             {isSubmitting ? t('Đang gửi…', 'Sending…') : t('Gửi đăng ký', 'Send application')}
                         </button>

@@ -75,7 +75,7 @@ export function ProductQuickView({
           src={product.images?.[0] || "/placeholder.png"}
           alt={title}
           fill
-          sizes="(max-width: 767px) 90vw, 400px"
+          sizes="(max-width: 767px) 90vw, 600px"
         />
       </div>
       <div className="tp-quick-copy">

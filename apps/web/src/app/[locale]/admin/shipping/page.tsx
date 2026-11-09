@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useCallback, useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { Truck, RefreshCw, Plus, ArrowUpRight } from "lucide-react";
@@ -402,12 +403,7 @@ export default function ShippingAdminPage() {
       )}
       {metrics && <LogisticsReport metrics={metrics} en={en} />}
       {error && (
-        <div
-          role="alert"
-          className="my-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-        >
-          {error}
-        </div>
+        <Notice tone="error" className="my-4">{error}</Notice>
       )}
       <div className="my-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
@@ -727,12 +723,7 @@ export default function ShippingAdminPage() {
               {en ? "Active" : "Đang hoạt động"}
             </Label>
             {configError && (
-              <p
-                role="alert"
-                className="text-sm text-destructive sm:col-span-2"
-              >
-                {configError}
-              </p>
+              <Notice tone="error" className="sm:col-span-2">{configError}</Notice>
             )}
             <Button type="submit" disabled={busy} className="sm:col-span-2">
               {en ? "Save" : "Lưu cấu hình"}

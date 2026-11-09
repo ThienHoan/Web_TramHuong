@@ -14,7 +14,6 @@ interface Division {
     name: string;
 }
 
-import { Alert } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AppIcon } from "@/components/icons/AppIcon";
 import { useBilingual } from '@/hooks/useBilingual';
@@ -152,31 +151,11 @@ export default function ProfilePage() {
         try {
             await updateProfile(formData);
             await refreshProfile();
-            toast.custom((toastId) => (
-                <Alert
-                    variant="success"
-                    size="sm"
-                    title={t("Thành công", "Done")}
-                    className="w-[300px] bg-white border-none shadow-xl"
-                    onClose={() => toast.dismiss(toastId)}
-                >
-                    {t("Đã cập nhật hồ sơ.", "Your profile has been updated.")}
-                </Alert>
-            ));
+            toast.success(t("Đã cập nhật hồ sơ.", "Your profile has been updated."));
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // router.refresh(); // Removed to prevent session kick and delay
         } catch (error: unknown) {
-            toast.custom((toastId) => (
-                <Alert
-                    variant="destructive"
-                    size="sm"
-                    title={t("Lỗi", "Error")}
-                    className="w-[300px] bg-white border-none shadow-xl"
-                    onClose={() => toast.dismiss(toastId)}
-                >
-                    {error instanceof Error ? error.message : t("Cập nhật thất bại", "Could not update your profile")}
-                </Alert>
-            ));
+            toast.error(error instanceof Error ? error.message : t("Cập nhật thất bại", "Could not update your profile"));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } finally {
             setSaving(false);
@@ -292,9 +271,9 @@ export default function ProfilePage() {
                         <div className="bg-white dark:bg-stone-900 rounded-xl shadow-soft border border-trad-border-warm overflow-hidden h-full flex flex-col">
                             <div className="relative h-48 w-full overflow-hidden bg-trad-bg-dark">
                                 <Image
-                                    alt="Traditional Vietnamese Landscape Silk Painting Style"
+                                    alt=""
                                     className="w-full h-full object-cover opacity-80 mix-blend-overlay"
-                                    src="/editorial/preview-gallery.webp"
+                                    src="/photos/profile.webp"
                                     width={1000}
                                     height={192}
                                 />

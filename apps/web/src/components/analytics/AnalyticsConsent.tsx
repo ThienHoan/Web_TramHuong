@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from '@/components/ui/notice';
 import { useLocale } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
@@ -76,11 +77,11 @@ export function AnalyticsConsent() {
             </p>
           )}
           {saveFailed && (
-            <p role="alert" className="text-sm">
+            <Notice tone="error">
               {vi
                 ? "Chưa lưu được lựa chọn. Phân tích vẫn tắt."
                 : "Your preference could not be saved. Analytics remains off."}
-            </p>
+            </Notice>
           )}
         </div>
         <div className="flex flex-wrap gap-3">

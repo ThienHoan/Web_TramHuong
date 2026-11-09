@@ -1,5 +1,6 @@
 'use client';
 
+import { Notice } from '@/components/ui/notice';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { useContactProtection } from '@/hooks/useContactProtection';
@@ -81,9 +82,9 @@ function CloudflareWidget({ protection, vi, disabled, quiet }: { protection: Pro
     if (quiet) return <div className="max-w-full">
         <div ref={container} className="max-w-full overflow-hidden" />
         {load === 'failed' ? <div className="mt-2 flex flex-wrap items-center gap-3">
-            <p role="alert" className="shop-error">{vi ? 'Chưa tải được bước xác minh.' : 'The verification step could not load.'}</p>
+            <Notice tone="error">{vi ? 'Chưa tải được bước xác minh.' : 'The verification step could not load.'}</Notice>
             <button type="button" className="shop-btn shop-btn-secondary !min-h-11" disabled={disabled} onClick={() => setAttempt((n) => n + 1)}>{vi ? 'Thử lại' : 'Try again'}</button>
-        </div> : error && <p role="alert" className="shop-error mt-2">{error}</p>}
+        </div> : error && <Notice tone="error" className="mt-2">{error}</Notice>}
     </div>;
     return <div className="space-y-3 rounded-xl border border-trad-border-warm bg-trad-bg-light p-4" aria-label={vi ? 'Xác minh Cloudflare' : 'Cloudflare verification'}>
         <div>
@@ -94,7 +95,7 @@ function CloudflareWidget({ protection, vi, disabled, quiet }: { protection: Pro
         </div>
         <div ref={container} className="min-h-[65px] max-w-full overflow-hidden" />
         {load === 'failed' ? <div className="space-y-2">
-            <p role="alert" className="text-sm text-red-700">{vi ? 'Chưa tải được xác minh (có thể do trình chặn quảng cáo hoặc mạng). Vui lòng thử lại.' : 'Verification could not load (possibly an ad blocker or network). Please try again.'}</p>
+            <Notice tone="error">{vi ? 'Chưa tải được xác minh (có thể do trình chặn quảng cáo hoặc mạng). Vui lòng thử lại.' : 'Verification could not load (possibly an ad blocker or network). Please try again.'}</Notice>
             <Button variant="outline" type="button" className={buttonClass} disabled={disabled} onClick={() => setAttempt((n) => n + 1)}>{vi ? 'Tải lại xác minh' : 'Reload verification'}</Button>
         </div> : <p role={error ? 'alert' : 'status'} className={`text-sm ${error ? 'text-red-700' : 'text-stone-600'}`}>
             {load === 'loading' ? vi ? 'Đang tải xác minh…' : 'Loading verification…'
@@ -114,7 +115,7 @@ export function ContactProtection({ protection, locale, disabled = false, quiet 
     const vi = locale === 'vi';
     if (protection.mode === 'loading') return quiet ? null : <p role="status" className="text-sm text-stone-600">{vi ? 'Đang tải xác minh…' : 'Loading verification…'}</p>;
     if (protection.mode === 'unavailable') return <div className="space-y-2 rounded-xl border border-trad-border-warm bg-trad-bg-light p-4">
-        <p role="alert" className="text-sm text-trad-text-main">{vi ? 'Chưa tải được xác minh. Vui lòng thử lại.' : 'Verification is unavailable. Please try again.'}</p>
+        <Notice tone="error">{vi ? 'Chưa tải được xác minh. Vui lòng thử lại.' : 'Verification is unavailable. Please try again.'}</Notice>
         <Button variant="outline" type="button" className={buttonClass} disabled={disabled} onClick={() => void protection.refresh()}>{vi ? 'Tải lại xác minh' : 'Reload verification'}</Button>
     </div>;
     if (protection.mode === 'cloudflare') return <CloudflareWidget protection={protection} vi={vi} disabled={disabled} quiet={quiet} />;

@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useId, useState } from "react";
 import useSWR from "swr";
 import { useLocale } from "next-intl";
@@ -136,8 +137,7 @@ export function PagespeedPanel({ token }: { token: string }) {
             {t("Đang tải trạng thái hiệu năng…", "Loading performance status…")}
           </p>
         )}
-        {error && (
-          <p role="alert">
+        {error && (<Notice tone="error">
             {t(
               "Không tải được PageSpeed. Kiểm tra phiên admin/API rồi thử lại.",
               "Cannot load PageSpeed. Check admin session/API and retry.",
@@ -145,8 +145,7 @@ export function PagespeedPanel({ token }: { token: string }) {
             <Button variant="link" onClick={() => void mutate()}>
               {t("Thử lại", "Retry")}
             </Button>
-          </p>
-        )}
+          </Notice>)}
         {data?.mode === "blocked" && (
           <p>
             {t(

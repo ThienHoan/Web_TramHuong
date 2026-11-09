@@ -88,7 +88,7 @@ export const productService = {
     async getProduct(slug: string, locale: string): Promise<Product | null> {
         try {
             const url = buildUrl(`/products/${slug}`, { locale });
-            const data = await fetchWithAuth<Product>(url, { next: { revalidate: 60 } });
+            const data = await fetchWithAuth<Product>(url, { next: { revalidate: 60, tags: ['products'] } });
 
             if (!data) return null;
             // Map quantity to stock
@@ -103,7 +103,7 @@ export const productService = {
         try {
             const url = buildUrl(includeInactive ? '/categories/admin/list' : '/categories', { locale, limit: 500 });
             // revalidate 60s
-            const data = await fetchWithAuth<Category[] | { data: Category[] }>(url, { next: { revalidate: 60 } });
+            const data = await fetchWithAuth<Category[] | { data: Category[] }>(url, { next: { revalidate: 60, tags: ['categories'] } });
 
             const items: Category[] = Array.isArray(data) ? data : (data.data || []);
             return items;

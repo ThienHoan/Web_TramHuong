@@ -119,11 +119,11 @@ export default function HomeHero({ locale = "vi" }: { locale?: "vi" | "en" }) {
             }}
           >
             <Image
-              src="/editorial/forest.webp"
+              src="/photos/hero.webp"
               alt={
                 en
-                  ? "Incense cones and a delicate trail of smoke in a bronze burner"
-                  : "Làn khói trầm nhẹ trên những nụ trầm trong lư đồng"
+                  ? "Thien Phuc incense cone tins on a wooden tray"
+                  : "Các hộp nụ trầm Thiên Phúc bày trên khay gỗ"
               }
               fill
               priority

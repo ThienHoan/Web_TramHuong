@@ -138,6 +138,78 @@ describe('catalog row import retries and cleanup', () => {
       );
     },
   );
+  const noImageWorkbook = async () => {
+    const workbook = new Workbook();
+    const sheet = workbook.addWorksheet('San pham');
+    sheet.addRow(['ten_san_pham', 'danh_muc_slug', 'gia', 'so_luong', 'anh_1']);
+    sheet.addRow(['Nụ quế', 'nu-tram', 50000, 99, '']);
+    return Buffer.from(await workbook.xlsx.writeBuffer());
+  };
+  it('accepts a new product without images and warns it will stay hidden', async () => {
+    const tables: Record<string, unknown[]> = {
+      products: [],
+      categories: [{ slug: 'nu-tram', is_active: true }],
+    };
+    const db = {
+      from: (table: string) => {
+        const query = {
+          select: () => query,
+          in: () => Promise.resolve({ data: tables[table], error: null }),
+        };
+        return query;
+      },
+      rpc: jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { code: '22023' } }),
+    };
+    const service = new CatalogImportService(
+      { getClient: () => db } as unknown as SupabaseService,
+      {} as StorageService,
+    );
+    const result = await service.preview(
+      'products',
+      await noImageWorkbook(),
+      'skip',
+      [],
+    );
+    expect(result.summary).toMatchObject({ valid: 1, invalid: 0 });
+    expect(result.rows[0].errors).toEqual([]);
+    expect(result.rows[0].warnings.join()).toContain('trạng thái ẩn');
+  });
+  it('saves a new product without uploading when no images are given', async () => {
+    const { service, storage, rpc } = setup();
+    await service.commit(
+      'products',
+      { ...row, images: [] },
+      'skip',
+      randomUUID(),
+      actor,
+      [],
+    );
+    expect(storage.uploadProductImage).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledWith(
+      'admin_import_catalog_row',
+      expect.objectContaining({
+        p_row: expect.objectContaining({ images: [] }) as unknown,
+      }),
+    );
+  });
+  it('explains that the SQL must be re-applied when the old function refuses the row', async () => {
+    const { service } = setup({
+      code: '22023',
+      message: 'Product image required',
+    });
+    await expect(
+      service.commit(
+        'products',
+        { ...row, images: [] },
+        'skip',
+        randomUUID(),
+        actor,
+        [],
+      ),
+    ).rejects.toThrow('admin-catalog-import.sql');
+  });
   it('cleans new images after a definite SQL rollback', async () => {
     const { service, storage } = setup({
       code: '23505',

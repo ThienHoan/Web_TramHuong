@@ -1,6 +1,8 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- Catalog thumbnails are external user assets with variable origins. */
 
+import { refreshCatalog } from "@/app/actions/catalog";
+import { Notice } from '@/components/ui/notice';
 import { productThumbnail } from "@/lib/product-image-url";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
@@ -187,6 +189,8 @@ export default function AdminResourcePage({
           : row.status || "draft";
   const detailsHref = (row: AdminRow) => `/admin/${config.route}/${row.id}`;
   const refresh = async () => {
+    if (resource === "products" || resource === "categories")
+      await refreshCatalog().catch(() => undefined);
     await list.mutate();
     await mutateCache(
       (key) =>
@@ -800,12 +804,12 @@ export default function AdminResourcePage({
           )}
         </div>
         {categoryError && (
-          <p className="admin-inline-error" role="alert">
+          <Notice tone="error" className="mx-5 my-2">
             {t(
               "Không thể tải danh mục. Hãy làm mới trang để thử lại.",
               "Unable to load categories. Refresh to retry.",
             )}
-          </p>
+          </Notice>
         )}
         {saved.length > 0 && (
           <div className="admin-saved-views">

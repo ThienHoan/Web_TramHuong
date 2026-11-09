@@ -126,9 +126,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
 
     const handleWriteReviewClick = () => {
         if (!session) {
-            if (confirm('You need to sign in to share your reflection. Proceed to login?')) {
-                router.push('/login');
-            }
+            toast.info('You need to sign in to share your reflection.', { action: { label: 'Sign in', onClick: () => router.push('/login') } });
             return;
         }
         setIsReviewFormOpen(true);
@@ -150,7 +148,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
             setFormComment('');
             setFormRating(5);
             fetchReviews(); // Refresh reviews
-            alert('Your reflection has been shared.');
+            toast.success('Your reflection has been shared.');
         } catch (err: unknown) {
             let message = 'Failed to submit reflection.';
             let status = 0;

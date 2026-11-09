@@ -68,7 +68,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                 <div className="w-full aspect-[16/9] md:aspect-[21/9] rounded-xl overflow-hidden relative group">
                     <div className="absolute inset-0 bg-black/10 z-10 transition-opacity group-hover:opacity-0"></div>
                     <Image
-                        src={post.cover_image || '/editorial/preview-ritual.webp'}
+                        src={post.cover_image || '/photos/journal.webp'}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-[2s] ease-out group-hover:scale-105"
@@ -158,7 +158,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                                     <div className="w-full aspect-[4/3] overflow-hidden rounded-xl bg-gray-100 relative">
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10"></div>
                                         <Image
-                                            src={rel.cover_image || '/editorial/preview-bracelet.webp'}
+                                            src={rel.cover_image || '/photos/journal-2.webp'}
                                             alt={rel.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"

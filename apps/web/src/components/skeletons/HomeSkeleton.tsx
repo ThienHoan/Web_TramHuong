@@ -35,7 +35,7 @@ export default function HomeSkeleton() {
                     <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="flex flex-col space-y-3">
-                                <Skeleton className="aspect-[4/5] w-full rounded-md bg-trad-border-warm/30" />
+                                <Skeleton className="aspect-[3/2] w-full rounded-md bg-trad-border-warm/30" />
                                 <Skeleton className="h-4 w-3/4 bg-trad-border-warm/30" />
                                 <Skeleton className="h-4 w-1/2 bg-trad-border-warm/30" />
                             </div>

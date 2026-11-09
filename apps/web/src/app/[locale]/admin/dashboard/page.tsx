@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from '@/components/ui/notice';
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
@@ -124,7 +125,7 @@ export default function AdminDashboard() {
         <span>{t("Toàn cửa hàng · hiện tại", "Storewide · current")}</span>
       </div>
       {operations.error ? (
-        <div role="alert" className="admin-inline-error">
+        <Notice tone="error" className="mx-5 my-2">
           {t(
             "Chưa tải được số liệu vận hành.",
             "Unable to load the work queue.",
@@ -135,7 +136,7 @@ export default function AdminDashboard() {
           >
             {t("Thử lại", "Retry")}
           </button>
-        </div>
+        </Notice>
       ) : (
         <div className="admin-task-grid">
           {tasks.map(({ label, value, icon: Icon, href }) => (

@@ -56,14 +56,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         let active = true;
         let version = 0;
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-                const currentVersion = ++version;
+        let profileUserId: string | null = null;
+        let appliedToken: string | null = null;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+                const userId = session?.user.id ?? null;
+                // Supabase re-emits SIGNED_IN whenever the tab regains focus. Treating that as a
+                // new login blanked the admin layout and discarded everything on screen.
+                if (event === 'SIGNED_IN' && userId && userId === profileUserId && session?.access_token === appliedToken) return;
+
+                appliedToken = session?.access_token ?? null;
                 setSession(session);
                 setUser(session?.user ?? null);
                 setAccessToken(session?.access_token ?? '');
 
-                if (session?.user) {
-                    const userId = session.user.id;
+                // Token refreshes keep the same account, so the loaded role is still valid.
+                if (userId && userId === profileUserId) return;
+
+                const currentVersion = ++version;
+                profileUserId = userId;
+                if (userId) {
                     setProfile(null);
                     setRole(null);
                     setLoading(true);
@@ -76,11 +87,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             if (active && currentVersion === version) {
                                 setProfile(data as UserProfile | null);
                                 setRole((data?.role as Role) ?? null);
+                                // Let a later auth event retry a failed lookup.
+                                if (!data) profileUserId = null;
                             }
                         } catch {
                             if (active && currentVersion === version) {
                                 setProfile(null);
                                 setRole(null);
+                                profileUserId = null;
                             }
                         } finally {
                             if (active && currentVersion === version) setLoading(false);

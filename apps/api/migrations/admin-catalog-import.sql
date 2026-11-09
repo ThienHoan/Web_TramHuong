@@ -74,14 +74,14 @@ BEGIN
         RAISE EXCEPTION 'Invalid product values' USING ERRCODE='22023';
       END IF;
       IF NOT existing THEN
-        IF jsonb_array_length(p_row->'images')=0 THEN RAISE EXCEPTION 'Product image required' USING ERRCODE='22023'; END IF;
+        -- A product imported without images stays hidden until an admin adds them and activates it.
         INSERT INTO public.products(slug,price,quantity,category_id,images,is_active,style)
           VALUES(row_slug,(p_row->>'price')::numeric,(p_row->>'quantity')::integer,category_record.id,
-            ARRAY(SELECT jsonb_array_elements_text(p_row->'images')),true,'both') RETURNING * INTO product_record;
+            p_row->'images',jsonb_array_length(p_row->'images')>0,'both') RETURNING * INTO product_record;
       ELSE
         UPDATE public.products SET price=(p_row->>'price')::numeric,quantity=(p_row->>'quantity')::integer,
           category_id=category_record.id,
-          images=CASE WHEN jsonb_array_length(p_row->'images')>0 THEN ARRAY(SELECT jsonb_array_elements_text(p_row->'images')) ELSE images END
+          images=CASE WHEN jsonb_array_length(p_row->'images')>0 THEN p_row->'images' ELSE images END
           WHERE id=product_record.id;
       END IF;
       INSERT INTO public.product_translations(product_id,locale,title,description)

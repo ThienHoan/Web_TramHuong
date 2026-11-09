@@ -1,5 +1,7 @@
 'use client';
 
+import { useAdminText } from '@/components/admin/AdminForm';
+import { toast } from 'sonner';
 import { API_URL } from "@/services/base-http";
 
 import { useEffect, useState } from 'react';
@@ -15,6 +17,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 export default function OrderDetailPage() {
     const { id } = useParams();
     const { session, user, role, loading: authLoading } = useAuth();
+    const { t } = useAdminText();
     const router = useRouter();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
     const [order, setOrder] = useState<any>(null);
@@ -37,7 +40,7 @@ export default function OrderDetailPage() {
                             const data = await res.json();
                             setOrder(data);
                         } else {
-                            alert('Order not found');
+                            toast.error(t('Không tìm thấy đơn hàng', 'Order not found'));
                             router.push('/admin/dashboard');
                         }
                     })
@@ -45,7 +48,7 @@ export default function OrderDetailPage() {
                     .finally(() => setLoading(false));
             }
         }
-    }, [id, session, user, role, authLoading, router]);
+    }, [id, session, user, role, authLoading, router, t]);
 
     if (loading) return <div className="p-10 text-center">Loading Order Details...</div>;
     if (!order) return null;

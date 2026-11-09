@@ -1,5 +1,8 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import { toast } from 'sonner';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { getLikedIds, toggleWishlist } from '@/lib/api-client';
@@ -14,6 +17,8 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const locale = useLocale();
+    const router = useRouter();
     const [items, setItems] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
 
@@ -46,7 +51,9 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     const toggle = async (productId: string) => {
         if (!user) {
-            alert('Please login to save favorites!');
+            toast.info(locale === 'en' ? 'Please sign in to save favorites.' : 'Vui lòng đăng nhập để lưu sản phẩm yêu thích.', {
+                action: { label: locale === 'en' ? 'Sign in' : 'Đăng nhập', onClick: () => router.push('/login') },
+            });
             return;
         }
 

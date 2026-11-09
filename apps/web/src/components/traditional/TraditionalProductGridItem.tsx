@@ -7,7 +7,6 @@ import { useProductDiscount } from '@/hooks/useProductDiscount';
 import { useWishlist } from '@/components/providers/WishlistProvider';
 import { useCart } from '@/components/providers/CartProvider';
 import { toast } from 'sonner';
-import { Alert } from '@/components/ui/alert';
 import { Product } from '@/types/product';
 import { AppIcon } from "@/components/icons/AppIcon";
 
@@ -31,17 +30,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
             image: product.images?.[0] || 'placeholder',
             quantity: 1
         });
-        toast.custom((t) => (
-            <Alert
-                variant="success"
-                size="sm"
-                title="Thành Công"
-                className="w-[300px] bg-white border-none shadow-xl"
-                onClose={() => toast.dismiss(t)}
-            >
-                Đã thêm sản phẩm vào giỏ hàng!
-            </Alert>
-        ));
+        toast.success("Đã thêm sản phẩm vào giỏ hàng!");
     };
 
     return (
@@ -53,7 +42,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                     </span>
                 )}
                 <ProductImage
-                    src={product.images?.[0] || '/editorial/preview-gallery.webp'}
+                    src={product.images?.[0] || '/photos/shelf.webp'}
                     alt={product.translation?.title || product.title || 'Product'}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -70,17 +59,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                             const isAdding = !wishlistItems.has(product.id);
                             toggleWishlist(product.id);
                             if (isAdding) {
-                                toast.custom((t) => (
-                                    <Alert
-                                        variant="success"
-                                        size="sm"
-                                        title="Yêu Thích"
-                                        className="w-[300px] bg-white border-none shadow-xl"
-                                        onClose={() => toast.dismiss(t)}
-                                    >
-                                        Đã thêm vào danh sách yêu thích!
-                                    </Alert>
-                                ));
+                                toast.success("Đã thêm vào danh sách yêu thích!");
                             } else {
                                 toast.info("Đã xóa khỏi danh sách yêu thích");
                             }
