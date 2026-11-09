@@ -1,4 +1,4 @@
-import { NextIntlClientProvider } from 'next-intl';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat, Manrope } from "next/font/google";
 import "./../globals.css";
@@ -13,6 +13,8 @@ import { NetworkStatusProvider } from '@/components/providers/NetworkStatusProvi
 import ZenHeader from '@/components/zen/ZenHeader';
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 import MotionProvider from '@/components/providers/MotionProvider';
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
@@ -173,6 +175,9 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // The middleware skips /_next and paths with a dot, so missing files land here as a "locale".
+  if (!hasLocale(routing.locales, locale)) notFound();
 
   let messages;
   try {

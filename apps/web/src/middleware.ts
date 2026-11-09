@@ -10,12 +10,13 @@ export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname === '/auth/callback' || request.nextUrl.pathname === '/auth/auth-code-error') {
         return NextResponse.next();
     }
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-pathname', request.nextUrl.pathname);
+    // Set on the request itself: next-intl builds the returned response from these headers,
+    // and the locale layout reads x-pathname to generate canonical and hreflang URLs.
+    request.headers.set('x-pathname', request.nextUrl.pathname);
 
     let supabaseResponse = NextResponse.next({
         request: {
-            headers: requestHeaders,
+            headers: request.headers,
         },
     });
 
@@ -34,7 +35,6 @@ export async function middleware(request: NextRequest) {
                             headers: request.headers,
                         },
                     });
-                    supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
 
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)
