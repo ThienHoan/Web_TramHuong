@@ -125,7 +125,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 <div className="container mx-auto px-4 mb-16 max-w-5xl">
                     <div className="relative aspect-video w-full rounded-xl overflow-hidden shadow-2xl border-4 border-white">
                         <Image
-                            src={post.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnK_XjLPiB3glbU1xH5EDARsmY6II7-YfflRk1LCKk3e75qMPsVis3xtp2PUl8-GKTx4-FHrGdDg00tThlipTvONNe-UG6VC62x9cdkeMrPSQfjv4hgw7U8sbAOJ9vVPBLo206UtpKs3dEdfiPuH6OtZy_W29M1ViOBOAdMI_jtPL0mwvsN6zVQJ6TWXVGCc47HJxYGHNc_HGBAetu-n0jc5PSN33qEHXnRyU1ZrMaGEx11Cx9yrs_QgDyKLIC5IKmtizUwn2a0-wH'}
+                            src={post.cover_image || '/editorial/forest.webp'}
                             alt={post.title}
                             fill
                             className="object-cover transform hover:scale-105 transition-transform duration-700"
@@ -151,7 +151,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                     {/* Author Bio */}
                     <div className="mt-12 bg-white p-8 rounded-xl shadow-sm border border-trad-primary/10 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
                         <Image
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7DCXj3XsW8cpLTzrzMlp26-JVZrCNG2myVfgXHB9EM0H_RtrOgpU4xKN1fu6qIs1vzHvwXbF3OHepUrtFtQYMtowk460dNyCc-OpvQcHuLywE8BwUfW8CjTDu-b2GbvXHTcN9Uyk5Xr4scnoUl3IlWoleUvDaAavPzkmcvd1G_bIGuT7tZ3620MI9Y5pdHHYJC_6zf-IZXbzxboAqeId1u8hdLqmkvLslKMT1UpgzPZNzvixfex6VpxZb-yWuiyR5YafgaVvb2YUJ"
+                            src="/editorial/ritual.webp"
                             alt="Nghệ nhân Thiên Phúc"
                             width={96}
                             height={96}
@@ -186,7 +186,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                                     <article className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full border border-gray-100 flex flex-col">
                                         <div className="relative overflow-hidden aspect-[4/3]">
                                             <Image
-                                                src={rel.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDFL_XVrAUKC05bRAjNW5Ld8gDiiE7fNpJw4dmkeZTavDUAPUfXDgg2ZM_lEL5wdG7k2g039g424F7MDHIhNWUkZrn8oa6KzCFSzdpotZxJq4IYMfdEj8x8-hXgyR7yPtBE20w-uDJ_p9bJobwDbmfEt8WSAjvehCk94ghXkH7TggFP52XAza6YlNyx3k4dSypMdck1TzYhtWzfoMpQ-P2l8_Op5GmsAbjbDM1HSGDmvYAc-ROwEopVAUEx2QAVPEgs4YCWbew9DOq9'}
+                                                src={rel.cover_image || '/editorial/wood.webp'}
                                                 alt={rel.title}
                                                 fill
                                                 className="object-cover transform group-hover:scale-110 transition-transform duration-500"

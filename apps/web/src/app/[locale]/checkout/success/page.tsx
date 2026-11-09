@@ -1,343 +1,132 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useRouter, Link } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { Check, CircleCheck, Copy } from 'lucide-react';
+import { Link, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getOrder, setAccessToken } from '@/lib/api-client';
 import ProductImage from '@/components/ui/ProductImage';
-import { useCurrency } from '@/hooks/useCurrency';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
-import { AppIcon } from "@/components/icons/AppIcon";
 import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
+import { SHOP_CONTACT } from '@/lib/legal';
+import { useBilingual } from '@/hooks/useBilingual';
+import { useCurrency } from '@/hooks/useCurrency';
+
+type LineItem = { title: string; image?: string; quantity: number; price: number | string; variant_name?: string | null };
+type PlacedOrder = {
+    items?: LineItem[];
+    total: number;
+    voucher_code?: string | null;
+    voucher_discount_amount?: number | null;
+    shipping_info?: { shipping_fee?: number; delivery_method?: string } | null;
+};
 
 export default function CheckoutSuccessPage() {
+    const { t } = useBilingual();
+    const { formatPrice } = useCurrency();
     const searchParams = useSearchParams();
     const router = useRouter();
     const orderId = searchParams.get('id');
-    const [date, setDate] = useState('');
     const { session } = useAuth();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
-    const [order, setOrder] = useState<any>(null);
-    const { formatPrice } = useCurrency();
+    const [order, setOrder] = useState<PlacedOrder | null>(null);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        if (!orderId) {
-            router.push('/');
-            return;
-        }
-        setDate(new Date().toLocaleDateString('vi-VN'));
-
+        if (!orderId) { router.push('/'); return; }
         if (session?.access_token) {
             setAccessToken(session.access_token);
-            getOrder(orderId).then(setOrder).catch(console.error);
+            getOrder(orderId).then((data) => setOrder(data as unknown as PlacedOrder)).catch(() => undefined);
         }
     }, [orderId, router, session]);
 
-    const handleCopyId = async () => {
+    const copyId = async () => {
         if (!orderId) return;
-
         try {
-            // Check if clipboard API is available (browser only, not SSR)
-            if (typeof window !== 'undefined' && navigator?.clipboard?.writeText) {
-                await navigator.clipboard.writeText(orderId);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-                toast.success("Đã sao chép mã đơn hàng!");
-            } else {
-                // Fallback for browsers without clipboard API
-                const textArea = document.createElement('textarea');
-                textArea.value = orderId;
-                textArea.style.position = 'fixed';
-                textArea.style.left = '-9999px';
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                    toast.success("Đã sao chép mã đơn hàng!");
-                } catch {
-                    toast.error("Không thể sao chép. Vui lòng copy thủ công!");
-                } finally {
-                    document.body.removeChild(textArea);
-                }
-            }
-        } catch (err) {
-            console.error('Failed to copy:', err);
-            toast.error("Không thể sao chép. Vui lòng copy thủ công!");
+            await navigator.clipboard.writeText(orderId);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error(t('Không sao chép được, bạn vui lòng ghi lại thủ công.', 'Could not copy. Please note it down.'));
         }
     };
 
     if (!orderId) return null;
 
+    const shippingFee = Number(order?.shipping_info?.shipping_fee ?? 0);
+    const voucher = Number(order?.voucher_discount_amount ?? 0);
+    const pickup = order?.shipping_info?.delivery_method === 'pickup';
+
     return (
-        <div className="atelier-page bg-trad-bg-light font-display antialiased min-h-screen flex flex-col" style={{
-            backgroundImage: 'radial-gradient(var(--color-trad-border-warm) 1px, transparent 1px)',
-            backgroundSize: '24px 24px'
-        }}>
+        <div className="atelier-page flex min-h-screen flex-col bg-trad-bg-light font-display">
             <PurchaseCapture orderId={orderId} />
-            <TraditionalHeader />
+            <ShopHeader />
+            <main className="shop-page">
+                <div className="shop-panel flex flex-col gap-6">
+                    <div className="text-center">
+                        <CircleCheck size={40} strokeWidth={1.4} className="mx-auto mb-4 text-trad-primary" aria-hidden="true" />
+                        <h1 className="shop-title">{t('Đặt hàng thành công', 'Thank you for your order')}</h1>
+                        <p className="shop-lede">{t('Thiên Phúc đã nhận đơn và sẽ liên hệ khi đơn được gửi đi.', 'Thiên Phúc has received your order and will let you know when it ships.')}</p>
+                    </div>
 
-            <main className="flex-grow flex flex-col items-center justify-center py-10 px-4 md:px-6">
-                <div className="w-full max-w-[800px] flex flex-col gap-6">
-                    {/* Success Card */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: "backOut" }}
-                        className="relative overflow-hidden rounded-2xl bg-[#421614] shadow-xl border border-[#7a3e3b]"
-                    >
-                        {/* Decorative corner accents */}
-                        <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-trad-gold/20 to-transparent rounded-tl-2xl"></div>
-                        <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-trad-gold/20 to-transparent rounded-br-2xl"></div>
-
-                        <div className="flex flex-col items-center px-6 py-10 md:px-12 md:py-12 text-center">
-                            {/* Success Icon */}
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                                className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-trad-gold/15 ring-1 ring-trad-gold/40"
-                            >
-                                <AppIcon name="check_circle" className="text-6xl text-trad-gold leading-none" />
-                            </motion.div>
-
-                            {/* Main Headlines */}
-                            <h1 className="text-3xl md:text-4xl font-bold text-[#fef3c7] mb-3 font-serif">Đặt hàng thành công!</h1>
-                            <p className="text-[#e8e2ce] text-base md:text-lg max-w-[600px] font-normal leading-relaxed">
-                                Cảm ơn quý khách! Đơn hàng của bạn đã được hệ thống tiếp nhận và đang trong quá trình xử lý.
-                            </p>
-
-                            {/* Guest Warning / Important Note */}
-                            {!session && (
-                                <div className="mt-8 w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-500">
-                                    <div className="flex items-center gap-2 text-amber-500 font-bold uppercase tracking-wider text-sm">
-                                        <AppIcon name="warning" className="" />
-                                        Lưu ý quan trọng
-                                    </div>
-                                    <p className="text-[#e8e2ce] text-sm md:text-base max-w-lg">
-                                        Bạn đang đặt hàng với tư cách <strong>Khách (Chưa đăng nhập)</strong>.
-                                        Vui lòng <span className="text-amber-400 font-bold underline">lưu lại Mã Đơn Hàng</span> bên dưới để tra cứu tình trạng đơn hàng sau này.
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Divider */}
-                            <div className="w-full h-px bg-[#7a3e3b] my-8 relative">
-                                <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#421614] px-2">
-                                    <AppIcon name="local_shipping" className="text-[#f4c025] text-xl" />
-                                </div>
-                            </div>
-
-                            {/* Order Details Grid */}
-                            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="flex flex-col gap-2 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e] relative group">
-                                    <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Mã đơn hàng</span>
-                                    <div className="flex items-center justify-center gap-2">
-                                        <span className="text-[#fef3c7] text-xl font-bold font-mono tracking-wider">{orderId}</span>
-                                        <button
-                                            onClick={handleCopyId}
-                                            className="p-1.5 rounded-full hover:bg-white/10 text-trad-gold/70 hover:text-trad-gold transition-colors"
-                                            title="Sao chép mã đơn hàng"
-                                        >
-                                            <AppIcon name={copied ? 'check' : 'content_copy'} className="text-lg" />
-                                        </button>
-                                    </div>
-                                    {copied && (
-                                        <span className="absolute -top-2 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-out fade-out duration-1000">
-                                            Đã chép!
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex flex-col gap-1 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e]">
-                                    <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Ngày đặt hàng</span>
-                                    <span className="text-[#fef3c7] text-lg font-bold">{date}</span>
-                                </div>
-                                <div className="flex flex-col gap-1 p-4 rounded-lg border border-[#7a3e3b] bg-[#2a0f0e]">
-                                    <span className="text-[#9c8749] text-xs font-medium uppercase tracking-wider">Dự kiến giao</span>
-                                    <span className="text-[#fef3c7] text-lg font-bold">3 - 5 Ngày</span>
-                                </div>
-                            </div>
-
-                            {/* Ordered Items List */}
-                            {order && order.items && order.items.length > 0 && (
-                                <div className="w-full flex flex-col gap-4 mb-8">
-                                    <h3 className="text-[#fef3c7] font-bold text-lg text-left border-b border-[#7a3e3b] pb-2 font-serif">Sản phẩm đã đặt</h3>
-                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type */}
-                                    {order.items.map((item: any, idx: number) => {
-                                        const price = Number(item.price || 0);
-                                        const originalPrice = Number(item.original_price || item.price || 0);
-                                        const discountAmount = Number(item.discount_amount || 0);
-                                        const hasDiscount = discountAmount > 0 && originalPrice > price;
-
-                                        return (
-                                            <div key={idx} className="w-full bg-[#2a0f0e] p-4 rounded-xl border border-[#7a3e3b] flex items-center gap-4 text-left shadow-sm">
-                                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-[#7a3e3b] bg-[#2a0f0e]">
-                                                    <ProductImage src={item.image} alt={item.title} className="h-full w-full object-cover" />
-                                                </div>
-                                                <div className="flex flex-col flex-1">
-                                                    <span className="text-[#fef3c7] font-medium line-clamp-1 text-base">
-                                                        {item.title}
-                                                    </span>
-                                                    {item.variant_name && <span className="text-[#9c8749]/80 text-xs">{item.variant_name}</span>}
-                                                    <div className="flex justify-between items-center mt-1 gap-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[#9c8749] text-sm">Số lượng: {String(item.quantity).padStart(2, '0')}</span>
-                                                            {hasDiscount && (
-                                                                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                                                                    -{Math.round((discountAmount / originalPrice) * 100)}%
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-col items-end">
-                                                            {hasDiscount && (
-                                                                <span className="text-xs text-[#9c8749] line-through">
-                                                                    {formatPrice(originalPrice)}
-                                                                </span>
-                                                            )}
-                                                            <span className={`text-sm font-bold ${hasDiscount ? 'text-red-400' : 'text-[#fef3c7]'}`}>
-                                                                {formatPrice(price)}
-                                                            </span>
-                                                            {hasDiscount && (
-                                                                <span className="text-[10px] text-red-500 font-medium mt-0.5">
-                                                                    Tiết kiệm {formatPrice(discountAmount)}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            {/* Order Summary Total */}
-                            {order && (
-                                <div className="w-full bg-[#2a0f0e] p-6 rounded-xl border border-[#7a3e3b] shadow-sm mb-8">
-                                    <div className="flex flex-col gap-3">
-                                        {(() => {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
-                                            const totalSavings = order.items?.reduce((sum: number, item: any) => {
-                                                const discountAmount = Number(item.discount_amount || 0);
-                                                return sum + (discountAmount * item.quantity);
-                                            }, 0) || 0;
-                                            // Assume total = subtotal + shipping (simplified as success page doesn't always have exact breakdown unless we calc it, but order.total is source of truth)
-                                            // Actually order.total is the final amount.
-
-                                            return (
-                                                <>
-                                                    {totalSavings > 0 && (
-                                                        <div className="flex justify-between items-center text-[#9c8749] text-sm">
-                                                            <div className="flex items-center gap-2">
-                                                                <AppIcon name="savings" className="text-base" />
-                                                                <span>Đã tiết kiệm</span>
-                                                            </div>
-                                                            <span>-{formatPrice(totalSavings)}</span>
-                                                        </div>
-                                                    )}
-                                                    {/* Voucher Discount */}
-                                                    {Number(order.voucher_discount_amount) > 0 && (
-                                                        <div className="flex justify-between items-center text-[#9c8749] text-sm mt-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <AppIcon name="confirmation_number" className="text-base text-purple-400" />
-                                                                <span>Voucher ({order.voucher_code})</span>
-                                                            </div>
-                                                            <span className="text-purple-400">-{formatPrice(Number(order.voucher_discount_amount))}</span>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex justify-between items-end pt-3 border-t border-[#7a3e3b] mt-2">
-                                                        <span className="text-[#fef3c7] font-bold text-lg font-serif">Tổng cộng</span>
-                                                        <span className="text-trad-gold text-2xl font-bold font-serif">{formatPrice(order.total)}</span>
-                                                    </div>
-                                                    {/* Shipping Fee Display - Inserted BEFORE Total */}
-                                                    <div className="flex justify-between items-center text-[#9c8749] text-sm py-2">
-                                                        <span>Phí vận chuyển</span>
-                                                        <span>
-                                                            {/* Logic check: if Total >= Subtotal (implies shipping added) or 0 if free. Here we assume free if not mentioned or calculated? Success page is tricky. If order.total == subtotal, it is free shipping. */}
-                                                            {(() => {
-                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
-                                                                const subtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0) || 0;
-                                                                const isFree = Number(order.total) <= Number(subtotal); // Rough check
-                                                                if (isFree) {
-                                                                    return (
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className="line-through text-[#9c8749]/50 text-xs">{formatPrice(30000)}</span>
-                                                                            <span className="text-green-400 font-bold">-{formatPrice(30000)}</span>
-                                                                        </div>
-                                                                    );
-                                                                } else {
-                                                                    return formatPrice(Number(order.total) - Number(subtotal));
-                                                                }
-                                                            })()}
-                                                        </span>
-                                                    </div>
-                                                </>
-                                            )
-                                        })()}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row w-full justify-center gap-4">
-                                <Link href="/" className="flex items-center justify-center rounded-lg h-12 px-8 bg-trad-gold hover:bg-[#e0b020] text-[#1c180d] text-base font-bold transition-all shadow-lg hover:shadow-trad-gold/20">
-                                    <AppIcon name="storefront" className="mr-2 text-[20px]" />
-                                    Tiếp tục mua sắm
-                                </Link>
-
-                                {session ? (
-                                    <Link href={`/account/orders/${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
-                                        <AppIcon name="receipt_long" className="mr-2 text-[20px]" />
-                                        Xem đơn hàng
-                                    </Link>
-                                ) : (
-                                    <Link href={`/order-lookup?code=${orderId}`} className="flex items-center justify-center rounded-lg h-12 px-8 bg-transparent border border-trad-gold hover:bg-trad-gold/10 text-trad-gold text-base font-bold transition-all">
-                                        <AppIcon name="search" className="mr-2 text-[20px]" />
-                                        Thử tra cứu ngay
-                                    </Link>
-                                )}
-                            </div>
-
-                            {/* Guest Upsell - Create Account */}
-                            {!session && (
-                                <div className="mt-8 pt-8 border-t border-[#7a3e3b] w-full animate-in fade-in slide-in-from-bottom-4">
-                                    <div className="bg-[#2a0f0e]/50 rounded-xl p-6 border border-[#7a3e3b] flex flex-col md:flex-row items-center gap-6 text-left">
-                                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-trad-gold/20 flex items-center justify-center text-trad-gold animate-pulse">
-                                            <AppIcon name="person_add" className="text-2xl" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="text-[#fef3c7] font-bold text-lg font-serif">Tạo tài khoản ngay</h4>
-                                            <p className="text-[#9c8749] text-sm mt-1">
-                                                Theo dõi đơn hàng dễ dàng, lưu địa chỉ cho lần sau và nhận ưu đãi độc quyền.
-                                            </p>
-                                        </div>
-                                        <Link
-                                            href={`/register?redirect=/account/orders/${orderId}`} // Redirect to their new order after reg? Maybe. Or just home.
-                                            className="flex-shrink-0 whitespace-nowrap px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-[#fef3c7] font-bold rounded-lg transition-colors"
-                                        >
-                                            Đăng ký thành viên
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
-
-                            <p className="mt-8 text-[#9c8749] text-sm">
-                                Một email xác nhận đã được gửi đến bạn. <br className="hidden sm:block" />
-                                Nếu cần hỗ trợ, vui lòng liên hệ Hotline: <span className="text-[#fef3c7]">035.617.6878</span>
-                            </p>
+                    <section className="shop-card">
+                        <p className="shop-hint">{t('Mã đơn hàng', 'Order code')}</p>
+                        <div className="mt-1 flex items-center justify-between gap-3">
+                            <p className="min-w-0 break-all text-[15px] font-medium">{orderId}</p>
+                            <button type="button" onClick={copyId} className="shop-btn shop-btn-secondary shrink-0 !min-h-11 !px-3" aria-label={t('Sao chép mã đơn hàng', 'Copy order code')}>
+                                {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
+                                <span className="text-sm">{copied ? t('Đã chép', 'Copied') : t('Sao chép', 'Copy')}</span>
+                            </button>
                         </div>
-                    </motion.div>
-                </div>
-            </main >
+                        {!session && <p className="shop-hint mt-3">{t('Bạn đặt hàng không cần tài khoản, hãy lưu mã này để tra cứu đơn sau.', 'You checked out without an account, so please keep this code to track your order.')}</p>}
+                    </section>
 
-            <TraditionalFooter />
-        </div >
+                    {order?.items && order.items.length > 0 && (
+                        <section className="shop-card flex flex-col gap-4">
+                            <h2 className="font-serif text-xl">{t('Sản phẩm đã đặt', 'Your items')}</h2>
+                            <ul className="flex flex-col gap-3">
+                                {order.items.map((item, index) => (
+                                    <li key={`${item.title}-${index}`} className="flex items-center gap-3">
+                                        <div className="size-14 shrink-0 overflow-hidden rounded-[3px] bg-trad-bg-warm">
+                                            <ProductImage src={item.image} alt="" className="h-full w-full object-cover" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-[15px]">{item.title}</p>
+                                            <p className="shop-hint">{item.variant_name ? `${item.variant_name} · ` : ''}× {item.quantity}</p>
+                                        </div>
+                                        <span className="text-sm">{formatPrice(Number(item.price))}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <dl className="shop-rows border-t border-trad-border-warm pt-4">
+                                {voucher > 0 && <div><dt>{t('Mã giảm giá', 'Voucher')}{order.voucher_code ? ` (${order.voucher_code})` : ''}</dt><dd>-{formatPrice(voucher)}</dd></div>}
+                                <div><dt>{t('Phí vận chuyển', 'Shipping')}</dt><dd>{pickup ? t('Nhận tại cửa hàng', 'Store pickup') : shippingFee > 0 ? formatPrice(shippingFee) : t('Miễn phí', 'Free')}</dd></div>
+                                <div className="shop-total"><dt className="!text-trad-text-main">{t('Tổng cộng', 'Total')}</dt><dd>{formatPrice(order.total)}</dd></div>
+                            </dl>
+                        </section>
+                    )}
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Link href={session ? `/account/orders/${orderId}` : `/order-lookup?code=${orderId}`} className="shop-btn flex-1">
+                            {session ? t('Xem đơn hàng', 'View order') : t('Tra cứu đơn hàng', 'Track order')}
+                        </Link>
+                        <Link href="/products" className="shop-btn shop-btn-secondary flex-1">{t('Tiếp tục mua sắm', 'Keep shopping')}</Link>
+                    </div>
+
+                    {!session && (
+                        <p className="shop-hint text-center">
+                            {t('Muốn lưu địa chỉ và xem lại đơn dễ hơn?', 'Want to save your address and see past orders?')}{' '}
+                            <Link href="/login" className="shop-link">{t('Tạo tài khoản', 'Create an account')}</Link>
+                        </p>
+                    )}
+                    <p className="shop-hint text-center">
+                        {t('Cần hỗ trợ?', 'Need help?')}{' '}
+                        <a href={`tel:${SHOP_CONTACT.phone}`} className="shop-link">{SHOP_CONTACT.phone}</a>
+                    </p>
+                </div>
+            </main>
+            <ShopFooter />
+        </div>
     );
 }

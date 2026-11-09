@@ -61,7 +61,7 @@ export default function ZenProductList({ products, pagination }: { products: Pro
             <main className="flex flex-col w-full max-w-[1440px] mx-auto">
                 {/* Page Heading */}
                 <section className="pt-32 pb-12 px-6 lg:px-12 text-center animate-[fadeInUp_0.8s_ease-out_forwards]">
-                    <h2 className="text-3xl md:text-5xl font-extralight tracking-zen-wide uppercase text-zen-green-text mb-4">The Collection</h2>
+                    <h1 className="text-3xl md:text-5xl font-extralight tracking-zen-wide uppercase text-zen-green-text mb-4">The Collection</h1>
                     <p className="text-zen-green-accent text-sm md:text-base font-light tracking-widest max-w-2xl mx-auto">
                         Sustainably harvested from the ancient forests of Vietnam. <br className="hidden sm:block" />Curated for mindfulness and inner peace.
                     </p>

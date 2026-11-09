@@ -1,4 +1,6 @@
 "use client";
+import { ContactProtection } from "@/components/contact/ContactProtection";
+import { useContactProtection } from "@/hooks/useContactProtection";
 import { LegalConsent } from '@/components/legal/LegalConsent';
 import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
 import { useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
@@ -9,8 +11,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { createOrder, setAccessToken } from "@/lib/api-client";
 import { Link, useRouter } from "@/i18n/routing";
 import { useState, useEffect } from "react";
-import TraditionalHeader from "@/components/traditional/TraditionalHeader";
-import TraditionalFooter from "@/components/traditional/TraditionalFooter";
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 import { ProcessingOrderOverlay } from "@/components/ui/ProcessingOrderOverlay";
 import {
   CheckoutCard,
@@ -49,6 +50,7 @@ export default function PaymentSelectPage() {
     "cod" | "sepay" | "showroom"
   >("cod");
   const [error, setError] = useState<string | null>(null);
+  const protection = useContactProtection("checkout");
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
   const [voucherDiscount, setVoucherDiscount] = useState(0);
 
@@ -197,6 +199,7 @@ export default function PaymentSelectPage() {
         shipping_info: fullShippingInfo,
         paymentMethod,
         voucherCode: voucherCode || undefined,
+        ...(protection.token ? { turnstileToken: protection.token } : {}),
       }, session?.user.id || null);
 
       clearCart();
@@ -217,6 +220,7 @@ export default function PaymentSelectPage() {
       const errorMessage =
         e instanceof Error ? e.message : "Đặt hàng thất bại. Vui lòng thử lại.";
       setError(errorMessage);
+      protection.resetToken();
       setLoading(false); // Only stop loading on error
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -231,7 +235,7 @@ export default function PaymentSelectPage() {
   return (
     <div className="atelier-page">
       <ProcessingOrderOverlay isVisible={loading} />
-      <TraditionalHeader />
+      <ShopHeader />
       <CheckoutLayout
         stage={2}
         summary={
@@ -258,7 +262,7 @@ export default function PaymentSelectPage() {
                 type="button"
                 onClick={handlePlaceOrder}
                 disabled={
-                  loading || !items.length || !shippingInfo || quotePending || !termsAccepted
+                  loading || !items.length || !shippingInfo || quotePending || !termsAccepted || !protection.canSubmit
                 }
               >
                 {loading
@@ -272,6 +276,7 @@ export default function PaymentSelectPage() {
             }
           >
             <LegalConsent purpose="order" checked={termsAccepted} onChange={setTermsAccepted} disabled={loading} />
+            <ContactProtection protection={protection} locale="vi" disabled={loading} quiet />
             {voucherCode && voucherDiscount > 0 && (
               <p className="checkout-form-note">
                 Mã ưu đãi đã áp dụng: <strong>{voucherCode}</strong>
@@ -349,7 +354,7 @@ export default function PaymentSelectPage() {
           </CheckoutCard>
         )}
       </CheckoutLayout>
-      <TraditionalFooter />
+      <ShopFooter />
     </div>
   );
 }

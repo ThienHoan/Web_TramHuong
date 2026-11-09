@@ -226,10 +226,6 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                 <span className="inline-flex items-center rounded-full bg-zen-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zen-green-text dark:bg-white/10 dark:text-white">
                                     {product.category?.slug === 'incense-sticks' ? 'Meditation Grade' : 'Premium Collection'}
                                 </span>
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium tracking-wider text-zen-green-text/60 dark:text-white/60 uppercase">
-                                    <AppIcon name="eco" className="text-[14px]" />
-                                    100% Natural
-                                </span>
                             </div>
                             <h1 className="mb-4 text-4xl font-thin uppercase leading-tight tracking-widest text-zen-green-900 dark:text-white lg:text-5xl">
                                 {product.translation?.title}
@@ -288,10 +284,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={product.stock <= 0}
-                                        className={`group flex h-12 flex-1 items-center justify-center gap-3 rounded-lg px-6 text-xs font-bold uppercase tracking-widest transition-all 
-                                            ${product.stock > 0
-                                                ? 'bg-[#182111] text-white hover:bg-zen-green-text hover:shadow-lg dark:bg-white dark:text-zen-green-900 dark:hover:bg-gray-200'
-                                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                        className="shop-btn group flex-1"
                                     >
                                         <span>{product.stock > 0 ? 'Add to Cart' : 'Sold Out'}</span>
                                         {product.stock > 0 && <AppIcon name="arrow_forward" className="text-sm transition-transform duration-300 group-hover:translate-x-1" />}

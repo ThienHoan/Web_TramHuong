@@ -9,7 +9,10 @@ export type ContactProtectionError = 'unavailable' | 'retry' | 'expired' | null;
 const CLOUDFLARE_TOKEN_TTL_MS = 290000;
 const SITE_KEY = /^[0-9A-Za-z_-]{10,100}$/;
 
-export function useContactProtection() {
+/** contact and checkout are verified by our API; account tokens go to Supabase Auth. */
+export type ProtectionAction = 'contact' | 'checkout' | 'account';
+
+export function useContactProtection(action: ProtectionAction = 'contact') {
     const [mode, setMode] = useState<ContactProtectionMode>('loading');
     const [siteKey, setSiteKey] = useState<string | null>(null);
     const [testKeys, setTestKeys] = useState(false);
@@ -52,7 +55,7 @@ export function useContactProtection() {
         const current = ++revision.current;
         setBusy(true); setError(null); setToken(null); setExpiresAt(null);
         try {
-            const response = await fetch('/api/contacts/protection/challenge', { method: 'POST', signal: AbortSignal.timeout(8000) });
+            const response = await fetch('/api/contacts/protection/challenge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }), signal: AbortSignal.timeout(8000) });
             if (!response.ok) throw new Error();
             const value: unknown = await response.json();
             if (!value || typeof value !== 'object' || !('mode' in value) || value.mode !== 'mock' || !('token' in value) || typeof value.token !== 'string' || !value.token || value.token.length > 2048 || !('expiresAt' in value) || typeof value.expiresAt !== 'string') throw new Error();
@@ -62,7 +65,7 @@ export function useContactProtection() {
         } catch {
             if (mounted.current && revision.current === current) setError('retry');
         } finally { if (mounted.current && revision.current === current) setBusy(false); }
-    }, [mode, busy]);
+    }, [mode, busy, action]);
 
     // Cloudflare widget callbacks (stable identities so the widget is rendered once).
     const acceptToken = useCallback((value: unknown) => {
@@ -92,5 +95,5 @@ export function useContactProtection() {
     }, []);
     const hasToken = !!token && !!expiresAt && expiresAt > Date.now();
     const canSubmit = mode === 'disabled' || ((mode === 'mock' || mode === 'cloudflare') && hasToken && !busy);
-    return { mode, siteKey, testKeys, token, busy, error, canSubmit, refresh, verify, resetToken, acceptToken, clearToken, bindWidgetReset };
+    return { action, mode, siteKey, testKeys, token, busy, error, canSubmit, refresh, verify, resetToken, acceptToken, clearToken, bindWidgetReset };
 }

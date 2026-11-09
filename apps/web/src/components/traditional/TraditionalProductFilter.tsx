@@ -83,7 +83,7 @@ export default function TraditionalProductFilter({
             <div className={isMobile ? "absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-trad-border-warm" : "mt-2"}>
                 <button
                     onClick={onApplyPriceFilter}
-                    className={`w-full inline-flex items-center justify-center rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-trad-primary focus:ring-offset-2 bg-trad-primary text-white shadow hover:bg-trad-primary-dark active:scale-[0.98] uppercase tracking-wide ${isMobile ? 'h-12 px-6' : 'h-10 px-4 py-2'}`}
+                    className="shop-btn w-full"
                 >
                     Áp dụng
                 </button>

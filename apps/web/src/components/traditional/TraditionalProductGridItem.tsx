@@ -53,7 +53,7 @@ export default function TraditionalProductGridItem({ product }: TraditionalProdu
                     </span>
                 )}
                 <ProductImage
-                    src={product.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwD0foJUP_hTJwAfMEq8pczGOEqf3yl0c5rIvOIkLcsLSMaPRa3lWPo26cFQBDBiCaJPywFlQOhci8vHtJJHGF5_KLpC6FSyTIL4BBKvfs3jVPh0mAjq8N_BqiFEchwW6m3euXU_i600Fz7RGb1QHZXZlf023XpCfsJ5jKHbwpkpHNzAvKbCb7m3ojkdPOFWSEGkjHsFI_c_EZtzzRC2bIRffXiev81bLAJt3qEqYLbAwY6Np0doM5PO_iNx5-zBZMGBUSuFOg1rcg'}
+                    src={product.images?.[0] || '/editorial/preview-gallery.webp'}
                     alt={product.translation?.title || product.title || 'Product'}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />

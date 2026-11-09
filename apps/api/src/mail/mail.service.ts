@@ -14,6 +14,7 @@ interface IOrderForMail {
     [key: string]: any;
   };
   status: string;
+  payment_method?: string | null;
 }
 
 @Injectable()
@@ -29,19 +30,21 @@ export class MailService {
   private async sendSafe(
     options: ISendMailOptions,
     reference?: { id: string; event: NotificationEvent },
-  ) {
+  ): Promise<boolean> {
     try {
       if (this.notifications?.enabled && reference) {
         await this.notifications.capture(reference.id, reference.event);
-        return;
+        return true;
       }
       const result = await this.emailProvider.send(options);
       if (result.outcome !== 'accepted')
         this.logger.error('MAIL_DELIVERY_FAILED');
+      return result.outcome === 'accepted';
     } catch {
       // SMTP errors can contain recipients, message bodies and credentials.
       this.logger.error('MAIL_DELIVERY_FAILED');
       // Non-blocking: Do not re-throw error to prevent stopping the order flow
+      return false;
     }
   }
 
@@ -57,6 +60,15 @@ export class MailService {
     }
   }
 
+  private paymentLabel(order: IOrderForMail): string {
+    if (order.payment_method === 'sepay') {
+      return 'Chuyển khoản, đã nhận tiền / Bank transfer, paid';
+    }
+    return order.shipping_info?.delivery_method === 'pickup'
+      ? 'Thanh toán khi nhận tại cửa hàng / Pay at the store'
+      : 'Thanh toán khi nhận hàng / Cash on delivery';
+  }
+
   async sendOrderConfirmation(order: IOrderForMail) {
     // Find main customer email - assuming user object is attached or we use shipping info?
     // In orders.service, we usually have user_id, but prompt says "shipping_info" has details.
@@ -67,12 +79,19 @@ export class MailService {
     await this.sendSafe(
       {
         to: email,
-        subject: `Order Confirmation #${order.id}`,
+        subject: `Xác nhận đơn hàng / Order confirmation #${order.id}`,
         template: './order-confirmation',
         context: {
           id: order.id,
           total: this.formatPrice(order.total),
-          items: order.items,
+          payment: this.paymentLabel(order),
+          items: order.items.map((item: { price?: number }) => ({
+            ...item,
+            price:
+              typeof item.price === 'number'
+                ? this.formatPrice(item.price)
+                : '',
+          })),
           shipping: order.shipping_info,
         },
       },
@@ -88,14 +107,49 @@ export class MailService {
 
     await this.sendSafe({
       to: adminEmail,
-      subject: `[New Order] #${order.id} - ${this.formatPrice(order.total)}`,
+      subject: `[Đơn mới] #${order.id} - ${this.formatPrice(order.total)}`,
       template: './admin-new-order',
       context: {
         id: order.id,
         total: this.formatPrice(order.total),
+        payment: this.paymentLabel(order),
         items: order.items,
         shipping: order.shipping_info,
-        date: new Date().toLocaleString(),
+        date: new Date().toLocaleString('vi-VN', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+        }),
+      },
+    });
+  }
+
+  /** Resolves to false when the mail server did not accept the alert. */
+  async sendPaymentReviewAlert(alert: {
+    orderId: string;
+    status: string;
+    total: number;
+    received: number;
+    transactionCode: string;
+    reason: string;
+  }): Promise<boolean> {
+    // Opt-in mock delivery must not accidentally send an admin email via SMTP.
+    if (this.notifications?.enabled) return false;
+    const adminEmail = this.configService.get<string>('MAIL_ADMIN_ADDRESS');
+    if (!adminEmail) {
+      this.logger.error('MAIL_ADMIN_ADDRESS_MISSING');
+      return false;
+    }
+
+    return this.sendSafe({
+      to: adminEmail,
+      subject: `[Cần xử lý] Tiền đã về nhưng đơn #${alert.orderId} chưa được xác nhận`,
+      template: './admin-payment-review',
+      context: {
+        id: alert.orderId,
+        status: alert.status,
+        total: this.formatPrice(alert.total),
+        received: this.formatPrice(alert.received),
+        transaction: alert.transactionCode,
+        reason: alert.reason,
       },
     });
   }

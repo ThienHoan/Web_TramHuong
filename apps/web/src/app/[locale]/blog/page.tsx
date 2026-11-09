@@ -121,7 +121,7 @@ export default async function BlogListPage({
                                 <div className="w-full lg:w-3/5 bg-gray-200 relative overflow-hidden min-h-[300px] lg:min-h-[400px]">
                                     <div className="absolute inset-0">
                                         <Image
-                                            src={featuredPost.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnK_XjLPiB3glbU1xH5EDARsmY6II7-YfflRk1LCKk3e75qMPsVis3xtp2PUl8-GKTx4-FHrGdDg00tThlipTvONNe-UG6VC62x9cdkeMrPSQfjv4hgw7U8sbAOJ9vVPBLo206UtpKs3dEdfiPuH6OtZy_W29M1ViOBOAdMI_jtPL0mwvsN6zVQJ6TWXVGCc47HJxYGHNc_HGBAetu-n0jc5PSN33qEHXnRyU1ZrMaGEx11Cx9yrs_QgDyKLIC5IKmtizUwn2a0-wH'}
+                                            src={featuredPost.cover_image || '/editorial/preview-ritual.webp'}
                                             alt={featuredPost.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -167,7 +167,7 @@ export default async function BlogListPage({
                                 <div className="relative aspect-[4/3] overflow-hidden">
                                     <div className="absolute inset-0">
                                         <Image
-                                            src={post.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDFL_XVrAUKC05bRAjNW5Ld8gDiiE7fNpJw4dmkeZTavDUAPUfXDgg2ZM_lEL5wdG7k2g039g424F7MDHIhNWUkZrn8oa6KzCFSzdpotZxJq4IYMfdEj8x8-hXgyR7yPtBE20w-uDJ_p9bJobwDbmfEt8WSAjvehCk94ghXkH7TggFP52XAza6YlNyx3k4dSypMdck1TzYhtWzfoMpQ-P2l8_Op5GmsAbjbDM1HSGDmvYAc-ROwEopVAUEx2QAVPEgs4YCWbew9DOq9'}
+                                            src={post.cover_image || '/editorial/preview-bracelet.webp'}
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-500 group-hover:scale-110"

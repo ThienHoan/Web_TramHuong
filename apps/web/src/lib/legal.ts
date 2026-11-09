@@ -1,5 +1,8 @@
 // Draft: change the version when the owner approves revised policy text.
+// Removing ".draft" also removes the draft notice and lets search engines index the pages.
+// Keep in step with apps/api/src/legal/legal-acceptance.ts.
 export const LEGAL_POLICY_VERSION = "2026-11-06.draft";
+export const LEGAL_POLICY_IS_DRAFT = LEGAL_POLICY_VERSION.endsWith(".draft");
 export const SHOP_CONTACT = {
   brand: "Thiên Phúc",
   email: "Hoan64735@gmail.com",

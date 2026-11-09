@@ -205,7 +205,7 @@ export default function TraditionalProductList({ products }: { products: Product
                 </section>
 
                 {/* Chapter 2 Divider */}
-                < div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA53Ox39qBj5FKKQEZ3-qcETM9i39kEbUZT9Ynxi9nZXdV7h4KyLsGNrye5hur-9UYFhigs1i88IYbe_7ITlciEDyQtDqCt_6jMfm8bB-bcz-Bok2HRENwXpziMTSxvgkKinp1xXpLvRxBvcOUM0TXTMmzqPzDf7-pXLfglXt_NiFjfaG2hIDYvLw54kCZ-XR1RXvfs5RKE26OizUGUZc4xhXFHZ6D_iv6jTV1kz9Hv0L117p4mnPyak6oeyuTEmxu_tMTKCqXWwmre')" }
+                < div className="relative h-64 w-full bg-fixed bg-center bg-cover flex items-center justify-center" style={{ backgroundImage: "url('/editorial/forest.webp')" }
                 }>
                     <div className="absolute inset-0 bg-black/40"></div>
                     <div className="relative z-10 text-center text-white px-4">
@@ -274,46 +274,7 @@ export default function TraditionalProductList({ products }: { products: Product
                                     </div>
                                 ))
                             ) : (
-                                // Fallback Mocks if no data
-                                <>
-                                    <div className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm">
-                                        <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
-                                            <Image
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOKtIdZ0oq8DvVaSeMdvfQeKKZodHYka3UWR0MVdJGXY5FLE4vaAIOa4C_CDcXnf2pBpAiemrI1CWebFQkUQvJ8hVoo8V2csRmON-rGAmG7Z8ov5BuWBYY8w5mV6vgzwc5d2qxyigbswGJXFVqVmyWjLOsQc0GkLXT2a2fAE319rzQ6V6cfb50qZC48h54v5lGvxBCvUssTAbilDdZ3QbJfAlpOE7ZHkKqu8Sz6bDhlwVuMwz8xsLisPfp1cmzz2hFgMEzf90SoyUh"
-                                                alt="Nụ Trầm Phổ Thông"
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
-                                        </div>
-                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><Link href="#">Nụ Trầm Phổ Thông</Link></h3>
-                                        <p className="text-xs text-trad-text-muted mt-1 mb-3">Gói 100g (~60 viên)</p>
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-bold text-trad-red-900">180.000 ₫</span>
-                                            <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                <AppIcon name="add" className="text-sm" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="group bg-white rounded-lg p-4 shadow-sm hover:shadow-lg transition-all border border-trad-border-warm">
-                                        <div className="relative mb-4 aspect-square overflow-hidden rounded bg-trad-bg-warm">
-                                            <Image
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmLQp5pT5Y-cAkmxjCSjmiemDGOkD2xraiLcWSu4-BOzzp0baxiZSzRW-VBQWker0mQv25uem3U89YDE-PhDD_FmiIuxKdjQUPb9Qe9a188t2vqposa6njiyRntMMSo6Yq947ZjlujmFwbk_Tnw1qXUx0ZQNNYxbdSJJqGomqVdll0kMndDl8dDiKMk643X4e7pd2rKzFvePMAZpv_fKfYBCoyZCPbevp4ksM_AHHb4j7coG5fGIC9ggvwrnIdBsSX_pkfqLnWXnmf"
-                                                alt="Combo Trải Nghiệm"
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
-                                            <div className="absolute left-2 top-2 rounded bg-trad-gold px-2 py-0.5 text-[10px] font-bold uppercase text-white z-10">Best Seller</div>
-                                        </div>
-                                        <h3 className="font-bold text-trad-text-main group-hover:text-trad-red-900 transition-colors"><Link href="#">Combo Trải Nghiệm</Link></h3>
-                                        <p className="text-xs text-trad-text-muted mt-1 mb-3">3 loại nụ hương</p>
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-bold text-trad-red-900">120.000 ₫</span>
-                                            <button aria-label="Tăng số lượng" className="flex h-8 w-8 items-center justify-center rounded-full bg-trad-gold text-trad-text-main hover:bg-trad-red-900 hover:text-white transition-colors">
-                                                <AppIcon name="add" className="text-sm" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </>
+                                <p className="col-span-full py-12 text-center text-trad-text-muted">Sản phẩm đang được cập nhật.</p>
                             )}
                         </div>
                     </div>

@@ -7,10 +7,10 @@ import { useRouter, Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import AccountNavigation from '@/components/layout/AccountNavigation';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 import { motion } from 'framer-motion';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useBilingual } from '@/hooks/useBilingual';
 
 interface OrderItem {
     title?: string;
@@ -40,6 +40,7 @@ interface PaginationMeta {
 }
 
 export default function MyOrdersPage() {
+    const { t } = useBilingual();
     const { session, user, loading: authLoading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -85,7 +86,7 @@ export default function MyOrdersPage() {
 
     if (loading) return (
         <div className="atelier-page min-h-screen flex items-center justify-center bg-[#ECEAE4]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9A3412]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#785538]"></div>
         </div>
     );
 
@@ -99,40 +100,40 @@ export default function MyOrdersPage() {
                 <div className="absolute -bottom-32 left-20 w-72 h-72 bg-emerald-100/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
             </div>
 
-            <TraditionalHeader />
+            <ShopHeader />
             <AccountNavigation />
 
             <main className="flex-grow py-12 px-4 sm:px-6 relative z-10">
                 <div className="max-w-4xl mx-auto">
                     {/* Header Section */}
                     <div className="text-center mb-16 relative">
-                        <span className="font-serif text-[#9A3412] text-sm tracking-[0.2em] uppercase mb-2 block">Hành trình</span>
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-4">Câu chuyện mua sắm</h1>
+                        <span className="font-serif text-[#785538] text-sm tracking-[0.2em] uppercase mb-2 block">{t("Tài khoản", "Account")}</span>
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-4">{t("Đơn hàng của tôi", "My orders")}</h1>
                         <div className="flex justify-center items-center gap-3">
-                            <div className="h-[1px] w-12 bg-[#9A3412]/40"></div>
-                            <span className="text-stone-500 font-serif text-xl italic">Mỗi món hàng là một nhân duyên</span>
-                            <div className="h-[1px] w-12 bg-[#9A3412]/40"></div>
+                            <div className="h-[1px] w-12 bg-[#785538]/40"></div>
+                            <span className="text-stone-500 font-serif text-xl italic">{t("Theo dõi những đơn bạn đã đặt", "Follow the orders you have placed")}</span>
+                            <div className="h-[1px] w-12 bg-[#785538]/40"></div>
                         </div>
 
                         {/* Filters */}
                         <div className="mt-8 inline-flex bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm border border-stone-200">
                             <button
                                 onClick={() => setFilter('ALL')}
-                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'ALL' ? 'bg-[#9A3412] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
+                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'ALL' ? 'bg-[#785538] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
                             >
-                                Tất cả
+                                {t("Tất cả", "All")}
                             </button>
                             <button
                                 onClick={() => setFilter('ACTIVE')}
-                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'ACTIVE' ? 'bg-[#9A3412] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
+                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'ACTIVE' ? 'bg-[#785538] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
                             >
-                                Đang thực hiện
+                                {t("Đang thực hiện", "In progress")}
                             </button>
                             <button
                                 onClick={() => setFilter('COMPLETED')}
-                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'COMPLETED' ? 'bg-[#9A3412] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
+                                className={`px-6 py-2 rounded-full text-sm font-serif font-medium transition-all ${filter === 'COMPLETED' ? 'bg-[#785538] text-white shadow-md' : 'text-stone-600 hover:bg-stone-100'}`}
                             >
-                                Hoàn thành
+                                {t("Hoàn thành", "Completed")}
                             </button>
                         </div>
                     </div>
@@ -140,18 +141,18 @@ export default function MyOrdersPage() {
                     {/* Timeline / Order List */}
                     <div className="relative space-y-16 pl-4 md:pl-0">
                         {/* Center Line */}
-                        <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#9A3412]/30 to-transparent -translate-x-1/2"></div>
+                        <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#785538]/30 to-transparent -translate-x-1/2"></div>
 
                         {filteredOrders.length === 0 ? (
                             <div className="text-center py-12 text-stone-500 italic font-serif text-lg">
-                                Bạn chưa có đơn hàng nào trong hành trình này.
+                                {t("Chưa có đơn hàng nào ở mục này.", "There are no orders here yet.")}
                             </div>
                         ) : (
                             filteredOrders.map((order, index) => {
                                 const isEven = index % 2 === 0;
                                 const status = order.status;
                                 let statusConfig = {
-                                    label: 'Đang xử lý',
+                                    label: t("Đang xử lý", "Processing"),
                                     icon: 'pending',
                                     colorClass: 'text-stone-500',
                                     borderColor: 'border-stone-400',
@@ -161,16 +162,16 @@ export default function MyOrdersPage() {
 
                                 if (['COMPLETED', 'PAID', 'DELIVERED'].includes(status)) {
                                     statusConfig = {
-                                        label: 'Đã thanh toán',
+                                        label: t("Đã thanh toán", "Paid"),
                                         icon: 'verified',
                                         colorClass: 'text-emerald-700',
-                                        borderColor: 'border-[#9A3412]',
-                                        bgDot: 'bg-[#9A3412]',
+                                        borderColor: 'border-[#785538]',
+                                        bgDot: 'bg-[#785538]',
                                         grayscale: false
                                     };
                                 } else if (['AWAITING_PAYMENT', 'PENDING'].includes(status)) {
                                     statusConfig = {
-                                        label: 'Chờ thanh toán',
+                                        label: t("Chờ thanh toán", "Awaiting payment"),
                                         icon: 'hourglass_top',
                                         colorClass: 'text-amber-600',
                                         borderColor: 'border-amber-500',
@@ -179,7 +180,7 @@ export default function MyOrdersPage() {
                                     };
                                 } else if (['CANCELED', 'EXPIRED'].includes(status)) {
                                     statusConfig = {
-                                        label: status === 'EXPIRED' ? 'Hết hạn' : 'Đã hủy',
+                                        label: status === 'EXPIRED' ? t("Hết hạn", "Expired") : t("Đã hủy", "Canceled"),
                                         icon: 'cancel',
                                         colorClass: 'text-stone-500',
                                         borderColor: 'border-stone-400',
@@ -190,7 +191,7 @@ export default function MyOrdersPage() {
 
                                 const firstItem = order.items?.[0];
                                 const itemCount = order.items?.length || 0;
-                                const title = firstItem?.title || firstItem?.product?.title || 'Đơn hàng';
+                                const title = firstItem?.title || firstItem?.product?.title || t("Đơn hàng", "Order");
                                 const image = firstItem?.image || firstItem?.product?.images?.[0];
 
                                 return (
@@ -225,7 +226,7 @@ export default function MyOrdersPage() {
                                                 {/* Decorative background SVG for visual texture */}
                                                 <div className="absolute -right-10 -top-10 w-32 h-32 opacity-5 pointer-events-none">
                                                     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M45.7,-49.3C58.9,-39.9,69.1,-25.1,70.9,-9.4C72.7,6.3,66.1,22.9,55.3,35.4C44.5,47.9,29.5,56.3,13.6,58.8C-2.3,61.3,-19.1,57.9,-33.6,48.5C-48.1,39.1,-60.3,23.7,-63.3,6.7C-66.3,-10.3,-60.1,-28.9,-48.5,-40C-36.9,-51.1,-19.9,-54.7,-2.3,-52C15.3,-49.3,32.5,-58.7,45.7,-49.3Z" fill="#9A3412" transform="translate(100 100)"></path>
+                                                        <path d="M45.7,-49.3C58.9,-39.9,69.1,-25.1,70.9,-9.4C72.7,6.3,66.1,22.9,55.3,35.4C44.5,47.9,29.5,56.3,13.6,58.8C-2.3,61.3,-19.1,57.9,-33.6,48.5C-48.1,39.1,-60.3,23.7,-63.3,6.7C-66.3,-10.3,-60.1,-28.9,-48.5,-40C-36.9,-51.1,-19.9,-54.7,-2.3,-52C15.3,-49.3,32.5,-58.7,45.7,-49.3Z" fill="#785538" transform="translate(100 100)"></path>
                                                     </svg>
                                                 </div>
 
@@ -238,17 +239,17 @@ export default function MyOrdersPage() {
                                                             <h4 className="font-serif font-semibold text-lg text-stone-800 leading-tight line-clamp-2">{title}</h4>
                                                             {itemCount > 1 && <p className="text-xs text-stone-500 mt-1 font-serif">+{itemCount - 1} sản phẩm khác</p>}
                                                         </div>
-                                                        <div className="font-serif text-[#9A3412] text-lg font-bold">{formatPrice(Number(order.total_amount || order.total || 0))}</div>
+                                                        <div className="font-serif text-[#785538] text-lg font-bold">{formatPrice(Number(order.total_amount || order.total || 0))}</div>
                                                     </div>
                                                 </div>
 
                                                 <div className="pt-4 border-t border-dashed border-stone-200 flex justify-between items-center relative z-10">
                                                     <span className="text-xs text-stone-400 font-serif italic">
-                                                        {status === 'SHIPPING' ? 'Đang vận chuyển...' : status}
+                                                        {status === 'SHIPPING' ? t("Đang vận chuyển…", "On its way…") : status}
                                                     </span>
                                                     <Link href={status === 'AWAITING_PAYMENT' ? `/checkout/payment?id=${order.id}` : `/account/orders/${order.id}`}>
-                                                        <button className="flex items-center gap-1 text-[#9A3412] hover:text-[#7C2D12] transition-colors text-sm font-medium group/btn">
-                                                            <span className="font-serif">{['COMPLETED', 'PAID', 'SHIPPED', 'DELIVERED'].includes(status) ? 'Xem lại đơn' : (status === 'AWAITING_PAYMENT' ? 'Thanh toán ngay' : 'Xem chi tiết')}</span>
+                                                        <button className="flex items-center gap-1 text-[#785538] hover:text-[#7C2D12] transition-colors text-sm font-medium group/btn">
+                                                            <span className="font-serif">{['COMPLETED', 'PAID', 'SHIPPED', 'DELIVERED'].includes(status) ? t("Xem lại đơn", "View order") : (status === 'AWAITING_PAYMENT' ? t("Thanh toán ngay", "Pay now") : t("Xem chi tiết", "View details"))}</span>
                                                             <AppIcon name="arrow_forward" className="text-base transform group-hover/btn:translate-x-1 transition-transform" />
                                                         </button>
                                                     </Link>
@@ -262,9 +263,9 @@ export default function MyOrdersPage() {
 
                         {/* Ending Dots */}
                         <div className="flex justify-center pt-8">
-                            <div className="w-2 h-2 rounded-full bg-[#9A3412]/20 mb-2"></div>
-                            <div className="w-2 h-2 rounded-full bg-[#9A3412]/20 mx-2 mb-2"></div>
-                            <div className="w-2 h-2 rounded-full bg-[#9A3412]/20 mb-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-[#785538]/20 mb-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-[#785538]/20 mx-2 mb-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-[#785538]/20 mb-2"></div>
                         </div>
 
                         {/* Pagination Controls */}
@@ -273,7 +274,7 @@ export default function MyOrdersPage() {
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
+                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#785538] hover:text-white hover:border-[#785538] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
                                 >
                                     <AppIcon name="arrow_back_ios" className="text-sm" />
                                 </button>
@@ -283,8 +284,8 @@ export default function MyOrdersPage() {
                                         key={p}
                                         onClick={() => setPage(p)}
                                         className={`w-10 h-10 rounded-lg border transition-all font-serif font-bold ${page === p
-                                            ? 'bg-[#9A3412] text-white border-[#9A3412]'
-                                            : 'border-stone-200 text-stone-600 hover:border-[#9A3412] hover:text-[#9A3412]'
+                                            ? 'bg-[#785538] text-white border-[#785538]'
+                                            : 'border-stone-200 text-stone-600 hover:border-[#785538] hover:text-[#785538]'
                                             }`}
                                     >
                                         {p}
@@ -294,7 +295,7 @@ export default function MyOrdersPage() {
                                 <button
                                     onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
                                     disabled={page === meta.last_page}
-                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#9A3412] hover:text-white hover:border-[#9A3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
+                                    className="px-4 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-[#785538] hover:text-white hover:border-[#785538] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-stone-600"
                                 >
                                     <AppIcon name="arrow_forward_ios" className="text-sm" />
                                 </button>
@@ -304,7 +305,7 @@ export default function MyOrdersPage() {
                 </div>
             </main>
 
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

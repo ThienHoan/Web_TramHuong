@@ -30,7 +30,7 @@ Cấu hình cho giai đoạn 1 nằm trong [`deploy/env.production.example`](../
    - Xong thì cập nhật secret `ENV_FILE` và deploy.
 4. **Duyệt nội dung chính sách**: điều khoản, bảo mật, đổi trả, giao hàng.
    - Trang `/policies/...` đang ở bản nháp `2026-11-06.draft` trong `apps/web/src/lib/legal.ts`.
-   - Sau khi duyệt: đổi số phiên bản, deploy, rồi đặt `LEGAL_CONSENT_ENFORCED=true`.
+   - Sau khi duyệt: điền hết các ô `[SELLER CONFIRMATION REQUIRED]`, đổi số phiên bản và bỏ đuôi `.draft` ở cả `apps/web/src/lib/legal.ts` và `apps/api/src/legal/legal-acceptance.ts`, deploy, rồi đặt `LEGAL_CONSENT_ENFORCED=true`. Bỏ `.draft` thì banner nháp và `noindex` tự tắt.
 5. **Cài đặt các dịch vụ ngoài:**
    - Supabase, mục Auth → URL Configuration: Site URL `https://tramhuongthienphuchue.com`, Redirect `https://tramhuongthienphuchue.com/**`.
    - SePay: webhook `https://tramhuongthienphuchue.com/api/orders/sepay-webhook`, xác thực bằng API Key.
@@ -69,7 +69,7 @@ Các phần này đã có code và kiểm thử, nhưng ở production đang **b
 |---|---|
 | Google Analytics 4 | Measurement ID và API secret |
 | Search Console, PageSpeed | Tài khoản Google Cloud, xác minh tên miền (đã có bản ghi TXT) |
-| Cloudflare Turnstile (chống spam form) | Khóa thật của Cloudflare |
+| Cloudflare Turnstile (chống bot khi đặt hàng, liên hệ, hợp tác, đăng nhập) | Đã mở cho production. Cần khóa thật của Cloudflare, `TURNSTILE_ALLOWED_HOSTNAMES`, `FEATURE_TURNSTILE_ENABLED=true`, `INTEGRATIONS_KILL_SWITCH=false`; bật CAPTCHA trong Supabase Auth bằng cùng secret |
 | Email qua Resend | Tài khoản Resend, xác minh tên miền (SPF/DKIM) |
 | Gemini (tư vấn AI) | Chuyển sang gói **trả phí** trước khi khách dùng (gói Free cho phép Google dùng dữ liệu) |
 | Google Merchant | Tài khoản Merchant Center |

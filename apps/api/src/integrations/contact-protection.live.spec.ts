@@ -247,28 +247,28 @@ describe('Turnstile live gate and verification', () => {
     });
   });
 
-  it('bounds: 60 calls per minute, then 503 without calling Cloudflare', async () => {
+  it('bounds: 300 calls per minute, then 503 without calling Cloudflare', async () => {
     const clock = { now: NOW };
     const { service, verifyMock } = make(base, () => ok(), clock);
-    for (let i = 0; i < 60; i++) await service.verify('XXXX.DUMMY.TOKEN.XXXX');
+    for (let i = 0; i < 300; i++) await service.verify('XXXX.DUMMY.TOKEN.XXXX');
     await expect(service.verify('XXXX.DUMMY.TOKEN.XXXX')).rejects.toMatchObject(
       { status: 503 },
     );
-    expect(verifyMock).toHaveBeenCalledTimes(60);
+    expect(verifyMock).toHaveBeenCalledTimes(300);
     clock.now += 60000;
     await expect(
       service.verify('XXXX.DUMMY.TOKEN.XXXX'),
     ).resolves.toBeUndefined();
   });
 
-  it('bounds: at most 4 in flight', async () => {
+  it('bounds: at most 16 in flight', async () => {
     let release!: () => void;
     const gate = new Promise<void>((r) => (release = r));
     const { service, verifyMock } = make(base, async () => {
       await gate;
       return ok();
     });
-    const pending = Array.from({ length: 4 }, () =>
+    const pending = Array.from({ length: 16 }, () =>
       service.verify('XXXX.DUMMY.TOKEN.XXXX'),
     );
     await expect(service.verify('XXXX.DUMMY.TOKEN.XXXX')).rejects.toMatchObject(
@@ -276,7 +276,65 @@ describe('Turnstile live gate and verification', () => {
     );
     release();
     await Promise.all(pending);
-    expect(verifyMock).toHaveBeenCalledTimes(4);
+    expect(verifyMock).toHaveBeenCalledTimes(16);
+  });
+
+  describe('production', () => {
+    const production = {
+      ...base,
+      NODE_ENV: 'production',
+      INTEGRATIONS_ENV: 'production',
+      TURNSTILE_SITE_KEY: REAL_SITE,
+      TURNSTILE_SECRET_KEY: REAL_SECRET,
+      TURNSTILE_ALLOWED_HOSTNAMES: 'shop.example.vn',
+    };
+    const fresh = new Date(NOW - 20000).toISOString();
+    const result = (action: string) => () =>
+      ok({ action, hostname: 'shop.example.vn', challenge_ts: fresh });
+
+    it('runs with real keys and an allowed hostname', () => {
+      expect(make(production, () => ok()).service.status()).toMatchObject({
+        mode: 'cloudflare',
+        testKeys: false,
+      });
+    });
+    it('stays closed with test keys, which always pass', () => {
+      const { service } = make(
+        {
+          ...production,
+          TURNSTILE_SITE_KEY: TEST_SITE,
+          TURNSTILE_SECRET_KEY: TEST_SECRET,
+        },
+        () => ok(),
+      );
+      expect(service.status()).toEqual({ mode: 'unavailable' });
+    });
+    it('stays closed without an allowed hostname', () => {
+      const { service } = make(
+        { ...production, TURNSTILE_ALLOWED_HOSTNAMES: '' },
+        () => ok(),
+      );
+      expect(service.status()).toEqual({ mode: 'unavailable' });
+    });
+    it('is off under the kill switch', () => {
+      const { service } = make(
+        { ...production, INTEGRATIONS_KILL_SWITCH: 'true' },
+        () => ok(),
+      );
+      expect(service.status()).toEqual({ mode: 'disabled' });
+    });
+    it('accepts a checkout token for checkout', async () => {
+      const { service } = make(production, result('checkout'));
+      await expect(
+        service.verify('real-token', undefined, 'checkout'),
+      ).resolves.toBeUndefined();
+    });
+    it('refuses a token issued for a different form', async () => {
+      const { service } = make(production, result('contact'));
+      await expect(
+        service.verify('real-token', undefined, 'checkout'),
+      ).rejects.toMatchObject({ status: 403 });
+    });
   });
 
   it('mock challenge issuing is refused in cloudflare mode', () => {

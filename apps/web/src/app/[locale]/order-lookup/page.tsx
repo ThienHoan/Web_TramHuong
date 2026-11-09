@@ -1,16 +1,10 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
-import ZenOrderLookup from '@/components/zen/ZenOrderLookup';
-import TraditionalOrderLookup from '@/components/traditional/TraditionalOrderLookup';
+import { Suspense } from 'react';
+import OrderLookup from '@/components/shop/OrderLookup';
 
 export default function OrderLookupPage() {
-    const pathname = usePathname();
-    const isVietnamese = pathname.startsWith('/vi');
-
-    if (isVietnamese) {
-        return <TraditionalOrderLookup />;
-    }
-
-    return <ZenOrderLookup />;
+    return (
+        <Suspense>
+            <OrderLookup />
+        </Suspense>
+    );
 }

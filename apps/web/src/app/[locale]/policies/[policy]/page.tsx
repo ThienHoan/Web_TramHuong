@@ -16,11 +16,14 @@ import {
   POLICY_TITLES,
   policySections,
   LEGAL_POLICY_VERSION,
+  LEGAL_POLICY_IS_DRAFT,
   SHOP_CONTACT,
   type PolicyKey,
 } from "@/lib/legal";
 
-export const metadata: Metadata = { robots: { index: false, follow: true } };
+export const metadata: Metadata = {
+  robots: { index: !LEGAL_POLICY_IS_DRAFT, follow: true },
+};
 const descriptions: Record<PolicyKey, { vi: string; en: string }> = {
   privacy: {
     vi: "Thông tin bạn chia sẻ, cách chúng tôi sử dụng và những lựa chọn thuộc về bạn.",
@@ -92,7 +95,13 @@ export default async function PolicyPage({
             <p>{en ? "Document status" : "Trạng thái tài liệu"}</p>
             <span>
               <FileClock size={16} aria-hidden="true" />
-              {en ? "Draft for review" : "Bản nháp đang rà soát"}
+              {LEGAL_POLICY_IS_DRAFT
+                ? en
+                  ? "Draft for review"
+                  : "Bản nháp đang rà soát"
+                : en
+                  ? "In effect"
+                  : "Đang áp dụng"}
             </span>
             <small>
               {en ? "Version" : "Phiên bản"} {LEGAL_POLICY_VERSION}
@@ -135,17 +144,19 @@ export default async function PolicyPage({
             </div>
           </aside>
           <article className="legal-policy-article" aria-label={title}>
-            <div className="legal-draft-notice" role="note">
-              <FileClock size={20} strokeWidth={1.5} aria-hidden="true" />
-              <div>
-                <h2>{en ? "Before you read" : "Trước khi bạn đọc"}</h2>
-                <p>
-                  {en
-                    ? "Draft for local review. Business details, retention periods and commercial conditions are awaiting seller approval. This draft is not approved for commercial launch."
-                    : "Bản nháp để rà soát trên localhost. Thông tin chủ thể bán hàng, thời hạn lưu dữ liệu và điều kiện thương mại đang chờ chủ cửa hàng xác nhận. Chưa phê duyệt để mở bán chính thức."}
-                </p>
+            {LEGAL_POLICY_IS_DRAFT && (
+              <div className="legal-draft-notice" role="note">
+                <FileClock size={20} strokeWidth={1.5} aria-hidden="true" />
+                <div>
+                  <h2>{en ? "Before you read" : "Trước khi bạn đọc"}</h2>
+                  <p>
+                    {en
+                      ? "Draft for local review. Business details, retention periods and commercial conditions are awaiting seller approval. This draft is not approved for commercial launch."
+                      : "Bản nháp để rà soát trên localhost. Thông tin chủ thể bán hàng, thời hạn lưu dữ liệu và điều kiện thương mại đang chờ chủ cửa hàng xác nhận. Chưa phê duyệt để mở bán chính thức."}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
             <nav
               className="legal-contents"
               aria-label={en ? "On this page" : "Nội dung trang"}

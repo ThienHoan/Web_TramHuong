@@ -96,4 +96,9 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   voucherCode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  turnstileToken?: string;
 }

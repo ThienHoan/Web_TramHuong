@@ -11,6 +11,7 @@ import {
   BadRequestException,
   Query,
   Optional,
+  Headers,
 } from '@nestjs/common';
 import type { Request as ExpressRequest } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -31,7 +32,8 @@ import { Role } from '../auth/role.enum';
 import { Public } from '../auth/public.decorator';
 import { LookupOrderDto } from './dto/lookup-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
+import { ContactProtectionService } from '../integrations/contact-protection.service';
 
 @Controller('orders')
 @UseGuards(AuthGuard, RolesGuard)
@@ -39,19 +41,25 @@ export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
     @Optional() private readonly config?: ConfigService,
+    @Optional() private readonly protection?: ContactProtectionService,
   ) {}
 
   @Post('lookup')
   @Public()
-  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   async lookup(@Body() body: LookupOrderDto) {
     return this.ordersService.lookupOrder(body);
   }
 
   @Post()
   @Public()
-  @UseGuards(ThrottlerGuard)
-  async create(@Request() req: RequestWithUser, @Body() body: CreateOrderDto) {
+  // A new order reserves stock and sends email, so it is worth protecting.
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async create(
+    @Request() req: RequestWithUser,
+    @Body() body: CreateOrderDto,
+    @Headers('origin') origin?: string,
+  ) {
     const userId = req.user?.id || null;
     const { items, shipping_info, paymentMethod, voucherCode } =
       body as CreateOrderDto & { voucherCode?: string };
@@ -68,6 +76,9 @@ export class OrdersController {
       voucherCode,
       body.shippingQuoteReference,
       body.idempotencyKey,
+      async () => {
+        await this.protection?.verify(body.turnstileToken, origin, 'checkout');
+      },
     );
   }
 
@@ -98,7 +109,13 @@ export class OrdersController {
 
     // SePay body structure: { id, gateway, transactionDate, accountNumber, subAccount, content, transferType, transferAmount, ... }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { content, transferAmount, id } = body;
+    const { content, transferAmount, transferType, id } = body;
+
+    // A SePay webhook can also be set to report outgoing transfers (for example a
+    // refund whose memo quotes the order ID). Only money coming in can pay an order.
+    if (transferType !== 'in') {
+      return { success: true, reason: 'Ignored: not an incoming transfer' };
+    }
 
     if (!content) return { success: false, reason: 'No content' };
     if (

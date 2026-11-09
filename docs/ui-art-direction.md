@@ -17,6 +17,12 @@ Các trang giao dịch ưu tiên khả năng đọc, nhãn trường, trạng th
 - Kiểm tra tương tác: menu mobile, giỏ hàng và Escape/focus, xem nhanh, thêm biến thể vào giỏ khách, đổi số lượng/xóa, link thanh toán, lightbox sản phẩm, reduced-motion và cuộn cảm ứng.
 - Các trang có đăng nhập như quản trị/tài khoản được kiểm tra mã và TypeScript, chưa xác minh trực quan bằng phiên tài khoản có quyền. Ảnh sản phẩm vẫn lấy từ dữ liệu đã lưu.
 
+## Lớp giao diện dùng chung cho khách
+
+Ô nhập, nút gửi và tiêu đề trên mọi trang khách lấy kiểu từ cuối phần chung trong `atelier.css`, nên hai ngôn ngữ luôn giống nhau. Thêm `data-bare` khi ô nhập hoặc nút nằm trong một control có kiểu riêng. Nút ngoài form dùng `.shop-btn` và `.shop-btn-secondary`; trang giao dịch dùng `.shop-page`, `.shop-card`, `.shop-field`, `.shop-status`.
+
+Trang dùng chung hai ngôn ngữ lấy `ShopHeader`/`ShopFooter` (`components/layout/ShopChrome.tsx`) và chữ qua `useBilingual`. Trang chủ, danh mục, sản phẩm và blog vẫn giữ hai bố cục riêng cho Việt và Anh.
+
 ## Landing page: hành trình cuộn
 
 - `HomeJourney`: ba câu chuyện chạy ngang theo cuộn dọc ở desktop; nút số và mũi tên điều hướng trực tiếp. Mobile dùng dải vuốt ngang tự nhiên.

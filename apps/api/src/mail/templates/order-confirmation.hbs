@@ -1,13 +1,16 @@
-<h1>Order Confirmation</h1>
-<p>Thank you for your order!</p>
-<p><strong>Order ID:</strong> {{id}}</p>
-<p><strong>Total:</strong> {{total}}</p>
+<h1>Trầm Hương · Xác nhận đơn hàng / Order confirmation</h1>
+<p>Cảm ơn bạn đã đặt hàng. / Thank you for your order.</p>
+<p>Mã đơn / Order ID: <strong>{{id}}</strong></p>
+<p>Tổng tiền / Total: <strong>{{total}}</strong></p>
+{{#if payment}}
+<p>Thanh toán / Payment: <strong>{{payment}}</strong></p>
+{{/if}}
 
-<h3>Items:</h3>
+<h3>Sản phẩm / Items</h3>
 <ul>
     {{#each items}}
-        <li>{{this.title}} x {{this.quantity}} - {{this.price}}</li>
+        <li>{{this.title}}{{#if this.variant_name}} ({{this.variant_name}}){{/if}} x {{this.quantity}} - {{this.price}}</li>
     {{/each}}
 </ul>
 
-<p>We will notify you when your order is shipped.</p>
+<p>Chúng tôi sẽ báo cho bạn khi đơn được gửi đi. / We will notify you when your order ships.</p>

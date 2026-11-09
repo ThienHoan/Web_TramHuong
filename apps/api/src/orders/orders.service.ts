@@ -16,7 +16,7 @@ import { VouchersService } from '../vouchers/vouchers.service';
 import { LookupOrderDto } from './dto/lookup-order.dto';
 import { ShippingQuoteService } from '../shipping/quote.service';
 import { productPrice } from '../common/commerce-pricing';
-import { CheckoutRepository } from './checkout.repository';
+import { CheckoutRepository, type CheckoutOrder } from './checkout.repository';
 import { checkoutIntent } from './checkout-intent';
 
 interface OrderItemInput {
@@ -49,9 +49,13 @@ interface ProductTranslation {
   description?: string;
 }
 
+// Longer than SePay's retry schedule for a failed webhook (about 33 minutes).
+const PAYMENT_ALERT_DEDUPE_MS = 60 * 60 * 1000;
+
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
+  private readonly paymentAlerts = new Map<string, number>();
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -151,7 +155,7 @@ export class OrdersService {
       total: order.total,
       items: order.items,
       shipping_info: {
-        full_name: shippingInfo.full_name,
+        full_name: shippingInfo.full_name || shippingInfo.name,
         // Hide sensitive info
         email: shippingInfo.email,
         phone: shippingInfo.phone
@@ -302,6 +306,7 @@ export class OrdersService {
     voucherCode?: string,
     shippingQuoteReference?: string,
     idempotencyKey?: string,
+    verifyNewOrder?: () => Promise<void>,
   ) {
     this.logger.log('CHECKOUT_ATTEMPT');
     try {
@@ -340,6 +345,8 @@ export class OrdersService {
         intent.fingerprint,
       );
       if (previous) return previous.order;
+      // After the replay check: a retry of a committed order has a spent token.
+      await verifyNewOrder?.();
       items = intent.items;
 
       // Fetch products to validate and get prices + DISCOUNT INFO
@@ -558,7 +565,12 @@ export class OrdersService {
         }
       }
 
-      // 5. Emails are now triggered in verifyPayment (Webhook)
+      // 5. Bank-transfer orders are announced by verifyPayment once the money arrives.
+      // Cash orders have no later payment event, so announce them here. A replayed
+      // request is the same order and must not send the emails again.
+      if (!committed.replayed && orderData.payment_method !== 'sepay') {
+        void this.announceNewOrder(orderData);
+      }
       this.logger.log(`Order created successfully: ${orderData.id}`);
       return orderData;
     } catch (error) {
@@ -671,6 +683,71 @@ export class OrdersService {
     return data;
   }
 
+  /** Never rejects: an email problem must not affect an order that is already saved. */
+  private async announceNewOrder(order: CheckoutOrder) {
+    try {
+      const shipping = (order.shipping_info ?? {}) as unknown as ShippingInfo;
+      let email = shipping.email;
+      if (!email && order.user_id) {
+        const { data: user } = await this.client
+          .from('users')
+          .select('email')
+          .eq('id', order.user_id)
+          .single();
+        email = user?.email ?? undefined;
+      }
+      const mail = {
+        ...order,
+        items: order.items as unknown as unknown[],
+        shipping_info: { ...shipping, email: email ?? '' },
+      };
+      await Promise.all([
+        this.mailService.sendOrderConfirmation(mail),
+        this.mailService.sendAdminAlert(mail),
+      ]);
+    } catch {
+      this.logger.error('NEW_ORDER_EMAIL_FAILED');
+    }
+  }
+
+  /**
+   * SePay reported money the system cannot apply to the order. The webhook response
+   * only reaches SePay, so tell the shop, once per transaction.
+   */
+  private alertPaymentNeedsReview(
+    order: { id: string; status: string; total: number },
+    received: number,
+    transactionCode: string,
+    reason: string,
+  ) {
+    const now = Date.now();
+    for (const [code, alertedAt] of this.paymentAlerts) {
+      if (now - alertedAt > PAYMENT_ALERT_DEDUPE_MS) {
+        this.paymentAlerts.delete(code);
+      }
+    }
+    if (this.paymentAlerts.has(transactionCode)) return;
+    this.paymentAlerts.set(transactionCode, now);
+
+    this.logger.error(
+      `SePay money received but order ${order.id} needs manual review (${order.status})`,
+    );
+    void this.mailService
+      .sendPaymentReviewAlert({
+        orderId: order.id,
+        status: order.status,
+        total: order.total,
+        received,
+        transactionCode,
+        reason,
+      })
+      .catch(() => false)
+      .then((accepted) => {
+        // Leave a later SePay retry free to send the alert again.
+        if (!accepted) this.paymentAlerts.delete(transactionCode);
+      });
+  }
+
   async verifyPayment(
     content: string,
     amount: number,
@@ -724,6 +801,12 @@ export class OrdersService {
       this.logger.warn(
         `Payment Verification Failed: Amount mismatch for ${orderId}. Expected ${order.total}, Got ${amount}`,
       );
+      this.alertPaymentNeedsReview(
+        order,
+        amount,
+        transactionCode,
+        'Số tiền nhận được nhỏ hơn tổng đơn',
+      );
       return { success: false, reason: 'Amount mismatch' };
     }
 
@@ -732,6 +815,12 @@ export class OrdersService {
         order.status,
       )
     ) {
+      this.alertPaymentNeedsReview(
+        order,
+        amount,
+        transactionCode,
+        'Đơn không còn ở trạng thái chờ thanh toán (có thể đã hết hạn hoặc bị hủy)',
+      );
       return {
         success: false,
         reason: 'Order state requires manual payment review',

@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label';
 
 import { updatePassword } from '@/app/actions/auth';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useBilingual } from '@/hooks/useBilingual';
 
 export default function ResetPasswordPage() {
+    const { t } = useBilingual();
     useLocale(); // Ensure locale context is available
     const [loading, setLoading] = useState(true);
     const [hasAccess, setHasAccess] = useState(false);
@@ -132,7 +134,7 @@ export default function ResetPasswordPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-2xl font-bold mb-4">Invalid Link</h1>
+                    <h1 className="text-2xl font-bold mb-4">{t("Liên kết không hợp lệ", "Invalid link")}</h1>
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
                         onClick={() => router.push('/auth/forgot-password')}
@@ -148,8 +150,8 @@ export default function ResetPasswordPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold mb-2">Reset Password</h1>
-                <p className="text-gray-600 mb-6">Enter your new password below.</p>
+                <h1 className="text-2xl font-bold mb-2">{t("Đặt lại mật khẩu", "Reset password")}</h1>
+                <p className="text-gray-600 mb-6">{t("Nhập mật khẩu mới của bạn bên dưới.", "Enter your new password below.")}</p>
 
                 {error && (
                     <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">
@@ -159,7 +161,7 @@ export default function ResetPasswordPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="password">New Password</Label>
+                        <Label htmlFor="password">{t("Mật khẩu mới", "New password")}</Label>
                         <div className="relative">
                             <Input
                                 id="password"
@@ -170,7 +172,7 @@ export default function ResetPasswordPage() {
                                 placeholder="Min. 8 characters"
                                 className="pr-10"
                             />
-                            <button aria-label="Hiện hoặc ẩn mật khẩu"
+                            <button aria-label={t("Hiện hoặc ẩn mật khẩu", "Show or hide password")}
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -181,7 +183,7 @@ export default function ResetPasswordPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Label htmlFor="confirmPassword">{t("Xác nhận mật khẩu", "Confirm password")}</Label>
                         <div className="relative">
                             <Input
                                 id="confirmPassword"
@@ -189,10 +191,10 @@ export default function ResetPasswordPage() {
                                 required
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm new password"
+                                placeholder={t("Nhập lại mật khẩu mới", "Confirm new password")}
                                 className="pr-10"
                             />
-                            <button aria-label="Hiện hoặc ẩn mật khẩu"
+                            <button aria-label={t("Hiện hoặc ẩn mật khẩu", "Show or hide password")}
                                 type="button"
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -204,22 +206,22 @@ export default function ResetPasswordPage() {
 
                     {/* Password Requirements */}
                     <div className="bg-gray-50 p-3 rounded text-sm">
-                        <p className="font-medium mb-2">Password Requirements:</p>
+                        <p className="font-medium mb-2">{t("Yêu cầu mật khẩu:", "Password requirements:")}</p>
                         <ul className="space-y-1 text-gray-600">
                             <li className={password.length >= 8 ? 'text-green-600' : ''}>
-                                {password.length >= 8 ? '✓' : '○'} At least 8 characters
+                                {password.length >= 8 ? '✓' : '○'} {t("Ít nhất 8 ký tự", "At least 8 characters")}
                             </li>
                             <li className={/[A-Z]/.test(password) ? 'text-green-600' : ''}>
-                                {/[A-Z]/.test(password) ? '✓' : '○'} One uppercase letter
+                                {/[A-Z]/.test(password) ? '✓' : '○'} {t("Một chữ in hoa", "One uppercase letter")}
                             </li>
                             <li className={/[0-9]/.test(password) ? 'text-green-600' : ''}>
-                                {/[0-9]/.test(password) ? '✓' : '○'} One number
+                                {/[0-9]/.test(password) ? '✓' : '○'} {t("Một chữ số", "One number")}
                             </li>
                         </ul>
                     </div>
 
                     <Button type="submit" disabled={submitting} className="w-full">
-                        {submitting ? 'Resetting...' : 'Reset Password'}
+                        {submitting ? 'Resetting...' : t("Đặt lại mật khẩu", "Reset password")}
                     </Button>
                 </form>
             </div >

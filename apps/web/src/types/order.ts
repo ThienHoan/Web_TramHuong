@@ -50,6 +50,7 @@ export interface Order {
 
 export interface CreateOrderDto {
     idempotencyKey?: string;
+    turnstileToken?: string;
     legalAcceptance?: { accepted: true; version: string };
     shippingQuoteReference?: string;
     items: {

@@ -9,6 +9,7 @@ import { CartModule } from '../cart/cart.module';
 import { MailModule } from '../mail/mail.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ShippingModule } from '../shipping/shipping.module';
     MailModule,
     VouchersModule,
     ShippingModule,
+    IntegrationsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrderCleanupService],

@@ -48,6 +48,8 @@ export function completeCheckoutAttempt(key: string, store?: Storage) {
 }
 export function checkoutErrorMessage(code: string, en = false) {
   const messages: Record<string,[string,string]> = {
+    'Vui lòng xác minh lại trước khi gửi lời nhắn.':['Vui lòng xác minh lại rồi đặt hàng.','Please complete the verification and try again.'],
+    'Xác minh đang tạm gián đoạn. Vui lòng thử lại sau.':['Xác minh đang tạm gián đoạn. Vui lòng thử lại sau.','Verification is temporarily unavailable. Please try again shortly.'],
     CHECKOUT_OUT_OF_STOCK:['Một sản phẩm vừa hết hàng hoặc không còn đủ số lượng. Vui lòng kiểm tra lại giỏ hàng.','A product no longer has enough stock. Please review your cart.'],
     CHECKOUT_PRODUCT_UNAVAILABLE:['Một sản phẩm hiện không còn được bán. Vui lòng kiểm tra lại giỏ hàng.','A product is no longer available. Please review your cart.'],
     CHECKOUT_PRICE_CHANGED:['Giá hoặc ưu đãi vừa thay đổi. Vui lòng kiểm tra lại đơn và tính lại phí giao hàng.','Prices or discounts have changed. Review your order and recalculate delivery.'],

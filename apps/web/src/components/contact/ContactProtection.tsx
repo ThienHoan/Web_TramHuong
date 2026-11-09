@@ -40,11 +40,11 @@ function loadTurnstile(): Promise<TurnstileApi> {
 
 const buttonClass = 'h-11 shrink-0 border-trad-border-warm bg-trad-bg-light px-4 text-trad-text-main shadow-none';
 
-function CloudflareWidget({ protection, vi, disabled }: { protection: Protection; vi: boolean; disabled: boolean }) {
+function CloudflareWidget({ protection, vi, disabled, quiet }: { protection: Protection; vi: boolean; disabled: boolean; quiet: boolean }) {
     const container = useRef<HTMLDivElement>(null);
     const [load, setLoad] = useState<'loading' | 'ready' | 'failed'>('loading');
     const [attempt, setAttempt] = useState(0);
-    const { siteKey, acceptToken, clearToken, bindWidgetReset } = protection;
+    const { action, siteKey, acceptToken, clearToken, bindWidgetReset } = protection;
 
     useEffect(() => {
         if (!siteKey) return;
@@ -55,8 +55,9 @@ function CloudflareWidget({ protection, vi, disabled }: { protection: Protection
             if (cancelled || !container.current) return;
             widgetId = api.render(container.current, {
                 sitekey: siteKey,
-                action: 'contact',
+                action,
                 theme: 'light',
+                appearance: quiet ? 'interaction-only' : 'always',
                 language: 'auto',
                 callback: (token: unknown) => acceptToken(token),
                 'expired-callback': () => clearToken('expired'),
@@ -71,11 +72,19 @@ function CloudflareWidget({ protection, vi, disabled }: { protection: Protection
             bindWidgetReset(null);
             if (widgetId) window.turnstile?.remove(widgetId);
         };
-    }, [siteKey, attempt, acceptToken, clearToken, bindWidgetReset]);
+    }, [action, quiet, siteKey, attempt, acceptToken, clearToken, bindWidgetReset]);
 
     const error = protection.error === 'expired'
         ? vi ? 'Xác minh đã hết hạn. Vui lòng xác minh lại.' : 'Verification expired. Please verify again.'
         : protection.error ? vi ? 'Xác minh chưa thành công. Vui lòng thử lại.' : 'Verification failed. Please try again.' : null;
+    // Most visitors pass without seeing anything; only ask for attention when needed.
+    if (quiet) return <div className="max-w-full">
+        <div ref={container} className="max-w-full overflow-hidden" />
+        {load === 'failed' ? <div className="mt-2 flex flex-wrap items-center gap-3">
+            <p role="alert" className="shop-error">{vi ? 'Chưa tải được bước xác minh.' : 'The verification step could not load.'}</p>
+            <button type="button" className="shop-btn shop-btn-secondary !min-h-11" disabled={disabled} onClick={() => setAttempt((n) => n + 1)}>{vi ? 'Thử lại' : 'Try again'}</button>
+        </div> : error && <p role="alert" className="shop-error mt-2">{error}</p>}
+    </div>;
     return <div className="space-y-3 rounded-xl border border-trad-border-warm bg-trad-bg-light p-4" aria-label={vi ? 'Xác minh Cloudflare' : 'Cloudflare verification'}>
         <div>
             <p className="text-sm font-medium text-trad-text-main">{vi ? 'Xác minh trước khi gửi' : 'Verify before sending'}</p>
@@ -94,19 +103,21 @@ function CloudflareWidget({ protection, vi, disabled }: { protection: Protection
     </div>;
 }
 
-export function ContactProtection({ protection, locale, disabled = false }: {
+export function ContactProtection({ protection, locale, disabled = false, quiet = false }: {
     protection: Protection;
     locale: string;
     disabled?: boolean;
+    /** No panel or instructions: for steps where the form itself is the focus. */
+    quiet?: boolean;
 }) {
     if (protection.mode === 'disabled') return null;
     const vi = locale === 'vi';
-    if (protection.mode === 'loading') return <p role="status" className="text-sm text-stone-600">{vi ? 'Đang tải xác minh…' : 'Loading verification…'}</p>;
+    if (protection.mode === 'loading') return quiet ? null : <p role="status" className="text-sm text-stone-600">{vi ? 'Đang tải xác minh…' : 'Loading verification…'}</p>;
     if (protection.mode === 'unavailable') return <div className="space-y-2 rounded-xl border border-trad-border-warm bg-trad-bg-light p-4">
         <p role="alert" className="text-sm text-trad-text-main">{vi ? 'Chưa tải được xác minh. Vui lòng thử lại.' : 'Verification is unavailable. Please try again.'}</p>
         <Button variant="outline" type="button" className={buttonClass} disabled={disabled} onClick={() => void protection.refresh()}>{vi ? 'Tải lại xác minh' : 'Reload verification'}</Button>
     </div>;
-    if (protection.mode === 'cloudflare') return <CloudflareWidget protection={protection} vi={vi} disabled={disabled} />;
+    if (protection.mode === 'cloudflare') return <CloudflareWidget protection={protection} vi={vi} disabled={disabled} quiet={quiet} />;
 
     const error = protection.error === 'expired'
         ? vi ? 'Xác minh đã hết hạn. Vui lòng xác minh lại.' : 'Verification expired. Please verify again.'

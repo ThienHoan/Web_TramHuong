@@ -118,7 +118,44 @@ body:not(.dark) {
 .atelier-login-form h1 { color: #302e28; text-shadow: none; filter: none; font-size: 38px; }
 .atelier-login-form .text-orange-100 { color: #756c5e; }
 .atelier-login-form .p-8 { padding-inline: 24px; }
+/* Customer pages share one set of fields, buttons and headings in both languages.
+   Unlayered, so these win over the Tailwind utilities still on older markup.
+   Mark a field or button data-bare when it sits inside its own styled control. */
+body:not(:has(.atelier-admin)) h1 { font-family: var(--font-serif), Georgia, serif; font-weight: 400; letter-spacing: -.03em; text-transform: none; }
+body:not(:has(.atelier-admin)) form :is(input:not([type=checkbox],[type=radio],[type=file],[type=hidden],[data-bare]), select:not([data-bare]), textarea:not([data-bare])) { min-height: 48px; border: 1px solid #c9c0b1; border-radius: 3px; background-color: #fffdf8; color: #302e28; font-size: 16px; letter-spacing: 0; box-shadow: none; }
+body:not(:has(.atelier-admin)) form :is(input,select,textarea):focus-visible { border-color: #34473b; outline: 2px solid #89714c; outline-offset: 1px; box-shadow: none; }
+body:not(:has(.atelier-admin)) form :is(input,textarea)::placeholder { color: #857d70; }
+body:not(:has(.atelier-admin)) form :is(input,select,textarea)[aria-invalid=true] { border-color: #a33f2f; }
+body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]), .shop-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border: 1px solid #34473b; border-radius: 3px; background: #34473b; color: #fffdf8; font-family: var(--font-display), sans-serif; font-size: 15px; font-weight: 500; letter-spacing: .01em; text-transform: none; box-shadow: none; transform: none; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
+body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):hover:not(:disabled), .shop-btn:hover:not(:disabled) { background: #26372d; border-color: #26372d; color: #fffdf8; box-shadow: none; }
+body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):disabled, .shop-btn:disabled { background: #b9b3a6; border-color: #b9b3a6; color: #fffdf8; opacity: 1; cursor: not-allowed; }
+.shop-btn:focus-visible, body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):focus-visible { outline: 2px solid #89714c; outline-offset: 2px; }
+.shop-btn-secondary { background: transparent; border-color: #bdb5a5; color: #34473b; }
+.shop-btn-secondary:hover:not(:disabled) { background: #34473b; border-color: #34473b; color: #fffdf8; }
+.shop-page { display: flex; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 56px 20px 80px; color: #302e28; }
+.shop-panel { width: 100%; max-width: 560px; }
+.shop-eyebrow { margin-bottom: 12px; color: #785538; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+.shop-title { font-size: clamp(32px, 4vw, 46px); line-height: 1.18; }
+.shop-lede { margin-top: 12px; color: #70695e; font-size: 15px; line-height: 1.8; }
+.shop-card { padding: 24px; border: 1px solid #ddd5c7; border-radius: 4px; background: #fffdf8; }
+.shop-field { display: flex; flex-direction: column; gap: 8px; color: #302e28; font-size: 14px; font-weight: 500; }
+.shop-field input, .shop-field select, .shop-field textarea { width: 100%; padding: 10px 14px; font-weight: 400; }
+.shop-hint { color: #70695e; font-size: 13px; font-weight: 400; line-height: 1.6; }
+.shop-error { color: #8f3526; font-size: 14px; line-height: 1.6; }
+.shop-link { color: #34473b; text-decoration: underline; text-underline-offset: 3px; }
+.shop-link:hover { color: #785538; }
+.shop-status { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 12px; border: 1px solid #ddd5c7; border-radius: 2px; background: #f4f0e7; color: #4b463c; font-size: 13px; font-weight: 500; }
+.shop-status[data-tone=wait] { border-color: #dcc9a0; background: #f6eeda; color: #6a4f1d; }
+.shop-status[data-tone=move] { border-color: #bfcdbb; background: #e8eee3; color: #34473b; }
+.shop-status[data-tone=done] { border-color: #34473b; background: #34473b; color: #fffdf8; }
+.shop-status[data-tone=stop] { border-color: #e0bdb4; background: #f6e7e2; color: #8f3526; }
+.shop-rows { display: grid; gap: 10px; font-size: 14px; }
+.shop-rows > div { display: flex; justify-content: space-between; gap: 16px; }
+.shop-rows dt { color: #70695e; }
+.shop-rows dd { text-align: right; }
+.shop-rows .shop-total { padding-top: 12px; border-top: 1px solid #ddd5c7; font-size: 16px; font-weight: 600; }
 @media(max-width:767px) {
+  .shop-page { padding: 36px 16px 56px; }
   .atelier-login { grid-template-columns: 1fr; }
   .atelier-login-story { display: none; }
   .atelier-login-form { padding: 24px 12px 48px; }

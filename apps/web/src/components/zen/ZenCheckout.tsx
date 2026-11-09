@@ -6,6 +6,8 @@ import { useAnalyticsView, useAnalyticsTracker } from '@/components/analytics/An
 import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
 import { useState, useEffect } from "react";
+import { ContactProtection } from "@/components/contact/ContactProtection";
+import { useContactProtection } from "@/hooks/useContactProtection";
 import { useCart } from "@/components/providers/CartProvider";
 import { Link, useRouter } from "@/i18n/routing";
 import ZenFooter from "@/components/zen/ZenFooter";
@@ -58,6 +60,7 @@ export default function ZenCheckout() {
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "sepay">("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const protection = useContactProtection("checkout");
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     fullName: "",
@@ -256,7 +259,10 @@ export default function ZenCheckout() {
         paymentMethod: paymentMethod,
       };
 
-      const order = await createOrder(payload, user?.id || null);
+      const order = await createOrder(
+        { ...payload, ...(protection.token ? { turnstileToken: protection.token } : {}) },
+        user?.id || null,
+      );
 
       clearCart();
 
@@ -273,6 +279,7 @@ export default function ZenCheckout() {
       setCheckoutError(
         err.message || "Failed to place order. Please try again.",
       );
+      protection.resetToken();
     } finally {
       setIsSubmitting(false);
     }
@@ -313,7 +320,7 @@ export default function ZenCheckout() {
                 <CheckoutPrimaryButton
                   type="button"
                   onClick={handleCompleteOrder}
-                  disabled={isSubmitting || quotePending || !items.length || !termsAccepted}
+                  disabled={isSubmitting || quotePending || !items.length || !termsAccepted || !protection.canSubmit}
                 >
                   {isSubmitting
                     ? "Placing your order…"
@@ -329,6 +336,7 @@ export default function ZenCheckout() {
             }
           >
             {step === "payment" && <LegalConsent purpose="order" checked={termsAccepted} onChange={setTermsAccepted} disabled={isSubmitting} />}
+            {step === "payment" && <ContactProtection protection={protection} locale="en" disabled={isSubmitting} quiet />}
           </CheckoutSummary>
         }
       >

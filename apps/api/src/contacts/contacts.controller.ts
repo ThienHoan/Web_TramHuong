@@ -77,8 +77,14 @@ export class ContactsController {
 
   @Post('protection/challenge')
   @Throttle({ default: { limit: 10, ttl: 900000 } })
-  issueChallenge(@Headers('origin') origin?: string) {
-    return this.protection.issue(origin);
+  issueChallenge(
+    @Headers('origin') origin?: string,
+    @Body('action') action?: string,
+  ) {
+    return this.protection.issue(
+      origin,
+      action === 'checkout' ? 'checkout' : 'contact',
+    );
   }
 
   @Post()

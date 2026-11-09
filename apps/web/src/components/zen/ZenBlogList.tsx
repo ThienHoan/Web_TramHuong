@@ -93,7 +93,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                     <div className="w-full lg:w-3/5 h-[400px] lg:h-[500px] overflow-hidden relative">
                                         <div className="absolute inset-0 bg-black/10 z-10 transition-opacity group-hover:bg-black/0"></div>
                                         <Image
-                                            src={featuredPost.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1vpbdoMLJGx-eUns-4pVf__QW9dm3bmqMVLiGMZxxU19FMFQQDj9tCG_MQkfwaK0abkHY4D9oyHCFQCHOkW9RY5ilO3Kz3-h1pnlMaJYL_Lg5prchGW-hpAxSoQ3GNJTwm_Rj6N8qHh1vkxQOzDd2QAPpIvokmV9qMYMOt2BPx59iUz3BuvPxJ6iXuRDk6D3joaSUZzMhVlFiagL3qsGOTuSEkKmSRWiuQBPftbrWJZ6lfDCELrFzXzoBy-IdvnHgZZw2V04IniZF'}
+                                            src={featuredPost.cover_image || '/editorial/forest.webp'}
                                             alt={featuredPost.title}
                                             fill
                                             className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -146,7 +146,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                             {/* Search Field */}
                             <div className="w-full md:w-auto min-w-[300px]">
                                 <form onSubmit={handleSearch} className="relative group">
-                                    <input
+                                    <input data-bare
                                         className="w-full bg-transparent border-b border-zen-200 dark:border-white/20 py-2 pl-0 pr-8 text-sm text-zen-900 dark:text-white placeholder-zen-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
                                         placeholder="Search for tranquility..."
                                         type="text"
@@ -168,7 +168,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                 <Link key={post.id} href={`/blog/${post.slug}`} className="group flex flex-col gap-4 cursor-pointer">
                                     <div className="overflow-hidden rounded-lg aspect-[4/3] w-full bg-zen-100 relative">
                                         <Image
-                                            src={post.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDSdbVvde-by1m-yuHQZPM6e6L4KUnsF11fkN_XdU-uDSLtNGzHiEDUDWfWYvqVN-XkpI2X4hm00Qfz5QCcf8g4su9Da6IeYPn2QarmRE6XDpWkPggonZR4G79nZiCTKRJtXoHB-L48yGRt0Sn7lAxdJkRThkp-hXvhL5Cvr79obiQID3uJrE6DLwnL3JOszkKEZzSdSr3ob_9mUbXdUxXI1Jug4E85CZBs0YPYvWb_yoOfn9xoG008EpzWyOGMhHzJTMACJQ_IG7kV'}
+                                            src={post.cover_image || '/editorial/ritual.webp'}
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"

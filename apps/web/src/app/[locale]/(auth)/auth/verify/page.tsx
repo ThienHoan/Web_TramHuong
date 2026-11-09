@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { checkSession, updatePassword } from '@/app/actions/auth'; // Import server actions
+import { useBilingual } from '@/hooks/useBilingual';
 
 export default function VerifyPage() {
+    const { t } = useBilingual();
     const [loading, setLoading] = useState(true);
     const [, setVerified] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -256,7 +258,7 @@ export default function VerifyPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Verifying your email...</p>
+                    <p className="text-gray-600">{t("Đang xác thực email…", "Verifying your email…")}</p>
                 </div>
             </div>
         );
@@ -268,16 +270,16 @@ export default function VerifyPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-2xl font-bold mb-4">Verification Failed</h1>
+                    <h1 className="text-2xl font-bold mb-4">{t("Xác thực chưa thành công", "Verification failed")}</h1>
                     <p className="text-red-600 mb-6">{error}</p>
                     <p className="text-sm text-gray-600 mb-6">
-                        The verification link may have expired or is invalid.
+                        {t("Liên kết xác thực có thể đã hết hạn hoặc không đúng.", "The verification link may have expired or is invalid.")}
                     </p>
                     <button
                         onClick={() => router.push('/login')}
                         className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
                     >
-                        Back to Login
+                        {t("Quay lại đăng nhập", "Back to sign in")}
                     </button>
                 </div>
             </div>
@@ -290,13 +292,13 @@ export default function VerifyPage() {
             <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
                 <div className="text-center mb-6">
                     <div className="text-6xl mb-4">✅</div>
-                    <h1 className="text-2xl font-bold mb-2">Email Verified!</h1>
-                    <p className="text-gray-600">Now create your password</p>
+                    <h1 className="text-2xl font-bold mb-2">{t("Đã xác thực email", "Email verified")}</h1>
+                    <p className="text-gray-600">{t("Giờ hãy tạo mật khẩu của bạn", "Now create your password")}</p>
                 </div>
 
                 <form onSubmit={handlePasswordCreation} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t("Mật khẩu", "Password")}</Label>
                         <Input
                             id="password"
                             type="password"
@@ -311,7 +313,7 @@ export default function VerifyPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Label htmlFor="confirmPassword">{t("Xác nhận mật khẩu", "Confirm password")}</Label>
                         <Input
                             id="confirmPassword"
                             type="password"
@@ -324,16 +326,16 @@ export default function VerifyPage() {
 
                     {/* Password Requirements */}
                     <div className="bg-gray-50 p-3 rounded text-sm">
-                        <p className="font-medium mb-2">Password Requirements:</p>
+                        <p className="font-medium mb-2">{t("Yêu cầu mật khẩu:", "Password requirements:")}</p>
                         <ul className="space-y-1 text-gray-600">
                             <li className={password.length >= 8 ? 'text-green-600' : ''}>
-                                {password.length >= 8 ? '✓' : '○'} At least 8 characters
+                                {password.length >= 8 ? '✓' : '○'} {t("Ít nhất 8 ký tự", "At least 8 characters")}
                             </li>
                             <li className={/[A-Z]/.test(password) ? 'text-green-600' : ''}>
-                                {/[A-Z]/.test(password) ? '✓' : '○'} One uppercase letter
+                                {/[A-Z]/.test(password) ? '✓' : '○'} {t("Một chữ in hoa", "One uppercase letter")}
                             </li>
                             <li className={/[0-9]/.test(password) ? 'text-green-600' : ''}>
-                                {/[0-9]/.test(password) ? '✓' : '○'} One number
+                                {/[0-9]/.test(password) ? '✓' : '○'} {t("Một chữ số", "One number")}
                             </li>
                         </ul>
                     </div>

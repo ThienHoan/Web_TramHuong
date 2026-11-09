@@ -4,17 +4,21 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { CartService } from '../cart/cart.service';
 import { MailService } from '../mail/mail.service';
 import { VouchersService } from '../vouchers/vouchers.service';
+import { OrdersController } from './orders.controller';
+import type { Request as ExpressRequest } from 'express';
 describe('SePay persistence and shipping lifecycle regression', () => {
   const id = '00000000-0000-4000-8000-000000000001';
   let service: OrdersService,
     update: jest.Mock,
     mail: jest.Mock,
+    review: jest.Mock,
     confirmation: { data: unknown; error: unknown };
   let status: string;
   beforeEach(() => {
     status = 'AWAITING_PAYMENT';
     confirmation = { data: { id }, error: null };
     mail = jest.fn().mockResolvedValue(undefined);
+    review = jest.fn().mockResolvedValue(true);
     update = jest.fn().mockImplementation(() => {
       const q = {
         eq: () => q,
@@ -54,10 +58,12 @@ describe('SePay persistence and shipping lifecycle regression', () => {
       {
         sendPaymentSuccess: mail,
         sendAdminAlert: mail,
+        sendPaymentReviewAlert: review,
       } as unknown as MailService,
       {} as VouchersService,
     );
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
   });
   afterEach(() => jest.restoreAllMocks());
@@ -98,5 +104,76 @@ describe('SePay persistence and shipping lifecycle regression', () => {
       { success: true },
     );
     expect(mail).not.toHaveBeenCalled();
+  });
+  it('alerts the shop once per SePay transaction when the order already expired', async () => {
+    status = 'EXPIRED';
+    await service.verifyPayment(id, 200000, 'fixture-tx');
+    await service.verifyPayment(id, 200000, 'fixture-tx');
+    expect(review).toHaveBeenCalledTimes(1);
+    expect(review).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: id,
+        status: 'EXPIRED',
+        total: 200000,
+        received: 200000,
+        transactionCode: 'fixture-tx',
+      }),
+    );
+    expect(update).not.toHaveBeenCalled();
+    await service.verifyPayment(id, 200000, 'fixture-tx-2');
+    expect(review).toHaveBeenCalledTimes(2);
+  });
+  it('alerts the shop when the transfer is smaller than the order total', async () => {
+    await service.verifyPayment(id, 1, 'fixture-tx');
+    expect(review).toHaveBeenCalledWith(
+      expect.objectContaining({ received: 1, total: 200000 }),
+    );
+  });
+  it('lets a SePay retry send the alert again when the email was not accepted', async () => {
+    status = 'EXPIRED';
+    review.mockResolvedValueOnce(false);
+    await service.verifyPayment(id, 200000, 'fixture-tx');
+    await new Promise((resolve) => setImmediate(resolve));
+    await service.verifyPayment(id, 200000, 'fixture-tx');
+    expect(review).toHaveBeenCalledTimes(2);
+  });
+  it('does not alert the shop about a normal payment', async () => {
+    await service.verifyPayment(id, 200000, 'fixture-tx');
+    expect(review).not.toHaveBeenCalled();
+  });
+
+  describe('webhook transfer direction', () => {
+    const payload = { id: 1, content: id, transferAmount: 200000 };
+    const request = {
+      headers: { authorization: 'Apikey fixture-key' },
+    } as unknown as ExpressRequest;
+    let verifyPayment: jest.Mock;
+    let controller: OrdersController;
+    beforeEach(() => {
+      process.env.SEPAY_API_KEY = 'fixture-key';
+      verifyPayment = jest.fn().mockResolvedValue({ success: true });
+      controller = new OrdersController({
+        verifyPayment,
+      } as unknown as OrdersService);
+    });
+    afterEach(() => {
+      delete process.env.SEPAY_API_KEY;
+    });
+    it('applies incoming transfers to the order', async () => {
+      await controller.sepayWebhook(
+        { ...payload, transferType: 'in' },
+        request,
+      );
+      expect(verifyPayment).toHaveBeenCalledWith(id, 200000, '1');
+    });
+    it.each(['out', undefined])(
+      'acknowledges but never applies transferType %s',
+      async (transferType) => {
+        await expect(
+          controller.sepayWebhook({ ...payload, transferType }, request),
+        ).resolves.toMatchObject({ success: true });
+        expect(verifyPayment).not.toHaveBeenCalled();
+      },
+    );
   });
 });

@@ -57,4 +57,96 @@ describe('transaction mail logging privacy', () => {
     expect(log).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
   });
+
+  describe('new order emails', () => {
+    const sale = {
+      ...order,
+      payment_method: 'cod',
+      items: [{ title: 'Fixture', quantity: 1, price: 200000 }],
+      shipping_info: {
+        email: 'buyer@example.invalid',
+        name: 'Fixture Buyer',
+      },
+    };
+    const context = (sendMail: jest.Mock) =>
+      (sendMail.mock.calls[0] as [{ context: Record<string, unknown> }])[0]
+        .context;
+    const service = (sendMail: jest.Mock) =>
+      new MailService(
+        new SmtpEmailProvider({ sendMail } as unknown as MailerService),
+        { get: () => 'shop@example.invalid' } as unknown as ConfigService,
+      );
+
+    it('shows item prices as money and names the payment method', async () => {
+      const sendMail = jest.fn().mockResolvedValue({ accepted: ['fixture'] });
+      await service(sendMail).sendOrderConfirmation(sale);
+      const { items, payment } = context(sendMail) as {
+        items: { price: string }[];
+        payment: string;
+      };
+      expect(items[0].price).toMatch(/^200\.000/);
+      expect(payment).toContain('Cash on delivery');
+    });
+
+    it('labels a store pickup as paying at the store', async () => {
+      const sendMail = jest.fn().mockResolvedValue({ accepted: ['fixture'] });
+      await service(sendMail).sendAdminAlert({
+        ...sale,
+        shipping_info: { ...sale.shipping_info, delivery_method: 'pickup' },
+      });
+      expect(context(sendMail).payment).toContain('Pay at the store');
+    });
+  });
+
+  describe('payment review alert', () => {
+    const alert = {
+      orderId: 'fixture-order',
+      status: 'EXPIRED',
+      total: 200000,
+      received: 200000,
+      transactionCode: 'fixture-tx',
+      reason: 'fixture reason',
+    };
+    const config = (address?: string) =>
+      ({ get: () => address }) as unknown as ConfigService;
+
+    it('emails the shop address and reports acceptance', async () => {
+      const sendMail = jest.fn().mockResolvedValue({ accepted: ['fixture'] });
+      const service = new MailService(
+        new SmtpEmailProvider({ sendMail } as unknown as MailerService),
+        config('shop@example.invalid'),
+      );
+      await expect(service.sendPaymentReviewAlert(alert)).resolves.toBe(true);
+      expect(sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'shop@example.invalid',
+          template: './admin-payment-review',
+        }),
+      );
+    });
+
+    it('reports false when the mail server does not accept it', async () => {
+      jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+      const sendMail = jest.fn().mockRejectedValue(new Error('fixture'));
+      const service = new MailService(
+        new SmtpEmailProvider({ sendMail } as unknown as MailerService),
+        config('shop@example.invalid'),
+      );
+      await expect(service.sendPaymentReviewAlert(alert)).resolves.toBe(false);
+    });
+
+    it('reports false and logs when no shop address is configured', async () => {
+      const error = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      const sendMail = jest.fn();
+      const service = new MailService(
+        new SmtpEmailProvider({ sendMail } as unknown as MailerService),
+        config(undefined),
+      );
+      await expect(service.sendPaymentReviewAlert(alert)).resolves.toBe(false);
+      expect(sendMail).not.toHaveBeenCalled();
+      expect(error).toHaveBeenCalledWith('MAIL_ADMIN_ADDRESS_MISSING');
+    });
+  });
 });

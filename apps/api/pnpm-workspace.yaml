@@ -2,5 +2,10 @@ packages:
   - .
 allowBuilds:
   '@nestjs/core': false
+  '@parcel/watcher': false
   sharp: true
   unrs-resolver: false
+# Same value as "pnpm.overrides" in package.json: Docker and CI use pnpm 9, which
+# reads package.json; newer local pnpm versions read this file.
+overrides:
+  multer: ^2.5.0

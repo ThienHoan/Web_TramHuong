@@ -46,9 +46,7 @@ export default function ZenFooter() {
                 <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-gray-400 font-light font-zen-sans">
                     <p>© {new Date().getFullYear()} Thiên Phúc · Vietnamese Agarwood.</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
-                        <a href="#" className="hover:text-zen-secondary transition-colors">Instagram</a>
                         <a href="https://www.facebook.com/profile.php?id=61585286954215" className="hover:text-zen-secondary transition-colors">Facebook</a>
-                        <a href="#" className="hover:text-zen-secondary transition-colors">Pinterest</a>
                     </div>
                 </div>
             </div>

@@ -311,7 +311,7 @@ export default function TraditionalProductDetail({ product }: { product: Product
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={isAdding}
-                                            className={`flex-1 bg-trad-primary hover:bg-trad-primary-dark text-white font-bold rounded-lg px-4 md:px-8 h-12 flex items-center justify-center gap-2 transition-colors shadow-md shadow-trad-primary/20 text-sm md:text-base ${isAdding ? 'opacity-75 cursor-wait' : ''}`}
+                                            className="shop-btn flex-1"
                                         >
                                             <AppIcon name="shopping_bag" className="!text-[20px]" />
                                             {isAdding ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}

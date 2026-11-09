@@ -1,407 +1,201 @@
 'use client';
 
-import { BrandLockup } from "@/components/brand/BrandIdentity";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { Check, Copy, Download } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/routing';
-import { useEffect, useState, useRef } from 'react';
 import { getOrderStatus, setAccessToken } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
+import { SHOP_CONTACT } from '@/lib/legal';
+import { useBilingual } from '@/hooks/useBilingual';
 import { useCurrency } from '@/hooks/useCurrency';
-import { AppIcon } from "@/components/icons/AppIcon";
+import type { Order } from '@/types/order';
+
+const BANK_CODE = process.env.NEXT_PUBLIC_BANK_CODE;
+const BANK_ACC = process.env.NEXT_PUBLIC_BANK_ACC;
+const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME;
+const vnd = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+function CopyRow({ label, value, shown, hint }: { label: string; value: string; shown?: string; hint?: string }) {
+    const { t } = useBilingual();
+    const [copied, setCopied] = useState(false);
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error(t('Không sao chép được, bạn vui lòng ghi lại thủ công.', 'Could not copy. Please note it down.'));
+        }
+    };
+    return (
+        <div className="flex items-center justify-between gap-3 border-b border-trad-border-subtle py-3 last:border-b-0">
+            <div className="min-w-0">
+                <p className="shop-hint">{label}</p>
+                <p className="break-all text-[15px] font-medium">{shown ?? value}</p>
+                {hint && <p className="shop-hint mt-1">{hint}</p>}
+            </div>
+            <button type="button" onClick={copy} className="shop-btn shop-btn-secondary shrink-0 !min-h-11 !px-3" aria-label={`${t('Sao chép', 'Copy')}: ${label}`}>
+                {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
+                <span className="text-sm">{copied ? t('Đã chép', 'Copied') : t('Sao chép', 'Copy')}</span>
+            </button>
+        </div>
+    );
+}
+
+function Notice({ title, body }: { title: string; body: string }) {
+    const { t } = useBilingual();
+    return (
+        <div className="shop-panel text-center">
+            <h1 className="shop-title">{title}</h1>
+            <p className="shop-lede">{body}</p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                <Link href="/contact" className="shop-btn">{t('Liên hệ cửa hàng', 'Contact the shop')}</Link>
+                <Link href="/" className="shop-btn shop-btn-secondary">{t('Về trang chủ', 'Back to home')}</Link>
+            </div>
+        </div>
+    );
+}
 
 export default function CheckoutPaymentPage() {
+    const { en, t } = useBilingual();
+    const { formatPrice } = useCurrency();
     const searchParams = useSearchParams();
     const router = useRouter();
     const { session } = useAuth();
-    const { formatPrice } = useCurrency();
     const orderId = searchParams.get('id');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Fix type
-    const [order, setOrder] = useState<any>(null);
+    const [order, setOrder] = useState<Partial<Order> | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [timeRemaining, setTimeRemaining] = useState<string>('');
-    const pollingRef = useRef<NodeJS.Timeout | null>(null);
+    const [failed, setFailed] = useState(false);
+    const [remaining, setRemaining] = useState<number | null>(null);
+    const [waiting, setWaiting] = useState(false);
+    const polling = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // SePay/VietQR Config (Should probably be environmental or API provided, but hardcoded template for now)
-    // SePay standard format: https://qr.sepay.vn/img?bank={Bank}&acc={Acc}&template={Template}&amount={Amount}&des={Content}
-    // We need Bank Code and Account Number. 
-    // Assuming User Config: MBBank, 0000123456789.
-    // I should create an ENV or Constant for these.
-    // For now, I will use placeholders and ask user to configure.
-    // Or better: Use the ENV vars if available: NEXT_PUBLIC_BANK_CODE, NEXT_PUBLIC_BANK_ACC, NEXT_PUBLIC_BANK_NAME.
-    const BANK_CODE = process.env.NEXT_PUBLIC_BANK_CODE || 'MB';
-    const BANK_ACC = process.env.NEXT_PUBLIC_BANK_ACC || '0333333333';
-    const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME || 'NGUYEN VAN A';
+    const stopPolling = () => {
+        if (polling.current) clearInterval(polling.current);
+        polling.current = null;
+    };
 
+    const check = useCallback(async () => {
+        if (!orderId) return null;
+        const data = await getOrderStatus(orderId);
+        if (data?.payment_status === 'paid') router.push(`/checkout/success?id=${orderId}`);
+        return data;
+    }, [orderId, router]);
 
-
-    // Countdown timer for payment deadline
     useEffect(() => {
+        if (!orderId) { setLoading(false); return; }
+        if (session?.access_token) setAccessToken(session.access_token);
+        let active = true;
+        void check().then((data) => {
+            if (!active) return;
+            if (data) setOrder(data);
+            else { setFailed(true); stopPolling(); }
+            setLoading(false);
+        });
+        polling.current = setInterval(() => { void check().then((data) => { if (active && data) setOrder(data); }); }, 3000);
+        return () => { active = false; stopPolling(); };
+    }, [orderId, session?.access_token, check]);
 
-
-        if (!order?.payment_deadline) {
-
-            return;
-        }
-
-        const updateCountdown = () => {
-            const deadline = new Date(order.payment_deadline).getTime();
-            const now = Date.now();
-            const diff = deadline - now;
-
-            if (diff <= 0) {
-                setTimeRemaining('EXPIRED');
-                return;
-            }
-
-            const minutes = Math.floor(diff / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-
-        return () => clearInterval(interval);
+    useEffect(() => {
+        if (!order?.payment_deadline) return;
+        const deadline = new Date(order.payment_deadline).getTime();
+        const tick = () => setRemaining(Math.max(0, deadline - Date.now()));
+        tick();
+        const timer = setInterval(tick, 1000);
+        return () => clearInterval(timer);
     }, [order?.payment_deadline]);
 
-    const fetchOrder = async () => {
-        if (!orderId) return;
-        try {
-            const data = await getOrderStatus(orderId);
-            if (data) {
-                setOrder(data);
-                setLoading(false);
-                // If already paid, redirect
-                if (data.payment_status === 'paid') {
-                    router.push(`/checkout/success?id=${orderId}`);
-                }
-            } else {
-                setError('Order not found');
-                setLoading(false);
-                // Stop polling when order not found
-                if (pollingRef.current) {
-                    clearInterval(pollingRef.current);
-                    pollingRef.current = null;
-                }
-            }
-        } catch {
-            setError('Failed to load order');
-            setLoading(false);
-            // Stop polling on error
-            if (pollingRef.current) {
-                clearInterval(pollingRef.current);
-                pollingRef.current = null;
-            }
-        }
-    };
-
-    const checkPaymentStatus = async () => {
-        // Don't poll if there's an error
-        if (!orderId || error) return;
-        try {
-            const data = await getOrderStatus(orderId);
-            if (data && data.payment_status === 'paid') {
-                router.push(`/checkout/success?id=${orderId}`);
-            }
-        } catch {
-            // Silently fail polling - main fetchOrder handles errors
-        }
-    };
-
-    useEffect(() => {
-        // Allow guest users to view payment page (orderId is the only requirement)
-        if (!orderId) return;
-
-        // Set access token if user is logged in (for authenticated API calls)
-        if (session?.access_token) {
-            setAccessToken(session.access_token);
-        }
-
-        void fetchOrder();
-
-        // Start Polling for payment status updates
-        pollingRef.current = setInterval(() => { void checkPaymentStatus() }, 3000);
-
-        return () => {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderId, session?.access_token]);
-
-    // Calculate QR URL
-    // Format: https://qr.sepay.vn/img?bank=[BANK]&acc=[ACC]&template=compact&amount=[AMOUNT]&des=[CONTENT]
-    // Content structure: DH[orderId] (Shortened? UUID is too long for comfortable typing, but QR handles it).
-    // Let's us just use the UUID for exact matching as implemented in backend.
-
-    // order.total is already in VND from database
-    // No conversion needed for VietQR payment
-    const amountInVND = order ? Math.round(order.total) : 0;
-
-    const qrUrl = order
-        ? `https://qr.sepay.vn/img?bank=${BANK_CODE}&acc=${BANK_ACC}&template=compact&amount=${amountInVND}&des=${order.id}`
+    const amount = Math.round(Number(order?.total ?? 0));
+    const expired = remaining === 0 || order?.status === 'EXPIRED' || order?.status === 'CANCELED';
+    const bankReady = !!(BANK_CODE && BANK_ACC && BANK_NAME);
+    const qrUrl = order?.id && bankReady
+        ? `https://qr.sepay.vn/img?bank=${BANK_CODE}&acc=${BANK_ACC}&template=compact&amount=${amount}&des=${order.id}`
         : '';
 
-    const downloadQR = async () => {
-        if (!qrUrl) return;
+    const downloadQr = async () => {
         try {
             const response = await fetch(qrUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `vietqr-${order.id}.png`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        } catch (error) {
-            console.error('Download failed:', error);
-            window.open(qrUrl, '_blank');
+            const url = URL.createObjectURL(await response.blob());
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `vietqr-${order?.id}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch {
+            window.open(qrUrl, '_blank', 'noopener');
         }
     };
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0]">
-            <div className="flex flex-col items-center gap-4">
-                <span className="loading loading-spinner text-primary text-4xl"></span>
-                <p className="text-text-main font-display">Đang tải thông tin thanh toán...</p>
-            </div>
-        </div>
-    );
+    const confirmPaid = async () => {
+        const data = await check();
+        if (data?.payment_status !== 'paid') setWaiting(true);
+    };
 
-    if (error) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FFF9F0] text-red-600 font-display">
-            <div className="p-6 bg-white rounded-xl shadow-lg border border-red-200">
-                <p className="flex items-center gap-2">
-                    <AppIcon name="error" className="" />
-                    {error}
-                </p>
-                <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
-                    Về trang chủ
-                </button>
+    let content: React.ReactNode;
+    if (loading) {
+        content = <p role="status" className="shop-lede">{t('Đang tải thông tin thanh toán…', 'Loading payment details…')}</p>;
+    } else if (!orderId || failed) {
+        content = <Notice title={t('Không tìm thấy đơn hàng', 'Order not found')} body={t('Đường dẫn thanh toán không đúng hoặc đơn không còn tồn tại.', 'This payment link is not valid or the order no longer exists.')} />;
+    } else if (expired) {
+        content = <Notice title={t('Đơn đã hết hạn thanh toán', 'This order has expired')} body={t(`Nếu bạn đã chuyển tiền, vui lòng gọi ${SHOP_CONTACT.phone} để cửa hàng kiểm tra giúp bạn.`, `If you have already paid, please call ${SHOP_CONTACT.phone} and the shop will check it for you.`)} />;
+    } else if (!bankReady) {
+        content = <Notice title={t('Chưa hiển thị được thông tin chuyển khoản', 'Payment details are unavailable')} body={t(`Vui lòng gọi ${SHOP_CONTACT.phone} để cửa hàng hỗ trợ thanh toán đơn này.`, `Please call ${SHOP_CONTACT.phone} and the shop will help you pay for this order.`)} />;
+    } else {
+        const minutes = Math.floor((remaining ?? 0) / 60000);
+        const seconds = Math.floor(((remaining ?? 0) % 60000) / 1000);
+        content = (
+            <div className="w-full max-w-[960px]">
+                <p className="shop-eyebrow">{t('Thanh toán', 'Payment')}</p>
+                <h1 className="shop-title">{t('Chuyển khoản để hoàn tất đơn', 'Transfer to complete your order')}</h1>
+                <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+                    <section className="shop-card flex flex-col items-center gap-4 text-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- generated by the payment provider */}
+                        <img src={qrUrl} alt={t('Mã VietQR để chuyển khoản', 'VietQR code for this transfer')} className="aspect-square w-full max-w-[280px] object-contain" />
+                        <p className="shop-hint">{t('Mở ứng dụng ngân hàng và quét mã. Số tiền và nội dung đã được điền sẵn.', 'Open your banking app and scan the code. The amount and reference are filled in for you.')}</p>
+                        <button type="button" onClick={downloadQr} className="shop-btn shop-btn-secondary w-full">
+                            <Download size={18} aria-hidden="true" />
+                            {t('Tải ảnh QR', 'Save QR image')}
+                        </button>
+                        {remaining !== null && (
+                            <p className="text-sm" role="timer">
+                                {t('Còn lại', 'Time left')}: <strong className="tabular-nums">{minutes}:{seconds.toString().padStart(2, '0')}</strong>
+                            </p>
+                        )}
+                    </section>
+                    <section className="shop-card">
+                        <h2 className="font-serif text-2xl">{t('Hoặc chuyển khoản thủ công', 'Or transfer manually')}</h2>
+                        <div className="mt-3">
+                            <CopyRow label={t('Số tiền', 'Amount')} value={String(amount)} shown={vnd(amount)} hint={en ? `≈ ${formatPrice(amount)}` : undefined} />
+                            <div className="border-b border-trad-border-subtle py-3">
+                                <p className="shop-hint">{t('Ngân hàng', 'Bank')}</p>
+                                <p className="text-[15px] font-medium">{BANK_CODE}</p>
+                            </div>
+                            <div className="border-b border-trad-border-subtle py-3">
+                                <p className="shop-hint">{t('Chủ tài khoản', 'Account name')}</p>
+                                <p className="text-[15px] font-medium">{BANK_NAME}</p>
+                            </div>
+                            <CopyRow label={t('Số tài khoản', 'Account number')} value={BANK_ACC ?? ''} />
+                            <CopyRow label={t('Nội dung chuyển khoản', 'Transfer reference')} value={order?.id ?? ''} hint={t('Cần đúng nội dung này để đơn được xác nhận tự động.', 'Use this exact reference so the order is confirmed automatically.')} />
+                        </div>
+                        {waiting && <p role="status" className="shop-hint mt-4">{t('Chưa thấy tiền về. Trang sẽ tự chuyển khi ngân hàng xác nhận, thường trong vài phút.', 'We have not received it yet. This page will move on by itself once the bank confirms, usually within a few minutes.')}</p>}
+                        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                            <button type="button" onClick={confirmPaid} className="shop-btn flex-1">{t('Tôi đã chuyển khoản', 'I have paid')}</button>
+                            <Link href={`/order-lookup?code=${order?.id ?? ''}`} className="shop-btn shop-btn-secondary flex-1">{t('Tra cứu đơn', 'Track order')}</Link>
+                        </div>
+                    </section>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
-        <div className="bg-[#FFF9F0] font-display text-text-main antialiased selection:bg-primary selection:text-white bg-pattern-lotus min-h-screen flex flex-col">
-            {/* Header */}
-            <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-accent-gold/20 shadow-sm transition-all duration-300">
-                <div className="bg-text-main text-accent-gold text-xs py-1.5 hidden md:block">
-                    <div className="container mx-auto px-4 flex justify-between items-center">
-                        <span className="font-medium">Thiên Phúc · Miễn phí vận chuyển đơn từ 300.000 ₫</span>
-                        <div className="flex gap-4 font-medium">
-                            <Link href="/order-lookup" className="hover:text-white transition-colors">Tra cứu đơn hàng</Link>
-                            <span className="text-white/20">|</span>
-                            <Link href="/partnership" className="hover:text-white transition-colors">Đại lý &amp; Phân phối</Link>
-                        </div>
-                    </div>
-                </div>
-                <div className="container mx-auto px-4 xl:px-8">
-                    <div className="flex h-20 items-center justify-between gap-6">
-                        <Link href="/" aria-label="Thiên Phúc — Trang chủ"><BrandLockup /></Link>
-                    </div>
-                </div>
-            </header>
-
-            <main className="flex-1 bg-surface-accent/10 relative py-12 lg:py-20 flex items-center justify-center">
-                <div className="absolute inset-0 bg-pattern-lotus opacity-30 pointer-events-none"></div>
-                <div className="container mx-auto px-4 max-w-5xl relative z-10">
-                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-accent-gold/30 flex flex-col lg:flex-row ring-1 ring-black/5">
-                        {/* QR Code Section */}
-                        <div className="lg:w-5/12 bg-[#F9F5F0] relative overflow-hidden flex flex-col items-center justify-center p-8 lg:p-10 border-b lg:border-b-0 lg:border-r border-dashed border-accent-gold/40">
-                            <div className="absolute inset-0 bg-pattern-lotus opacity-10 mix-blend-multiply pointer-events-none"></div>
-                            <div className="relative z-10 w-full flex flex-col items-center">
-                                <h3 className="font-serif text-2xl font-bold text-primary-dark mb-6 text-center">Quét mã để thanh toán</h3>
-                                <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-primary/20 mb-6 w-full max-w-[280px] relative">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
-                                        <div className="flex items-center gap-1.5">
-                                            <AppIcon name="qr_code_scanner" className="text-accent-gold text-2xl" />
-                                            <span className="font-bold text-text-main text-sm">VietQR</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <AppIcon name="payments" className="text-blue-600 text-lg" />
-                                            <span className="font-bold text-blue-600 italic text-sm">SePay</span>
-                                        </div>
-                                    </div>
-                                    <div className="aspect-square w-full bg-white rounded-lg overflow-hidden relative border border-gray-100 p-1">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            alt="Quét mã VietQR"
-                                            className="w-full h-full object-contain mix-blend-darken"
-                                            src={qrUrl}
-                                            onError={(e) => {
-                                                // Fallback if generic QR fails? Actually SePay QR should be reliable.
-                                                // Maybe show icon.
-                                                (e.target as HTMLImageElement).src = 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
-                                            }}
-                                        />
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full shadow-md">
-                                            <AppIcon name="spa" className="text-accent-gold text-2xl" />
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={downloadQR}
-                                        className="mt-3 w-full flex items-center justify-center gap-2 bg-white hover:bg-surface-accent text-primary font-bold py-2 rounded-lg border border-primary/20 transition-colors text-sm"
-                                    >
-                                        <AppIcon name="download" className="text-lg" />
-                                        Tải ảnh QR
-                                    </button>
-                                    <div className="mt-3 flex justify-between items-center text-[10px] text-gray-500 font-medium">
-                                        <span>Hỗ trợ 50+ Ngân hàng</span>
-                                        <div className="flex gap-1 items-center">
-                                            <AppIcon name="lock" className="text-sm" />
-                                            <span>Bảo mật</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="text-text-sub text-sm text-center mb-6 px-4 font-medium opacity-80">
-                                    Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>Camera</strong> trên điện thoại để quét mã.
-                                </p>
-
-                                {order?.payment_deadline && (
-                                    <div className="w-full bg-surface-accent/40 rounded-xl p-4 text-center border border-accent-gold/40 relative overflow-hidden group">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
-                                        <p className="text-xs font-bold text-trad-red uppercase tracking-widest mb-2 opacity-80">Thời hạn thanh toán</p>
-                                        <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-primary-dark">
-                                            <AppIcon name="timer" className={`text-3xl ${timeRemaining !== 'EXPIRED' ? 'animate-pulse text-trad-amber' : 'text-red-500'}`} />
-                                            <span>{timeRemaining === 'EXPIRED' ? 'Đã hết hạn' : timeRemaining}</span>
-                                        </div>
-                                        <p className="text-[11px] text-text-sub mt-2 italic font-medium">Đơn hàng sẽ tự động hủy nếu quá hạn</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Payment Details Section */}
-                        <div className="lg:w-7/12 p-8 lg:p-12 relative flex flex-col justify-center bg-white">
-                            <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-                                <AppIcon name="local_florist" className="text-9xl" />
-                            </div>
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-1 h-8 bg-primary rounded-full"></div>
-                                <h2 className="font-serif text-3xl font-bold text-text-main">Thông tin chuyển khoản</h2>
-                            </div>
-                            <div className="space-y-6 relative z-10">
-                                <div className="bg-surface-accent/20 rounded-xl p-4 border border-accent-gold/20">
-                                    <label className="text-xs font-bold text-text-sub uppercase tracking-wider mb-2 flex items-center gap-1">
-                                        <AppIcon name="attach_money" className="text-sm" /> Số tiền cần thanh toán
-                                    </label>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-baseline gap-1 text-4xl font-bold text-primary-dark font-serif">
-                                            {formatPrice(amountInVND).replace('₫', '')} <span className="text-xl text-text-main font-sans">VNĐ</span>
-                                        </div>
-                                        <button
-                                            onClick={() => navigator.clipboard.writeText(amountInVND.toString())}
-                                            className="p-2 hover:bg-black/5 rounded-full text-text-sub/50 hover:text-primary transition-colors"
-                                            title="Sao chép số tiền"
-                                        >
-                                            <AppIcon name="content_copy" className="text-xl" />
-                                        </button>
-                                    </div>
-                                    <p className="text-xs text-text-sub/70 mt-1 italic">
-                                        (Bằng chữ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountInVND)})
-                                    </p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Ngân hàng</label>
-                                        <div className="relative">
-                                            <input
-                                                className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
-                                                readOnly type="text" value={BANK_CODE}
-                                            />
-                                            <AppIcon name="account_balance" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Chủ tài khoản</label>
-                                        <div className="relative">
-                                            <input
-                                                className="w-full bg-gray-50 border-gray-200 rounded-lg py-3 px-4 font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default"
-                                                readOnly type="text" value={BANK_NAME}
-                                            />
-                                            <AppIcon name="person" className="absolute right--3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Số tài khoản</label>
-                                    <div className="flex shadow-sm rounded-lg overflow-hidden group">
-                                        <input
-                                            className="flex-1 min-w-0 bg-gray-50 border-gray-200 border-r-0 rounded-l-lg py-3 px-3 md:px-4 font-mono text-lg font-bold text-text-main focus:ring-0 focus:border-accent-gold/50 cursor-default tracking-wider truncate"
-                                            readOnly type="text" value={BANK_ACC}
-                                        />
-                                        <button
-                                            onClick={() => navigator.clipboard.writeText(BANK_ACC)}
-                                            className="bg-surface-accent hover:bg-accent-gold border border-l-0 border-accent-gold/30 text-text-sub hover:text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 whitespace-nowrap shrink-0"
-                                        >
-                                            <AppIcon name="content_copy" className="text-lg" />
-                                            <span>Sao chép</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-text-sub uppercase tracking-wider mb-2 ml-1">Nội dung chuyển khoản</label>
-                                    <div className="flex shadow-sm rounded-lg overflow-hidden mb-3">
-                                        <input
-                                            className="flex-1 min-w-0 bg-amber-50 border-amber-200 border-r-0 rounded-l-lg py-3 px-3 md:px-4 font-mono font-bold text-text-main focus:ring-0 focus:border-accent-gold cursor-default truncate text-sm"
-                                            readOnly type="text" value={order?.id}
-                                        />
-                                        <button
-                                            onClick={() => navigator.clipboard.writeText(order?.id)}
-                                            className="bg-primary hover:bg-primary-dark border border-l-0 border-primary text-white font-bold px-3 md:px-5 py-2 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg whitespace-nowrap shrink-0"
-                                        >
-                                            <AppIcon name="content_copy" className="text-lg" />
-                                            <span>Sao chép</span>
-                                        </button>
-                                    </div>
-                                    <div className="flex items-start gap-3 text-xs text-trad-red bg-red-50 p-3 rounded-lg border border-red-100">
-                                        <AppIcon name="warning" className="text-lg shrink-0" />
-                                        <span className="font-medium leading-relaxed">
-                                            Lưu ý quan trọng: Bạn phải sao chép <strong>chính xác</strong> nội dung chuyển khoản ở trên để đơn hàng được kích hoạt tự động.
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-                                <Link
-                                    href="/"
-                                    className="text-sm font-bold text-text-sub/60 hover:text-primary transition-colors flex items-center gap-1 group"
-                                >
-                                    <AppIcon name="arrow_back" className="text-base group-hover:-translate-x-1 transition-transform" />
-                                    Quay lại trang chủ
-                                </Link>
-                                <div className="flex gap-3 w-full sm:w-auto">
-                                    <button
-                                        onClick={() => router.push('/account/orders')}
-                                        className="flex-1 sm:flex-none px-6 py-3 rounded-lg border border-accent-gold/30 text-text-main font-bold hover:bg-surface-accent transition-colors text-sm"
-                                    >
-                                        Xem đơn hàng
-                                    </button>
-                                    <button
-                                        onClick={checkPaymentStatus}
-                                        className="flex-1 sm:flex-none px-8 py-3 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
-                                    >
-                                        <span>Đã thanh toán</span>
-                                        <AppIcon name="check_circle" className="text-sm" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-8 text-center">
-                        <p className="text-xs text-text-sub/50 font-medium">Thanh toán an toàn được bảo mật bởi SePay</p>
-                    </div>
-                </div>
-            </main>
-
-            <footer className="bg-background-dark text-white pt-20 pb-10 border-t-4 border-accent-gold">
-                <div className="container mx-auto px-4 xl:px-8">
-                    <p className="text-center text-sm text-gray-500">© 2024 Trầm Hương Thiên Phúc. Bảo lưu mọi quyền.</p>
-                </div>
-            </footer>
+        <div className="flex min-h-screen flex-col bg-trad-bg-light font-display">
+            <ShopHeader />
+            <main className="shop-page">{content}</main>
+            <ShopFooter />
         </div>
     );
 }

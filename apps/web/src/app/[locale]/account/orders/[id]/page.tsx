@@ -15,10 +15,10 @@ import { useRouter, Link } from '@/i18n/routing';
 import ProductImage from '@/components/ui/ProductImage';
 import { useCurrency } from '@/hooks/useCurrency';
 import AccountNavigation from '@/components/layout/AccountNavigation';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 import { AppIcon } from "@/components/icons/AppIcon";
 import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
+import { useBilingual } from '@/hooks/useBilingual';
 
 interface OrderItem {
     title?: string;
@@ -61,6 +61,7 @@ interface Order {
 }
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { t } = useBilingual();
     const { session, user, loading: authLoading } = useAuth();
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
@@ -90,7 +91,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     if (loading || !order) return (
         <div className="atelier-page min-h-screen flex items-center justify-center bg-[#ECEAE4]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9A3412]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#785538]"></div>
         </div>
     );
 
@@ -102,7 +103,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     // Status Config
     let statusConfig = {
-        label: 'Đang xử lý',
+        label: t("Đang xử lý", "Processing"),
         icon: 'pending',
         textColor: 'text-stone-500',
         borderColor: 'border-stone-200',
@@ -114,7 +115,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     if (isCompleted) {
         statusConfig = {
-            label: 'Đã hoàn thành',
+            label: t("Đã hoàn thành", "Completed"),
             icon: 'check_circle',
             textColor: 'text-green-700',
             borderColor: 'border-green-200',
@@ -125,7 +126,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         };
     } else if (isAwaitingPayment) {
         statusConfig = {
-            label: 'Chờ thanh toán',
+            label: t("Chờ thanh toán", "Awaiting payment"),
             icon: 'hourglass_top',
             textColor: 'text-amber-700',
             borderColor: 'border-amber-200',
@@ -136,7 +137,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         };
     } else if (isPending) {
         statusConfig = {
-            label: 'Đang xử lý',
+            label: t("Đang xử lý", "Processing"),
             icon: 'inventory',
             textColor: 'text-blue-700',
             borderColor: 'border-blue-200',
@@ -147,7 +148,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         };
     } else if (isExpiredOrCanceled) {
         statusConfig = {
-            label: status === 'EXPIRED' ? 'Đã Hết Hạn' : 'Đã Hủy',
+            label: status === 'EXPIRED' ? t("Đã hết hạn", "Expired") : t("Đã hủy", "Canceled"),
             icon: status === 'EXPIRED' ? 'event_busy' : 'cancel',
             textColor: 'text-trad-red-bright',
             borderColor: 'border-red-100',
@@ -164,30 +165,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     return (
         <div className="min-h-screen bg-background-light font-display text-text-main antialiased selection:bg-primary selection:text-white flex flex-col transition-colors duration-300">
             <PurchaseCapture orderId={resolvedParams?.id} />
-            {/* Zalo Button Fixed - keeping from template */}
-            <a className="fixed bottom-8 right-6 z-50 group" href="#">
-                <div className="relative flex items-center justify-center size-14 bg-gradient-to-br from-[#0068FF] to-[#0041a3] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 ring-4 ring-white/30">
-                    <AppIcon name="chat" className="text-3xl" />
-                    <span className="absolute right-0 top-0 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                    </span>
-                </div>
-                <div className="absolute bottom-16 right-0 bg-white px-4 py-2 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 whitespace-nowrap text-sm font-bold text-[#0068FF] border border-blue-100">
-                    Chat Zalo ngay
-                </div>
-            </a>
 
-            <TraditionalHeader />
+            <ShopHeader />
             <AccountNavigation />
 
             <main className="flex-grow py-12 md:py-16">
                 <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
                     <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <Link href={`/shipping/${order.id}`} className="mb-4 inline-flex items-center gap-2 rounded-md border border-current/20 px-4 py-2 text-sm">Theo dõi giao hàng / Track delivery</Link>
+                        <Link href={`/shipping/${order.id}`} className="mb-4 inline-flex items-center gap-2 rounded-md border border-current/20 px-4 py-2 text-sm">{t("Theo dõi giao hàng", "Track delivery")}</Link>
                         <Link href="/account/orders" className="inline-flex items-center gap-2 text-sm text-text-main/60 hover:text-primary transition-colors group">
                             <AppIcon name="arrow_back" className="text-lg group-hover:-translate-x-1 transition-transform" />
-                            Quay lại danh sách đơn hàng
+                            {t("Quay lại danh sách đơn hàng", "Back to my orders")}
                         </Link>
                         {/* Extra buttons from template if needed, keeping simple for now or adding map */}
                     </div>
@@ -201,15 +189,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                                 <div>
-                                    <span className={`block text-sm font-bold uppercase tracking-widest mb-2 ${isExpiredOrCanceled ? 'text-trad-gray' : 'text-accent-gold'}`}>Chi Tiết Đơn Hàng</span>
+                                    <span className={`block text-sm font-bold uppercase tracking-widest mb-2 ${isExpiredOrCanceled ? 'text-trad-gray' : 'text-accent-gold'}`}>{t("Chi tiết đơn hàng", "Order details")}</span>
                                     <h1 className={`font-serif text-3xl md:text-4xl font-bold flex items-center gap-3 ${statusConfig.mainColor}`}>
                                         #{order.id?.slice(0, 8).toUpperCase()}
                                         <AppIcon name={statusConfig.headerIcon} className={`text-2xl ${isExpiredOrCanceled ? 'text-trad-gray/50' : 'text-accent-gold'}`} />
                                     </h1>
                                     <p className={`mt-2 text-sm ${isExpiredOrCanceled ? 'text-text-main/70 italic font-serif' : 'text-text-main/60'}`}>
                                         {isExpiredOrCanceled
-                                            ? order.status === 'EXPIRED' ? '"Đơn hàng của bạn đã hết hạn. Hãy khám phá lại những tinh hoa khác nhé."' : '"Đơn hàng đã được hủy theo yêu cầu."'
-                                            : "Cảm ơn bạn đã tin tưởng lựa chọn Thiên Phúc."}
+                                            ? order.status === 'EXPIRED' ? t("Đơn hàng của bạn đã hết hạn.", "This order has expired.") : t("Đơn hàng đã được hủy.", "This order was canceled.")
+                                            : t("Cảm ơn bạn đã tin tưởng lựa chọn Thiên Phúc.", "Thank you for choosing Thiên Phúc.")}
                                     </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
@@ -219,7 +207,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                         {statusConfig.label}
                                     </span>
                                     <div className="text-right">
-                                        <span className="text-xs text-text-main/50 uppercase tracking-wide">Ngày đặt hàng</span>
+                                        <span className="text-xs text-text-main/50 uppercase tracking-wide">{t("Ngày đặt hàng", "Order date")}</span>
                                         <p className="font-medium text-text-main">{new Date(order.created_at).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                     </div>
                                 </div>
@@ -247,7 +235,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="receipt_long" className="text-sm" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-text-main">Đặt Hàng</p>
+                                                    <p className="text-sm font-bold text-text-main">{t("Đặt hàng", "Placed")}</p>
                                                     <p className="text-xs text-text-main/50">
                                                         {new Date(order.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}, {new Date(order.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
                                                     </p>
@@ -262,9 +250,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="payments" className="text-sm" />
                                                 </div>
                                                 <div>
-                                                    <p className={`text-sm font-bold ${hasPaid ? 'text-text-main' : 'text-gray-400'}`}>Thanh Toán</p>
+                                                    <p className={`text-sm font-bold ${hasPaid ? 'text-text-main' : 'text-gray-400'}`}>{t("Thanh toán", "Payment")}</p>
                                                     <p className="text-xs text-gray-400">
-                                                        {hasPaid ? 'Thành công' : (stepStatus === 'AWAITING_PAYMENT' ? 'Đang chờ...' : '--:--')}
+                                                        {hasPaid ? t("Thành công", "Done") : (stepStatus === 'AWAITING_PAYMENT' ? t("Đang chờ…", "Waiting…") : '--:--')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -277,9 +265,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="local_shipping" className="text-sm" />
                                                 </div>
                                                 <div>
-                                                    <p className={`text-sm font-bold ${hasShipped ? 'text-text-main' : 'text-gray-400'}`}>Vận Chuyển</p>
+                                                    <p className={`text-sm font-bold ${hasShipped ? 'text-text-main' : 'text-gray-400'}`}>{t("Vận chuyển", "Delivery")}</p>
                                                     <p className="text-xs text-gray-400">
-                                                        {hasShipped ? 'Đang giao hàng' : '--:--'}
+                                                        {hasShipped ? t("Đang giao hàng", "On its way") : '--:--'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -292,7 +280,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 </div>
                                                 <div>
                                                     <p className={`text-sm font-bold ${isCanceled ? 'text-trad-red-bright' : (isFinished ? 'text-green-700' : 'text-gray-400')}`}>
-                                                        {isCanceled ? (stepStatus === 'EXPIRED' ? 'Hết Hạn' : 'Đã Hủy') : 'Hoàn Tất'}
+                                                        {isCanceled ? (stepStatus === 'EXPIRED' ? t("Hết hạn", "Expired") : t("Đã hủy", "Canceled")) : t("Hoàn tất", "Completed")}
                                                     </p>
                                                 </div>
                                             </div>
@@ -309,13 +297,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <div className="px-8 py-6 border-b border-[#F5EFE6] bg-[#FFFAF0]/50 flex items-center justify-between">
                                         <h2 className="font-serif text-xl font-bold text-text-main flex items-center gap-2">
                                             <AppIcon name="inventory_2" className="text-primary" />
-                                            Sản Phẩm Đã Chọn
+                                            {t("Sản phẩm đã chọn", "Your items")}
                                         </h2>
                                         <span className="text-xs text-text-main/50 font-medium uppercase tracking-wider">{order.items?.length || 0} Sản phẩm</span>
                                     </div>
                                     <div className="divide-y divide-[#F5EFE6]">
                                         {order.items?.map((item: OrderItem, idx: number) => {
-                                            const title = item.title || item.product?.title || 'Sản phẩm';
+                                            const title = item.title || item.product?.title || t("Sản phẩm", "Product");
                                             const image = item.image || item.product?.images?.[0];
                                             const price = Number(item.price || 0);
                                             const originalPrice = Number(item.original_price || item.price || 0);
@@ -345,25 +333,22 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                                 </span>
                                                                 {hasDiscount && !isExpiredOrCanceled && (
                                                                     <span className="text-[10px] text-red-500 font-medium whitespace-nowrap">
-                                                                        Tiết kiệm {formatPrice(discountAmount * item.quantity)}
+                                                                        {t("Tiết kiệm", "You save")} {formatPrice(discountAmount * item.quantity)}
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 text-xs text-text-main/50 flex-wrap">
-                                                            <span className="px-2 py-0.5 rounded bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">Số lượng: {item.quantity}</span>
+                                                            <span className="px-2 py-0.5 rounded bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">{t("Số lượng:", "Quantity:")} {item.quantity}</span>
                                                             {item.variant_name && <span className="bg-trad-bg-warm px-2 py-0.5 rounded border border-trad-border-warm">{item.variant_name}</span>}
                                                             {hasDiscount && !isExpiredOrCanceled && (
                                                                 <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
                                                                     -{Math.round((discountAmount / originalPrice) * 100)}%
                                                                 </span>
                                                             )}
-                                                            <span>Đơn giá: {hasDiscount && !isExpiredOrCanceled ? formatPrice(price) : formatPrice(originalPrice)}</span>
+                                                            <span>{t("Đơn giá:", "Unit price:")} {hasDiscount && !isExpiredOrCanceled ? formatPrice(price) : formatPrice(originalPrice)}</span>
                                                         </div>
                                                         <div className="pt-2">
-                                                            <p className="text-sm text-text-main/70 italic leading-relaxed font-light border-l-2 border-accent-gold/30 pl-3">
-                                                                &quot;Hương thơm ngọt dịu của trầm núi rừng, lan tỏa sự thanh tịnh cho không gian thiền định.&quot;
-                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -379,7 +364,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <AppIcon name="savings" className={`text-2xl ${isExpiredOrCanceled ? 'text-gray-400' : 'text-accent-gold'}`} />
                                         </div>
                                         <div>
-                                            <p className="text-sm text-text-main/60">{isExpiredOrCanceled ? 'Bạn đã bỏ lỡ ưu đãi' : 'Bạn đã tiết kiệm được'}</p>
+                                            <p className="text-sm text-text-main/60">{isExpiredOrCanceled ? t("Bạn đã bỏ lỡ ưu đãi", "You missed this offer") : t("Bạn đã tiết kiệm được", "You saved")}</p>
                                             <p className={`font-bold ${isExpiredOrCanceled ? 'text-gray-500 line-through' : 'text-trad-gold'}`}>
                                                 {(() => {
                                                     const totalSavings = order.items?.reduce((sum: number, item: OrderItem) => {
@@ -393,10 +378,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     </div>
                                     <div className={`h-10 w-px hidden md:block ${isExpiredOrCanceled ? 'bg-gray-200' : 'bg-accent-gold/20'}`}></div>
                                     <div className="text-center md:text-right">
-                                        <p className="text-sm text-text-main/60 mb-1">{isExpiredOrCanceled ? 'Phương thức thanh toán dự kiến' : 'Phương thức thanh toán'}</p>
+                                        <p className="text-sm text-text-main/60 mb-1">{isExpiredOrCanceled ? t("Phương thức thanh toán dự kiến", "Planned payment method") : t("Phương thức thanh toán", "Payment method")}</p>
                                         <p className={`font-medium flex items-center gap-2 ${isExpiredOrCanceled ? 'text-text-main/70' : 'text-text-main'}`}>
                                             <AppIcon name="credit_card" className={`text-lg ${isExpiredOrCanceled ? 'text-gray-500' : 'text-primary'}`} />
-                                            {order.payment_method === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng (VietQR/Sepay)'}
+                                            {order.payment_method === 'cod' ? t("Thanh toán khi nhận hàng (COD)", "Cash on delivery") : t("Chuyển khoản ngân hàng", "Bank transfer")}
                                         </p>
                                     </div>
                                 </div>
@@ -409,7 +394,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <div className="relative z-10">
                                         <h3 className={`font-serif text-lg font-bold mb-6 flex items-center gap-2 ${isExpiredOrCanceled ? 'text-gray-500' : 'text-text-main'}`}>
                                             <AppIcon name="local_shipping" className={`${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`} />
-                                            Thông Tin Giao Hàng
+                                            {t("Thông tin giao hàng", "Delivery details")}
                                         </h3>
                                         <div className="space-y-6">
                                             <div className="flex gap-4">
@@ -417,7 +402,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="person" className="text-xl" />
                                                 </div>
                                                 <div>
-                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Người nhận</p>
+                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>{t("Người nhận", "Recipient")}</p>
                                                     <p className={`font-medium ${isExpiredOrCanceled ? 'text-gray-600' : 'text-text-main'}`}>{shippingInfo.name || shippingInfo.full_name || shippingInfo.fullName || 'N/A'}</p>
                                                 </div>
                                             </div>
@@ -426,7 +411,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="call" className="text-xl" />
                                                 </div>
                                                 <div>
-                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Số điện thoại</p>
+                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>{t("Số điện thoại", "Phone number")}</p>
                                                     <p className={`font-medium ${isExpiredOrCanceled ? 'text-gray-600' : 'text-text-main'}`}>{shippingInfo.phone || shippingInfo.phone_number || shippingInfo.phoneNumber || 'N/A'}</p>
                                                 </div>
                                             </div>
@@ -435,7 +420,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     <AppIcon name="location_on" className="text-xl" />
                                                 </div>
                                                 <div>
-                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>Địa chỉ nhận hàng</p>
+                                                    <p className={`text-xs uppercase tracking-wide mb-1 ${isExpiredOrCanceled ? 'text-gray-400' : 'text-text-main/50'}`}>{t("Địa chỉ nhận hàng", "Delivery address")}</p>
                                                     <p className={`font-medium leading-relaxed ${isExpiredOrCanceled ? 'text-gray-600' : 'text-text-main'}`}>
                                                         {shippingInfo.full_address || shippingInfo.address || ((shippingInfo.ward && shippingInfo.district) ? `${shippingInfo.address}, ${shippingInfo.ward}, ${shippingInfo.district}, ${shippingInfo.city}` : 'N/A')}
                                                     </p>
@@ -471,13 +456,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <div className={`absolute bottom-0 right-0 w-32 h-32 opacity-20 pointer-events-none ${isExpiredOrCanceled ? 'bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-black via-transparent to-transparent' : ''}`}></div>
 
                                             <div className="relative z-10 space-y-4">
-                                                <h3 className="font-serif text-lg font-bold text-accent-gold mb-4 border-b border-white/10 pb-4">Tổng Kết Đơn Hàng</h3>
+                                                <h3 className="font-serif text-lg font-bold text-accent-gold mb-4 border-b border-white/10 pb-4">{t("Tổng kết đơn hàng", "Order summary")}</h3>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-white/80'}`}>
-                                                    <span>Tạm tính</span>
+                                                    <span>{t("Tạm tính", "Subtotal")}</span>
                                                     <span>{formatPrice(subtotal)}</span>
                                                 </div>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-white/80'}`}>
-                                                    <span>Phí vận chuyển</span>
+                                                    <span>{t("Phí vận chuyển", "Shipping")}</span>
                                                     <span>
                                                         {shippingFee === 0 ? (
                                                             <div className="flex flex-col items-end">
@@ -490,7 +475,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     </span>
                                                 </div>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-accent-gold'}`}>
-                                                    <span>Giảm giá</span>
+                                                    <span>{t("Giảm giá", "Discount")}</span>
                                                     <span>
                                                         {(() => {
                                                             const totalSavings = order.items?.reduce((sum: number, item: OrderItem) => {
@@ -516,23 +501,23 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 {isExpiredOrCanceled ? (
                                                     <div className="mt-6 bg-red-900/30 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-red-500/30">
                                                         <AppIcon name="highlight_off" className="text-red-300" />
-                                                        <span className="text-sm font-bold text-red-100 uppercase tracking-wider">Chưa Thanh Toán</span>
+                                                        <span className="text-sm font-bold text-red-100 uppercase tracking-wider">{t("Chưa thanh toán", "Not paid")}</span>
                                                     </div>
                                                 ) : isAwaitingPayment ? (
                                                     <div className="mt-6">
                                                         <Link href={`/checkout/payment?id=${order.id}`} className="block w-full text-center bg-accent-gold hover:bg-accent-gold-dark text-white p-3 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-lg">
-                                                            Thanh toán ngay
+                                                            {t("Thanh toán ngay", "Pay now")}
                                                         </Link>
                                                     </div>
                                                 ) : isPending ? (
                                                     <div className="mt-6 bg-[#0068FF]/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-blue-200/30">
                                                         <AppIcon name="inventory_2" className="text-blue-300" />
-                                                        <span className="text-sm font-bold text-blue-100 uppercase tracking-wider">Đang Chuẩn Bị Hàng</span>
+                                                        <span className="text-sm font-bold text-blue-100 uppercase tracking-wider">{t("Đang chuẩn bị hàng", "Preparing your order")}</span>
                                                     </div>
                                                 ) : (
                                                     <div className="mt-6 bg-white/10 rounded-lg p-3 flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
                                                         <AppIcon name="check_circle" className="text-green-400" />
-                                                        <span className="text-sm font-bold text-white uppercase tracking-wider">Đã Thanh Toán</span>
+                                                        <span className="text-sm font-bold text-white uppercase tracking-wider">{t("Đã thanh toán", "Paid")}</span>
                                                     </div>
                                                 )}
 
@@ -541,14 +526,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                         <Dialog>
                                                             <DialogTrigger asChild>
                                                                 <button className="text-xs text-white/50 hover:text-white/80 underline decoration-indigo-500/30 hover:decoration-indigo-500 transition-all">
-                                                                    Bạn muốn hủy đơn hàng?
+                                                                    {t("Bạn muốn hủy đơn hàng?", "Want to cancel this order?")}
                                                                 </button>
                                                             </DialogTrigger>
                                                             <DialogContent className="sm:max-w-md bg-white">
                                                                 <DialogHeader>
-                                                                    <DialogTitle>Hỗ trợ đơn hàng</DialogTitle>
+                                                                    <DialogTitle>{t("Hỗ trợ đơn hàng", "Order support")}</DialogTitle>
                                                                     <DialogDescription>
-                                                                        Kết nối với chúng mình để được hỗ trợ nhanh nhất.
+                                                                        {t("Kết nối với chúng mình để được hỗ trợ nhanh nhất.", "Get in touch and we will help right away.")}
                                                                     </DialogDescription>
                                                                 </DialogHeader>
                                                                 <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center">
@@ -556,14 +541,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                                         <AppIcon name="support_agent" className="text-accent-gold text-2xl" />
                                                                     </div>
                                                                     <p className="text-sm text-gray-600 leading-relaxed max-w-[90%]">
-                                                                        Nếu bạn muốn thay đổi hoặc hủy đơn hàng, đừng ngần ngại gọi cho chúng mình qua số hotline để được hỗ trợ nhanh nhất.
+                                                                        {t("Nếu muốn thay đổi hoặc hủy đơn, bạn gọi số hotline để được hỗ trợ nhanh nhất.", "To change or cancel this order, please call our hotline.")}
                                                                     </p>
                                                                     <p className="font-serif text-lg font-bold text-primary flex items-center gap-2">
                                                                         <AppIcon name="call" className="" />
                                                                         035.617.68.78
                                                                     </p>
                                                                     <p className="text-xs text-gray-400 italic">
-                                                                        &quot;Thiên Phúc luôn sẵn sàng lắng nghe và hỗ trợ bạn!&quot;
+                                                                        {t("Thiên Phúc luôn sẵn sàng hỗ trợ bạn.", "Thiên Phúc is always glad to help.")}
                                                                     </p>
                                                                 </div>
                                                             </DialogContent>
@@ -580,7 +565,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
             </main>
 
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

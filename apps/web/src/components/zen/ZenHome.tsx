@@ -99,7 +99,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
                                     <Image
                                         alt="Artisan hands carving wood"
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
-                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPyflVzrUTSkJ8pX7n1Y9O30q9bk9XcTCPXhV6ruLYeAhD34IQJVXxEPUDTDNPZmsNWNDagAOHwTUV926lB8nqwi1dB06Ab4ihmt7rM5tbL0gKc7YdyNL0kdx2PHLF60r-LeukWH-GMPAoUvlpwfO25b-DVRubYNmXGQQi2Dqqte7f2dapLAO5-f9VSVPHqmxpSm2QjFSQ1FsAlfgb6czazxiX_ugLX59TTa6kSHjqAkX2XaYjnK4vsM7JkfYcEMAM7MnNfQZT9-AC"
+                                        src="/editorial/wood.webp"
                                         width={400}
                                         height={600}
                                     />
@@ -113,7 +113,7 @@ export default function ZenHome({ products }: { products: Product[] }) {
                                     <Image
                                         alt="Close up of incense texture"
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
-                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowdR6auj8zzL27aUJupmrLecfj0ANaqKMe-2rnu1Qv3ophqvBINDqWza6xU3DxCEeaKpwnAZ93FUQsctUo_lKJ3PrFPyMHzUNy2HPJeqQIsVlkmSrVvA_MlzULYOzSkrYfH3Nx6Ou2gDqs4vZzx7C1W0iriuXtWYK6rJnCw9OOvzhpyLEAhxgWekpF4Kr0_690wKsyvU-sdrEE701vu0wNzqUHGUnGHPt-S3WNxw8qHTRWcOXY3BcTajZYzdC9C-o1WpqhEhNv5Y"
+                                        src="/editorial/preview-gallery.webp"
                                         width={400}
                                         height={600}
                                     />

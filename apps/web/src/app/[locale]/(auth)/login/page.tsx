@@ -9,11 +9,13 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useBilingual } from '@/hooks/useBilingual';
 import { oauthCallbackUrl } from '@/lib/oauth-return';
 
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { ContactProtection } from '@/components/contact/ContactProtection';
+import { useContactProtection } from '@/hooks/useContactProtection';
 
 export default function LoginPage() {
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -25,6 +27,10 @@ export default function LoginPage() {
     const [showCheckEmail, setShowCheckEmail] = useState(false);
     const router = useRouter();
     const locale = useLocale();
+    const { t } = useBilingual();
+    const protection = useContactProtection('account');
+    // Only sent when Cloudflare is active; Supabase ignores it unless captcha is on.
+    const captchaToken = protection.mode === 'cloudflare' ? protection.token ?? undefined : undefined;
     const searchParams = useSearchParams();
     const messageParam = searchParams.get('message');
     const emailParam = searchParams.get('email');
@@ -56,7 +62,7 @@ export default function LoginPage() {
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (mode === "SIGNUP" && !privacyAccepted) { setError("Vui lòng đọc chính sách và đồng ý tạo tài khoản."); return; }
+        if (mode === "SIGNUP" && !privacyAccepted) { setError(t('Vui lòng đọc chính sách và đồng ý tạo tài khoản.', 'Please read the policy and agree before creating an account.')); return; }
         setLoading(true);
         setError(null);
 
@@ -64,7 +70,8 @@ export default function LoginPage() {
             if (mode === 'LOGIN') {
                 const { data: { user }, error } = await supabase.auth.signInWithPassword({
                     email: email.trim(),
-                    password
+                    password,
+                    options: { captchaToken },
                 });
                 if (error) throw error;
                 if (!user) throw new Error('No user found');
@@ -106,6 +113,7 @@ export default function LoginPage() {
                     email: email.trim(),
                     options: {
                         emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/auth/verify`,
+                        captchaToken,
                         data: {
                             full_name: email.trim().split('@')[0],
                             avatar_url: '',
@@ -120,7 +128,8 @@ export default function LoginPage() {
             } else if (mode === 'FORGOT_PASSWORD') {
                 // Forgot password mode - send reset email
                 const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-                    redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/auth/reset-password`
+                    redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/auth/reset-password`,
+                    captchaToken,
                 });
                 if (error) throw error;
 
@@ -136,21 +145,22 @@ export default function LoginPage() {
             if (errorMsg === 'EMAIL_ALREADY_EXISTS') {
                 errorMessage = 'EMAIL_EXISTS';
             } else if (errorMsg.includes('Invalid login credentials')) {
-                errorMessage = 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
+                errorMessage = t('Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.', 'That email or password is not right. Please check and try again.');
             } else if (errorMsg.includes('Email not confirmed')) {
-                errorMessage = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.';
+                errorMessage = t('Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.', 'This email is not confirmed yet. Please check your inbox.');
             } else if (errorMsg.includes('User not found') || errorMsg.includes('No user found')) {
-                errorMessage = 'Không tìm thấy tài khoản với email này.';
+                errorMessage = t('Không tìm thấy tài khoản với email này.', 'We could not find an account with that email.');
             } else if (errorMsg.includes('Invalid email')) {
-                errorMessage = 'Email không hợp lệ. Vui lòng kiểm tra lại.';
+                errorMessage = t('Email không hợp lệ. Vui lòng kiểm tra lại.', 'That email does not look right. Please check it.');
             } else if (errorMsg.includes('Password should be')) {
-                errorMessage = 'Mật khẩu phải có ít nhất 8 ký tự.';
+                errorMessage = t('Mật khẩu phải có ít nhất 8 ký tự.', 'Your password needs at least 8 characters.');
             } else if (errorMsg.includes('Too many requests')) {
-                errorMessage = 'Quá nhiều lần thử. Vui lòng đợi một lúc rồi thử lại.';
+                errorMessage = t('Quá nhiều lần thử. Vui lòng đợi một lúc rồi thử lại.', 'Too many attempts. Please wait a moment and try again.');
             }
 
             setError(errorMessage);
         } finally {
+            protection.resetToken(); // a Cloudflare token works only once
             setLoading(false);
         }
     };
@@ -172,25 +182,25 @@ export default function LoginPage() {
                 }
             `}</style>
 
-            <TraditionalHeader />
+            <ShopHeader />
 
             <main className="atelier-login relative flex-grow">
                 <aside className="atelier-login-story" aria-label="Thiên Phúc">
-                    <p>THIÊN PHÚC · TRẦM HƯƠNG VIỆT</p>
-                    <h2>Một nơi để trở về.<br /><em>Một hương để nhớ.</em></h2>
-                    <span>Lưu những phẩm vật yêu thích và theo dõi hành trình đơn hàng của bạn.</span>
+                    <p>{t("THIÊN PHÚC · TRẦM HƯƠNG VIỆT", "THIÊN PHÚC · VIETNAMESE AGARWOOD")}</p>
+                    <h2>{t("Một nơi để trở về.", "A place to come back to.")}<br /><em>{t("Một hương để nhớ.", "A scent to remember.")}</em></h2>
+                    <span>{t("Lưu những món yêu thích và theo dõi đơn hàng của bạn.", "Save the pieces you love and follow your orders.")}</span>
                 </aside>
                 <div className="absolute inset-0 lattice-pattern pointer-events-none"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
                 <div className="atelier-login-form relative w-full max-w-md">
                     <div className="bg-white dark:bg-[#1e150f] rounded-xl shadow-xl border border-[#e8dbce] dark:border-[#3e2b1e] overflow-hidden">
-                        <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdSR04opfgwFmAWGzfn7jCXO4We20hf1Fz0jyGri4Ts4rNU2LExkjoprytRDMz8dECXjELo-KCHmr__NPJnat3-5SCu-vIIlpmVeBEhp7M_UlxBRErpHythTa2_j8CJjkpI0w12EDhHEAzXuOpYneO6ZYp-fQFVstsRuY4RBR5rleo5gqeUJWrNlHy7rDOZ8rZMAlN9z3-KHLXuU4opf0cdPeXGnGl7_UUiwNY68IKovkwoOEt4J-tgVHucHPcpII8EkZ1VKQMsqYH")' }}>
+                        <div className="relative h-32 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(180deg, rgba(213, 109, 11, 0.2) 0%, rgba(30, 21, 15, 0.9) 100%), url("/editorial/preview-ritual.webp")' }}>
                             <div className="absolute bottom-4 left-6">
                                 <h1 className="text-2xl font-bold text-white tracking-wide shadow-black drop-shadow-md">
-                                    {showCheckEmail ? 'Kiểm tra Email' : (mode === 'LOGIN' ? 'Đăng nhập' : mode === 'SIGNUP' ? 'Đăng ký' : 'Quên mật khẩu')}
+                                    {showCheckEmail ? t('Kiểm tra Email', 'Check your email') : (mode === 'LOGIN' ? t('Đăng nhập', 'Sign in') : mode === 'SIGNUP' ? t('Đăng ký', 'Sign up') : t('Quên mật khẩu', 'Forgot password'))}
                                 </h1>
                                 <p className="text-orange-100 text-sm font-medium opacity-90">
-                                    {showCheckEmail ? 'Vui lòng xác thực tài khoản' : mode === 'FORGOT_PASSWORD' ? 'Nhận link đặt lại mật khẩu' : 'Chào mừng quý khách quay trở lại'}
+                                    {showCheckEmail ? t('Vui lòng xác thực tài khoản', 'Please verify your account') : mode === 'FORGOT_PASSWORD' ? t('Nhận link đặt lại mật khẩu', 'Get a password reset link') : t('Chào mừng quý khách quay trở lại', 'Welcome back')}
                                 </p>
                             </div>
                         </div>
@@ -199,7 +209,7 @@ export default function LoginPage() {
                                 <div className="text-center">
                                     <div className="mb-4 text-6xl">📧</div>
                                     <p className="text-gray-600 mb-6">
-                                        Chúng tôi đã gửi liên kết xác thực đến <strong>{email}</strong>
+                                        {t("Chúng tôi đã gửi liên kết xác thực đến", "We sent a verification link to")} <strong>{email}</strong>
                                     </p>
                                     <button
                                         onClick={() => {
@@ -209,7 +219,7 @@ export default function LoginPage() {
                                         }}
                                         className="text-trad-primary text-sm underline font-bold"
                                     >
-                                        ← Quay lại Đăng nhập
+                                        ← {t("Quay lại đăng nhập", "Back to sign in")}
                                     </button>
                                 </div>
                             ) : (
@@ -218,7 +228,7 @@ export default function LoginPage() {
                                         <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-3 rounded mb-4 text-sm font-medium border border-green-200 dark:border-green-800">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-lg">✅</span>
-                                                <span>Mật khẩu đã được đặt lại thành công! Vui lòng đăng nhập với mật khẩu mới.</span>
+                                                <span>{t("Mật khẩu đã được đặt lại. Vui lòng đăng nhập bằng mật khẩu mới.", "Your password has been reset. Please sign in with the new one.")}</span>
                                             </div>
                                         </div>
                                     )}
@@ -226,14 +236,14 @@ export default function LoginPage() {
                                         <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm font-medium border border-red-100">
                                             {error === 'EMAIL_EXISTS' ? (
                                                 <>
-                                                    <p>Email này đã được đăng ký trước đó. Bạn có thể:</p>
+                                                    <p>{t("Email này đã được đăng ký. Bạn có thể:", "This email is already registered. You can:")}</p>
                                                     <div className="mt-2 flex gap-3">
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMode('LOGIN'); setError(null); }}
                                                             className="text-xs underline font-bold hover:text-red-700"
                                                         >
-                                                            → Đăng nhập ngay
+                                                            → {t("Đăng nhập ngay", "Sign in")}
                                                         </button>
                                                         <span className="text-red-400">•</span>
                                                         <button
@@ -241,7 +251,7 @@ export default function LoginPage() {
                                                             onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
                                                             className="text-trad-primary hover:underline font-medium text-sm"
                                                         >
-                                                            → Quên mật khẩu?
+                                                            → {t("Quên mật khẩu?", "Forgot password?")}
                                                         </button>
                                                     </div>
                                                 </>
@@ -253,7 +263,7 @@ export default function LoginPage() {
                                     <form onSubmit={handleAuth} className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="block text-sm font-bold text-[#1c140d] dark:text-gray-200" htmlFor="email">
-                                                {mode === 'FORGOT_PASSWORD' ? 'Email đã đăng ký' : 'Email hoặc Tên đăng nhập'}
+                                                {mode === 'FORGOT_PASSWORD' ? t('Email đã đăng ký', 'Registered email') : t('Email hoặc Tên đăng nhập', 'Email or username')}
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -264,7 +274,7 @@ export default function LoginPage() {
                                                     className="block w-full pl-10 pr-3 py-3 border border-[#e8dbce] dark:border-[#5c402b] rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#1a120b] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-trad-primary/50 focus:border-trad-primary transition duration-150 ease-in-out sm:text-sm font-sans"
                                                     id="email"
                                                     name="email"
-                                                    placeholder="Ví dụ: ten_dang_nhap"
+                                                    placeholder={t("Ví dụ: ten_dang_nhap", "e.g. your_username")}
                                                     required
                                                     type="email" // Changed to email for compatibility with auth logic, text is fine if logic handles username
                                                     value={email}
@@ -276,7 +286,7 @@ export default function LoginPage() {
                                         {mode === 'LOGIN' && (
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-[#1c140d] dark:text-gray-200" htmlFor="password">
-                                                    Mật khẩu
+                                                    {t('Mật khẩu', 'Password')}
                                                 </label>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -293,7 +303,7 @@ export default function LoginPage() {
                                                         value={password}
                                                         onChange={e => setPassword(e.target.value)}
                                                     />
-                                                    <button aria-label="Hiện hoặc ẩn mật khẩu"
+                                                    <button aria-label={t("Hiện hoặc ẩn mật khẩu", "Show or hide password")}
                                                         type="button"
                                                         onClick={() => setShowPassword(!showPassword)}
                                                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -317,7 +327,7 @@ export default function LoginPage() {
                                                         onChange={(e) => setRememberMe(e.target.checked)}
                                                     />
                                                     <label className="ml-2 block text-sm text-gray-600 dark:text-gray-400 cursor-pointer" htmlFor="remember-me">
-                                                        Ghi nhớ
+                                                        {t('Ghi nhớ', 'Remember me')}
                                                     </label>
                                                 </div>
                                             )}
@@ -328,7 +338,7 @@ export default function LoginPage() {
                                                         onClick={() => { setMode('FORGOT_PASSWORD'); setError(null); }}
                                                         className="font-medium text-trad-primary hover:text-[#b05705] hover:underline transition-all"
                                                     >
-                                                        Quên mật khẩu?
+                                                        {t('Quên mật khẩu?', 'Forgot password?')}
                                                     </button>
                                                 </div>
                                             )}
@@ -337,16 +347,18 @@ export default function LoginPage() {
 
                                         {mode === "SIGNUP" ? <LegalConsent purpose="account" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={loading} /> : <p className="text-sm"><Link href="/policies/privacy" className="underline underline-offset-4">{locale === "en" ? "How we use account information" : "Cách sử dụng thông tin tài khoản"}</Link></p>}
 
+                                        {protection.mode === 'cloudflare' && <ContactProtection protection={protection} locale={locale} disabled={loading} quiet />}
+
                                         <div>
                                             <button
                                                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-trad-red-900 hover:bg-[#b05705] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-trad-primary transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                                                 type="submit"
-                                                disabled={loading}
+                                                disabled={loading || (protection.mode === 'cloudflare' && !protection.token)}
                                             >
                                                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                                                     <AppIcon name="login" className="text-primary-200 group-hover:text-white" />
                                                 </span>
-                                                {loading ? 'Đang xử lý...' : (mode === 'LOGIN' ? 'Đăng nhập' : mode === 'SIGNUP' ? 'Đăng ký ngay' : 'Gửi link đặt lại')}
+                                                {loading ? t('Đang xử lý...', 'Working…') : (mode === 'LOGIN' ? t('Đăng nhập', 'Sign in') : mode === 'SIGNUP' ? t('Đăng ký ngay', 'Sign up') : t('Gửi link đặt lại', 'Send reset link'))}
                                             </button>
                                         </div>
                                     </form>
@@ -357,7 +369,7 @@ export default function LoginPage() {
                                             </div>
                                             <div className="relative flex justify-center text-sm">
                                                 <span className="px-3 bg-white dark:bg-[#1e150f] text-gray-500 dark:text-gray-400 font-sans">
-                                                    Hoặc tiếp tục với
+                                                    {t('Hoặc tiếp tục với', 'Or continue with')}
                                                 </span>
                                             </div>
                                         </div>
@@ -402,24 +414,24 @@ export default function LoginPage() {
                                     <div className="mt-8 text-center">
                                         {mode === 'FORGOT_PASSWORD' ? (
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Nhớ mật khẩu rồi?
+                                                {t('Nhớ mật khẩu rồi?', 'Remembered it?')}
                                                 <button
                                                     type="button"
                                                     onClick={() => { setMode('LOGIN'); setError(null); }}
                                                     className="font-bold text-trad-primary hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
                                                 >
-                                                    Đăng nhập ngay
+                                                    {t('Đăng nhập ngay', 'Sign in')}
                                                 </button>
                                             </p>
                                         ) : (
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                {mode === 'LOGIN' ? 'Bạn chưa có tài khoản?' : 'Bạn đã có tài khoản?'}
+                                                {mode === 'LOGIN' ? t('Bạn chưa có tài khoản?', 'New here?') : t('Bạn đã có tài khoản?', 'Already have an account?')}
                                                 <button
                                                     type="button"
                                                     onClick={() => { setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN'); setError(null); }}
                                                     className="font-bold text-trad-primary hover:text-[#b05705] ml-1 hover:underline focus:outline-none"
                                                 >
-                                                    {mode === 'LOGIN' ? 'Đăng ký tài khoản mới' : 'Đăng nhập ngay'}
+                                                    {mode === 'LOGIN' ? t('Đăng ký tài khoản mới', 'Create an account') : t('Đăng nhập ngay', 'Sign in')}
                                                 </button>
                                             </p>
                                         )}
@@ -432,7 +444,7 @@ export default function LoginPage() {
                 </div>
             </main>
 
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

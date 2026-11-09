@@ -1,42 +1,47 @@
 'use client';
 
-import { LegalConsent } from '@/components/legal/LegalConsent';
-import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import Image from 'next/image';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { submitContact } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import { AppIcon } from "@/components/icons/AppIcon";
-import { useLocale } from 'next-intl';
-import { useContactProtection } from '@/hooks/useContactProtection';
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { LegalConsent } from '@/components/legal/LegalConsent';
 import { ContactProtection } from '@/components/contact/ContactProtection';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
+import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
+import { submitContact } from '@/lib/api-client';
+import { useContactProtection } from '@/hooks/useContactProtection';
+import { useBilingual } from '@/hooks/useBilingual';
 
-const contactSchema = z.object({
-    full_name: z.string().min(2, 'Vui lòng nhập tên của bạn'),
-    email: z.string().email('Email không hợp lệ'),
-    topic: z.string().optional(),
-    message: z.string().min(10, 'Lời nhắn quá ngắn, hãy viết thêm vài dòng nhé')
-});
+// Values stay in Vietnamese so the shop's inbox reads the same for every customer.
+const TOPICS = [
+    { value: 'Tư vấn sản phẩm trầm hương', en: 'Product advice' },
+    { value: 'Hợp tác kinh doanh', en: 'Business partnership' },
+    { value: 'Phản hồi dịch vụ', en: 'Service feedback' },
+    { value: 'Khác', en: 'Something else' },
+];
 
-type ContactFormValues = z.infer<typeof contactSchema>;
+type ContactFormValues = { full_name: string; email: string; topic?: string; message: string };
 
 export default function ContactPage() {
+    const { en, t } = useBilingual();
+    const protection = useContactProtection();
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
-    const locale = useLocale();
-    const protection = useContactProtection();
 
+    const schema = z.object({
+        full_name: z.string().min(2, t('Vui lòng nhập tên của bạn', 'Please enter your name')),
+        email: z.string().email(t('Email chưa đúng định dạng', 'Please enter a valid email')),
+        topic: z.string().optional(),
+        message: z.string().min(10, t('Lời nhắn hơi ngắn, bạn viết thêm vài chữ nhé', 'Please add a little more detail')),
+    });
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-        resolver: zodResolver(contactSchema as any),
-        defaultValues: {
-            topic: 'Tư vấn sản phẩm trầm hương'
-        }
+        resolver: zodResolver(schema as any),
+        defaultValues: { topic: TOPICS[0].value },
     });
 
     const onSubmit = async (data: ContactFormValues) => {
@@ -45,209 +50,93 @@ export default function ContactPage() {
         setIsSubmitting(true);
         try {
             await submitContact({ ...data, legalAcceptance: legalAcceptance(), ...(protection.token ? { turnstileToken: protection.token } : {}) });
-            toast.success('Đã gửi lời nhắn thành công!', {
-                description: 'Cảm ơn bạn đã chia sẻ câu chuyện. Chúng tôi sẽ phản hồi sớm nhất.',
+            toast.success(t('Đã gửi lời nhắn', 'Message sent'), {
+                description: t('Thiên Phúc sẽ phản hồi bạn sớm nhất có thể.', 'Thiên Phúc will reply as soon as possible.'),
             });
             reset();
             setPrivacyAccepted(false);
-        } catch (error) {
-            setSubmissionError(error instanceof Error ? error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
-            toast.error('Gửi thất bại', {
-                description: 'Có lỗi xảy ra, vui lòng thử lại sau ít phút.',
-            });
+        } catch {
+            setSubmissionError(t('Chưa gửi được lời nhắn. Vui lòng thử lại sau ít phút.', 'Your message did not go through. Please try again shortly.'));
         } finally {
             protection.resetToken();
             setIsSubmitting(false);
         }
     };
 
-    return (
-        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased selection:bg-trad-primary/20 selection:text-trad-primary">
-            <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-pattern">
-                {/* Navigation */}
-                <TraditionalHeader />
+    const fieldError = (id: keyof ContactFormValues) => errors[id]?.message
+        ? <span id={`${id}-error`} role="alert" className="shop-error">{errors[id]?.message}</span>
+        : null;
+    const fieldProps = (id: keyof ContactFormValues) => ({
+        id,
+        'aria-invalid': !!errors[id],
+        'aria-describedby': errors[id] ? `${id}-error` : undefined,
+        ...register(id),
+    });
 
-                <main className="flex-1">
-                    <div className="layout-container flex h-full grow flex-col py-10 md:py-16">
-                        <div className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center">
-                            <div className="layout-content-container flex max-w-6xl flex-1 flex-col gap-12 lg:flex-row">
-                                {/* Left Column: Storytelling & Info */}
-                                <div className="flex flex-1 flex-col gap-8 lg:pr-10">
-                                    {/* Heading Section */}
-                                    <div className="flex flex-col gap-4">
-                                        <span className="text-trad-primary font-bold tracking-widest uppercase text-xs">Liên hệ với chúng tôi</span>
-                                        <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight text-trad-text-main">
-                                            Cùng trò chuyện với <br /><span className="text-trad-primary italic">Thiên Phúc</span>
-                                        </h1>
-                                        <p className="text-lg text-stone-600 leading-relaxed max-w-lg">
-                                            Hương trầm quyện tỏa, kết nối tâm giao. Chúng tôi ở đây để lắng nghe câu chuyện của bạn, như một người tri kỷ bên chén trà thơm.
-                                        </p>
+    const details = [
+        { icon: MapPin, label: t('Cửa hàng', 'Shop'), value: SHOP_CONTACT.address },
+        { icon: Phone, label: t('Điện thoại · 8:00–21:00 mỗi ngày', 'Phone · 8:00–21:00 daily'), value: SHOP_CONTACT.phone, href: `tel:${SHOP_CONTACT.phone}` },
+        { icon: Mail, label: 'Email', value: SHOP_CONTACT.email, href: `mailto:${SHOP_CONTACT.email}` },
+    ];
+
+    return (
+        <div className="atelier-page flex min-h-screen flex-col bg-trad-bg-light font-display">
+            <ShopHeader />
+            <main className="shop-page">
+                <div className="grid w-full max-w-[1120px] gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:gap-16">
+                    <div>
+                        <p className="shop-eyebrow">{t('Liên hệ', 'Contact')}</p>
+                        <h1 className="shop-title">{t('Trò chuyện cùng Thiên Phúc', 'Talk to Thiên Phúc')}</h1>
+                        <p className="shop-lede max-w-md">{t('Cần chọn món phù hợp, hỏi về đơn hàng hay muốn hợp tác, bạn cứ nhắn cho chúng tôi.', 'Whether you need help choosing a piece, have a question about an order or want to work with us, just send a note.')}</p>
+                        <ul className="mt-8 flex flex-col gap-5">
+                            {details.map(({ icon: Icon, label, value, href }) => (
+                                <li key={label} className="flex items-start gap-3">
+                                    <Icon size={20} className="mt-0.5 shrink-0 text-trad-primary" aria-hidden="true" />
+                                    <div>
+                                        <p className="shop-hint">{label}</p>
+                                        {href ? <a href={href} className="shop-link text-[15px]">{value}</a> : <p className="text-[15px]">{value}</p>}
                                     </div>
-                                    {/* Illustration Image */}
-                                    <div className="relative w-full overflow-hidden rounded-xl shadow-md aspect-[4/3] group">
-                                        <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0 z-10"></div>
-                                        <div className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDcZvsV-bntgwDDtGh684_4_eNhhPOr6m3PQRYmYS9dxYL7UQR7-WMWL7ChKXu73xmrrGmnyP_qCiNFog0Zcd21WNizWWnmJrXj9JrqZ1b5aO-6wNh9n9Ohu9jTHjbY5Hl2uG7BkLXTAzm_guwa6CqUsBlxx9dEwNt-83iKqJh6wzD-GLNtPZJ_LNkFhG2puezQ2Lm0A00iL42KT9LlJKJAI-Ixxw3c1UjSZKv3_Ns6mZZH6TXXLZtF7ednwb4oY-MYIu0GvNKaswEn')" }}>
-                                        </div>
-                                        <div className="absolute bottom-4 left-4 z-20 rounded-lg bg-white/80 backdrop-blur-sm px-4 py-2 shadow-sm">
-                                            <p className="text-xs font-bold text-trad-primary uppercase tracking-wider">Góc bình yên</p>
-                                        </div>
-                                    </div>
-                                    {/* Contact Details */}
-                                    <div className="flex flex-col gap-6 pt-4">
-                                        <h3 className="text-xl font-bold text-trad-text-main">Nơi chúng tôi chờ bạn</h3>
-                                        <div className="grid gap-6 sm:grid-cols-2">
-                                            <div className="flex items-start gap-4">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <AppIcon name="storefront" className="" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-trad-text-main">Chốn đi về</p>
-                                                    <p className="text-sm text-stone-600 mt-1">153 Lý Thái Tổ, Hương Trà <br />Thành Phố Huế</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-4">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <AppIcon name="call" className="" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-trad-text-main">Đường dây kết nối</p>
-                                                    <p className="text-sm text-stone-600 mt-1">035.617.68.78</p>
-                                                    <p className="text-xs text-stone-500/70">Thứ 2 - Chủ Nhật: 8:00 - 21:00</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-4">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <AppIcon name="mail" className="" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-trad-text-main">Thư tín</p>
-                                                    <p className="text-sm text-stone-600 mt-1">{SHOP_CONTACT.email}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-4">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-trad-primary/10 text-trad-primary">
-                                                    <AppIcon name="share" className="" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-trad-text-main">Mạng xã hội</p>
-                                                    <div className="flex gap-3 mt-2">
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="public" className="" /></a>
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="chat_bubble" className="" /></a>
-                                                        <a className="text-stone-600 hover:text-trad-primary transition-colors" href="#"><AppIcon name="photo_camera" className="" /></a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Right Column: The Narrative Form */}
-                                <div className="w-full lg:max-w-md xl:max-w-lg">
-                                    <div className="sticky top-28 rounded-2xl bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-trad-border-warm">
-                                        <div className="mb-8 flex items-center justify-center">
-                                            <AppIcon name="stylus" className="text-4xl text-trad-primary/40" />
-                                        </div>
-                                        <h2 className="mb-6 text-center text-2xl font-bold text-trad-text-main">Bạn cần tư vấn điều gì?</h2>
-                                        <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
-                                            {/* Name Field */}
-                                            <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="full_name">Họ và tên</label>
-                                                <div className="relative">
-                                                    <input
-                                                        {...register('full_name')}
-                                                        className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.full_name ? 'border-red-500' : 'border-trad-border-warm'}`}
-                                                        id="full_name"
-                                                        placeholder="Tên của bạn"
-                                                        type="text"
-                                                    />
-                                                    <AppIcon name="person" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
-                                                </div>
-                                                {errors.full_name && <p className="text-red-500 text-xs mt-1 ml-1">{errors.full_name.message}</p>}
-                                            </div>
-                                            {/* Email Field */}
-                                            <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="email">Email liên hệ</label>
-                                                <div className="relative">
-                                                    <input
-                                                        {...register('email')}
-                                                        className={`w-full rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.email ? 'border-red-500' : 'border-trad-border-warm'}`}
-                                                        id="email"
-                                                        placeholder="Email của bạn"
-                                                        type="email"
-                                                    />
-                                                    <AppIcon name="alternate_email" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
-                                                </div>
-                                                {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
-                                            </div>
-                                            {/* Topic Field */}
-                                            <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="topic">Chủ đề quan tâm</label>
-                                                <div className="relative">
-                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                                                        <AppIcon name="expand_more" className="" />
-                                                    </div>
-                                                    <select
-                                                        {...register('topic')}
-                                                        className="w-full appearance-none rounded-xl border border-trad-border-warm bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all"
-                                                        id="topic"
-                                                    >
-                                                        <option>Tư vấn sản phẩm trầm hương</option>
-                                                        <option>Hợp tác kinh doanh</option>
-                                                        <option>Phản hồi dịch vụ</option>
-                                                        <option>Khác</option>
-                                                    </select>
-                                                    <AppIcon name="topic" className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-trad-primary" />
-                                                </div>
-                                            </div>
-                                            {/* Message Field */}
-                                            <div className="group">
-                                                <label className="mb-2 block text-sm font-medium text-trad-text-main" htmlFor="message">Lời nhắn</label>
-                                                <div className="relative">
-                                                    <textarea
-                                                        {...register('message')}
-                                                        className={`w-full resize-none rounded-xl border bg-trad-bg-light px-4 py-3 pl-10 text-trad-text-main placeholder:text-stone-400 focus:border-trad-primary focus:ring-1 focus:ring-trad-primary outline-none transition-all ${errors.message ? 'border-red-500' : 'border-trad-border-warm'}`}
-                                                        id="message"
-                                                        placeholder="Sản phẩm hoặc thông tin bạn quan tâm…"
-                                                        rows={5}
-                                                    ></textarea>
-                                                    <AppIcon name="edit_note" className="absolute left-3 top-4 text-stone-400 group-focus-within:text-trad-primary" />
-                                                </div>
-                                                {errors.message && <p className="text-red-500 text-xs mt-1 ml-1">{errors.message.message}</p>}
-                                            </div>
-                                            <LegalConsent purpose="contact" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
-                                            {/* Submit Button */}
-                                            <ContactProtection protection={protection} locale={locale} disabled={isSubmitting} />
-                                            {submissionError && <p role="alert" className="text-sm text-red-700">{submissionError}</p>}
-                                            <button
-                                                disabled={isSubmitting || !protection.canSubmit || !privacyAccepted}
-                                                type="submit"
-                                                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-trad-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-trad-primary/25 transition-all hover:bg-trad-primary-dark hover:shadow-trad-primary/40 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                                            >
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                                        <span>Đang gửi...</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span>Gửi lời nhắn</span>
-                                                        <AppIcon name="send" className="text-sm" />
-                                                    </>
-                                                )}
-                                            </button>
-                                            <p className="text-center text-xs text-stone-500 italic mt-2">
-                                                Chúng tôi dùng thông tin này để phản hồi lời nhắn của bạn.
-                                            </p>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="relative mt-10 hidden aspect-[4/3] overflow-hidden rounded-[4px] lg:block">
+                            <Image src="/editorial/ritual.webp" alt="" fill sizes="50vw" className="object-cover" />
                         </div>
                     </div>
-                </main>
 
-                {/* Footer */}
-                <TraditionalFooter />
-            </div>
+                    <form className="shop-card flex flex-col gap-5 self-start" onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <h2 className="font-serif text-2xl">{t('Gửi lời nhắn', 'Send a message')}</h2>
+                        <label className="shop-field">
+                            {t('Họ và tên', 'Full name')}
+                            <input type="text" autoComplete="name" {...fieldProps('full_name')} />
+                            {fieldError('full_name')}
+                        </label>
+                        <label className="shop-field">
+                            Email
+                            <input type="email" autoComplete="email" {...fieldProps('email')} />
+                            {fieldError('email')}
+                        </label>
+                        <label className="shop-field">
+                            {t('Chủ đề', 'Topic')}
+                            <select {...register('topic')}>
+                                {TOPICS.map((topic) => <option key={topic.value} value={topic.value}>{en ? topic.en : topic.value}</option>)}
+                            </select>
+                        </label>
+                        <label className="shop-field">
+                            {t('Lời nhắn', 'Message')}
+                            <textarea rows={5} {...fieldProps('message')} />
+                            {fieldError('message')}
+                        </label>
+                        <LegalConsent purpose="contact" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
+                        <ContactProtection protection={protection} locale={en ? 'en' : 'vi'} disabled={isSubmitting} />
+                        {submissionError && <p role="alert" className="shop-error">{submissionError}</p>}
+                        <button type="submit" disabled={isSubmitting || !protection.canSubmit || !privacyAccepted} className="w-full">
+                            {isSubmitting ? t('Đang gửi…', 'Sending…') : t('Gửi lời nhắn', 'Send message')}
+                        </button>
+                    </form>
+                </div>
+            </main>
+            <ShopFooter />
         </div>
     );
 }

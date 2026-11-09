@@ -1,268 +1,173 @@
 'use client';
 
-import { LegalConsent } from '@/components/legal/LegalConsent';
-import { legalAcceptance } from '@/lib/legal';
-import { useContactProtection } from '@/hooks/useContactProtection';
-import { ContactProtection } from '@/components/contact/ContactProtection';
-import { useLocale } from 'next-intl';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import Image from 'next/image';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { submitContact } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import { AppIcon } from "@/components/icons/AppIcon";
+import { LegalConsent } from '@/components/legal/LegalConsent';
+import { ContactProtection } from '@/components/contact/ContactProtection';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
+import { legalAcceptance, SHOP_CONTACT } from '@/lib/legal';
+import { submitContact } from '@/lib/api-client';
+import { useContactProtection } from '@/hooks/useContactProtection';
+import { useBilingual } from '@/hooks/useBilingual';
 
-// Schema Validation
-const partnershipSchema = z.object({
-    full_name: z.string().min(2, 'Vui lòng nhập họ và tên').max(100),
-    phone: z.string().min(10, 'Số điện thoại không hợp lệ').max(20).regex(/^[0-9+]+$/, 'Chỉ nhập số'),
-    email: z.string().email('Email không hợp lệ'),
-    region: z.string().max(100),
-    experience: z.string().min(10, 'Vui lòng chia sẻ thêm về kinh nghiệm').max(500),
-    reason: z.string().min(10, 'Vui lòng chia sẻ lý do hợp tác').max(1000),
-});
+// Values stay in Vietnamese so the shop's inbox reads the same for every applicant.
+const REGIONS = [
+    { value: 'Toàn Quốc', en: 'Nationwide' },
+    { value: 'Miền Bắc', en: 'Northern Vietnam' },
+    { value: 'Miền Trung', en: 'Central Vietnam' },
+    { value: 'Miền Nam', en: 'Southern Vietnam' },
+    { value: 'Ngoài Việt Nam', en: 'Outside Vietnam' },
+];
 
-type PartnershipFormValues = z.infer<typeof partnershipSchema>;
+type PartnershipFormValues = { full_name: string; phone: string; email: string; region: string; experience: string; reason: string };
 
 export default function PartnershipPage() {
-    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+    const { en, t } = useBilingual();
     const protection = useContactProtection();
-    const locale = useLocale();
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionError, setSubmissionError] = useState<string | null>(null);
 
+    const schema = z.object({
+        full_name: z.string().min(2, t('Vui lòng nhập họ và tên', 'Please enter your full name')).max(100),
+        phone: z.string().min(9, t('Số điện thoại chưa đúng', 'Please enter a valid phone number')).max(20).regex(/^[0-9+\s]+$/, t('Chỉ nhập chữ số', 'Digits only, please')),
+        email: z.string().email(t('Email chưa đúng định dạng', 'Please enter a valid email')),
+        region: z.string().max(100),
+        experience: z.string().min(10, t('Bạn chia sẻ thêm về kinh nghiệm nhé', 'Please tell us a little more about your experience')).max(500),
+        reason: z.string().min(10, t('Bạn chia sẻ thêm lý do hợp tác nhé', 'Please tell us a little more about why you would like to partner')).max(1000),
+    });
     const { register, handleSubmit, reset, formState: { errors } } = useForm<PartnershipFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: fix type
-        resolver: zodResolver(partnershipSchema as any),
-        defaultValues: {
-            region: 'Toàn Quốc'
-        }
+        resolver: zodResolver(schema as any),
+        defaultValues: { region: REGIONS[0].value },
     });
 
     const onSubmit = async (data: PartnershipFormValues) => {
         if (!privacyAccepted || !protection.canSubmit) return;
+        setSubmissionError(null);
         setIsSubmitting(true);
         try {
-            // Format the message to include all partnership details
-            const formattedMessage = `
---- ĐĂNG KÝ HỢP TÁC ---
-SĐT: ${data.phone}
-Khu vực: ${data.region}
-Kinh nghiệm: ${data.experience}
-Lý do hợp tác: ${data.reason}
-            `.trim();
-
             await submitContact({
                 legalAcceptance: legalAcceptance(),
                 ...(protection.token ? { turnstileToken: protection.token } : {}),
                 full_name: data.full_name,
                 email: data.email,
-                topic: 'Đăng Ký Đại Lý / Hợp Tác', // Special topic
-                message: formattedMessage
+                topic: 'Đăng Ký Đại Lý / Hợp Tác',
+                message: `--- ĐĂNG KÝ HỢP TÁC ---\nSĐT: ${data.phone}\nKhu vực: ${data.region}\nKinh nghiệm: ${data.experience}\nLý do hợp tác: ${data.reason}`,
             });
-
-            toast.success('Đăng ký thành công!', {
-                description: 'Chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.',
+            toast.success(t('Đã gửi đăng ký', 'Application sent'), {
+                description: t('Thiên Phúc sẽ liên hệ lại với bạn.', 'Thiên Phúc will get back to you.'),
             });
             reset();
             setPrivacyAccepted(false);
-        } catch (error) {
-            console.error(error);
-            toast.error('Gửi đăng ký thất bại', {
-                description: 'Vui lòng thử lại sau.',
-            });
+        } catch {
+            setSubmissionError(t('Chưa gửi được đăng ký. Vui lòng thử lại sau ít phút.', 'Your application did not go through. Please try again shortly.'));
         } finally {
             protection.resetToken();
             setIsSubmitting(false);
         }
     };
 
+    const fieldError = (id: keyof PartnershipFormValues) => errors[id]?.message
+        ? <span id={`${id}-error`} role="alert" className="shop-error">{errors[id]?.message}</span>
+        : null;
+    const fieldProps = (id: keyof PartnershipFormValues) => ({
+        id,
+        'aria-invalid': !!errors[id],
+        'aria-describedby': errors[id] ? `${id}-error` : undefined,
+        ...register(id),
+    });
+
+    const benefits = [
+        { title: t('Sản phẩm rõ nguồn gốc', 'Clear product origins'), body: t('Trao đổi thông tin thành phần và nguồn gốc theo từng sản phẩm trước khi hợp tác.', 'Ingredient and origin details are shared for each product before we start.') },
+        { title: t('Chính sách chiết khấu', 'Partner pricing'), body: t('Mức chiết khấu được trao đổi riêng theo khu vực và quy mô bán hàng.', 'Pricing is agreed individually based on your region and sales volume.') },
+        { title: t('Tài liệu bán hàng', 'Sales material'), body: t('Hình ảnh, video và nội dung giới thiệu sản phẩm để bạn sử dụng.', 'Photos, video and product copy ready for you to use.') },
+        { title: t('Kiến thức trầm hương', 'Product knowledge'), body: t('Hướng dẫn về sản phẩm để bạn tư vấn đúng cho khách.', 'Guidance on the range so you can advise customers well.') },
+    ];
+
     return (
-        <div className="atelier-page bg-trad-bg-light font-display text-trad-text-main antialiased">
-            <TraditionalHeader />
-
-            <main className="flex flex-col min-h-screen">
-                {/* Hero Section */}
-                <section className="relative">
-                    <div className="px-4 sm:px-10 lg:px-40 py-6 lg:py-10 flex justify-center">
-                        <div className="w-full max-w-[1024px]">
-                            <div className="overflow-hidden rounded-xl lg:rounded-2xl shadow-lg relative min-h-[400px] lg:min-h-[500px] flex flex-col justify-end group">
-                                {/* Background Image */}
-                                <div className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwQ84CItcxeXHZ6J4VoV_HbCGwDSD9KOzx2m54XVC423-viv1BLtqfCbcgywMZZYhRlSug0Nx-ZgpjCPmsT9mUrN6TeEGIbm_XE9hUhVMXuYj855Mu9w8qw3UGpgVPj5jY4QZ5RTCqqCzp8_x9YVdDvJ-yNdEQZjeArofKn8Ogh7OglgLzZqRbME0Gwy5FG8Qnc0CfbAiugljxjCcpCTbrlNat8Cq1mf2s-Ke2pK6CrzqSmIpmAyKvPpYKG0foA_ylFtve7Vn8VXUV")' }}>
-                                </div>
-                                {/* Overlay Gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                                {/* Content */}
-                                <div className="relative z-10 p-6 lg:p-12 max-w-3xl">
-                                    <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest text-white uppercase bg-trad-primary rounded-full">Lời Mời Hợp Tác</span>
-                                    <h1 className="text-white font-display font-bold text-3xl lg:text-5xl leading-tight mb-4 text-shadow-sm">
-                                        Cùng Lan Tỏa Hương Trầm Việt - Xây Dựng Hành Trình Thịnh Vượng
-                                    </h1>
-                                    <p className="text-white/90 text-lg lg:text-xl font-sans font-light max-w-xl">
-                                        Nâng tầm giá trị từ thiên nhiên, gìn giữ nét đẹp văn hóa truyền thống.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+        <div className="atelier-page flex min-h-screen flex-col bg-trad-bg-light font-display">
+            <ShopHeader />
+            <main className="flex flex-1 flex-col">
+                <section className="relative flex min-h-[380px] items-end overflow-hidden lg:min-h-[460px]">
+                    <Image src="/editorial/forest.webp" alt="" fill priority sizes="100vw" className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1f2b25]/85 via-[#1f2b25]/35 to-transparent" />
+                    <div className="relative z-10 mx-auto w-full max-w-[1120px] px-5 pb-10 pt-16 lg:pb-14">
+                        <p className="shop-eyebrow !text-[#d4c29c]">{t('Hợp tác', 'Partnership')}</p>
+                        <h1 className="shop-title max-w-2xl !text-[#fffdf8]">{t('Cùng lan tỏa hương trầm Việt', 'Share Vietnamese agarwood with us')}</h1>
+                        <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#e2e4d8]">{t('Dành cho đại lý và nhà phân phối muốn đồng hành lâu dài cùng Thiên Phúc.', 'For retailers and distributors who want to build something lasting with Thiên Phúc.')}</p>
                     </div>
                 </section>
 
-                {/* Story/Introduction Section */}
-                <section className="px-4 sm:px-10 lg:px-40 py-8 lg:py-12 flex justify-center bg-white">
-                    <div className="w-full max-w-[800px] text-center">
-                        <AppIcon name="format_quote" className="text-4xl text-trad-primary/50 mb-4" />
-                        <p className="text-trad-text-muted text-lg lg:text-xl font-display font-medium leading-relaxed italic">
-                            &quot;Chúng tôi trân trọng kính mời quý đối tác cùng tham gia vào hành trình gìn giữ và lan tỏa nét đẹp văn hóa tâm linh Việt. Mỗi nén hương là một câu chuyện, mỗi sự hợp tác là một chương mới của sự thịnh vượng và an lạc.&quot;
-                        </p>
-                        <div className="w-24 h-1 bg-trad-primary/20 mx-auto mt-8 rounded-full"></div>
-                    </div>
+                <section className="mx-auto w-full max-w-[1120px] px-5 py-12 lg:py-16">
+                    <h2 className="font-serif text-3xl">{t('Khi đồng hành cùng Thiên Phúc', 'What you can expect')}</h2>
+                    <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {benefits.map((item) => (
+                            <li key={item.title} className="shop-card">
+                                <h3 className="text-base font-medium">{item.title}</h3>
+                                <p className="shop-hint mt-2">{item.body}</p>
+                            </li>
+                        ))}
+                    </ul>
                 </section>
 
-                {/* Benefits Section */}
-                <section className="px-4 sm:px-10 lg:px-40 py-12 lg:py-16 flex justify-center bg-trad-bg-light">
-                    <div className="w-full max-w-[1024px] flex flex-col">
-                        <div className="mb-10 text-center">
-                            <h2 className="text-trad-text-main text-2xl lg:text-3xl font-bold leading-tight tracking-[-0.015em] mb-2">
-                                Những Quyền Lợi Đặc Biệt
-                            </h2>
-                            <p className="text-trad-text-muted font-sans">Các chương của sự thành công chúng ta cùng viết</p>
+                <section className="mx-auto w-full max-w-[720px] px-5 pb-16 lg:pb-24">
+                    <form className="shop-card flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <div>
+                            <h2 className="font-serif text-2xl">{t('Gửi thông tin hợp tác', 'Apply to partner')}</h2>
+                            <p className="shop-hint mt-1">{t('Để lại thông tin, Thiên Phúc sẽ liên hệ với bạn.', 'Leave your details and Thiên Phúc will be in touch.')}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {/* Benefit Items */}
-                            {[
-                                { icon: 'verified', title: 'Sản Phẩm Tinh Hoa', desc: 'Trao đổi thông tin thành phần và nguồn gốc cụ thể theo từng sản phẩm trước khi hợp tác.' },
-                                { icon: 'trending_up', title: 'Lợi Nhuận Bền Vững', desc: 'Chính sách chiết khấu hấp dẫn, cơ chế thưởng linh hoạt tối ưu hóa lợi nhuận.' },
-                                { icon: 'campaign', title: 'Hỗ Trợ Truyền Thông', desc: 'Cung cấp tài liệu marketing chuyên nghiệp, hình ảnh, video và hỗ trợ quảng cáo.' },
-                                { icon: 'school', title: 'Đào Tạo Chuyên Sâu', desc: 'Được tham gia các khóa đào tạo về kiến thức trầm hương và kỹ năng bán hàng.' },
-                            ].map((item, idx) => (
-                                <div key={idx} className="group flex flex-col gap-4 p-6 bg-white rounded-xl border border-trad-border-warm hover:border-trad-primary/50 hover:shadow-lg transition-all duration-300">
-                                    <div className="size-12 rounded-full bg-trad-primary/10 flex items-center justify-center text-trad-primary group-hover:bg-trad-primary group-hover:text-white transition-colors">
-                                        <AppIcon name={item.icon} className="text-[28px]" />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="text-trad-text-main text-lg font-bold">{item.title}</h3>
-                                        <p className="text-stone-600 text-sm font-sans leading-relaxed">
-                                            {item.desc}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <label className="shop-field">
+                                {t('Họ và tên', 'Full name')}
+                                <input type="text" autoComplete="name" {...fieldProps('full_name')} />
+                                {fieldError('full_name')}
+                            </label>
+                            <label className="shop-field">
+                                {t('Số điện thoại', 'Phone number')}
+                                <input type="tel" autoComplete="tel" {...fieldProps('phone')} />
+                                {fieldError('phone')}
+                            </label>
+                            <label className="shop-field">
+                                Email
+                                <input type="email" autoComplete="email" {...fieldProps('email')} />
+                                {fieldError('email')}
+                            </label>
+                            <label className="shop-field">
+                                {t('Khu vực hoạt động', 'Where you sell')}
+                                <select {...register('region')}>
+                                    {REGIONS.map((region) => <option key={region.value} value={region.value}>{en ? region.en : region.value}</option>)}
+                                </select>
+                            </label>
                         </div>
-                    </div>
-                </section>
-
-                {/* Application Form Section */}
-                <section className="px-4 sm:px-10 lg:px-40 py-12 lg:py-20 flex justify-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#b35309 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                    <div className="w-full max-w-[800px] relative z-10">
-                        <div className="bg-white rounded-2xl shadow-xl border border-trad-border-warm overflow-hidden">
-                            <div className="bg-trad-bg-dark p-6 text-center border-b-4 border-trad-primary">
-                                <h2 className="text-white text-2xl font-bold font-display">Gửi Thông Tin Hợp Tác</h2>
-                                <p className="text-white/70 text-sm font-sans mt-2">Hãy để lại thông tin, chúng tôi sẽ liên hệ sớm nhất</p>
-                            </div>
-                            <div className="p-6 md:p-10">
-                                <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Name */}
-                                        <div className="space-y-2">
-                                            <label className="text-trad-text-main text-sm font-bold font-display">Họ và Tên</label>
-                                            <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <AppIcon name="person" className="text-trad-text-muted mr-2 text-[20px]" />
-                                                <input {...register('full_name')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="Nguyễn Văn A" type="text" />
-                                            </div>
-                                            {errors.full_name && <p className="text-red-500 text-xs">{errors.full_name.message}</p>}
-                                        </div>
-                                        {/* Phone */}
-                                        <div className="space-y-2">
-                                            <label className="text-trad-text-main text-sm font-bold font-display">Số Điện Thoại</label>
-                                            <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <AppIcon name="call" className="text-trad-text-muted mr-2 text-[20px]" />
-                                                <input {...register('phone')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="09xxxxxxx" type="tel" />
-                                            </div>
-                                            {errors.phone && <p className="text-red-500 text-xs">{errors.phone.message}</p>}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Email */}
-                                        <div className="space-y-2">
-                                            <label className="text-trad-text-main text-sm font-bold font-display">Email</label>
-                                            <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                <AppIcon name="mail" className="text-trad-text-muted mr-2 text-[20px]" />
-                                                <input {...register('email')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-stone-400 font-sans outline-none" placeholder="example@email.com" type="email" />
-                                            </div>
-                                            {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
-                                        </div>
-                                        {/* Region */}
-                                        <div className="space-y-2">
-                                            <label className="text-trad-text-main text-sm font-bold font-display">Khu Vực Hoạt Động</label>
-                                            <div className="relative">
-                                                <div className="flex items-center rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 focus-within:border-trad-primary focus-within:ring-1 focus-within:ring-trad-primary/20 transition-all">
-                                                    <AppIcon name="map" className="text-trad-text-muted mr-2 text-[20px]" />
-                                                    <select {...register('region')} className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 text-trad-text-main font-sans outline-none appearance-none">
-                                                        <option>Miền Bắc</option>
-                                                        <option>Miền Trung</option>
-                                                        <option>Miền Nam</option>
-                                                        <option>Toàn Quốc</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Experience */}
-                                    <div className="space-y-2">
-                                        <label className="text-trad-text-main text-sm font-bold font-display">Kinh Nghiệm Bán Hàng</label>
-                                        <textarea {...register('experience')} className="w-full rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 text-sm focus:border-trad-primary focus:ring-1 focus:ring-trad-primary/20 transition-all resize-none font-sans outline-none" placeholder="Chia sẻ ngắn gọn về kinh nghiệm của bạn..." rows={3}></textarea>
-                                        {errors.experience && <p className="text-red-500 text-xs">{errors.experience.message}</p>}
-                                    </div>
-                                    {/* Reason */}
-                                    <div className="space-y-2">
-                                        <label className="text-trad-text-main text-sm font-bold font-display">Lý Do Muốn Hợp Tác</label>
-                                        <textarea {...register('reason')} className="w-full rounded-lg border border-trad-border-warm bg-trad-bg-light px-3 py-3 text-sm focus:border-trad-primary focus:ring-1 focus:ring-trad-primary/20 transition-all resize-none font-sans outline-none" placeholder="Mong muốn của bạn khi trở thành đối tác..." rows={3}></textarea>
-                                        {errors.reason && <p className="text-red-500 text-xs">{errors.reason.message}</p>}
-                                    </div>
-                                    {/* Submit Botton */}
-                                    <div className="pt-4">
-                                        <LegalConsent purpose="partnership" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
-                                    <ContactProtection protection={protection} locale={locale} disabled={isSubmitting} />
-                                    <button
-                                            disabled={isSubmitting || !privacyAccepted || !protection.canSubmit}
-                                            type="submit"
-                                            className="w-full bg-trad-primary hover:bg-trad-primary-dark text-white font-bold py-3.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 font-display text-lg disabled:opacity-70 disabled:cursor-not-allowed"
-                                        >
-                                            {isSubmitting ? (
-                                                <span className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></span>
-                                            ) : (
-                                                <>
-                                                    <span>Gửi Đăng Ký Hợp Tác</span>
-                                                    <AppIcon name="send" className="text-[20px]" />
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        {/* Contact Support */}
-                        <div className="mt-8 flex flex-col items-center gap-2">
-                            <p className="text-trad-text-muted text-sm font-sans">Cần hỗ trợ tư vấn trực tiếp?</p>
-                            <div className="flex gap-6">
-                                <a className="flex items-center gap-2 text-trad-text-main font-bold hover:text-trad-primary transition-colors" href="tel:0909123456">
-                                    <AppIcon name="call" className="text-trad-primary" />
-                                    0909 123 456
-                                </a>
-                                <a className="flex items-center gap-2 text-trad-text-main font-bold hover:text-trad-primary transition-colors" href="#">
-                                    <AppIcon name="chat" className="text-trad-primary" />
-                                    Zalo Support
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                        <label className="shop-field">
+                            {t('Kinh nghiệm bán hàng', 'Sales experience')}
+                            <textarea rows={3} {...fieldProps('experience')} />
+                            {fieldError('experience')}
+                        </label>
+                        <label className="shop-field">
+                            {t('Lý do muốn hợp tác', 'Why you would like to partner')}
+                            <textarea rows={3} {...fieldProps('reason')} />
+                            {fieldError('reason')}
+                        </label>
+                        <LegalConsent purpose="partnership" checked={privacyAccepted} onChange={setPrivacyAccepted} disabled={isSubmitting} />
+                        <ContactProtection protection={protection} locale={en ? 'en' : 'vi'} disabled={isSubmitting} />
+                        {submissionError && <p role="alert" className="shop-error">{submissionError}</p>}
+                        <button type="submit" disabled={isSubmitting || !privacyAccepted || !protection.canSubmit} className="w-full">
+                            {isSubmitting ? t('Đang gửi…', 'Sending…') : t('Gửi đăng ký', 'Send application')}
+                        </button>
+                    </form>
+                    <p className="shop-hint mt-6 text-center">
+                        {t('Muốn trao đổi trực tiếp?', 'Prefer to talk?')}{' '}
+                        <a href={`tel:${SHOP_CONTACT.phone}`} className="shop-link">{SHOP_CONTACT.phone}</a>
+                    </p>
                 </section>
             </main>
-
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

@@ -68,7 +68,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                 <div className="w-full aspect-[16/9] md:aspect-[21/9] rounded-lg overflow-hidden relative group">
                     <div className="absolute inset-0 bg-black/10 z-10 transition-opacity group-hover:opacity-0"></div>
                     <Image
-                        src={post.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLG_F57zSQN41Sqew_HF0X_-7bgkMOtqxKXBVhpGgPfW_FtUPn0v4tCG_MQkfwaK0abkHY4D9oyHCFQCHOkW9RY5ilO3Kz3-h1pnlMaJYL_Lg5prchGW-hpAxSoQ3GNJTwm_Rj6N8qHh1vkxQOzDd2QAPpIvokmV9qMYMOt2BPx59iUz3BuvPxJ6iXuRDk6D3joaSUZzMhVlFiagL3qsGOTuSEkKmSRWiuQBPftbrWJZ6lfDCELrFzXzoBy-IdvnHgZZw2V04IniZF'}
+                        src={post.cover_image || '/editorial/preview-ritual.webp'}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-[2s] ease-out group-hover:scale-105"
@@ -140,7 +140,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                         <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 mb-3">
                             {post.author?.full_name || 'Zen Team'} writes about the intersection of traditional Vietnamese incense culture and modern mindfulness practices.
                         </p>
-                        <a className="text-xs font-bold tracking-widest uppercase text-primary hover:text-[#5bc115]" href="#">Read more from {post.author?.full_name || 'Author'} →</a>
+                        <a className="text-xs font-bold tracking-widest uppercase text-primary hover:text-[#5bc115]" href="/en/blog">Read more from {post.author?.full_name || 'Author'} →</a>
                     </div>
                 </div>
             </div>
@@ -158,7 +158,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                                     <div className="w-full aspect-[4/3] overflow-hidden rounded-md bg-gray-100 relative">
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10"></div>
                                         <Image
-                                            src={rel.cover_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv8vYWF9HXY8ExuHRXH4eOLw1oOkJJSVSk3xuXidpP6FxBTDKgyXdmkIoKFV79oyPNa2Ec-1BTURxXfB4T8Y0J3uEsH0RR892FM20GOb9zn98ybrnoYc5Qn3kKnvJLBZTUdnJacAHMM_eaoWr1rhPtWTkLY0P2Zxe4jsYTxcAwaipWloQc3ozgT5UphBHiG9Hese-4RWn3d3qxqi19v888CB7rDcE_sjgUrpDY4JukczuGpbyAsnyhfprihZ7xf7stxW4bv05JyP82'}
+                                            src={rel.cover_image || '/editorial/preview-bracelet.webp'}
                                             alt={rel.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"

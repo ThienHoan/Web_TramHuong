@@ -7,8 +7,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { getProfile, updateProfile, setAccessToken } from '@/lib/api-client';
 import { useRouter } from '@/i18n/routing';
 import AccountNavigation from '@/components/layout/AccountNavigation';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 
 interface Division {
     code: number;
@@ -18,8 +17,10 @@ interface Division {
 import { Alert } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useBilingual } from '@/hooks/useBilingual';
 
 export default function ProfilePage() {
+    const { t } = useBilingual();
     const { session, refreshProfile, loading: authLoading } = useAuth();
     const router = useRouter();
     const [dataLoading, setDataLoading] = useState(true);
@@ -151,29 +152,29 @@ export default function ProfilePage() {
         try {
             await updateProfile(formData);
             await refreshProfile();
-            toast.custom((t) => (
+            toast.custom((toastId) => (
                 <Alert
                     variant="success"
                     size="sm"
-                    title="Thành công"
+                    title={t("Thành công", "Done")}
                     className="w-[300px] bg-white border-none shadow-xl"
-                    onClose={() => toast.dismiss(t)}
+                    onClose={() => toast.dismiss(toastId)}
                 >
-                    Cập nhật hồ sơ thành công!
+                    {t("Đã cập nhật hồ sơ.", "Your profile has been updated.")}
                 </Alert>
             ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // router.refresh(); // Removed to prevent session kick and delay
         } catch (error: unknown) {
-            toast.custom((t) => (
+            toast.custom((toastId) => (
                 <Alert
                     variant="destructive"
                     size="sm"
-                    title="Lỗi"
+                    title={t("Lỗi", "Error")}
                     className="w-[300px] bg-white border-none shadow-xl"
-                    onClose={() => toast.dismiss(t)}
+                    onClose={() => toast.dismiss(toastId)}
                 >
-                    {error instanceof Error ? error.message : 'Cập nhật thất bại'}
+                    {error instanceof Error ? error.message : t("Cập nhật thất bại", "Could not update your profile")}
                 </Alert>
             ));
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -184,12 +185,12 @@ export default function ProfilePage() {
 
     if (authLoading || dataLoading) return (
         <div className="atelier-page bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
-            <TraditionalHeader />
+            <ShopHeader />
             <AccountNavigation />
             <main className="flex-grow flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-trad-primary border-t-transparent rounded-full animate-spin"></div>
             </main>
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 
@@ -198,13 +199,13 @@ export default function ProfilePage() {
             {/* Background Patterns */}
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] mix-blend-multiply z-0"></div>
 
-            <TraditionalHeader />
+            <ShopHeader />
             <AccountNavigation />
 
             <main className="relative z-10 container mx-auto px-4 py-12 max-w-6xl flex-grow">
                 <header className="mb-12 text-center">
-                    <h1 className="font-display text-4xl md:text-5xl font-bold text-trad-red-900 mb-3">Hồ Sơ Của Tôi</h1>
-                    <p className="text-trad-text-muted italic font-serif text-lg">&quot;Hành trình của hương thơm, lưu giữ từng khoảnh khắc&quot;</p>
+                    <h1 className="font-display text-4xl md:text-5xl font-bold text-trad-red-900 mb-3">{t("Hồ sơ của tôi", "My profile")}</h1>
+                    <p className="text-trad-text-muted italic font-serif text-lg">{t("Thông tin này được dùng khi bạn đặt hàng.", "These details are used when you check out.")}</p>
                 </header>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -215,8 +216,8 @@ export default function ProfilePage() {
                             <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-trad-gold opacity-20 rounded-br-xl"></div>
 
                             <div className="p-8 flex flex-col items-center text-center">
-                                <h2 className="font-display text-2xl font-bold mb-2 text-trad-primary">Chân Dung Hương Trầm</h2>
-                                <p className="text-sm text-trad-text-muted mb-6">Nơi lưu giữ dấu ấn của bạn</p>
+                                <h2 className="font-display text-2xl font-bold mb-2 text-trad-primary">{t("Ảnh đại diện", "Profile photo")}</h2>
+                                <p className="text-sm text-trad-text-muted mb-6">{t("Hiển thị trên tài khoản của bạn", "Shown on your account")}</p>
 
                                 <div className="relative w-40 h-40 mb-6 group cursor-pointer">
                                     <div className="absolute inset-0 rounded-full border-2 border-trad-gold border-dashed animate-spin-slow opacity-50"></div>
@@ -235,13 +236,13 @@ export default function ProfilePage() {
                                             </div>
                                         )}
                                     </div>
-                                    <button aria-label="Chỉnh sửa" type="button" className="absolute bottom-2 right-2 bg-trad-primary text-white p-2 rounded-full shadow-lg hover:bg-trad-red-900 transition-colors">
+                                    <button aria-label={t("Chỉnh sửa", "Edit")} type="button" className="absolute bottom-2 right-2 bg-trad-primary text-white p-2 rounded-full shadow-lg hover:bg-trad-red-900 transition-colors">
                                         <AppIcon name="edit" className="text-sm" />
                                     </button>
                                 </div>
 
                                 <div className="w-full mb-8">
-                                    <label className="block text-xs font-semibold uppercase tracking-wider text-trad-text-muted mb-2 text-left">Đường dẫn ảnh đại diện</label>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-trad-text-muted mb-2 text-left">{t("Đường dẫn ảnh đại diện", "Photo URL")}</label>
                                     <input
                                         name="avatar_url"
                                         value={formData.avatar_url}
@@ -257,11 +258,11 @@ export default function ProfilePage() {
                         <div className="bg-white dark:bg-stone-900 rounded-xl shadow-soft p-8 border border-trad-border-warm">
                             <h3 className="font-display text-xl font-bold mb-6 flex items-center gap-2 text-trad-text-main">
                                 <AppIcon name="person" className="text-trad-gold" />
-                                Thông tin cá nhân
+                                {t("Thông tin cá nhân", "Personal details")}
                             </h3>
                             <div className="space-y-5">
                                 <div className="group">
-                                    <label className="block text-sm font-medium text-trad-text-muted mb-1">Họ và tên</label>
+                                    <label className="block text-sm font-medium text-trad-text-muted mb-1">{t("Họ và tên", "Full name")}</label>
                                     <input
                                         name="full_name"
                                         value={formData.full_name}
@@ -272,7 +273,7 @@ export default function ProfilePage() {
                                     />
                                 </div>
                                 <div className="group">
-                                    <label className="block text-sm font-medium text-trad-text-muted mb-1">Số điện thoại</label>
+                                    <label className="block text-sm font-medium text-trad-text-muted mb-1">{t("Số điện thoại", "Phone number")}</label>
                                     <input
                                         name="phone_number"
                                         value={formData.phone_number}
@@ -293,28 +294,28 @@ export default function ProfilePage() {
                                 <Image
                                     alt="Traditional Vietnamese Landscape Silk Painting Style"
                                     className="w-full h-full object-cover opacity-80 mix-blend-overlay"
-                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5M3Hxs-r5S6jSon1zANp9U9E_swJAZcH-ns9joJszLE2lpWR0-yLTYCfNtLdTijd34Udo0o6cesH6U3SrwKbfPZAVdq86yHk0xBRjNBINwrDw1P_DVFrimKDS4QoVj_8r9seYPtApGrNqrr0v9MJDnoyV_ghsmFj8P6mgwfkdfUC_bD8Hg4mRExEXrbFr-8yT-p3qiTI2v_vJSTFtlK7fge9ZssXfqXqpzatG-7dtWfkdOk-SnNDU4FsZUlVIwV_x3VZBP7CWF52z"
+                                    src="/editorial/preview-gallery.webp"
                                     width={1000}
                                     height={192}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black to-transparent"></div>
                                 <div className="absolute bottom-6 left-8">
-                                    <h2 className="font-display text-3xl font-bold text-trad-primary mb-1 shadow-black drop-shadow-sm">Dấu Chân Hương Trầm</h2>
-                                    <p className="text-trad-text-main font-medium italic">&quot;Hương trầm tìm về chốn an yên&quot;</p>
+                                    <h2 className="font-display text-3xl font-bold text-trad-primary mb-1 shadow-black drop-shadow-sm">{t("Địa chỉ giao hàng", "Delivery address")}</h2>
+                                    <p className="text-trad-text-main font-medium italic">{t("Địa chỉ này sẽ được điền sẵn khi đặt hàng.", "This address is filled in for you at checkout.")}</p>
                                 </div>
                             </div>
 
                             <div className="p-8 pt-4 flex-grow">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div className="col-span-1">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">Tỉnh / Thành phố</label>
+                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Tỉnh / Thành phố", "Province / City")}</label>
                                         <div className="relative">
                                             <select
                                                 onChange={handleProvinceChange}
                                                 value={provinces.find(p => p.name === formData.province)?.code || ''}
                                                 className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer"
                                             >
-                                                <option value="">Chọn Tỉnh/Thành phố</option>
+                                                <option value="">{t("Chọn Tỉnh/Thành phố", "Choose a province")}</option>
                                                 {provinces.map(p => (
                                                     <option key={p.code} value={p.code}>{p.name}</option>
                                                 ))}
@@ -323,7 +324,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="col-span-1">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">Quận / Huyện</label>
+                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Quận / Huyện", "District")}</label>
                                         <div className="relative">
                                             <select
                                                 onChange={handleDistrictChange}
@@ -331,7 +332,7 @@ export default function ProfilePage() {
                                                 disabled={!formData.province}
                                                 className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer disabled:opacity-50"
                                             >
-                                                <option value="">Chọn Quận/Huyện</option>
+                                                <option value="">{t("Chọn Quận/Huyện", "Choose a district")}</option>
                                                 {districts.map(d => (
                                                     <option key={d.code} value={d.code}>{d.name}</option>
                                                 ))}
@@ -340,7 +341,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">Phường / Xã</label>
+                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Phường / Xã", "Ward")}</label>
                                         <div className="relative">
                                             <select
                                                 onChange={handleWardChange}
@@ -348,7 +349,7 @@ export default function ProfilePage() {
                                                 disabled={!formData.district}
                                                 className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer disabled:opacity-50"
                                             >
-                                                <option value="">Chọn Phường/Xã</option>
+                                                <option value="">{t("Chọn Phường/Xã", "Choose a ward")}</option>
                                                 {wards.map(w => (
                                                     <option key={w.code} value={w.code}>{w.name}</option>
                                                 ))}
@@ -357,7 +358,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">Địa chỉ cụ thể</label>
+                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Địa chỉ cụ thể", "Street address")}</label>
                                         <div className="relative group">
                                             <AppIcon name="home" className="absolute left-3 top-3 text-stone-400 group-focus-within:text-trad-primary transition-colors" />
                                             <input
@@ -375,9 +376,9 @@ export default function ProfilePage() {
                                 <div className="bg-trad-amber-50 border-l-4 border-trad-gold p-4 rounded-r-md mb-8 flex items-start gap-3">
                                     <AppIcon name="place" className="text-trad-gold mt-0.5" />
                                     <div>
-                                        <p className="text-sm font-medium text-trad-text-main">Địa chỉ hiện tại:</p>
+                                        <p className="text-sm font-medium text-trad-text-main">{t("Địa chỉ hiện tại:", "Current address:")}</p>
                                         <p className="text-sm text-trad-text-main/80">
-                                            {[formData.street_address, formData.ward, formData.district, formData.province].filter(Boolean).join(', ') || 'Chưa có thông tin địa chỉ chi tiết.'}
+                                            {[formData.street_address, formData.ward, formData.district, formData.province].filter(Boolean).join(', ') || t("Chưa có thông tin địa chỉ chi tiết.", "No address saved yet.")}
                                         </p>
                                     </div>
                                 </div>
@@ -391,12 +392,12 @@ export default function ProfilePage() {
                                         {saving ? (
                                             <>
                                                 <span className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></span>
-                                                Đang lưu...
+                                                {t("Đang lưu…", "Saving…")}
                                             </>
                                         ) : (
                                             <>
                                                 <AppIcon name="save" className="" />
-                                                Lưu Thay Đổi
+                                                {t("Lưu thay đổi", "Save changes")}
                                             </>
                                         )}
                                     </button>
@@ -407,7 +408,7 @@ export default function ProfilePage() {
                 </form>
             </main>
 
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

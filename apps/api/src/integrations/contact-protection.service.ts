@@ -77,6 +77,10 @@ export interface TurnstileLive {
   adapter?: TurnstileAdapter;
 }
 
+// Cloudflare binds each token to the action it was issued for, so a token from
+// one form cannot be spent on another.
+export type ProtectedAction = 'contact' | 'checkout';
+
 export type ContactProtectionStatus =
   | { mode: 'disabled' | 'mock' | 'unavailable' }
   | { mode: 'cloudflare'; siteKey: string; testKeys: boolean };
@@ -95,7 +99,8 @@ class LiveBudget {
       day = Math.floor(now / 86400000);
     if (minute !== this.minute) [this.minute, this.minuteUsed] = [minute, 0];
     if (day !== this.day) [this.day, this.dayUsed] = [day, 0];
-    if (this.inFlight >= 4 || this.minuteUsed >= 60 || this.dayUsed >= 2000)
+    // Checkout depends on this too: garbage tokens must not be able to exhaust it.
+    if (this.inFlight >= 16 || this.minuteUsed >= 300 || this.dayUsed >= 20000)
       return false;
     this.inFlight++;
     this.minuteUsed++;
@@ -127,39 +132,46 @@ export class ContactProtectionService {
     const local = ['development', 'test'].includes(this.environment);
     if (policy.mode === 'disabled') return { mode: 'disabled' };
     if (policy.mode === 'mock') return { mode: local ? 'mock' : 'unavailable' };
-    // Real outbound work: never under INTEGRATIONS_ENV=mock, never production yet.
+    // Real outbound work: never under INTEGRATIONS_ENV=mock. Production additionally
+    // needs real keys, because Cloudflare's test keys always pass and stop nothing.
     const config = this.live.config;
-    if (
-      policy.environment === 'staging' &&
-      local &&
-      config.state === 'ready' &&
-      this.live.adapter
-    )
-      return {
-        mode: 'cloudflare',
-        siteKey: config.siteKey,
-        testKeys: config.testKeys,
-      };
+    if (config.state === 'ready' && this.live.adapter) {
+      const staging = policy.environment === 'staging' && local;
+      const production =
+        policy.environment === 'production' &&
+        this.environment === 'production' &&
+        !config.testKeys;
+      if (staging || production)
+        return {
+          mode: 'cloudflare',
+          siteKey: config.siteKey,
+          testKeys: config.testKeys,
+        };
+    }
     return { mode: 'unavailable' };
   }
 
-  issue(origin?: string) {
+  issue(origin?: string, action: ProtectedAction = 'contact') {
     this.requireMock();
     const hostname = this.localHostname(origin);
     try {
       return {
         mode: 'mock' as const,
-        ...this.adapter.issue(hostname, 'contact'),
+        ...this.adapter.issue(hostname, action),
       };
     } catch {
       throw this.unavailable();
     }
   }
 
-  async verify(token: string | undefined, origin?: string) {
+  async verify(
+    token: string | undefined,
+    origin?: string,
+    action: ProtectedAction = 'contact',
+  ) {
     const status = this.status();
     if (status.mode === 'disabled') return;
-    if (status.mode === 'cloudflare') return this.verifyLive(token);
+    if (status.mode === 'cloudflare') return this.verifyLive(token, action);
     this.requireMock();
     const hostname = this.localHostname(origin);
     if (!token || token.length > 2048) throw this.rejected();
@@ -180,7 +192,7 @@ export class ContactProtectionService {
     if (
       !result.success ||
       result.hostname !== hostname ||
-      result.action !== 'contact' ||
+      result.action !== action ||
       !Number.isFinite(age) ||
       age < -30000 ||
       age >= 300000
@@ -188,7 +200,7 @@ export class ContactProtectionService {
       throw this.rejected();
   }
 
-  private async verifyLive(token: string | undefined) {
+  private async verifyLive(token: string | undefined, action: ProtectedAction) {
     const config = this.live.config;
     const adapter = this.live.adapter;
     if (config.state !== 'ready' || !adapter) throw this.unavailable();
@@ -216,7 +228,7 @@ export class ContactProtectionService {
       // Real keys: action, hostname and freshness are enforced (Cloudflare docs).
       const age = this.now() - Date.parse(result.challenge_ts ?? '');
       accepted =
-        result.action === 'contact' &&
+        result.action === action &&
         config.allowedHostnames.includes(
           String(result.hostname ?? '').toLowerCase(),
         ) &&

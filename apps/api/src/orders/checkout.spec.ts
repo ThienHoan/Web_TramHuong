@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   GoneException,
   HttpException,
   Logger,
@@ -239,7 +240,10 @@ describe('OrdersService checkout replay', () => {
     productsIn = jest.fn(),
     clearCart = jest.fn(),
     validateVoucher = jest.fn(),
-    revalidate = jest.fn();
+    revalidate = jest.fn(),
+    sendOrderConfirmation = jest.fn(),
+    sendAdminAlert = jest.fn(),
+    accountLookup = jest.fn();
   const order = { id: 'o1', items: [], total: 230000, status: 'PENDING' };
   let service: OrdersService;
   beforeEach(() => {
@@ -263,14 +267,22 @@ describe('OrdersService checkout replay', () => {
     clearCart.mockReset().mockResolvedValue(undefined);
     validateVoucher.mockReset();
     revalidate.mockReset();
+    sendOrderConfirmation.mockReset().mockResolvedValue(undefined);
+    sendAdminAlert.mockReset().mockResolvedValue(undefined);
+    accountLookup.mockReset();
     const db = {
-      from: () => ({ select: () => ({ in: productsIn }) }),
+      from: () => ({
+        select: () => ({
+          in: productsIn,
+          eq: () => ({ single: accountLookup }),
+        }),
+      }),
       rpc,
     };
     service = new OrdersService(
       { getClient: () => db } as unknown as SupabaseService,
       { clearCart } as unknown as CartService,
-      {} as MailService,
+      { sendOrderConfirmation, sendAdminAlert } as unknown as MailService,
       { validateVoucher } as unknown as VouchersService,
       {
         requiresQuote: () => false,
@@ -363,5 +375,132 @@ describe('OrdersService checkout replay', () => {
     expect((failure as HttpException).getStatus()).toBe(500);
     expect((failure as HttpException).message).toBe('CHECKOUT_RESULT_UNKNOWN');
     expect(clearCart).not.toHaveBeenCalled();
+  });
+
+  describe('new order emails', () => {
+    const cash = {
+      ...order,
+      payment_method: 'cod',
+      shipping_info: { email: 'buyer@example.invalid' },
+    };
+    const commits = (saved: Record<string, unknown>, replayed = false) => {
+      validateVoucher.mockResolvedValue({
+        isValid: true,
+        discountAmount: 0,
+        voucher: { code: 'SALE' },
+      });
+      rpc.mockImplementation((name: string) =>
+        Promise.resolve(
+          name === 'checkout_lookup_request'
+            ? { data: null, error: null }
+            : { data: { order: saved, replayed }, error: null },
+        ),
+      );
+    };
+    const settled = () => new Promise((resolve) => setImmediate(resolve));
+
+    it('tells the customer and the shop about a new cash order', async () => {
+      commits(cash);
+      await create();
+      await settled();
+      expect(sendOrderConfirmation).toHaveBeenCalledTimes(1);
+      expect(sendAdminAlert).toHaveBeenCalledTimes(1);
+      expect(sendOrderConfirmation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'o1',
+          shipping_info: { email: 'buyer@example.invalid' },
+        }),
+      );
+    });
+    it('sends nothing when the database replays the same request', async () => {
+      commits(cash, true);
+      await create();
+      await settled();
+      expect(sendOrderConfirmation).not.toHaveBeenCalled();
+      expect(sendAdminAlert).not.toHaveBeenCalled();
+    });
+    it('sends nothing when the request was already committed', async () => {
+      rpc.mockResolvedValue({
+        data: { order: cash, replayed: true },
+        error: null,
+      });
+      await create();
+      await settled();
+      expect(sendOrderConfirmation).not.toHaveBeenCalled();
+      expect(sendAdminAlert).not.toHaveBeenCalled();
+    });
+    it('leaves bank-transfer orders to the payment webhook', async () => {
+      commits({ ...cash, payment_method: 'sepay' });
+      await create();
+      await settled();
+      expect(sendOrderConfirmation).not.toHaveBeenCalled();
+      expect(sendAdminAlert).not.toHaveBeenCalled();
+    });
+    it('uses the account email when the order has none', async () => {
+      accountLookup.mockResolvedValue({
+        data: { email: 'account@example.invalid' },
+      });
+      commits({ ...cash, user_id: USER, shipping_info: {} });
+      await create();
+      await settled();
+      expect(sendOrderConfirmation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          shipping_info: { email: 'account@example.invalid' },
+        }),
+      );
+    });
+    it('keeps the order when an email fails', async () => {
+      const error = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      sendOrderConfirmation.mockRejectedValue(new Error('fixture'));
+      commits(cash);
+      await expect(create()).resolves.toEqual(cash);
+      await settled();
+      expect(error).toHaveBeenCalledWith('NEW_ORDER_EMAIL_FAILED');
+    });
+
+    describe('bot verification', () => {
+      const verify = jest.fn();
+      const createVerified = () =>
+        service.create(
+          USER,
+          [{ productId: P1, quantity: 1 }],
+          info(),
+          'cod',
+          'SALE',
+          undefined,
+          KEY,
+          verify,
+        );
+      beforeEach(() => verify.mockReset().mockResolvedValue(undefined));
+
+      it('runs before a new order is created', async () => {
+        commits(cash);
+        await createVerified();
+        expect(verify).toHaveBeenCalledTimes(1);
+      });
+      it('is skipped for a retry of a committed order, whose token is spent', async () => {
+        rpc.mockResolvedValue({
+          data: { order: cash, replayed: true },
+          error: null,
+        });
+        await expect(createVerified()).resolves.toEqual(cash);
+        expect(verify).not.toHaveBeenCalled();
+      });
+      it('stops a rejected request before stock or database writes', async () => {
+        verify.mockRejectedValue(new ForbiddenException('fixture'));
+        commits(cash);
+        await expect(createVerified()).rejects.toBeInstanceOf(
+          ForbiddenException,
+        );
+        expect(productsIn).not.toHaveBeenCalled();
+        expect(rpc).toHaveBeenCalledTimes(1);
+        expect(rpc).toHaveBeenCalledWith(
+          'checkout_lookup_request',
+          expect.anything(),
+        );
+      });
+    });
   });
 });

@@ -360,7 +360,7 @@ export default function TraditionalHeader() {
                 ) : (
                   <Link
                     href="/login"
-                    className="w-full bg-trad-primary text-white font-bold py-3 rounded-lg text-center shadow-md hover:bg-trad-primary-dark transition-colors"
+                    className="shop-btn w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Đăng nhập

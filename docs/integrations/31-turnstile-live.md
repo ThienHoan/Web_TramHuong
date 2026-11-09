@@ -26,7 +26,7 @@ No new route, table, migration or dependency.
 New mode `cloudflare` beside `disabled | mock | unavailable`. It is real outbound
 work, so it never runs under `INTEGRATIONS_ENV=mock`. Gate (all required):
 `FEATURE_TURNSTILE_ENABLED=true`, kill switch off, `INTEGRATIONS_ENV=staging`,
-`NODE_ENV` development/test (production stays `unavailable` until a release gate),
+`NODE_ENV` development/test (or, since 09/11/2026, `INTEGRATIONS_ENV=production` with `NODE_ENV=production` and real keys only, because test keys always pass),
 `TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` present and of the same kind (both
 documented test keys, or both real). Real keys additionally need
 `TURNSTILE_ALLOWED_HOSTNAMES` (comma list). Misconfiguration → `unavailable`

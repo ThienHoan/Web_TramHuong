@@ -9,11 +9,11 @@ import ProductImage from '@/components/ui/ProductImage';
 import WishlistButton from '@/components/product/WishlistButton';
 import { useCurrency } from '@/hooks/useCurrency';
 import AccountNavigation from '@/components/layout/AccountNavigation';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
+import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 import { motion } from 'framer-motion';
 import { Product } from '@/types/product';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { useBilingual } from '@/hooks/useBilingual';
 
 interface WishlistItem {
     id: string;
@@ -24,6 +24,7 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
+    const { t } = useBilingual();
     const { session, loading: authLoading } = useAuth();
     const { items: likedItems } = useWishlist();
     const [wishlistProducts, setWishlistProducts] = useState<WishlistItem[]>([]);
@@ -68,12 +69,12 @@ export default function WishlistPage() {
     if (authLoading || loading) {
         return (
             <div className="atelier-page bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
-                <TraditionalHeader />
+                <ShopHeader />
             <AccountNavigation />
                 <main className="flex-grow flex items-center justify-center">
                     <div className="w-12 h-12 border-4 border-trad-border-warm border-t-trad-primary rounded-full animate-spin"></div>
                 </main>
-                <TraditionalFooter />
+                <ShopFooter />
             </div>
         );
     }
@@ -81,7 +82,7 @@ export default function WishlistPage() {
     if (!session) {
         return (
             <div className="bg-trad-bg-light min-h-screen flex flex-col font-display selection:bg-trad-primary selection:text-white">
-                <TraditionalHeader />
+                <ShopHeader />
             <AccountNavigation />
                 <main className="flex-grow flex flex-col items-center justify-center p-8 text-center">
                     <motion.div
@@ -93,15 +94,15 @@ export default function WishlistPage() {
                             <AppIcon name="lock" className="text-4xl text-trad-text-muted" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-trad-red-900 mb-2 font-display">Đăng nhập để lưu giữ</h1>
-                            <p className="text-trad-text-muted text-lg font-serif italic">&quot;Để những món quà tinh thần không bị lãng quên.&quot;</p>
+                            <h1 className="text-3xl font-bold text-trad-red-900 mb-2 font-display">{t("Đăng nhập để xem danh sách yêu thích", "Sign in to see your wishlist")}</h1>
+                            <p className="text-trad-text-muted text-lg font-serif italic">{t("Lưu lại những món bạn thích để xem lại sau.", "Save the pieces you like and come back to them.")}</p>
                         </div>
                         <Link href="/login?redirect=/account/wishlist" className="inline-flex items-center justify-center bg-trad-primary hover:bg-trad-red-900 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
-                            Đăng nhập ngay
+                            {t("Đăng nhập ngay", "Sign in")}
                         </Link>
                     </motion.div>
                 </main>
-                <TraditionalFooter />
+                <ShopFooter />
             </div>
         );
     }
@@ -112,7 +113,7 @@ export default function WishlistPage() {
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] z-0"></div>
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-b from-trad-gold/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-            <TraditionalHeader />
+            <ShopHeader />
             <AccountNavigation />
 
             <main className="flex-grow flex flex-col relative z-10 px-4 py-16 md:py-24">
@@ -125,9 +126,9 @@ export default function WishlistPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8 }}
                         >
-                            <span className="text-trad-primary font-bold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 block">Bộ Sưu Tập Cá Nhân</span>
+                            <span className="text-trad-primary font-bold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 block">{t("Tài khoản", "Account")}</span>
                             <h1 className="font-serif text-4xl md:text-6xl text-trad-red-900 mb-6 drop-shadow-sm">
-                                Danh Sách Yêu Thích
+                                {t("Danh sách yêu thích", "My wishlist")}
                             </h1>
                             <div className="flex items-center justify-center gap-4 text-trad-gold/60 mb-8">
                                 <div className="h-px w-12 bg-current"></div>
@@ -135,8 +136,7 @@ export default function WishlistPage() {
                                 <div className="h-px w-12 bg-current"></div>
                             </div>
                             <p className="font-serif text-lg md:text-xl text-trad-text-muted max-w-2xl mx-auto leading-relaxed italic">
-                                &quot;Nơi cất giữ những rung động đầu tiên,<br className="hidden md:block" />
-                                chờ ngày hữu duyên được sở hữu.&quot;
+                                {t("Những món bạn đã lưu để xem lại.", "The pieces you saved for later.")}
                             </p>
                         </motion.div>
                     </div>
@@ -156,14 +156,14 @@ export default function WishlistPage() {
                                 </div>
                             </div>
                             <h2 className="font-display font-bold text-2xl md:text-3xl text-trad-text-main mb-4">
-                                Chưa có gì ở đây cả
+                                {t("Chưa có gì ở đây cả", "Nothing here yet")}
                             </h2>
                             <p className="text-trad-text-muted text-lg mb-10 font-light">
-                                Hãy dạo quanh cửa hàng và lưu lại những sản phẩm<br />khiến trái tim bạn rung động.
+                                {t("Bấm vào biểu tượng trái tim trên sản phẩm để lưu lại.", "Tap the heart on any product to save it here.")}
                             </p>
                             <Link href="/products" className="group relative inline-flex items-center justify-center px-10 py-4 font-display font-medium tracking-wide text-white bg-trad-red-900 rounded-full shadow-lg hover:shadow-xl hover:bg-trad-primary transition-all duration-500 overflow-hidden">
                                 <span className="relative z-10 flex items-center gap-2">
-                                    Khám Phá Cửa Hàng
+                                    {t("Xem sản phẩm", "Browse products")}
                                     <AppIcon name="arrow_forward" className="text-lg group-hover:translate-x-1 transition-transform" />
                                 </span>
                             </Link>
@@ -205,7 +205,7 @@ export default function WishlistPage() {
 
                                                 <Link href={`/products/${item.product.slug}`} className="absolute inset-x-4 bottom-4 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                                                     <div className="bg-white/95 backdrop-blur text-trad-red-900 text-center text-sm font-bold uppercase tracking-widest py-3 hover:bg-trad-primary hover:text-white transition-colors shadow-lg rounded-sm">
-                                                        Xem Chi Tiết
+                                                        {t("Xem chi tiết", "View details")}
                                                     </div>
                                                 </Link>
                                                 <Link href={`/products/${item.product.slug}`} className="absolute inset-0 z-0" />
@@ -220,7 +220,7 @@ export default function WishlistPage() {
                                             <span className="text-sm font-bold text-trad-red-900">{formatPrice(Number(item.product?.price || 0))}</span>
                                         </div>
                                         <p className="text-xs text-trad-text-muted mt-3 italic opacity-60">
-                                            Đã lưu vào {new Date(item.created_at).toLocaleDateString('vi-VN')}
+                                            {t("Đã lưu vào", "Saved on")} {new Date(item.created_at).toLocaleDateString('vi-VN')}
                                         </p>
                                     </div>
                                 </motion.div>
@@ -235,8 +235,8 @@ export default function WishlistPage() {
                 <section className="relative z-10 w-full py-20 border-t border-trad-border-warm/50">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="text-center mb-12">
-                            <h3 className="font-serif text-3xl text-trad-red-900 mb-3">Gợi ý dành riêng cho bạn</h3>
-                            <p className="text-trad-text-muted italic">&quot;Những tuyệt phẩm có thể bạn sẽ thích&quot;</p>
+                            <h3 className="font-serif text-3xl text-trad-red-900 mb-3">{t("Có thể bạn sẽ thích", "You might also like")}</h3>
+                            <p className="text-trad-text-muted italic">{t("Một vài gợi ý từ cửa hàng", "A few ideas from the shop")}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -274,7 +274,7 @@ export default function WishlistPage() {
                 </section>
             )}
 
-            <TraditionalFooter />
+            <ShopFooter />
         </div>
     );
 }

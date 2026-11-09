@@ -333,7 +333,7 @@ export default function ChatWidget() {
                                 onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                                 className="flex gap-2 items-center"
                             >
-                                <input
+                                <input data-bare
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
@@ -363,7 +363,7 @@ export default function ChatWidget() {
                                     </Button>
                                 ) : (
                                     <Button
-                                        type="submit"
+                                        data-bare type="submit"
                                         size="icon"
                                         className="rounded-full w-10 h-10 bg-trad-primary hover:bg-trad-primary-dark"
                                         disabled={!input.trim()}
