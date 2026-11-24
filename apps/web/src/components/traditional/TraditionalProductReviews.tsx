@@ -1,6 +1,7 @@
 'use client';
 import { Notice } from '@/components/ui/notice';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import Image from 'next/image';
 import { MessageCircle, Pencil, Star } from 'lucide-react';
@@ -12,10 +13,11 @@ import type { ReviewResponse } from '@/types/review';
 const empty:ReviewResponse={data:[],meta:{total:0,average:0,distribution:{}}};
 export default function TraditionalProductReviews({productId,onReviewSubmitted,initialReviews}:{productId:string;onReviewSubmitted?:()=>void;initialReviews?:ReviewResponse}) {
   const pathname=usePathname();
+  const search=useSearchParams();
   const locale=useLocale(), en=locale!=='vi', t=(vi:string,english:string)=>en?english:vi;
   const [data,setData]=useState(initialReviews || empty), [loading,setLoading]=useState(!initialReviews);
   const {user,session}=useAuth();
-  const [showForm,setShowForm]=useState(false), [rating,setRating]=useState(5), [comment,setComment]=useState('');
+  const [showForm,setShowForm]=useState(search.get('review')==='1'), [rating,setRating]=useState(5), [comment,setComment]=useState('');
   const [submitting,setSubmitting]=useState(false), [error,setError]=useState<string|null>(null), [success,setSuccess]=useState(false);
   const meta=data.meta || empty.meta, reviews=data.data || [];
   useEffect(()=>{if(initialReviews)return;let active=true;getReviews(productId).then(result=>{if(active){setData(result);setLoading(false);}});return()=>{active=false;};},[productId,initialReviews]);
@@ -26,10 +28,10 @@ export default function TraditionalProductReviews({productId,onReviewSubmitted,i
   };
   const stars=(count:number)=><span className="pd-review-stars" role="img" aria-label={t(`${count} trên 5 sao`,`${count} out of 5 stars`)}>{[1,2,3,4,5].map(star=><Star key={star} size={16} aria-hidden="true" fill={star<=count?'currentColor':'none'}/>)}</span>;
   if(loading)return <p className="pd-review-loading" role="status">{t('Đang tải đánh giá…','Loading reviews…')}</p>;
-  return <div className="pd-reviews">
+  return <div id="reviews" className="pd-reviews">
     <div className="pd-reviews-heading"><div><h3>{t('Đánh giá từ khách hàng','Customer reviews')}</h3><p>{meta.total?t(`${meta.total} chia sẻ về sản phẩm`,`${meta.total} customer reviews`):t('Chia sẻ cảm nhận của bạn về sản phẩm này.','Share your experience with this product.')}</p></div><button type="button" className="pd-review-write" aria-expanded={showForm} aria-controls="review-form-panel" onClick={()=>setShowForm(!showForm)}><Pencil size={16}/>{showForm?t('Đóng biểu mẫu','Close form'):t('Viết đánh giá','Write a review')}</button></div>
     {success && <Notice tone="success" className="my-4">{t('Cảm ơn bạn! Đánh giá đã được gửi thành công.','Thank you! Your review has been submitted.')}</Notice>}
-    {showForm && <div className="pd-review-form-panel" id="review-form-panel"><h4>{t('Chia sẻ trải nghiệm của bạn','Share your experience')}</h4>{!user?<p className="pd-review-signin"><Link href={`/login?redirect=${encodeURIComponent(pathname)}`}>{t('Đăng nhập để viết đánh giá','Sign in to write a review')}</Link></p>:<form onSubmit={submit}>
+    {showForm && <div className="pd-review-form-panel" id="review-form-panel"><h4>{t('Chia sẻ trải nghiệm của bạn','Share your experience')}</h4>{!user?<p className="pd-review-signin"><Link href={`/login?redirect=${encodeURIComponent(`${pathname}?review=1#reviews`)}`}>{t('Đăng nhập để viết đánh giá','Sign in to write a review')}</Link></p>:<form onSubmit={submit}>
       {error && <Notice tone="error" className="my-4">{error}</Notice>}
       <fieldset className="pd-review-rating"><legend>{t('Đánh giá của bạn','Your rating')}</legend><div>{[1,2,3,4,5].map(star=><label key={star}><input type="radio" name="review-rating" value={star} checked={rating===star} onChange={()=>setRating(star)}/><span aria-hidden="true"><Star size={26} fill={star<=rating?'currentColor':'none'}/></span><span className="sr-only">{star} {t('sao','stars')}</span></label>)}</div></fieldset>
       <label className="pd-review-label" htmlFor="review-comment">{t('Nội dung đánh giá','Your review')}</label><textarea id="review-comment" value={comment} onChange={e=>setComment(e.target.value)} required maxLength={3000} rows={4} placeholder={t('Bạn cảm thấy thế nào về sản phẩm này?','How was your experience with this product?')}/><button className="shop-btn pd-review-submit" type="submit" disabled={submitting||!comment.trim()}>{submitting?t('Đang gửi…','Submitting…'):t('Gửi đánh giá','Submit review')}</button>

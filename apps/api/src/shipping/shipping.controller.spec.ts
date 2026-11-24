@@ -56,6 +56,7 @@ describe('shipping API isolated integration (disabled, no DB or external IO)', (
       enabled: false,
       provider: 'ghn',
       checkoutEnabled: false,
+      flatRate: { fee: 30000, freeFrom: 300000, thresholdBasis: 'subtotal_before_voucher', currency: 'VND' },
     });
   });
   it.each([

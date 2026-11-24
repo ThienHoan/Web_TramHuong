@@ -78,11 +78,11 @@ export async function middleware(request: NextRequest) {
 
         if (!hasAccess) {
 
-            const locale = pathname.match(/^\/(vi|en)/)?.[1] || 'en';
+            const locale = pathname.match(/^\/(vi|en)/)?.[1] || 'vi';
             // Rewrite to a non-existent path to trigger 404
             const url = request.nextUrl.clone();
             url.pathname = `/${locale}/404`;
-            return NextResponse.rewrite(url);
+            return NextResponse.rewrite(url, { status: 404 });
         }
     }
 

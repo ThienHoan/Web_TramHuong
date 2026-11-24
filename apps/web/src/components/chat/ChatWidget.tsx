@@ -5,6 +5,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 import ChatMessage from './ChatMessage';
+import useSWR from 'swr';
+import { SHOP_CONTACT } from '@/lib/legal';
+import { CONTACT_CHANNELS } from '@/lib/contact-channels';
+import { getCategories, getProductsPaginated } from '@/lib/api-client';
 import { chatWithAIStream } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { X, Send, Sparkles, MessageSquare, Trash2, Square, RotateCcw } from 'lucide-react';
@@ -17,13 +21,6 @@ interface Message {
     role: 'user' | 'model';
     content: string;
 }
-
-const SUGGESTIONS = [
-    "Tư vấn quà tặng sếp",
-    "Trầm hương xông phòng ngủ",
-    "Nụ trầm giá dưới 500k",
-    "Vòng tay trầm hương nữ"
-];
 
 const MAX_MESSAGES = 30;
 
@@ -39,13 +36,20 @@ const WELCOME_DELAY_MS = 8000; // 8 seconds
 export default function ChatWidget() {
     const pathname = usePathname();
     const locale = useLocale() === 'en' ? 'en' : 'vi';
-    const suggestions = locale === 'en'
-        ? ['Agarwood gift ideas', 'Incense for a quiet evening', 'Incense cones under 500k', 'Agarwood bracelets']
-        : SUGGESTIONS;
     const isPreview = pathname.endsWith('/3d-lab') || /\/admin(?:\/|$)/.test(pathname);
     const isLanding = /^\/(vi|en)?\/?$/.test(pathname);
+    const isCheckout = /\/checkout(?:\/|$)/.test(pathname);
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const { data: stockedCategories = [] } = useSWR(isOpen ? ['chat-categories', locale] : null, async () => {
+        const categories = await getCategories(locale);
+        const populated = await Promise.all(categories.filter(c => c.is_active).map(async c => {
+            const { data } = await getProductsPaginated(locale, { category: c.slug, limit: 1, page: 1 });
+            return data.some(p => p.is_active !== false) ? c : null;
+        }));
+        return populated.filter(c => c !== null).slice(0, 4);
+    }, { revalidateOnFocus: false });
+    const suggestions = stockedCategories.length ? stockedCategories.map(c => locale === 'en' ? `Help me choose ${c.translation?.name || c.slug}` : `Tư vấn chọn ${c.translation?.name || c.slug}`) : (locale === 'en' ? ['How to use incense safely', 'Help choosing a product'] : ['Cách dùng trầm an toàn', 'Tư vấn chọn sản phẩm']);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +64,7 @@ export default function ChatWidget() {
 
     // Auto-welcome bubble (first visit only)
     useEffect(() => {
-        if (isPreview || isLanding) {
+        if (isPreview || isLanding || isCheckout) {
             setShowWelcomeBubble(false);
             return;
         }
@@ -84,7 +88,7 @@ export default function ChatWidget() {
         }, WELCOME_DELAY_MS);
 
         return () => clearTimeout(timer);
-    }, [isOpen, isPreview, isLanding]);
+    }, [isOpen, isPreview, isLanding, isCheckout]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -239,16 +243,18 @@ export default function ChatWidget() {
     if (isPreview) return null;
 
     return (
-        <div data-chat-widget className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
+        <div data-chat-widget className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6 z-40 flex flex-col items-end gap-4 font-[family-name:var(--font-display)] text-trad-text-main">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="bg-white w-[min(350px,calc(100vw-3rem))] md:w-[400px] h-[500px] md:h-[600px] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden"
+                        className="chat-panel bg-white w-[min(350px,calc(100vw-2rem))] md:w-[400px] h-[500px] max-h-[calc(100dvh-15rem)] md:h-[600px] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden"
                         ref={chatRef}
                     >
+                        <a href={`tel:${SHOP_CONTACT.phone}`} className="flex min-h-11 items-center justify-center border-b border-border px-4 text-sm">{locale === 'en' ? 'Call the store' : 'Gọi trực tiếp cửa hàng'} · {SHOP_CONTACT.phone}</a>
+                        {CONTACT_CHANNELS.length > 0 && <div className="flex gap-2 border-b border-border px-4">{CONTACT_CHANNELS.map(channel => <a key={channel.label} href={channel.href} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center text-sm underline">{channel.label}</a>)}</div>}
                         {/* Header */}
                         <div className="bg-trad-primary px-4 py-3 flex items-center justify-between text-white shadow-sm shrink-0">
                             <div className="flex items-center gap-2">
@@ -337,7 +343,8 @@ export default function ChatWidget() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder={locale === 'en' ? 'Ask about a product…' : 'Đặt câu hỏi về sản phẩm…'}
-                                    className="flex-1 text-sm bg-gray-50 border-gray-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-trad-primary"
+                                    // 16px on phones: iOS zooms the page when a smaller input is focused.
+                                    className="flex-1 text-base md:text-sm bg-gray-50 border-gray-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-trad-primary"
                                     disabled={isLoading}
                                 />
                                 {isLoading ? (
@@ -378,7 +385,7 @@ export default function ChatWidget() {
 
             {/* Welcome Bubble */}
             <AnimatePresence>
-                {showWelcomeBubble && !isOpen && (
+                {showWelcomeBubble && !isOpen && !isCheckout && (
                     <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -431,9 +438,9 @@ export default function ChatWidget() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => { setIsOpen(!isOpen); setShowWelcomeBubble(false); }}
-                className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors z-50 ${isOpen ? 'bg-gray-600 text-white' : 'bg-trad-primary text-white'}`}
+                className={`w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg flex items-center justify-center transition-colors z-50 ${isOpen ? 'bg-gray-600 text-white' : 'bg-trad-primary text-white'}`}
             >
-                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                {isOpen ? <X size={22} /> : <MessageSquare size={22} />}
             </motion.button>
         </div>
     );

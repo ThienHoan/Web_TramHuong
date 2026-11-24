@@ -1,3 +1,6 @@
+import BlogPostingJsonLd from '@/components/seo/BlogPostingJsonLd';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { absoluteUrl, plainDescription } from '@/lib/seo';
 import { Link } from '@/i18n/routing';
 import { sanitizePostHtml } from '@/lib/sanitize-post';
 import TraditionalHeader from '@/components/traditional/TraditionalHeader';
@@ -31,14 +34,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         const { data: post } = await getPostBySlug(slug);
         return {
             title: post?.seo_title || post?.title || 'Bài viết Trầm Hương',
-            description: post?.seo_description || post?.excerpt || 'Khám phá kiến thức trầm hương.',
+            description: plainDescription(post?.seo_description || post?.excerpt, 'Khám phá kiến thức trầm hương.'),
+            alternates: { canonical: `/vi/blog/${slug}`, languages: { vi: `/vi/blog/${slug}`, 'x-default': `/vi/blog/${slug}` } },
             openGraph: {
+                type: 'article', url: absoluteUrl(`/vi/blog/${slug}`), publishedTime: post?.published_at || post?.created_at,
                 images: post?.cover_image ? [post.cover_image] : []
             }
         };
     } catch {
         return {
-            title: 'Bài viết không tồn tại'
+            title: 'Bài viết không tồn tại', robots: { index: false, follow: false }
         };
     }
 }
@@ -70,9 +75,12 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
     if (!post) return notFound(); // Should be handled by catch/notFound above but typescript might complain
 
+    const structuredData = <><BlogPostingJsonLd post={post} /><BreadcrumbJsonLd locale={locale} items={[{ name: 'Thiên Phúc', item: `/${locale}` }, { name: 'Thư viện hương trầm', item: `/${locale}/blog` }, { name: post.title, item: `/vi/blog/${post.slug}` }]} /></>;
+
     if (locale !== 'vi') {
         return (
             <>
+                {structuredData}
                 <ZenBlogDetail post={post} relatedPosts={relatedPosts} />
                 <ZenFooter />
             </>
@@ -81,6 +89,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
     return (
         <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white bg-pattern-lotus">
+            {structuredData}
             <TraditionalHeader />
 
             <main className="min-h-screen pb-20 flex-grow">
@@ -105,7 +114,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
                         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-trad-text-muted border-t border-b border-trad-primary/20 py-4 mx-auto max-w-2xl">
                             <div className="flex items-center gap-2">
                                 <AppIcon name="edit" className="text-trad-primary text-lg" />
-                                <span>Viết bởi: <span className="font-bold text-trad-text-main">Nghệ nhân Thiên Phúc</span></span>
+                                <span>Viết bởi: <span className="font-bold text-trad-text-main">{post.author?.full_name || 'Thiên Phúc'}</span></span>
                             </div>
                             <div className="hidden sm:block w-1 h-1 bg-trad-primary rounded-full"></div>
                             <div className="flex items-center gap-2">
@@ -148,25 +157,6 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
                     <div dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content || '') }} />
 
-                    {/* Author Bio */}
-                    <div className="mt-12 bg-white p-8 rounded-xl shadow-sm border border-trad-primary/10 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
-                        <Image
-                            src="/photos/shelf.webp"
-                            alt="Thiên Phúc"
-                            width={96}
-                            height={96}
-                            className="rounded-full object-cover border-4 border-trad-primary/20"
-                        />
-                        <div>
-                            <h4 className="text-xl font-bold text-trad-primary mb-2">Lời Người Kể: Nghệ Nhân Thiên Phúc</h4>
-                            <p className="text-trad-gray text-sm leading-relaxed">
-                                Với hơn 20 năm gắn bó với nghề làm trầm, tôi mong muốn mang những giá trị văn hóa truyền thống tốt đẹp nhất đến với mọi gia đình Việt.
-                            </p>
-                            <Link className="inline-block mt-4 text-trad-primary hover:text-trad-primary-dark font-bold text-sm uppercase tracking-wide" href="/blog">
-                                Xem các bài viết khác →
-                            </Link>
-                        </div>
-                    </div>
                 </article>
 
                 {/* Related Posts */}

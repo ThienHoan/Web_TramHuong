@@ -665,6 +665,10 @@
     width: 38px;
     height: 36px;
   }
+  /* iOS zooms the page when a focused input is smaller than 16px. */
+  .checkout-voucher-entry input {
+    font-size: 16px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .checkout-experience *,
@@ -674,4 +678,20 @@
     animation-duration: 0s !important;
     scroll-behavior: auto !important;
   }
+}
+
+@media (max-width:760px) {
+  .checkout-container { padding-top:20px; }
+  .checkout-back { min-height:44px; font-size:14px; }
+  .checkout-heading { margin:12px 0 24px; gap:20px; }
+  .checkout-heading h1 { font-size:30px; line-height:1.3; }
+  .checkout-heading > div > p:last-child { font-size:14px; line-height:1.65; }
+  .checkout-progress { flex-wrap:wrap; gap:12px; }
+  .checkout-progress li { font-size:12px; line-height:1.5; }
+  .checkout-field label { font-size:14px; line-height:1.6; }
+  .checkout-field-help,.checkout-field-error,.checkout-form-note,.checkout-summary-hint { font-size:14px; line-height:1.65; }
+  .checkout-primary { min-height:52px; font-size:16px; line-height:1.5; }
+  .checkout-quantity button { width:44px; height:44px; }
+  .checkout-grand-total { font-size:15px; }
+  .checkout-grand-total strong { font-size:26px; }
 }

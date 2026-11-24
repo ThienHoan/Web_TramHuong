@@ -1,4 +1,5 @@
 import React from 'react';
+import { SHOP_CONTACT } from '@/lib/legal';
 import { SITE_URL } from '@/lib/seo';
 
 const JsonLd = () => {
@@ -38,13 +39,13 @@ const JsonLd = () => {
                     'width': 512,
                     'height': 512
                 },
-                'telephone': '+84356176878', // Int'l format
+                'telephone': '+84' + SHOP_CONTACT.phone.slice(1), // Int'l format
                 'priceRange': '$$',
                 'address': {
                     '@type': 'PostalAddress',
-                    'streetAddress': '153 Lý Thái Tổ, Hương Trà',
-                    'addressLocality': 'Thành Phố Huế',
-                    'addressRegion': 'Thừa Thiên Huế',
+                    'streetAddress': SHOP_CONTACT.address,
+                    'addressLocality': 'Thành phố Huế',
+                    'addressRegion': 'Thành phố Huế',
                     'addressCountry': 'VN'
                 },
                 'openingHoursSpecification': [
@@ -64,7 +65,7 @@ const JsonLd = () => {
                     }
                 ],
                 'sameAs': [
-                    'https://www.facebook.com/profile.php?id=61585286954215',
+                    SHOP_CONTACT.facebookUrl,
                 ],
                 'contactPoint': {
                     '@type': 'ContactPoint',

@@ -1,4 +1,5 @@
 "use client";
+import { useShippingPolicy, flatRateFee } from "@/hooks/useShippingAvailability";
 import { ContactProtection } from "@/components/contact/ContactProtection";
 import { useContactProtection } from "@/hooks/useContactProtection";
 import { LegalConsent } from '@/components/legal/LegalConsent';
@@ -27,6 +28,7 @@ import ShippingQuotePanel, {
 } from "@/components/checkout/ShippingQuotePanel";
 
 export default function PaymentSelectPage() {
+  const { data: shippingPolicy, error: policyError, mutate: retryPolicy } = useShippingPolicy();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [shippingSelection, setShippingSelection] = useState<ShippingSelection>(
     { enabled: false, ready: false, quote: null },
@@ -57,12 +59,12 @@ export default function PaymentSelectPage() {
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
   const [voucherDiscount, setVoucherDiscount] = useState(0);
 
-  const isFreeShipping = (shippingSelection.quote?.subtotal ?? total) >= 300000;
+  const fallbackFee = flatRateFee(shippingPolicy, total);
   // Showroom pickup = free shipping
   const shippingFee =
     paymentMethod === "showroom"
       ? 0
-      : (shippingSelection.quote?.customerFee ?? (isFreeShipping ? 0 : 30000));
+      : (shippingSelection.quote?.customerFee ?? (fallbackFee ?? 0));
   const finalTotal =
     paymentMethod !== "showroom" && shippingSelection.quote
       ? shippingSelection.quote.total
@@ -119,7 +121,7 @@ export default function PaymentSelectPage() {
   }, [router, total, loading]);
 
   const handlePlaceOrder = async () => {
-    if (!termsAccepted) return;
+    if (!termsAccepted || loading || !shippingPolicy) return;
     setError(null);
     if (!shippingInfo) {
       router.push("/checkout");
@@ -156,7 +158,7 @@ export default function PaymentSelectPage() {
               ...shippingInfo,
               full_address:
                 SHOP_CONTACT.address,
-              city: "Hồ Chí Minh", // Override specifically for showroom context if needed, or keep user's just for contact?
+              city: "Thành phố Huế",
               // Actually, backend needs shipping info. It's better to keep user contact info but set address to showroom.
               // However, shipping_info usually implies WHERE to ship.
               // Let's explicitly set the address to the showroom address so it's clear in the order record.
@@ -168,7 +170,8 @@ export default function PaymentSelectPage() {
         phone: string;
         city: string;
         address: string;
-        email: string;
+        email?: string;
+        full_address: string;
       } = {
         name: shippingInfo.name,
         phone: shippingInfo.phone,
@@ -178,7 +181,8 @@ export default function PaymentSelectPage() {
           "",
         address:
           finalShippingInfo?.full_address || finalShippingInfo?.address || "", // Handle both structures if needed
-        email: shippingInfo.email || "",
+        email: shippingInfo.email?.trim() || undefined,
+        full_address: finalShippingInfo?.full_address || finalShippingInfo?.address || "",
       };
 
       // If showroom, we might want to override the full address construction logic from previous step
@@ -234,7 +238,7 @@ export default function PaymentSelectPage() {
     shippingSelection.enabled &&
     !shippingSelection.quote;
   const quotePending =
-    paymentMethod !== "showroom" && (!shippingSelection.ready || needsQuote);
+    !shippingPolicy || (paymentMethod !== "showroom" && (!shippingSelection.ready || needsQuote));
   return (
     <div className="atelier-page">
       <ProcessingOrderOverlay isVisible={loading} />
@@ -248,7 +252,7 @@ export default function PaymentSelectPage() {
             discount={
               shippingSelection.quote?.voucherDiscount ?? voucherDiscount
             }
-            shipping={quotePending ? null : shippingFee}
+            shipping={quotePending || (paymentMethod !== "showroom" && !shippingSelection.quote && fallbackFee === null) ? null : shippingFee}
             total={
               quotePending ? Math.max(0, total - voucherDiscount) : finalTotal
             }
@@ -288,6 +292,7 @@ export default function PaymentSelectPage() {
           </CheckoutSummary>
         }
       >
+        {policyError && <CheckoutNotice>Chưa tải được phí giao hàng. <button type="button" className="underline min-h-11" onClick={() => void retryPolicy()}>Thử lại</button></CheckoutNotice>}
         {error && <CheckoutNotice>{error}</CheckoutNotice>}
         <CheckoutCard
           title="Người nhận"
@@ -298,6 +303,7 @@ export default function PaymentSelectPage() {
               <strong>{shippingInfo?.name || "Đang tải thông tin…"}</strong>
               <p>
                 {shippingInfo?.phone}
+                {shippingInfo?.email && <><br />{shippingInfo.email}</>}
                 <br />
                 {shippingInfo?.full_address || shippingInfo?.address}
               </p>

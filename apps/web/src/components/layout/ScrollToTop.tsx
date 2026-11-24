@@ -39,7 +39,8 @@ export default function ScrollToTop() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={scrollToTop}
-                    className="fixed bottom-24 left-6 z-40 w-12 h-12 bg-trad-primary hover:bg-trad-primary-dark text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                    // Desktop only: on phones it sat on top of body text and links.
+                    className="fixed bottom-24 left-6 z-40 w-12 h-12 bg-trad-primary hover:bg-trad-primary-dark text-white rounded-full shadow-lg hidden md:flex items-center justify-center transition-colors"
                     aria-label="Cuộn lên đầu trang"
                     title="Lên đầu trang"
                 >

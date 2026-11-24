@@ -8,6 +8,7 @@ import ShippingAddressFields from "@/components/checkout/ShippingAddressFields";
 export interface GuestSubmitData {
   name: string;
   phone: string;
+  email?: string;
   address: string;
   province: string;
   district: string;
@@ -35,6 +36,7 @@ export default function GuestCheckoutForm({
   const [draft, setData] = useState<Partial<Recipient>>({});
   const data: Recipient = {
     name: draft.name ?? initialValues?.name ?? "",
+    email: draft.email ?? initialValues?.email ?? "",
     phone: draft.phone ?? initialValues?.phone ?? "",
     address: draft.address ?? initialValues?.address ?? "",
     province: draft.province ?? initialValues?.province ?? "",
@@ -47,7 +49,7 @@ export default function GuestCheckoutForm({
   };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [addressUnavailable, setAddressUnavailable] = useState(false);
-  const change = (key: "name" | "phone" | "address", value: string) => {
+  const change = (key: "name" | "phone" | "address" | "email", value: string) => {
     setData((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: "" }));
   };
@@ -58,13 +60,14 @@ export default function GuestCheckoutForm({
     if (!data.name.trim()) invalid.name = "Bạn chưa nhập họ tên người nhận.";
     if (!/^(0\d{9}|\+?84\d{9})$/.test(phone))
       invalid.phone = "Nhập số điện thoại Việt Nam hợp lệ, ví dụ 0912 345 678.";
+    if (data.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) invalid.email = "Nhập địa chỉ email hợp lệ hoặc để trống.";
     if (!data.address.trim())
       invalid.address = "Bạn chưa nhập số nhà và tên đường.";
     if (
       requireLegacyAddress &&
-      (!data.province || !data.district || !data.ward)
+      (!data.province.trim() || !data.ward.trim())
     )
-      invalid.location = "Chọn đầy đủ tỉnh/thành, quận/huyện và phường/xã.";
+      invalid.location = "Chọn hoặc nhập đầy đủ tỉnh/thành và phường/xã.";
     if (ghnAddress && !addressUnavailable) {
       if (!data.shippingProvinceId)
         invalid.province = "Chọn tỉnh/thành để tính phí giao hàng.";
@@ -80,6 +83,7 @@ export default function GuestCheckoutForm({
     onSubmit({
       ...data,
       name: data.name.trim(),
+      email: data.email?.trim() || undefined,
       address: data.address.trim(),
       phone: phone.startsWith("0")
         ? "+84" + phone.slice(1)
@@ -147,6 +151,11 @@ export default function GuestCheckoutForm({
               {errors.phone}
             </p>
           )}
+        </div>
+        <div className="checkout-field checkout-field-full">
+          <label htmlFor="guest-email">Email (không bắt buộc)</label>
+          <Input id="guest-email" type="email" autoComplete="email" maxLength={254} value={data.email || ""} onChange={e => change("email", e.target.value)} aria-invalid={!!errors.email} aria-describedby="guest-email-help" />
+          <p id="guest-email-help" className={errors.email ? "checkout-field-error" : "checkout-field-help"} role={errors.email ? "alert" : undefined}>{errors.email || "Để nhận xác nhận đơn và mã tra cứu."}</p>
         </div>
         <div className="checkout-field checkout-field-full">
           <label htmlFor="guest-address">Số nhà, tên đường</label>

@@ -1,3 +1,4 @@
+import { flatRateShippingFee } from '../shipping/flat-rate-policy';
 import { pagination } from '../common/pagination';
 import {
   Injectable,
@@ -515,9 +516,7 @@ export class OrdersService {
 
       let shippingFee = shippingQuote
         ? shippingQuote.customerFee
-        : total >= 300000
-          ? 0
-          : 30000;
+        : flatRateShippingFee(subtotal);
       if (shippingQuote) {
         shippingInfo.shipping_quote_reference = shippingQuote.reference;
         shippingInfo.shipping_snapshot = shippingQuote;

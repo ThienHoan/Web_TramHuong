@@ -4,6 +4,7 @@ import { Link } from "@/i18n/routing";
 import { ArrowUpRight, Phone, Mail } from "lucide-react";
 import { BrandLockup, BRAND } from "@/components/brand/BrandIdentity";
 
+import { SHOP_CONTACT } from '@/lib/legal';
 import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export default function TraditionalFooter() {
@@ -34,18 +35,18 @@ export default function TraditionalFooter() {
           <div>
             <h3>Ghé thăm Thiên Phúc</h3>
             <ul>
-              <li>153 Lý Thái Tổ, Hương Trà, Thành phố Huế</li>
+              <li>{SHOP_CONTACT.address}</li>
               <li>08:00 – 21:00, mỗi ngày</li>
               <li>
-                <a href="tel:0356176878">
+                <a href={`tel:${SHOP_CONTACT.phone}`}>
                   <Phone size={15} />
                   0356.176.878
                 </a>
               </li>
               <li>
-                <a href="mailto:Hoan64735@gmail.com">
+                <a href={`mailto:${SHOP_CONTACT.email}`}>
                   <Mail size={15} />
-                  Hoan64735@gmail.com
+                  {SHOP_CONTACT.email}
                 </a>
               </li>
             </ul>
@@ -67,7 +68,7 @@ export default function TraditionalFooter() {
               </li>
               <li>
                 <a
-                  href="https://www.facebook.com/profile.php?id=61585286954215"
+                  href={SHOP_CONTACT.facebookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

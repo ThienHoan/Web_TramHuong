@@ -57,7 +57,7 @@ export default function ZenHeader({ locale }: { locale: string }) {
                                     <div className="lg:hidden border-b border-zen-100 dark:border-zinc-800 mb-2 pb-2">
                                         <button onClick={() => { setIsSearchOpen(true); setMenuOpen(false); }} className="block w-full text-left px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Search</button>
                                         <Link href="/products" className="block px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Shop</Link>
-                                        <Link href="/about" className="block px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Our Story</Link>
+                                        <Link href="/#story" className="block px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Our Story</Link>
                                         <Link href="/blog" className="block px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Journal</Link>
                                         <Link href="/order-lookup" className="block px-6 py-2 hover:bg-zen-50 dark:hover:bg-zinc-800 font-light uppercase tracking-wide text-xs">Track Order</Link>
                                     </div>

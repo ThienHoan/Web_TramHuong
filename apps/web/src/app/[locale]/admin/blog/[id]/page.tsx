@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Plus, Save } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { createPost, updatePost, getPostBySlug } from '@/lib/api-client';
 import { BlogPost } from '@/types/blog';
 import { toast } from 'sonner';
@@ -21,13 +21,15 @@ export default function AdminBlogEditPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(!isNew);
 
-    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<Partial<BlogPost>>({
+    const { register, handleSubmit, setValue, control, formState: { errors, isSubmitting } } = useForm<Partial<BlogPost>>({
         defaultValues: {
             status: 'draft',
             category: 'knowledge',
             is_featured: false
         }
     });
+
+    const values = useWatch({ control });
 
     useEffect(() => {
         if (!isNew) {
@@ -73,7 +75,7 @@ export default function AdminBlogEditPage() {
 
     if (loading) return <AdminFormLoading />;
 
-    const coverImage = watch('cover_image');
+    const coverImage = values.cover_image;
 
     return (
         <AdminFormPage
@@ -96,7 +98,7 @@ export default function AdminBlogEditPage() {
                 side={<>
                     <AdminFormSection id="post-publishing" title={t('Xuất bản', 'Publishing')}>
                         <AdminField id="post-status" label={t('Trạng thái', 'Status')}>
-                            <Select value={watch('status') || 'draft'} onValueChange={value => setValue('status', value as BlogPost['status'])} disabled={isSubmitting}>
+                            <Select value={values.status || 'draft'} onValueChange={value => setValue('status', value as BlogPost['status'])} disabled={isSubmitting}>
                                 <SelectTrigger id="post-status"><SelectValue /></SelectTrigger>
                                 <SelectContent className="admin-menu">
                                     <SelectItem value="draft">{t('Bản nháp', 'Draft')}</SelectItem>
@@ -108,7 +110,7 @@ export default function AdminBlogEditPage() {
                     </AdminFormSection>
                     <AdminFormSection id="post-organization" title={t('Phân loại & đường dẫn', 'Organization & URL')}>
                         <AdminField id="post-category" label={t('Chuyên mục', 'Category')}>
-                            <Select value={watch('category') || 'knowledge'} onValueChange={value => setValue('category', value)} disabled={isSubmitting}>
+                            <Select value={values.category || 'knowledge'} onValueChange={value => setValue('category', value)} disabled={isSubmitting}>
                                 <SelectTrigger id="post-category"><SelectValue /></SelectTrigger>
                                 <SelectContent className="admin-menu">
                                     <SelectItem value="knowledge">{t('Kiến thức', 'Knowledge')}</SelectItem>

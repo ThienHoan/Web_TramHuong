@@ -1,3 +1,4 @@
+import { ReviewReminderService } from './review-reminder.service';
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -55,6 +56,7 @@ import { IntegrationRepository } from '../integrations/integration.repository';
   controllers: [NotificationController],
   providers: [
     MailService,
+    ReviewReminderService,
     SmtpEmailProvider,
     NotificationRepository,
     {

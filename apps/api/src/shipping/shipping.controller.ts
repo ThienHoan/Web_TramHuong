@@ -1,3 +1,4 @@
+import { FLAT_RATE_POLICY } from './flat-rate-policy';
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ShippingAddressService } from './address.service';
@@ -25,6 +26,7 @@ export class ShippingController {
     return {
       enabled: this.config.enabled,
       provider: 'ghn',
+      flatRate: FLAT_RATE_POLICY,
       checkoutEnabled: this.config.enabled && this.settings.checkout,
     };
   }

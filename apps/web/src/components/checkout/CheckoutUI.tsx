@@ -1,5 +1,6 @@
 "use client";
 
+import FreeShippingProgress from './FreeShippingProgress';
 import { Notice } from '@/components/ui/notice';
 import type { ReactNode } from "react";
 import { useLocale } from "next-intl";
@@ -16,6 +17,7 @@ import {
   Truck,
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { allProductsHref } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductImage from "@/components/ui/ProductImage";
@@ -39,9 +41,10 @@ export function CheckoutLayout({
       data-skin={en ? "zen" : "traditional"}
     >
       <div className="checkout-container">
-        <Link href="/cart" className="checkout-back">
+        {/* There is no /cart page: the cart is a drawer, and the items stay editable in the summary below. */}
+        <Link href={allProductsHref(en ? "en" : "vi")} className="checkout-back">
           <ArrowLeft size={15} />
-          {en ? "Back to your bag" : "Quay lại giỏ hàng"}
+          {en ? "Continue shopping" : "Tiếp tục mua sắm"}
         </Link>
         <header className="checkout-heading">
           <div>
@@ -229,6 +232,7 @@ export function CheckoutSummary({
           </p>
         )}
       </div>
+      {items.length > 0 && <div className="checkout-summary-extra"><FreeShippingProgress subtotal={subtotal} /></div>}
       {children && <div className="checkout-summary-extra">{children}</div>}
       <div className="checkout-totals">
         <dl>

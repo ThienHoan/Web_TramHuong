@@ -99,7 +99,7 @@ export const productService = {
         }
     },
 
-    async getCategories(locale: string = 'en', includeInactive: boolean = false): Promise<Category[]> {
+    async getCategories(locale: string = 'vi', includeInactive: boolean = false): Promise<Category[]> {
         try {
             const url = buildUrl(includeInactive ? '/categories/admin/list' : '/categories', { locale, limit: 500 });
             // revalidate 60s

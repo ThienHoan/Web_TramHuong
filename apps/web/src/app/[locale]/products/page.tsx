@@ -1,3 +1,4 @@
+import CatalogView from '@/components/analytics/CatalogView';
 import type { Metadata } from 'next';
 import { getProductsPaginated, getCategories } from '@/lib/api-client';
 import ShopCatalog from '@/components/shop/ShopCatalog';
@@ -13,7 +14,7 @@ export async function generateMetadata({params,searchParams}:Props):Promise<Meta
   const {locale}=await params, f=parseCatalogFilters(await searchParams), en=locale!=='vi';
   const filtered=!!(f.search||f.category||f.min_price||f.max_price||f.sort!=='recommended');
   const path=`/${locale}/products${f.page>1?`?page=${f.page}`:''}`;
-  return {title:`${en?'Vietnamese Agarwood · Products & Prices':'Sản phẩm trầm hương · Hình ảnh & giá bán'}${f.page>1?` · ${en?'Page':'Trang'} ${f.page}`:''}`,description:en?'Explore Thien Phuc agarwood. Compare photos, prices and product options, and get advice before ordering.':'Khám phá trầm hương Thiên Phúc: xem hình ảnh, giá bán, phân loại và thông số sản phẩm. Tìm sản phẩm theo nhu cầu, ngân sách và nhận tư vấn trước khi mua.',alternates:{canonical:path,languages:{vi:`/vi/products${f.page>1?`?page=${f.page}`:''}`,en:`/en/products${f.page>1?`?page=${f.page}`:''}`}},robots:filtered?{index:false,follow:true}:undefined};
+  return {title:`${en?'Vietnamese Agarwood · Products & Prices':'Sản phẩm trầm hương · Hình ảnh & giá bán'}${f.page>1?` · ${en?'Page':'Trang'} ${f.page}`:''}`,description:en?'Explore Thien Phuc agarwood. Compare photos, prices and product options, and get advice before ordering.':'Khám phá trầm hương Thiên Phúc: xem hình ảnh, giá bán, phân loại và thông số sản phẩm. Tìm sản phẩm theo nhu cầu, ngân sách và nhận tư vấn trước khi mua.',alternates:{canonical:path,languages:{'x-default':`/vi/products${f.page>1?`?page=${f.page}`:''}`,vi:`/vi/products${f.page>1?`?page=${f.page}`:''}`,en:`/en/products${f.page>1?`?page=${f.page}`:''}`}},robots:filtered?{index:false,follow:true}:undefined};
 }
 export default async function ProductsPage({params,searchParams}:Props) {
   const {locale}=await params, filters=parseCatalogFilters(await searchParams);
@@ -35,5 +36,5 @@ export default async function ProductsPage({params,searchParams}:Props) {
     result=catalogResults(candidates,filters);
   } else result=await getProductsPaginated(locale,{...options,limit:12,page:filters.page});
   const {data:products,meta}=result;
-  return <><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Bộ sưu tập':'Products',item:`/${locale}/products`},...(category?[{name:category.translation?.name || category.slug,item:`/${locale}/products/category/${category.slug}`}]:[])]}/>{isCollectionOverview(locale,filters) ? <TraditionalProductList products={products} categories={categories}/> : <ShopCatalog products={products} categories={categories} filters={filters} pagination={meta} locale={locale}/>}</>;
+  return <><CatalogView products={products}/><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Bộ sưu tập':'Products',item:`/${locale}/products`},...(category?[{name:category.translation?.name || category.slug,item:`/${locale}/products/category/${category.slug}`}]:[])]}/>{isCollectionOverview(locale,filters) ? <TraditionalProductList products={products} categories={categories}/> : <ShopCatalog products={products} categories={categories} filters={filters} pagination={meta} locale={locale}/>}</>;
 }

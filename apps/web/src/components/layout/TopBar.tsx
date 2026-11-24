@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { Leaf, Pause, Phone, Play, Truck } from 'lucide-react';
+import { ChevronRight, Leaf, Pause, Phone, Play, Truck } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { useShippingPolicy } from '@/hooks/useShippingAvailability';
+import { useCurrency } from '@/hooks/useCurrency';
 import { SHOP_CONTACT } from '@/lib/legal';
 
 export default function TopBar() {
+  const { data: policy } = useShippingPolicy();
+  const { formatPrice } = useCurrency();
   const en = useLocale() !== 'vi';
   const [paused, setPaused] = useState(false);
   const brand = en ? 'Thien Phuc · Vietnamese agarwood, everyday peace' : 'Thiên Phúc · Hương Việt, nếp an yên';
@@ -19,6 +23,7 @@ export default function TopBar() {
       aria-label={en ? 'Updates from Thien Phuc' : 'Thông tin từ Thiên Phúc'}
       data-paused={paused}
     >
+      <Link className="shop-announcement-mobile" href="/policies/shipping"><Truck size={15} aria-hidden="true"/><span>{policy && !policy.checkoutEnabled ? (en ? `Free delivery from ${formatPrice(policy.flatRate.freeFrom)}` : `Miễn phí giao từ ${formatPrice(policy.flatRate.freeFrom)}`) : (en ? 'Delivery & payment' : 'Giao hàng & thanh toán')}</span><ChevronRight size={15} aria-hidden="true"/></Link>
       <div className="shop-announcement-viewport">
         <div className="shop-announcement-track">
           {[false, true].map(copy => (

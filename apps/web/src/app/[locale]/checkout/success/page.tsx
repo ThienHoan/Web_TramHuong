@@ -72,8 +72,9 @@ export default function CheckoutSuccessPage() {
 
                     <section className="shop-card">
                         <p className="shop-hint">{t('Mã đơn hàng', 'Order code')}</p>
+                        <p className="mb-3 text-base">{t('Hãy lưu mã đơn hoặc chụp màn hình để tra cứu. Nếu không nhập email, đây là nơi nhận mã đơn của bạn.', 'Save this code or take a screenshot to track your order. Without an email, this page is where you receive your order code.')}</p>
                         <div className="mt-1 flex items-center justify-between gap-3">
-                            <p className="min-w-0 break-all text-[15px] font-medium">{orderId}</p>
+                            <p className="min-w-0 break-all font-mono text-lg font-semibold">{orderId}</p>
                             <button type="button" onClick={copyId} className="shop-btn shop-btn-secondary shrink-0 !min-h-11 !px-3" aria-label={t('Sao chép mã đơn hàng', 'Copy order code')}>
                                 {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
                                 <span className="text-sm">{copied ? t('Đã chép', 'Copied') : t('Sao chép', 'Copy')}</span>

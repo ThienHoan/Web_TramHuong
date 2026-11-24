@@ -1,5 +1,6 @@
 'use client';
 
+import FreeShippingProgress from '@/components/checkout/FreeShippingProgress';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
@@ -112,7 +113,7 @@ export default function TraditionalProductDetail({product,relatedProducts=[],ini
           <section className="pd-summary" aria-labelledby="product-title">
             <div className="pd-summary-top"><p className="pd-eyebrow">{product.category?.translation?.name || t('Tuyển chọn Thiên Phúc','Thien Phuc collection')}</p><button type="button" aria-pressed={wishlistItems.has(product.id)} aria-label={t('Lưu sản phẩm yêu thích','Save to wishlist')} className="pd-wishlist" onClick={()=>toggleWishlist(product.id)}><Heart size={20} fill={wishlistItems.has(product.id)?'currentColor':'none'}/></button></div>
             <h1 id="product-title">{title}</h1>
-            <button className="pd-rating" type="button" onClick={scrollToReviews}>{reviewStats.total>0?<><span className="pd-stars">★ <strong>{Number(reviewStats.average).toFixed(1)}</strong></span><span>· {reviewStats.total} {t('đánh giá','reviews')}</span></>:t('Chưa có đánh giá · Chia sẻ cảm nhận','No reviews yet · Share your experience')}<ArrowUpRight size={15}/></button>
+            {reviewStats.total>0 && <button className="pd-rating" type="button" onClick={scrollToReviews}>{reviewStats.total>0?<><span className="pd-stars">★ <strong>{Number(reviewStats.average).toFixed(1)}</strong></span><span>· {reviewStats.total} {t('đánh giá','reviews')}</span></>:t('Chưa có đánh giá · Chia sẻ cảm nhận','No reviews yet · Share your experience')}<ArrowUpRight size={15}/></button>}
             <div className="pd-price-row"><div className="pd-price"><ProductPrice product={product} variantPrice={variant?Number(variant.price):undefined} size="xl" theme="traditional"/></div><p className="pd-availability" data-available={stock>0}>{stock>0?t('Còn hàng','In stock'):t('Tạm hết hàng','Currently unavailable')}</p></div>
             {intro && <p className="pd-intro">{intro}</p>}
             {specs.length>0 && <dl className="pd-key-facts">{specs.slice(0,3).map((spec,index)=><div key={index}><dt>{spec.key || t('Chi tiết','Detail')}</dt><dd>{spec.value}</dd></div>)}</dl>}
@@ -130,6 +131,7 @@ export default function TraditionalProductDetail({product,relatedProducts=[],ini
               <li><UserRound size={18} aria-hidden="true"/><span>{t('Đặt hàng không cần tạo tài khoản','Check out without creating an account')}</span></li>
               <li><Phone size={18} aria-hidden="true"/><span>{t('Cần tư vấn? Gọi ','Need advice? Call ')}<a href={`tel:${SHOP_CONTACT.phone}`}>{SHOP_CONTACT.phone}</a></span></li>
             </ul>
+            <FreeShippingProgress compact />
             <p className="pd-policy-links"><Link href="/policies/shipping">{t('Giao hàng & thanh toán','Delivery & payment')}</Link><Link href="/policies/returns">{t('Đổi trả & hỗ trợ','Returns & support')}</Link></p>
           </section>
         </div>

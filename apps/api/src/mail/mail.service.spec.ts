@@ -27,7 +27,7 @@ describe('transaction mail logging privacy', () => {
       .mockImplementation(() => {});
     const service = new MailService(
       new SmtpEmailProvider({ sendMail } as unknown as MailerService),
-      {} as ConfigService,
+      { get: () => 'https://shop.example.org' } as unknown as ConfigService,
     );
     await expect(service.sendPaymentSuccess(order)).resolves.toBeUndefined();
     expect(sendMail).toHaveBeenCalledTimes(1);
@@ -50,12 +50,28 @@ describe('transaction mail logging privacy', () => {
       .mockImplementation(() => {});
     const service = new MailService(
       new SmtpEmailProvider({ sendMail } as unknown as MailerService),
-      {} as ConfigService,
+      { get: () => 'https://shop.example.org' } as unknown as ConfigService,
     );
     await service.sendOrderConfirmation(order);
     expect(sendMail).toHaveBeenCalledTimes(1);
     expect(log).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
+  });
+
+  describe('review reminder mail', () => {
+    const fixture = () => {
+      const sendMail = jest.fn().mockResolvedValue({ accepted: ['buyer@example.invalid'] });
+      const service = new MailService(new SmtpEmailProvider({ sendMail } as unknown as MailerService), { get: () => 'https://shop.example.org' } as unknown as ConfigService);
+      return { service, sendMail };
+    };
+    it('links directly to the review form on the configured store', async () => {
+      const { service, sendMail } = fixture();
+      expect(await service.sendReviewReminder({ to: 'buyer@example.invalid', items: [{ slug: 'incense', title: 'Nụ trầm' }] })).toBe(true);
+      expect(sendMail).toHaveBeenCalledWith(expect.objectContaining({ template: './review-reminder', context: { items: [{ title: 'Nụ trầm', url: 'https://shop.example.org/vi/products/incense?review=1#reviews' }] } }));
+    });
+    it.each([{ to: 'invalid', items: [] }, { to: 'buyer@example.invalid', items: [{ slug: '../admin', title: 'Invalid' }] }])('rejects malformed reminder payloads without sending', async payload => {
+      const { service, sendMail } = fixture(); expect(await service.sendReviewReminder(payload)).toBe(false); expect(sendMail).not.toHaveBeenCalled();
+    });
   });
 
   describe('new order emails', () => {

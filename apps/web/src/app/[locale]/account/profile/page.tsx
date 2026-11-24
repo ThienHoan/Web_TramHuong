@@ -9,10 +9,8 @@ import { useRouter } from '@/i18n/routing';
 import AccountNavigation from '@/components/layout/AccountNavigation';
 import { ShopFooter, ShopHeader } from '@/components/layout/ShopChrome';
 
-interface Division {
-    code: number;
-    name: string;
-}
+import LocationSelector from '@/components/checkout/LocationSelector';
+import '@/components/checkout/checkout.css';
 
 import { toast } from 'sonner';
 import { AppIcon } from "@/components/icons/AppIcon";
@@ -24,11 +22,6 @@ export default function ProfilePage() {
     const router = useRouter();
     const [dataLoading, setDataLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    // Location State
-    const [provinces, setProvinces] = useState<Division[]>([]);
-    const [districts, setDistricts] = useState<Division[]>([]);
-    const [wards, setWards] = useState<Division[]>([]);
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -50,14 +43,7 @@ export default function ProfilePage() {
 
         setAccessToken(session.access_token);
 
-        // Fetch Profile and Provinces in parallel
-        Promise.all([
-            getProfile(),
-            fetch('https://provinces.open-api.vn/api/?depth=1').then(res => res.json())
-        ])
-            .then(([profileData, provinceData]) => {
-                setProvinces(provinceData);
-
+        getProfile().then(profileData => {
                 if (profileData) {
                     setFormData({
                         full_name: profileData.full_name || '',
@@ -69,25 +55,6 @@ export default function ProfilePage() {
                         street_address: profileData.street_address || ''
                     });
 
-                    // Pre-load districts and wards if data exists
-                    if (profileData.province) {
-                        const p = provinceData.find((d: Division) => d.name === profileData.province);
-                        if (p) {
-                            fetch(`https://provinces.open-api.vn/api/p/${p.code}?depth=2`)
-                                .then(res => res.json())
-                                .then(dData => {
-                                    setDistricts(dData.districts);
-                                    if (profileData.district) {
-                                        const d = dData.districts.find((d: Division) => d.name === profileData.district);
-                                        if (d) {
-                                            fetch(`https://provinces.open-api.vn/api/d/${d.code}?depth=2`)
-                                                .then(res => res.json())
-                                                .then(wData => setWards(wData.wards));
-                                        }
-                                    }
-                                });
-                        }
-                    }
                 }
                 setDataLoading(false);
             })
@@ -99,50 +66,6 @@ export default function ProfilePage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const code = Number(e.target.value);
-        const province = provinces.find(p => p.code === code);
-
-        setFormData(prev => ({
-            ...prev,
-            province: province?.name || '',
-            district: '',
-            ward: ''
-        }));
-        setDistricts([]);
-        setWards([]);
-
-        if (province) {
-            fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
-                .then(res => res.json())
-                .then(data => setDistricts(data.districts));
-        }
-    };
-
-    const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const code = Number(e.target.value);
-        const district = districts.find(d => d.code === code);
-
-        setFormData(prev => ({
-            ...prev,
-            district: district?.name || '',
-            ward: ''
-        }));
-        setWards([]);
-
-        if (district) {
-            fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
-                .then(res => res.json())
-                .then(data => setWards(data.wards));
-        }
-    };
-
-    const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const code = Number(e.target.value);
-        const ward = wards.find(w => w.code === code);
-        setFormData(prev => ({ ...prev, ward: ward?.name || '' }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -286,56 +209,7 @@ export default function ProfilePage() {
 
                             <div className="p-8 pt-4 flex-grow">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <div className="col-span-1">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Tỉnh / Thành phố", "Province / City")}</label>
-                                        <div className="relative">
-                                            <select
-                                                onChange={handleProvinceChange}
-                                                value={provinces.find(p => p.name === formData.province)?.code || ''}
-                                                className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer"
-                                            >
-                                                <option value="">{t("Chọn Tỉnh/Thành phố", "Choose a province")}</option>
-                                                {provinces.map(p => (
-                                                    <option key={p.code} value={p.code}>{p.name}</option>
-                                                ))}
-                                            </select>
-                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
-                                        </div>
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Quận / Huyện", "District")}</label>
-                                        <div className="relative">
-                                            <select
-                                                onChange={handleDistrictChange}
-                                                value={districts.find(d => d.name === formData.district)?.code || ''}
-                                                disabled={!formData.province}
-                                                className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer disabled:opacity-50"
-                                            >
-                                                <option value="">{t("Chọn Quận/Huyện", "Choose a district")}</option>
-                                                {districts.map(d => (
-                                                    <option key={d.code} value={d.code}>{d.name}</option>
-                                                ))}
-                                            </select>
-                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
-                                        </div>
-                                    </div>
-                                    <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Phường / Xã", "Ward")}</label>
-                                        <div className="relative">
-                                            <select
-                                                onChange={handleWardChange}
-                                                value={wards.find(w => w.name === formData.ward)?.code || ''}
-                                                disabled={!formData.district}
-                                                className="block w-full rounded-lg border-trad-border-warm bg-trad-bg-light text-trad-text-main shadow-sm focus:border-trad-primary focus:ring-trad-primary sm:text-sm py-3 pl-3 pr-10 appearance-none cursor-pointer disabled:opacity-50"
-                                            >
-                                                <option value="">{t("Chọn Phường/Xã", "Choose a ward")}</option>
-                                                {wards.map(w => (
-                                                    <option key={w.code} value={w.code}>{w.name}</option>
-                                                ))}
-                                            </select>
-                                            <AppIcon name="expand_more" className="absolute right-3 top-3 text-stone-400 pointer-events-none" />
-                                        </div>
-                                    </div>
+                                    <div className="col-span-full checkout-form"><LocationSelector initialProvince={formData.province} initialDistrict={formData.district} initialWard={formData.ward} onLocationChange={location => setFormData(prev => ({ ...prev, province: location.province, district: location.district, ward: location.ward }))} /></div>
                                     <div className="col-span-1 md:col-span-2">
                                         <label className="block text-sm font-semibold text-trad-text-muted mb-2">{t("Địa chỉ cụ thể", "Street address")}</label>
                                         <div className="relative group">

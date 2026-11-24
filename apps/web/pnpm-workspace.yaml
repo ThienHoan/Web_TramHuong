@@ -10,3 +10,10 @@ dangerouslyAllowAllBuilds: true
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Keep synchronized with package.json for pnpm 9 used in Docker.
+overrides:
+  'ws@^8': '^8.21.0'
+  'browserslist@^4': '^4.28.7'
+  'baseline-browser-mapping@^2': '^2.11.0'
+  '@babel/core@^7': '^7.29.1'

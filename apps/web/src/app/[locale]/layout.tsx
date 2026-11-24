@@ -1,6 +1,6 @@
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { Geist, Geist_Mono, Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat, Manrope } from "next/font/google";
+import { Be_Vietnam_Pro, Playfair_Display, Cormorant_Garamond, Montserrat } from "next/font/google";
 import "./../globals.css";
 import "./../atelier.css";
 import "./../brand.css";
@@ -25,19 +25,8 @@ import { LocalFunnelAuth } from '@/components/analytics/LocalFunnelAuth';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { AnalyticsConsent } from '@/components/analytics/AnalyticsConsent';
 
-const geistSans = Geist({
-  preload: false,
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  preload: false,
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 const beVietnamPro = Be_Vietnam_Pro({
+  preload: false,
   weight: ['300', '400', '500', '600', '700', '900'],
   variable: "--font-display",
   subsets: ["latin", "vietnamese"],
@@ -45,6 +34,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 const playfairDisplay = Playfair_Display({
+  preload: false,
   variable: "--font-serif",
   subsets: ["latin", "vietnamese"],
   display: 'swap',
@@ -62,14 +52,6 @@ const montserrat = Montserrat({
   preload: false,
   weight: ['100', '200', '300', '400', '500'],
   variable: "--font-zen-sans",
-  subsets: ["latin", "vietnamese"],
-  display: 'swap',
-});
-
-const manrope = Manrope({
-  preload: false,
-  weight: ['200', '300', '400', '500', '600', '700', '800'],
-  variable: "--font-manrope",
   subsets: ["latin", "vietnamese"],
   display: 'swap',
 });
@@ -117,6 +99,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       languages: {
         'en': `/en${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
         'vi': `/vi${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
+        'x-default': `/vi${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
       },
     },
     openGraph: {
@@ -190,7 +173,8 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${manrope.variable} antialiased`}
+        className={`${locale === 'vi' ? `${beVietnamPro.variable} ${playfairDisplay.variable}` : `${cormorantGaramond.variable} ${montserrat.variable}`} antialiased`}
+        style={locale === 'vi' ? undefined : { '--font-display': 'var(--font-zen-sans)', '--font-serif': 'var(--font-zen-display)' } as React.CSSProperties}
       >
         <NextTopLoader color="var(--color-trad-primary)" showSpinner={false} />
         <NextIntlClientProvider messages={messages} locale={locale} timeZone="Asia/Ho_Chi_Minh">

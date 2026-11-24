@@ -93,7 +93,8 @@ export function useContactProtection(action: ProtectionAction = 'contact') {
         setToken(null); setExpiresAt(null); setError(null);
         widgetReset.current?.();
     }, []);
-    const hasToken = !!token && !!expiresAt && expiresAt > Date.now();
+    // The expiry timer clears the token; freshness is also checked by the server.
+    const hasToken = !!token && !!expiresAt;
     const canSubmit = mode === 'disabled' || ((mode === 'mock' || mode === 'cloudflare') && hasToken && !busy);
     return { action, mode, siteKey, testKeys, token, busy, error, canSubmit, refresh, verify, resetToken, acceptToken, clearToken, bindWidgetReset };
 }

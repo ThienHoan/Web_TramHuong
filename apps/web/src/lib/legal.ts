@@ -7,6 +7,8 @@ export const SHOP_CONTACT = {
   brand: "Thiên Phúc",
   email: "Hoan64735@gmail.com",
   phone: "0356176878",
+  zaloUrl: "https://zalo.me/0356176878",
+  facebookUrl: "https://www.facebook.com/hoann.thiens/",
   address: "153 Lý Thái Tổ, Hương Trà, Thành phố Huế",
 } as const;
 export const legalAcceptance = () => ({

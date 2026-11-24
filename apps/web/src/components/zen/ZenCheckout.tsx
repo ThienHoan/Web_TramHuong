@@ -1,11 +1,12 @@
 "use client";
+import { useShippingPolicy, flatRateFee } from "@/hooks/useShippingAvailability";
 import { LegalConsent } from '@/components/legal/LegalConsent';
 import { legalAcceptance } from '@/lib/legal';
 import { beginCheckoutAttempt } from '@/lib/checkout-attempt';
 import { useAnalyticsView, useAnalyticsTracker } from '@/components/analytics/AnalyticsProvider';
 import { cartAnalyticsItems } from '@/lib/ga4/contract';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ContactProtection } from "@/components/contact/ContactProtection";
 import { useContactProtection } from "@/hooks/useContactProtection";
 import { useCart } from "@/components/providers/CartProvider";
@@ -13,6 +14,7 @@ import { Link, useRouter } from "@/i18n/routing";
 import ZenFooter from "@/components/zen/ZenFooter";
 import { createOrder } from "@/lib/api-client";
 import { useAuth } from "@/components/providers/AuthProvider";
+import LocationSelector from '@/components/checkout/LocationSelector';
 import { Input } from "@/components/ui/input";
 import {
   CheckoutCard,
@@ -27,17 +29,13 @@ import {
 interface ShippingInfo {
   fullName: string;
   phone: string;
+  email: string;
   address: string;
   province: string;
   district: string;
   ward: string;
   shippingProvinceId: string;
   shippingWardCode: string;
-}
-
-interface Division {
-  code: number;
-  name: string;
 }
 
 import ShippingQuotePanel, {
@@ -48,6 +46,7 @@ import ShippingAddressFields from "@/components/checkout/ShippingAddressFields";
 import { useShippingAvailability } from "@/hooks/useShippingAvailability";
 
 export default function ZenCheckout() {
+  const { data: shippingPolicy, error: policyError, mutate: retryPolicy } = useShippingPolicy();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const ghnCheckout = useShippingAvailability();
   const [shippingSelection, setShippingSelection] = useState<ShippingSelection>(
@@ -68,6 +67,7 @@ export default function ZenCheckout() {
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     fullName: "",
     phone: "",
+    email: "",
     address: "",
     province: "",
     district: "",
@@ -76,114 +76,15 @@ export default function ZenCheckout() {
     shippingWardCode: "",
   });
 
-  // Location State
-  const [provinces, setProvinces] = useState<Division[]>([]);
-  const [districts, setDistricts] = useState<Division[]>([]);
-  const [wards, setWards] = useState<Division[]>([]);
-
-  const [selectedProvince, setSelectedProvince] = useState<Division | null>(
-    null,
-  );
-  const [selectedDistrict, setSelectedDistrict] = useState<Division | null>(
-    null,
-  );
-  const [selectedWard, setSelectedWard] = useState<Division | null>(null);
-
-  const [loadingP, setLoadingP] = useState(false);
-  const [loadingD, setLoadingD] = useState(false);
-  const [loadingW, setLoadingW] = useState(false);
-
-  // Fetch the standard address list only when GHN is not handling delivery
-  useEffect(() => {
-    if (ghnCheckout !== false) return;
-    setLoadingP(true);
-    fetch("https://provinces.open-api.vn/api/?depth=1")
-      .then((res) => res.json())
-      .then((data) => {
-        setProvinces(data);
-        setLoadingP(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoadingP(false);
-      });
-  }, [ghnCheckout]);
-
-  // Fetch Districts
-  useEffect(() => {
-    if (selectedProvince) {
-      setLoadingD(true);
-      fetch(
-        `https://provinces.open-api.vn/api/p/${selectedProvince.code}?depth=2`,
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setDistricts(data.districts);
-          setLoadingD(false);
-        });
-    } else {
-      setDistricts([]);
-    }
-  }, [selectedProvince]);
-
-  // Fetch Wards
-  useEffect(() => {
-    if (selectedDistrict) {
-      setLoadingW(true);
-      fetch(
-        `https://provinces.open-api.vn/api/d/${selectedDistrict.code}?depth=2`,
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setWards(data.wards);
-          setLoadingW(false);
-        });
-    } else {
-      setWards([]);
-    }
-  }, [selectedDistrict]);
-
   // Calculations
-  const isFreeShipping = (shippingSelection.quote?.subtotal ?? total) >= 300000;
+  const fallbackFee = flatRateFee(shippingPolicy, total);
   const shippingFee =
-    shippingSelection.quote?.customerFee ?? (isFreeShipping ? 0 : 30000);
+    shippingSelection.quote?.customerFee ?? (fallbackFee ?? 0);
   const finalTotal = shippingSelection.quote?.total ?? total + shippingFee;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setShippingInfo((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const handleLocationChange = (
-    type: "province" | "district" | "ward",
-    code: number,
-  ) => {
-    if (type === "province") {
-      const p = provinces.find((i) => i.code === code) || null;
-      setSelectedProvince(p);
-      setSelectedDistrict(null);
-      setSelectedWard(null);
-      setWards([]);
-      setShippingInfo((prev) => ({
-        ...prev,
-        province: p?.name || "",
-        district: "",
-        ward: "",
-      }));
-    } else if (type === "district") {
-      const d = districts.find((i) => i.code === code) || null;
-      setSelectedDistrict(d);
-      setSelectedWard(null);
-      setShippingInfo((prev) => ({
-        ...prev,
-        district: d?.name || "",
-        ward: "",
-      }));
-    } else if (type === "ward") {
-      const w = wards.find((i) => i.code === code) || null;
-      setSelectedWard(w);
-      setShippingInfo((prev) => ({ ...prev, ward: w?.name || "" }));
-    }
   };
 
   const handleContinueToPayment = () => {
@@ -194,7 +95,6 @@ export default function ZenCheckout() {
       !shippingInfo.address ||
       (ghnCheckout === false &&
         (!shippingInfo.province ||
-          !shippingInfo.district ||
           !shippingInfo.ward)) ||
       (ghnCheckout === true &&
         (!shippingInfo.shippingProvinceId || !shippingInfo.shippingWardCode))
@@ -208,6 +108,7 @@ export default function ZenCheckout() {
       setCheckoutError("Enter a valid Vietnamese phone number.");
       return;
     }
+    if (shippingInfo.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shippingInfo.email.trim())) { setCheckoutError("Enter a valid email address or leave it empty."); return; }
     setCheckoutError("");
     try { beginCheckoutAttempt(); }
     catch { setCheckoutError('Your browser cannot save this checkout attempt. Allow site storage and try again.'); return; }
@@ -228,7 +129,7 @@ export default function ZenCheckout() {
 
   const handleCompleteOrder = async () => {
     if (!termsAccepted) return;
-    if (isSubmitting) return;
+    if (isSubmitting || !shippingPolicy) return;
     if (
       shippingSelection.enabled &&
       (!shippingSelection.quote ||
@@ -263,7 +164,7 @@ export default function ZenCheckout() {
           })(shippingInfo.phone),
           address: deliveryAddress,
           city: shippingSelection.quote?.provinceName || shippingInfo.province,
-          email: user?.email, // Optional
+          email: shippingInfo.email.trim() || user?.email || undefined,
         },
         paymentMethod: paymentMethod,
       };
@@ -297,7 +198,7 @@ export default function ZenCheckout() {
   const quotePending =
     step === "shipping"
       ? ghnCheckout !== false
-      : !shippingSelection.ready ||
+      : !shippingPolicy || !shippingSelection.ready ||
         (shippingSelection.enabled && !shippingSelection.quote);
   const editDetails = () => {
     setStep("shipping");
@@ -312,7 +213,7 @@ export default function ZenCheckout() {
           <CheckoutSummary
             items={items}
             subtotal={shippingSelection.quote?.subtotal ?? total}
-            shipping={quotePending ? null : shippingFee}
+            shipping={quotePending || (!shippingSelection.quote && fallbackFee === null) ? null : shippingFee}
             total={quotePending ? total : finalTotal}
             estimated={quotePending}
             onQuantityChange={step === "shipping" ? updateQuantity : undefined}
@@ -353,6 +254,7 @@ export default function ZenCheckout() {
           </CheckoutSummary>
         }
       >
+        {policyError && <CheckoutNotice>Cannot load delivery fees. <button type="button" className="underline min-h-11" onClick={() => void retryPolicy()}>Try again</button></CheckoutNotice>}
         {checkoutError && <CheckoutNotice>{checkoutError}</CheckoutNotice>}
         {!items.length ? (
           <CheckoutCard title="Your bag is empty">
@@ -413,6 +315,11 @@ export default function ZenCheckout() {
                     />
                   </div>
                   <div className="checkout-field checkout-field-full">
+                    <label htmlFor="email">Email (optional)</label>
+                    <Input id="email" type="email" autoComplete="email" maxLength={254} value={shippingInfo.email} onChange={handleInputChange} aria-describedby="zen-email-help" />
+                    <p id="zen-email-help" className="checkout-field-help">For your order confirmation and lookup code.</p>
+                  </div>
+                  <div className="checkout-field checkout-field-full">
                     <label htmlFor="address">House number & street</label>
                     <Input
                       id="address"
@@ -448,79 +355,7 @@ export default function ZenCheckout() {
                       }
                     />
                   )}
-                  {ghnCheckout === false && (
-                    <>
-                      <div className="checkout-field">
-                        <label htmlFor="zen-province">Province / city</label>
-                        <select
-                          id="zen-province"
-                          required
-                          value={selectedProvince?.code || ""}
-                          disabled={loadingP}
-                          onChange={(e) =>
-                            handleLocationChange(
-                              "province",
-                              Number(e.target.value),
-                            )
-                          }
-                        >
-                          <option value="">
-                            {loadingP ? "Loading…" : "Select province"}
-                          </option>
-                          {provinces.map((p) => (
-                            <option key={p.code} value={p.code}>
-                              {p.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="checkout-field">
-                        <label htmlFor="zen-district">District</label>
-                        <select
-                          id="zen-district"
-                          required
-                          value={selectedDistrict?.code || ""}
-                          disabled={!selectedProvince || loadingD}
-                          onChange={(e) =>
-                            handleLocationChange(
-                              "district",
-                              Number(e.target.value),
-                            )
-                          }
-                        >
-                          <option value="">
-                            {loadingD ? "Loading…" : "Select district"}
-                          </option>
-                          {districts.map((d) => (
-                            <option key={d.code} value={d.code}>
-                              {d.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="checkout-field checkout-field-full">
-                        <label htmlFor="zen-ward">Ward / commune</label>
-                        <select
-                          id="zen-ward"
-                          required
-                          value={selectedWard?.code || ""}
-                          disabled={!selectedDistrict || loadingW}
-                          onChange={(e) =>
-                            handleLocationChange("ward", Number(e.target.value))
-                          }
-                        >
-                          <option value="">
-                            {loadingW ? "Loading…" : "Select ward"}
-                          </option>
-                          {wards.map((w) => (
-                            <option key={w.code} value={w.code}>
-                              {w.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </>
-                  )}
+                  {ghnCheckout === false && <LocationSelector initialProvince={shippingInfo.province} initialWard={shippingInfo.ward} onLocationChange={location => setShippingInfo(prev => ({ ...prev, province: location.province, district: location.district, ward: location.ward }))} />}
                 </div>
               </form>
             </CheckoutCard>
