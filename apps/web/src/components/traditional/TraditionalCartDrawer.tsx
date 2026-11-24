@@ -1,5 +1,6 @@
 "use client";
 
+import FreeShippingProgress from '@/components/checkout/FreeShippingProgress';
 import Image from "next/image";
 import { useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
@@ -109,6 +110,7 @@ export default function TraditionalCartDrawer() {
               ))}
             </div>
             <div className="tp-cart-summary">
+              <FreeShippingProgress subtotal={total} active={open} />
               <div>
                 <span>{en ? "Subtotal" : "Tạm tính"}</span>
                 <strong>{formatPrice(total)}</strong>

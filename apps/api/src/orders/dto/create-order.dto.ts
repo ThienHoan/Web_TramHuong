@@ -1,5 +1,6 @@
 import {
   IsNotEmpty,
+  IsEmail,
   IsString,
   IsArray,
   ValidateNested,
@@ -15,7 +16,7 @@ import {
   // IsEnum,
 } from 'class-validator';
 import { LegalAcceptanceDto } from '../../legal/legal-acceptance';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 class CartItemDto {
   @IsUUID()
@@ -58,8 +59,13 @@ class ShippingInfoDto {
   @IsNotEmpty()
   city: string; // Province
 
+  // An empty or blank email means "not given"; anything else is left for @IsEmail to judge.
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() || undefined : value,
+  )
   @IsOptional()
-  @IsString()
+  @IsEmail()
+  @MaxLength(254)
   email?: string;
 
   @IsOptional()

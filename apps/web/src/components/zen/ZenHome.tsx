@@ -9,7 +9,6 @@ import { Product, Category } from '@/types/product';
 import ShopDiscovery from '@/components/shop/ShopDiscovery';
 import Image from 'next/image';
 import HomeHero from '../traditional/home/HomeHero';
-import { AppIcon } from "@/components/icons/AppIcon";
 
 export default function ZenHome({ products, categories = [] }: { products: Product[]; categories?: Category[] }) {
     return (
@@ -41,8 +40,9 @@ export default function ZenHome({ products, categories = [] }: { products: Produ
                                 </p>
                             </div>
                             <div className="pt-4">
-                                <Link href="/about" className="inline-flex items-center gap-3 px-8 py-3 rounded-sm border border-zen-secondary text-zen-secondary hover:bg-zen-secondary hover:text-white transition-all duration-300 uppercase tracking-widest text-xs font-medium">
-                                    Read Our Full Story
+                                {/* There is no About page yet; the journal holds the longer stories. */}
+                                <Link href="/blog" className="inline-flex items-center gap-3 px-8 py-3 rounded-sm border border-zen-secondary text-zen-secondary hover:bg-zen-secondary hover:text-white transition-all duration-300 uppercase tracking-widest text-xs font-medium">
+                                    Read the journal
                                 </Link>
                             </div>
                         </div>
@@ -76,20 +76,6 @@ export default function ZenHome({ products, categories = [] }: { products: Produ
                     </ScrollReveal>
                 </section>
 
-                {/* Newsletter */}
-                <section className="py-32 bg-zen-50 dark:bg-zinc-950 border-t border-zen-100 dark:border-zinc-900">
-                    <ScrollReveal animation="fade-up" className="max-w-3xl mx-auto px-6 text-center">
-                        <AppIcon name="spa" className="text-4xl font-thin text-zen-secondary mb-6 block mx-auto" />
-                        <h2 className="text-3xl md:text-4xl font-zen-display font-light text-zen-900 dark:text-white mb-6 tracking-wide">
-                            Join the Circle of Stillness
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed mb-10">
-                            Explore stories about Vietnamese agarwood, new collections and mindful rituals.
-                        </p>
-                        <p className="text-sm leading-relaxed">Newsletter subscriptions are not available yet. Read stories in our journal.</p>
-                        <p className="text-[10px] text-gray-400 mt-4 tracking-wide">We respect your privacy and inbox peace.</p>
-                    </ScrollReveal>
-                </section>
             </main>
 
             <ZenFooter />

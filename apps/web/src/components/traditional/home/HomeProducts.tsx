@@ -6,7 +6,7 @@ import { firstAvailableVariant, productStock, variantKey } from "@/lib/commerce"
 import Image from "next/image";
 import { ArrowUpRight, Eye, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { ProductPrice } from "@/components/ui/ProductPrice";
 import {
   Dialog,
@@ -27,9 +27,10 @@ export function ProductQuickView({
   onClose: () => void;
 }) {
   const en = useLocale() !== "vi";
+  const router = useRouter();
   const t = (vi: string, english: string) => en ? english : vi;
   const [variantIndex, setVariantIndex] = useState(firstAvailableVariant(product));
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState<'cart' | 'buy' | null>(null);
   const variant = product.variants?.[variantIndex];
   const key = variant ? variantKey(variant, variantIndex) : undefined;
   const { addItem, items } = useCart();
@@ -43,9 +44,9 @@ export function ProductQuickView({
   const variantQuantity = items.filter(item => item.productId === product.id && (item.variantId || "") === (key || "")).reduce((sum, item) => sum + item.quantity, 0);
   const available = product.is_active !== false && Math.min(productStock(product, variant) - variantQuantity, productStock(product) - cartQuantity) > 0;
 
-  const addToCart = async () => {
+  const addToCart = async (mode: 'cart' | 'buy') => {
     if (!available || adding) return;
-    setAdding(true);
+    setAdding(mode);
     try {
       await addItem({
         id: product.id,
@@ -59,12 +60,13 @@ export function ProductQuickView({
         variantName: variant?.name,
         quantity: 1,
       });
-      toast.success(t("Đã thêm vào giỏ hàng", "Added to your cart"), { description: title });
       onClose();
+      if (mode === 'buy') router.push('/checkout');
+      else toast.success(t("Đã thêm vào giỏ hàng", "Added to your cart"), { description: title, action: { label: t('Thanh toán', 'Checkout'), onClick: () => router.push('/checkout') } });
     } catch {
       toast.error(t("Chưa thể thêm sản phẩm. Vui lòng thử lại.", "Could not add this item. Please try again."));
     } finally {
-      setAdding(false);
+      setAdding(null);
     }
   };
 
@@ -108,17 +110,18 @@ export function ProductQuickView({
             </select>
           </label>
         )}
-        <button
-          className="tp-button"
-          onClick={addToCart}
-          disabled={!available || adding}
+        <div className="tp-quick-actions"><button
+          className="tp-button tp-quick-cart"
+          onClick={() => addToCart('cart')}
+          disabled={!available || !!adding}
         >
-          {adding
+          {adding === 'cart'
             ? t("Đang thêm…", "Adding…")
             : available
               ? t("Thêm vào giỏ hàng", "Add to cart")
               : t("Tạm hết hàng", "Currently unavailable")}
         </button>
+        <button type="button" className="tp-button tp-quick-buy" disabled={!available || !!adding} onClick={() => addToCart('buy')}>{adding === 'buy' ? t('Đang chuyển…', 'Continuing…') : t('Mua ngay', 'Buy now')}<ArrowUpRight size={18} aria-hidden="true"/></button></div>
         <Link
           href={`/products/${product.slug}`}
           className="tp-text-link"

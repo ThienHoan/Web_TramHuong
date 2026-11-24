@@ -13,7 +13,7 @@ import { useProductCardAnalytics } from '@/components/analytics/useProductCardAn
 
 const MAX_PHOTOS = 5;
 
-function CardPhotos({images,title,href,en,linkRef,onSelect,children}: {
+function CardPhotos({images,title,href,en,linkRef,onSelect,children,wide,eager}: {
   images: string[];
   title: string;
   href: string;
@@ -21,6 +21,8 @@ function CardPhotos({images,title,href,en,linkRef,onSelect,children}: {
   linkRef: (element: HTMLAnchorElement | null) => void;
   onSelect: () => void;
   children: ReactNode;
+  wide: boolean;
+  eager: boolean;
 }) {
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -41,7 +43,7 @@ function CardPhotos({images,title,href,en,linkRef,onSelect,children}: {
     <div className="shop-product-track" ref={track} onScroll={onScroll}>
       {images.map((image,index)=><Link key={`${image}-${index}`} ref={index===0?linkRef:undefined} onClick={onSelect} href={href} className="shop-product-slide" tabIndex={index===active?0:-1} aria-hidden={index===active?undefined:true} aria-label={`${en?'View':'Xem'} ${title}`}>
         {/* Only the next photo is fetched ahead, so a full grid stays light. */}
-        {index<=furthest+1 && <Image src={image} alt={index===0?title:''} fill sizes="(max-width:639px) 92vw, (max-width:1023px) 45vw, 440px" />}
+        {index<=furthest+1 && <Image src={image} alt={index===0?title:''} fill loading={eager && index===0?'eager':'lazy'} fetchPriority={eager && index===0?'high':undefined} sizes={wide?'(max-width:767px) calc(100vw - 32px), (max-width:1023px) 45vw, 440px':'(max-width:767px) calc((100vw - 46px) / 2), (max-width:1023px) 30vw, 340px'} />}
       </Link>)}
     </div>
     {images.length>1 && <>
@@ -53,7 +55,7 @@ function CardPhotos({images,title,href,en,linkRef,onSelect,children}: {
   </div>;
 }
 
-export default function ShopProductCard({product}: {product: Product}) {
+export default function ShopProductCard({product,wide=false,eager=false}: {product: Product;wide?:boolean;eager?:boolean}) {
   const locale = useLocale(), en = locale !== 'vi';
   const [quickOpen, setQuickOpen] = useState(false);
   const title = product.translation?.title || product.title || (en ? 'Agarwood' : 'Trầm hương');
@@ -62,7 +64,7 @@ export default function ShopProductCard({product}: {product: Product}) {
   const {attachProductLink,selectProduct} = useProductCardAnalytics(product.id,range.min);
   const photos = product.images?.length ? product.images.slice(0,MAX_PHOTOS) : ['/placeholder.png'];
   return <article className="shop-product-card">
-    <div className="shop-product-photo-wrap"><CardPhotos images={photos} title={title} href={`/products/${product.slug}`} en={en} linkRef={attachProductLink} onSelect={selectProduct}>
+    <div className="shop-product-photo-wrap"><CardPhotos images={photos} title={title} href={`/products/${product.slug}`} en={en} linkRef={attachProductLink} onSelect={selectProduct} wide={wide} eager={eager}>
       {!available && <span className="shop-product-stock">{en?'Currently unavailable':'Tạm hết hàng'}</span>}
     </CardPhotos><WishlistButton productId={product.id} className="shop-product-wishlist"/><button type="button" className="shop-product-quick" title={en?'Quick view':'Xem nhanh'} aria-label={`${en?'Quick view':'Xem nhanh'} ${title}`} onClick={()=>{selectProduct();setQuickOpen(true);}}><Eye aria-hidden="true"/></button></div>
     <p className="shop-product-category">{product.category?.translation?.name || 'Thiên Phúc'}</p>
@@ -71,6 +73,7 @@ export default function ShopProductCard({product}: {product: Product}) {
     <p className="shop-product-price">{range.max>range.min && <span>{en?'From ':'Từ '}</span>}{formatVnd(range.min,locale)}</p>
     {(product.review_count || 0)>0 && <p className="shop-product-rating"><Star size={13} fill="currentColor" />{Number(product.rating_average || 0).toFixed(1)} <span>({product.review_count})</span></p>}
     <Link className="shop-product-link tp-text-link" href={`/products/${product.slug}`} onClick={selectProduct}>{product.variants?.length ? (en?'Choose options':'Chọn phân loại') : (en?'View product':'Xem sản phẩm')}<ArrowUpRight size={15}/></Link>
+    <button type="button" className="shop-product-mobile-buy" disabled={!available} onClick={()=>{selectProduct();setQuickOpen(true);}}>{available?(product.variants?.length?(en?'Choose options':'Chọn phân loại'):(en?'Choose to buy':'Chọn mua')):(en?'Unavailable':'Tạm hết hàng')}<ArrowUpRight size={17} aria-hidden="true"/></button>
     <Dialog open={quickOpen} onOpenChange={setQuickOpen}><DialogContent className="tp-quick-view">{quickOpen && <ProductQuickView product={product} onClose={()=>setQuickOpen(false)}/>}</DialogContent></Dialog>
   </article>;
 }

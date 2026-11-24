@@ -14,7 +14,8 @@
     "test:chat": "node scripts/test-chat-contract.cjs",
     "test:connections": "node scripts/test-integration-health.cjs && node scripts/test-google-auth.cjs",
     "test:checkout": "node --test scripts/test-checkout-attempt.cjs",
-    "test:auth-provider": "node --test scripts/test-auth-provider.cjs"
+    "test:auth-provider": "node --test scripts/test-auth-provider.cjs",
+    "test:upgrade": "node --test scripts/test-upgrade.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -53,7 +54,7 @@
     "tailwind-merge": "^3.4.0",
     "three": "0.180.0",
     "use-debounce": "^10.0.6",
-    "zod": "^3.24.1"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -68,5 +69,13 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "ws@^8": "^8.21.0",
+      "browserslist@^4": "^4.28.7",
+      "baseline-browser-mapping@^2": "^2.11.0",
+      "@babel/core@^7": "^7.29.1"
+    }
   }
 }

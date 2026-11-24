@@ -129,7 +129,7 @@ export default function OrderLookup() {
                 <div className="shop-panel">
                     <p className="shop-eyebrow">{t('Đơn hàng', 'Your order')}</p>
                     <h1 className="shop-title">{t('Tra cứu đơn hàng', 'Track your order')}</h1>
-                    <p className="shop-lede">{t('Mã đơn có trong email xác nhận và trang đặt hàng thành công.', 'You will find the order code in your confirmation email and on the order success page.')}</p>
+                    <p className="shop-lede">{t('Mã đơn có trên trang đặt hàng thành công. Nếu đã cung cấp email, bạn cũng sẽ nhận mã trong thư xác nhận.', 'Find your order code on the order success page. If you provided an email, it is also included in your confirmation email.')}</p>
 
                     <form onSubmit={submit} className="shop-card mt-8 flex flex-col gap-5">
                         <label className="shop-field">

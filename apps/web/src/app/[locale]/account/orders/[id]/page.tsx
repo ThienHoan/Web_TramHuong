@@ -1,5 +1,7 @@
 'use client';
 
+import ReorderButton from '@/components/shop/ReorderButton';
+import type { ReorderLine } from '@/lib/reorder';
 import { useEffect, useState } from 'react';
 import {
     Dialog,
@@ -20,7 +22,7 @@ import { AppIcon } from "@/components/icons/AppIcon";
 import { PurchaseCapture } from '@/components/analytics/PurchaseCapture';
 import { useBilingual } from '@/hooks/useBilingual';
 
-interface OrderItem {
+interface OrderItem extends ReorderLine {
     title?: string;
     product?: {
         title?: string;
@@ -74,8 +76,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }, [params]);
 
     useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
+        if (!authLoading && !user && resolvedParams?.id) {
+            router.push(`/login?redirect=${encodeURIComponent(`/account/orders/${resolvedParams.id}`)}`);
         } else if (session && resolvedParams?.id) {
             setAccessToken(session.access_token);
             getOrder(resolvedParams.id).then(data => {
@@ -180,6 +182,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         {/* Extra buttons from template if needed, keeping simple for now or adding map */}
                     </div>
 
+                    <ReorderButton lines={order.items || []} />
                     <div className="space-y-8">
                         {/* Order Status Card */}
                         <div className={`relative overflow-hidden bg-white rounded-2xl shadow-sm border border-[#E6DCC8] p-8 md:p-10 ${isExpiredOrCanceled ? 'filter-expired' : ''}`}>

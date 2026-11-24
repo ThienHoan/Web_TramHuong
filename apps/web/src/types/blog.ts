@@ -7,6 +7,7 @@ export interface BlogPost {
     cover_image?: string;
     created_at: string;
     published_at?: string;
+    updated_at?: string;
     author_id?: string;
     category?: string;
     tags?: string[];

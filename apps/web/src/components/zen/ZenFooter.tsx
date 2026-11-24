@@ -3,6 +3,7 @@
 import { BrandLockup } from "@/components/brand/BrandIdentity";
 import { Link } from '@/i18n/routing';
 
+import { SHOP_CONTACT } from '@/lib/legal';
 import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export default function ZenFooter() {
@@ -39,14 +40,14 @@ export default function ZenFooter() {
                     <div className="md:col-span-4 lg:col-span-3">
                         <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">Contact</h4>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-light font-zen-sans">Hue City, Vietnam</p>
-                        <a href="mailto:Hoan64735@gmail.com" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors font-light block font-zen-sans">Hoan64735@gmail.com</a>
+                        <a href={`mailto:${SHOP_CONTACT.email}`} className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors font-light block font-zen-sans">{SHOP_CONTACT.email}</a>
                     </div>
                 </div>
         <LegalLinks />
                 <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-gray-400 font-light font-zen-sans">
                     <p>© {new Date().getFullYear()} Thiên Phúc · Vietnamese Agarwood.</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
-                        <a href="https://www.facebook.com/profile.php?id=61585286954215" className="hover:text-zen-secondary transition-colors">Facebook</a>
+                        <a href={SHOP_CONTACT.facebookUrl} className="hover:text-zen-secondary transition-colors">Facebook</a>
                     </div>
                 </div>
             </div>

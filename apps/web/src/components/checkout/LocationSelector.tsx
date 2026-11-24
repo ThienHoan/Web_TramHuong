@@ -1,201 +1,59 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useId, useState } from 'react';
+import { useLocale } from 'next-intl';
+import useSWR from 'swr';
+import { Input } from '@/components/ui/input';
+import { Notice } from '@/components/ui/notice';
+import { Button } from '@/components/ui/button';
 
-interface Division {
-    code: number;
-    name: string;
+type Division = { code: number; name: string };
+export interface LocationSelectorProps {
+  onLocationChange: (location: { province: string; district: string; ward: string; fullString: string }) => void;
+  initialProvince?: string;
+  initialDistrict?: string;
+  initialWard?: string;
 }
-
-interface LocationSelectorProps {
-    onLocationChange: (location: {
-        province: string;
-        district: string;
-        ward: string;
-        fullString: string;
-    }) => void;
-    initialProvince?: string;
-    initialDistrict?: string;
-    initialWard?: string;
-}
-
-export default function LocationSelector({ onLocationChange, initialProvince, initialDistrict, initialWard }: LocationSelectorProps) {
-    const [provinces, setProvinces] = useState<Division[]>([]);
-    const [districts, setDistricts] = useState<Division[]>([]);
-    const [wards, setWards] = useState<Division[]>([]);
-
-    const [selectedProvince, setSelectedProvince] = useState<Division | null>(null);
-    const [selectedDistrict, setSelectedDistrict] = useState<Division | null>(null);
-    const [selectedWard, setSelectedWard] = useState<Division | null>(null);
-
-    const [loadingP, setLoadingP] = useState(false);
-    const [loadingD, setLoadingD] = useState(false);
-    const [loadingW, setLoadingW] = useState(false);
-
-    const updateParent = useCallback((p: Division | null, d: Division | null, w: Division | null) => {
-        if (p && d && w) {
-            onLocationChange({
-                province: p.name,
-                district: d.name,
-                ward: w.name,
-                fullString: `${w.name}, ${d.name}, ${p.name}`
-            });
-        } else if (p) {
-            // Partial update if needed
-            onLocationChange({
-                province: p.name,
-                district: d ? d.name : '',
-                ward: w ? w.name : '',
-                fullString: '' // Empty means incomplete
-            });
-        }
-    }, [onLocationChange]);
-
-    const fetchWards = useCallback(async (districtCode: number, initWard?: string) => {
-        setLoadingW(true);
-        try {
-            const res = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-            const data = await res.json();
-            setWards(data.wards);
-
-            if (initWard) {
-                const foundW = data.wards.find((w: Division) => w.name === initWard);
-                if (foundW) setSelectedWard(foundW);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoadingW(false);
-        }
-    }, []);
-
-    const fetchDistricts = useCallback(async (provinceCode: number, initDistrict?: string, initWard?: string) => {
-        setLoadingD(true);
-        try {
-            const res = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-            const data = await res.json();
-            setDistricts(data.districts);
-
-            if (initDistrict) {
-                const foundD = data.districts.find((d: Division) => d.name === initDistrict);
-                if (foundD) {
-                    setSelectedDistrict(foundD);
-                    fetchWards(foundD.code, initWard);
-                }
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoadingD(false);
-        }
-    }, [fetchWards]);
-
-    // Initial Fetch
-    useEffect(() => {
-        const init = async () => {
-            setLoadingP(true);
-            try {
-                const res = await fetch('https://provinces.open-api.vn/api/?depth=1');
-                const data = await res.json();
-                setProvinces(data);
-
-                if (initialProvince) {
-                    const foundP = data.find((p: Division) => p.name === initialProvince);
-                    if (foundP) {
-                        setSelectedProvince(foundP);
-                        fetchDistricts(foundP.code, initialDistrict, initialWard);
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoadingP(false);
-            }
-        };
-        init();
-    }, [fetchDistricts, initialDistrict, initialProvince, initialWard]); // Run once or when initials change
-
-    const handleProvinceChange = (code: number) => {
-        const province = provinces.find(p => p.code === code) || null;
-        setSelectedProvince(province);
-        setSelectedDistrict(null);
-        setSelectedWard(null);
-        setDistricts([]);
-        setWards([]);
-
-        if (province) {
-            fetchDistricts(code);
-        }
-        updateParent(province, null, null);
-    };
-
-    const handleDistrictChange = (code: number) => {
-        const district = districts.find(d => d.code === code) || null;
-        setSelectedDistrict(district);
-        setSelectedWard(null);
-        setWards([]);
-
-        if (district) {
-            fetchWards(code);
-        }
-        updateParent(selectedProvince, district, null);
-    };
-
-    const handleWardChange = (code: number) => {
-        const ward = wards.find(w => w.code === code) || null;
-        setSelectedWard(ward);
-        updateParent(selectedProvince, selectedDistrict, ward);
-    };
-
-    return (
-        <div className="space-y-3">
-            {/* Province */}
-            <div>
-                <label className="block text-sm font-medium mb-1">Province / City</label>
-                <select
-                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
-                    onChange={(e) => handleProvinceChange(Number(e.target.value))}
-                    value={selectedProvince?.code || ''}
-                    disabled={loadingP}
-                >
-                    <option value="">{loadingP ? 'Loading...' : 'Select Province'}</option>
-                    {provinces.map(p => (
-                        <option key={p.code} value={p.code}>{p.name}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* District */}
-            <div className={!selectedProvince ? 'opacity-50' : ''}>
-                <label className="block text-sm font-medium mb-1">District</label>
-                <select
-                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
-                    onChange={(e) => handleDistrictChange(Number(e.target.value))}
-                    value={selectedDistrict?.code || ''}
-                    disabled={!selectedProvince || loadingD}
-                >
-                    <option value="">{loadingD ? 'Loading...' : 'Select District'}</option>
-                    {districts.map(d => (
-                        <option key={d.code} value={d.code}>{d.name}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Ward */}
-            <div className={!selectedDistrict ? 'opacity-50' : ''}>
-                <label className="block text-sm font-medium mb-1">Ward / Commune</label>
-                <select
-                    className="w-full border p-2 rounded-md bg-white disabled:bg-gray-100"
-                    onChange={(e) => handleWardChange(Number(e.target.value))}
-                    value={selectedWard?.code || ''}
-                    disabled={!selectedDistrict || loadingW}
-                >
-                    <option value="">{loadingW ? 'Loading...' : 'Select Ward'}</option>
-                    {wards.map(w => (
-                        <option key={w.code} value={w.code}>{w.name}</option>
-                    ))}
-                </select>
-            </div>
-        </div>
-    );
+const load = async (url: string): Promise<Division[]> => {
+  const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error('Address list unavailable');
+  const data: unknown = await response.json();
+  if (!Array.isArray(data) || !data.length || !data.every(item => typeof item?.code === 'number' && typeof item?.name === 'string')) throw new Error('Invalid address list');
+  return data;
+};
+export default function LocationSelector({ onLocationChange, initialProvince = '', initialDistrict = '', initialWard = '' }: LocationSelectorProps) {
+  const id = useId(), en = useLocale() === 'en';
+  const [draft, setDraft] = useState<{ province: string; ward: string } | null>(null);
+  const [manual, setManual] = useState(false);
+  const { data: provinces, error: provinceError, mutate: retryProvinces } = useSWR('/data/addresses/v2/provinces.json', load, { revalidateOnFocus: false });
+  const province = draft?.province ?? initialProvince, ward = draft?.ward ?? initialWard;
+  const selected = provinces?.find(item => item.name === province);
+  const { data: wards, error: wardError, mutate: retryWards } = useSWR(selected ? `/data/addresses/v2/${selected.code}.json` : null, load, { revalidateOnFocus: false });
+  const failed = !!(provinceError || wardError);
+  // Old saved addresses remain untouched until the customer chooses a new address.
+  const legacy = !draft && !!(initialProvince && (initialDistrict || (provinces && !selected)));
+  const update = (nextProvince: string, nextWard: string) => {
+    setDraft({ province: nextProvince, ward: nextWard });
+    onLocationChange({ province: nextProvince, district: '', ward: nextWard, fullString: [nextWard, nextProvince].filter(Boolean).join(', ') });
+  };
+  const manualFields = manual || failed;
+  return <div className="checkout-fields checkout-field-full">
+    {legacy && <p className="checkout-field-help checkout-field-full">{en ? 'Saved address' : 'Địa chỉ đã lưu'}: {[initialWard, initialDistrict, initialProvince].filter(Boolean).join(', ')}. {en ? 'Choose the current province and ward to update it.' : 'Chọn tỉnh/thành và phường/xã hiện tại nếu muốn cập nhật.'}</p>}
+    {failed && <div className="checkout-field-full"><Notice tone="error">{en ? 'Cannot load the address list. Enter your province and ward below to continue.' : 'Chưa tải được danh sách địa chỉ. Bạn có thể nhập tỉnh/thành và phường/xã bên dưới để tiếp tục.'}</Notice><Button type="button" variant="outline" className="min-h-11 mt-2" onClick={() => { void retryProvinces(); void retryWards(); }}>{en ? 'Try again' : 'Thử tải lại'}</Button></div>}
+    <div className="checkout-field">
+      <label htmlFor={`${id}-province`}>{en ? 'Province / city' : 'Tỉnh/Thành phố'}</label>
+      {manualFields ? <Input id={`${id}-province`} autoComplete="shipping address-level1" required maxLength={200} value={province} onChange={e => update(e.target.value, ward)} /> : <select id={`${id}-province`} autoComplete="shipping address-level1" required disabled={!provinces} value={selected?.code ?? ''} onChange={e => update(provinces?.find(p => p.code === Number(e.target.value))?.name || '', '')}>
+        <option value="">{!provinces ? (en ? 'Loading…' : 'Đang tải…') : (en ? 'Select province' : 'Chọn tỉnh/thành')}</option>
+        {provinces?.map(item => <option key={item.code} value={item.code}>{item.name}</option>)}
+      </select>}
+    </div>
+    <div className="checkout-field">
+      <label htmlFor={`${id}-ward`}>{en ? 'Ward / commune' : 'Phường/Xã'}</label>
+      {manualFields ? <Input id={`${id}-ward`} autoComplete="shipping address-level2" required maxLength={200} value={ward} onChange={e => update(province, e.target.value)} /> : <select id={`${id}-ward`} autoComplete="shipping address-level2" required disabled={!wards} value={wards?.find(item => item.name === ward)?.code ?? ''} onChange={e => update(province, wards?.find(w => w.code === Number(e.target.value))?.name || '')}>
+        <option value="">{selected && !wards ? (en ? 'Loading…' : 'Đang tải…') : (en ? 'Select ward' : 'Chọn phường/xã')}</option>
+        {wards?.map(item => <option key={item.code} value={item.code}>{item.name}</option>)}
+      </select>}
+    </div>
+    {!failed && <button type="button" className="checkout-edit-link checkout-field-full min-h-11 text-left" onClick={() => { setManual(value => !value); }}>{manual ? (en ? 'Choose from list' : 'Chọn từ danh sách') : (en ? 'Enter address manually' : 'Nhập địa chỉ bằng tay')}</button>}
+  </div>;
 }

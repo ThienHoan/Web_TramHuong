@@ -9,3 +9,5 @@ allowBuilds:
 # reads package.json; newer local pnpm versions read this file.
 overrides:
   multer: ^2.5.0
+  'ws@^8': '^8.21.0'
+  'minimatch@^9': '^9.0.7'

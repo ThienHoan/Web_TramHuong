@@ -948,3 +948,9 @@
     scroll-behavior: auto;
   }
 }
+
+.journey-start-preview { display: none; }
+@media (max-width: 899px) {
+  .journey-start-preview { display: inline-flex; position: absolute; z-index: 5; left: 50%; bottom: 48px; transform: translateX(-50%); align-items: center; justify-content: center; min-height: 44px; padding: 10px 24px; border: 1px solid currentColor; border-radius: 8px; background: #faf6ef; color: #573d2a; font: inherit; cursor: pointer; }
+}
+@media (prefers-reduced-motion: reduce) { .journey-start-preview { display: none; } }

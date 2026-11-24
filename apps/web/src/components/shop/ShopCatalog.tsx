@@ -25,7 +25,7 @@ export default function ShopCatalog({products,categories,filters,pagination,loca
     {!en && <TraditionalHeader/>}
     <main className="shop-catalog">
       <div className="tp-container">
-        <nav aria-label={t('Đường dẫn','Breadcrumb')} className="shop-breadcrumb"><Link href="/">{t('Trang chủ','Home')}</Link><span>/</span><Link href="/products">{t('Bộ sưu tập','Products')}</Link>{category ? <><span>/</span><span>{category.translation?.name || category.slug}</span></> : !en && <><span>/</span><span>Toàn bộ sản phẩm</span></>}</nav>
+        <nav aria-label={t('Đường dẫn','Breadcrumb')} className="shop-breadcrumb"><Link href="/">{t('Trang chủ','Home')}</Link><span>/</span><Link href="/products">{t('Bộ sưu tập','Products')}</Link>{category ? <><span className="shop-breadcrumb-current-separator">/</span><span className="shop-breadcrumb-current">{category.translation?.name || category.slug}</span></> : !en && <><span className="shop-breadcrumb-current-separator">/</span><span className="shop-breadcrumb-current">Toàn bộ sản phẩm</span></>}</nav>
         <header className="collection-intro">
           <div><p className="shop-kicker">THIÊN PHÚC · {t('TRẦM HƯƠNG VIỆT','VIETNAMESE AGARWOOD')}</p><h1>{title}</h1></div>
           <div className="collection-intro-copy">
@@ -38,9 +38,9 @@ export default function ShopCatalog({products,categories,filters,pagination,loca
         <div className="tp-container"><ShopCategoryLinks categories={categories} filters={filters} locale={locale}/></div>
       </nav>
       <div className="tp-container">
-        <ShopCatalogFilters filters={filters} locale={locale}/>
-        <div className="shop-results-heading"><p role="status">{filters.search?`${t('Kết quả cho','Results for')} “${filters.search}” · `:''}{total} {t('sản phẩm','products')}{filters.page>1?` · ${t('Trang','Page')} ${filters.page}`:''}</p>{(filters.search||filters.category||filters.min_price||filters.max_price) && <Link href={allHref}>{t('Xóa bộ lọc','Clear filters')}</Link>}</div>
-        {products.length ? <ShopProductGrid products={products} locale={locale}/> : <div className="shop-empty"><h2>{t('Chưa tìm thấy sản phẩm phù hợp.','No matching products yet.')}</h2><p>{t('Thử từ khóa ngắn hơn hoặc mở rộng khoảng giá. Bạn cũng có thể nhờ cửa hàng cùng chọn.','Try a shorter search or a wider budget. We can also help you choose.')}</p><Link href={allHref} className="shop-btn">{t('Xem tất cả sản phẩm','Browse all products')}</Link><Link href="/contact" className="tp-text-link">{t('Nhờ Thiên Phúc tư vấn','Ask us for advice')}<ArrowUpRight size={16}/></Link></div>}
+        <ShopCatalogFilters filters={filters} locale={locale} resultCount={total}/>
+        <div className="shop-results-heading" data-filtered={!!(filters.search||filters.min_price||filters.max_price)}><p role="status">{filters.search?`${t('Kết quả cho','Results for')} “${filters.search}” · `:''}{total} {t('sản phẩm','products')}{filters.page>1?` · ${t('Trang','Page')} ${filters.page}`:''}</p>{(filters.search||filters.category||filters.min_price||filters.max_price) && <Link href={allHref}>{t('Xóa bộ lọc','Clear filters')}</Link>}</div>
+        {products.length ? <ShopProductGrid products={products} locale={locale} eager/> : <div className="shop-empty"><h2>{t('Chưa tìm thấy sản phẩm phù hợp.','No matching products yet.')}</h2><p>{t('Thử từ khóa ngắn hơn hoặc mở rộng khoảng giá. Bạn cũng có thể nhờ cửa hàng cùng chọn.','Try a shorter search or a wider budget. We can also help you choose.')}</p><Link href={allHref} className="shop-btn">{t('Xem tất cả sản phẩm','Browse all products')}</Link><Link href="/contact" className="tp-text-link">{t('Nhờ Thiên Phúc tư vấn','Ask us for advice')}<ArrowUpRight size={16}/></Link></div>}
         {pages>1 && <nav className="shop-catalog-pagination" aria-label={t('Phân trang sản phẩm','Product pagination')}>{filters.page>1 && <Link href={pageHref(filters.page-1)}><ArrowLeft size={17}/>{t('Trước','Previous')}</Link>}<span>{t('Trang','Page')} {filters.page} / {pages}</span>{filters.page<pages && <Link href={pageHref(filters.page+1)}>{t('Tiếp','Next')}<ArrowRight size={17}/></Link>}</nav>}
       </div>
       <aside className="tp-contact-band shop-shopping-help">

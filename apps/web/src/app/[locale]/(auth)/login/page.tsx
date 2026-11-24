@@ -5,7 +5,7 @@ import { Notice } from '@/components/ui/notice';
 import { LegalConsent } from '@/components/legal/LegalConsent';
 import { legalAcceptance } from '@/lib/legal';
 import { Link } from '@/i18n/routing';
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
@@ -18,9 +18,20 @@ import { AppIcon } from "@/components/icons/AppIcon";
 import { ContactProtection } from '@/components/contact/ContactProtection';
 import { useContactProtection } from '@/hooks/useContactProtection';
 
+const subscribeRememberedEmail = (notify: () => void) => {
+    window.addEventListener('storage', notify);
+    return () => window.removeEventListener('storage', notify);
+};
+const readRememberedEmail = () => {
+    try { return localStorage.getItem('rememberMe') === 'true' ? localStorage.getItem('rememberedEmail') || '' : ''; }
+    catch { return ''; }
+};
+const emptyRememberedEmail = () => '';
+
 export default function LoginPage() {
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const [email, setEmail] = useState('');
+    const [emailDraft, setEmail] = useState<string | null>(null);
+    const savedEmail = useSyncExternalStore(subscribeRememberedEmail, readRememberedEmail, emptyRememberedEmail);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -36,30 +47,10 @@ export default function LoginPage() {
     const messageParam = searchParams.get('message');
     const emailParam = searchParams.get('email');
 
-    // Prefill email if provided from password reset
-    useEffect(() => {
-        if (emailParam) {
-            setEmail(decodeURIComponent(emailParam));
-        }
-    }, [emailParam]);
-
-    // Load saved email on mount if remember me was checked previously
-    useEffect(() => {
-        const savedEmail = localStorage.getItem('rememberedEmail');
-        const wasRemembered = localStorage.getItem('rememberMe') === 'true';
-
-
-        if (savedEmail && wasRemembered) {
-            setEmail(savedEmail);
-            setRememberMe(true);
-        } else {
-        }
-    }, []);
-
-    // Password visibility toggle
+    const email = emailDraft ?? emailParam ?? savedEmail;
     const [showPassword, setShowPassword] = useState(false);
-    // Remember me state
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberDraft, setRememberMe] = useState<boolean | null>(null);
+    const rememberMe = rememberDraft ?? !!savedEmail;
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -124,7 +124,7 @@ body:not(.dark) {
 body:not(:has(.atelier-admin)) h1 { font-family: var(--font-serif), Georgia, serif; font-weight: 400; letter-spacing: -.03em; text-transform: none; }
 body:not(:has(.atelier-admin)) form :is(input:not([type=checkbox],[type=radio],[type=file],[type=hidden],[data-bare]), select:not([data-bare]), textarea:not([data-bare])) { min-height: 48px; border: 1px solid #c9c0b1; border-radius: var(--ui-radius-control); background-color: #fffdf8; color: #302e28; font-size: 16px; letter-spacing: 0; box-shadow: none; }
 body:not(:has(.atelier-admin)) form :is(input,select,textarea):focus-visible { border-color: #34473b; outline: 2px solid #89714c; outline-offset: 1px; box-shadow: none; }
-body:not(:has(.atelier-admin)) form :is(input,textarea)::placeholder { color: #857d70; }
+body:not(:has(.atelier-admin)) form :is(input,textarea)::placeholder { color: #63695d; opacity:1; }
 body:not(:has(.atelier-admin)) form :is(input,select,textarea)[aria-invalid=true] { border-color: #a33f2f; }
 body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]), .shop-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border: 1px solid #34473b; border-radius: var(--ui-radius-control); background: #34473b; color: #fffdf8; font-family: var(--font-display), sans-serif; font-size: 15px; font-weight: 500; letter-spacing: .01em; text-transform: none; box-shadow: none; transform: none; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
 body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):hover:not(:disabled), .shop-btn:hover:not(:disabled) { background: #26372d; border-color: #26372d; color: #fffdf8; box-shadow: none; }
@@ -209,4 +209,19 @@ body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]):disable
   .tp-home .tp-photo-caption { top:50px; }
   .tp-home .tp-values .tp-container { flex-direction:row; flex-wrap:wrap; justify-content:flex-start; gap:12px 20px; padding-block:18px; }
   .tp-home .tp-values span { font-size:11px; }
+}
+
+.shop-announcement-mobile { display:none; }
+@media(max-width:767px) {
+  .shop-announcement { min-height:36px; }
+  .shop-announcement-mobile { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:36px; padding:6px 16px; font-size:12px; line-height:1.5; text-align:center; }
+  .shop-announcement-mobile svg { flex:none; }
+  .shop-announcement-viewport,.shop-announcement-toggle { display:none; }
+  .atelier-header .tp-header-inner { height:64px; }
+  .tp-header-actions { gap:4px; }
+  .tp-header-actions .tp-header-account { display:none; }
+  .tp-header-actions .tp-mobile-menu-button { margin-right:0; padding:10px; }
+  .atelier-footer-eyebrow,.atelier-footer h3,.atelier-footer .legal-footer-links-label,.atelier-footer-bottom { font-size:12px; line-height:1.7; }
+  .atelier-footer ul { font-size:14px; }
+  .atelier-footer-columns { grid-template-columns:minmax(0,1fr); }
 }

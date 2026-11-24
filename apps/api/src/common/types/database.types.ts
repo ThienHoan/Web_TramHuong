@@ -584,6 +584,18 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: IntegrationFunctions & {
+      review_reminder_claim: {
+        Args: { p_limit: number };
+        Returns: { order_id: string; lease_token: string }[];
+      };
+      review_reminder_prepare: {
+        Args: { p_order_id: string; p_token: string };
+        Returns: Json;
+      };
+      review_reminder_finish: {
+        Args: { p_order_id: string; p_token: string; p_state: string };
+        Returns: boolean;
+      };
       catalog_search: {
         Args: {
           p_query: string;

@@ -1,3 +1,8 @@
+import {
+  reorderUrl,
+  reorderSelectionUrl,
+  storefrontOrigin,
+} from './order-links';
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
@@ -6,6 +11,7 @@ import { NotificationDeliveryService } from './notification-delivery.service';
 import type { NotificationEvent } from './notification.repository';
 
 interface IOrderForMail {
+  user_id?: string | null;
   id: string;
   total: number;
   items: any[];
@@ -69,6 +75,52 @@ export class MailService {
       : 'Thanh toán khi nhận hàng / Cash on delivery';
   }
 
+  async sendReviewReminder(payload: unknown): Promise<boolean> {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload))
+      return false;
+    const data = payload as { to?: unknown; items?: unknown };
+    if (
+      typeof data.to !== 'string' ||
+      data.to.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.to) ||
+      !Array.isArray(data.items) ||
+      !data.items.length ||
+      data.items.length > 100
+    )
+      return false;
+    const base = storefrontOrigin(
+      this.configService.get<string>('FRONTEND_URL'),
+    );
+    if (!base) return false;
+    const items: { title: string; url: string }[] = [];
+    for (const raw of data.items as unknown[]) {
+      if (!raw || typeof raw !== 'object') return false;
+      const item = raw as { slug?: unknown; title?: unknown };
+      if (
+        typeof item.slug !== 'string' ||
+        !/^[\p{L}\p{N}][\p{L}\p{N}_-]{0,199}$/u.test(item.slug) ||
+        typeof item.title !== 'string' ||
+        !item.title ||
+        item.title.length > 300
+      )
+        return false;
+      items.push({
+        title: item.title,
+        url: new URL(
+          `/vi/products/${encodeURIComponent(item.slug)}?review=1#reviews`,
+          base,
+        ).href,
+      });
+    }
+    return this.sendSafe({
+      to: data.to,
+      subject:
+        'Chia sẻ cảm nhận về đơn hàng Thiên Phúc / Share your experience',
+      template: './review-reminder',
+      context: { items },
+    });
+  }
+
   async sendOrderConfirmation(order: IOrderForMail) {
     // Find main customer email - assuming user object is attached or we use shipping info?
     // In orders.service, we usually have user_id, but prompt says "shipping_info" has details.
@@ -83,6 +135,15 @@ export class MailService {
         template: './order-confirmation',
         context: {
           id: order.id,
+          reorderUrl: order.user_id
+            ? reorderUrl(
+                order.id,
+                this.configService.get<string>('FRONTEND_URL'),
+              )
+            : reorderSelectionUrl(
+                order.items,
+                this.configService.get<string>('FRONTEND_URL'),
+              ),
           total: this.formatPrice(order.total),
           payment: this.paymentLabel(order),
           items: order.items.map((item: { price?: number }) => ({

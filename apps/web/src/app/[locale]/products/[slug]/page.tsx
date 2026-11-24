@@ -14,7 +14,7 @@ export async function generateMetadata({params}:Props):Promise<Metadata> {
   if(!product)return {title:locale==='vi'?'Không tìm thấy sản phẩm':'Product not found',robots:{index:false,follow:true}};
   const title=product.translation?.title || product.title || 'Thiên Phúc';
   const description=plainDescription(product.translation?.short_description || product.translation?.description,locale==='vi'?`Xem hình ảnh, giá bán và phân loại ${title} tại Thiên Phúc. Tư vấn trước khi mua, đặt hàng không cần tài khoản.`:`Explore photos, prices and options for ${title} at Thien Phuc. Ask for advice and checkout without an account.`);
-  return {title,description,openGraph:{title,description,url:`/${locale}/products/${slug}`,images:product.images?.[0]?[{url:product.images[0],alt:title}]:undefined},alternates:{canonical:`/${locale}/products/${slug}`,languages:{vi:`/vi/products/${slug}`,en:`/en/products/${slug}`}}};
+  return {title,description,openGraph:{title,description,url:`/${locale}/products/${slug}`,images:product.images?.[0]?[{url:product.images[0],alt:title}]:undefined},alternates:{canonical:`/${locale}/products/${slug}`,languages:{'x-default':`/vi/products/${slug}`,vi:`/vi/products/${slug}`,en:`/en/products/${slug}`}}};
 }
 export default async function ProductPage({params,searchParams}:Props) {
   const {locale,slug}=await params, product=await loadProduct(slug,locale);

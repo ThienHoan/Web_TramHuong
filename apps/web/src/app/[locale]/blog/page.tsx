@@ -11,7 +11,7 @@ import { AppIcon } from "@/components/icons/AppIcon";
 
 export const metadata: Metadata = {
     title: 'Thư Viện Trầm Hương - Kiến Thức & Văn Hóa',
-    description: 'Khám phá thế giới Trầm Hương, văn hóa tâm linh và sức khỏe.',
+    description: 'Thư viện hương trầm Thiên Phúc Huế: tìm hiểu cách dùng, lựa chọn và bảo quản trầm hương, cùng những câu chuyện về văn hóa thưởng trầm.',
 };
 
 export default async function BlogListPage({

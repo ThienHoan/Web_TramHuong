@@ -91,6 +91,7 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
   const didDrag = useRef(false);
   const [world, setWorld] = useState(0);
   const [detail, setDetail] = useState(0);
+  const [previewRequested, setPreviewRequested] = useState(false);
   const [ready, setReady] = useState(false);
   const [tone, setTone] = useState(0);
   const [light, setLight] = useState(0);
@@ -245,7 +246,7 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
     };
     const observer = new IntersectionObserver(
       async ([entry]) => {
-        if (!entry.isIntersecting || started || reduced.matches) return;
+        if (!entry.isIntersecting || started || reduced.matches || (window.matchMedia("(max-width: 899px)").matches && !previewRequested)) return;
         started = true;
         try {
           const { createPreviewScene } = await import(
@@ -268,6 +269,7 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
           controller.current.setScrollProgress?.(progress.current);
           setReady(true);
         } catch {
+          setPreviewRequested(false);
           /* Keep the complete photo fallback when WebGL is unavailable. */
         }
       },
@@ -289,7 +291,7 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
       controller.current?.dispose();
       controller.current = null;
     };
-  }, []);
+  }, [previewRequested]);
 
   const revealWorld = (index: number) => {
     const reduced = window.matchMedia(
@@ -598,6 +600,7 @@ export default function HomeJourney({ shoppingLinks }: { shoppingLinks?: { brace
                 fill
                 sizes="(max-width: 899px) 100vw, 60vw"
               />
+              {!ready && <button type="button" className="journey-start-preview" onClick={() => setPreviewRequested(true)} disabled={previewRequested}>{previewRequested ? 'Đang mở 3D…' : 'Xem 3D'}</button>}
               <canvas
                 ref={canvas}
                 aria-hidden="true"

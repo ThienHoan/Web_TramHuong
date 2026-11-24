@@ -1,5 +1,9 @@
 "use client";
 
+import useSWR from 'swr';
+import { getCategories, getProductsPaginated } from '@/lib/api-client';
+import { SHOP_CONTACT } from '@/lib/legal';
+import { CONTACT_CHANNELS } from '@/lib/contact-channels';
 import { useState, useEffect } from "react";
 
 import { Link, useRouter, usePathname } from "@/i18n/routing";
@@ -33,6 +37,14 @@ export default function TraditionalHeader() {
   const pathname = usePathname();
   const locale = useLocale();
   const { scrollYProgress } = useScroll();
+  const { data: menuCategories = [] } = useSWR(isMenuOpen ? ['mobile-categories', locale] : null, async () => {
+    const categories = await getCategories(locale);
+    const populated = await Promise.all(categories.filter(c => c.is_active).map(async category => {
+      const { data } = await getProductsPaginated(locale, { category: category.slug, limit: 1, page: 1 });
+      return data.some(p => p.is_active !== false) ? category : null;
+    }));
+    return populated.filter(c => c !== null);
+  }, { revalidateOnFocus: false });
 
   const handleSearchClick = () => {
     setIsSearchOpen(true);
@@ -69,7 +81,7 @@ export default function TraditionalHeader() {
           aria-hidden="true"
         />
         <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="tp-header-inner flex items-center justify-between h-20">
             <Link href="/" className="atelier-brand" aria-label="Thiên Phúc — Trang chủ"><BrandLockup /></Link>
 
             {/* Desktop Nav */}
@@ -105,7 +117,7 @@ export default function TraditionalHeader() {
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-4">
+            <div className="tp-header-actions flex items-center gap-4">
               {/* Search Input Trigger */}
               <button
                 onClick={handleSearchClick}
@@ -137,7 +149,7 @@ export default function TraditionalHeader() {
 
               {/* User Menu / Login */}
               {user ? (
-                <div className="relative">
+                <div className="tp-header-account relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-trad-bg-warm transition-colors border border-transparent hover:border-trad-border-warm"
@@ -200,7 +212,7 @@ export default function TraditionalHeader() {
               ) : (
                 <Link
                   href="/login"
-                  className="p-2 text-trad-text-main hover:text-trad-primary transition-colors hover:bg-trad-bg-warm rounded-full"
+                  className="tp-header-account p-2 text-trad-text-main hover:text-trad-primary transition-colors hover:bg-trad-bg-warm rounded-full"
                   title="Đăng nhập"
                 >
                   <AppIcon name="login" className="" />
@@ -270,6 +282,12 @@ export default function TraditionalHeader() {
               >
                 Sản phẩm
               </Link>
+              {menuCategories.length > 0 && <div className="flex flex-wrap gap-2" aria-label="Danh mục sản phẩm">{menuCategories.map(category => <Link key={category.id} href={`/products/category/${category.slug}`} className="inline-flex items-center min-h-11 rounded-lg border border-trad-border-warm px-3 text-sm" onClick={() => setIsMenuOpen(false)}>{category.translation?.name || category.slug}</Link>)}</div>}
+              {/* One quick-contact block: the call is primary, chat apps sit beside it as equals. */}
+              <div className="flex flex-wrap items-center gap-2 py-2 border-b border-trad-border-warm/50" aria-label="Liên hệ nhanh">
+                <a href={`tel:${SHOP_CONTACT.phone}`} className="inline-flex items-center gap-2 min-h-11 rounded-lg bg-trad-primary px-3 text-sm font-medium text-white"><AppIcon name="call" className="!text-[18px]" />Gọi {SHOP_CONTACT.phone}</a>
+                {CONTACT_CHANNELS.map(channel => <a key={channel.label} href={channel.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-11 rounded-lg border border-trad-border-warm px-3 text-sm font-medium text-trad-primary">{channel.label}</a>)}
+              </div>
               <Link
                 className="text-trad-text-main hover:text-trad-primary font-medium py-3 border-b border-trad-border-warm/50"
                 href="/order-lookup"

@@ -10,7 +10,7 @@ import TraditionalHeader from "@/components/traditional/TraditionalHeader";
 import TraditionalFooter from "@/components/traditional/TraditionalFooter";
 import GuestCheckoutForm, { type GuestSubmitData } from "./GuestCheckoutForm";
 import { beginCheckoutAttempt } from '@/lib/checkout-attempt';
-import { useShippingAvailability } from "@/hooks/useShippingAvailability";
+import { useShippingPolicy, flatRateFee, useShippingAvailability } from "@/hooks/useShippingAvailability";
 import {
   CheckoutCard,
   CheckoutLayout,
@@ -21,6 +21,7 @@ import {
 } from "@/components/checkout/CheckoutUI";
 
 export default function TraditionalCheckout() {
+  const { data: shippingPolicy, error: policyError, mutate: retryPolicy } = useShippingPolicy();
   const ghnCheckout = useShippingAvailability();
   const { items, total, updateQuantity, removeItem } = useCart();
   const analytics = useAnalyticsTracker();
@@ -50,6 +51,7 @@ export default function TraditionalCheckout() {
         setInitialInfo({
           name: field("name"),
           phone: field("phone"),
+          email: field("email"),
           address: field("address") || field("full_address"),
           province: field("province") || field("city"),
           district: field("district"),
@@ -148,7 +150,7 @@ export default function TraditionalCheckout() {
         JSON.stringify({
           ...data,
           city: data.province,
-          email: session?.user.email || "",
+          email: data.email?.trim() || session?.user.email || undefined,
         }),
       );
       if (appliedVoucher)
@@ -164,7 +166,7 @@ export default function TraditionalCheckout() {
     }
   };
   const discount = appliedVoucher?.discountAmount || 0,
-    shipping = ghnCheckout !== false ? null : total >= 300000 ? 0 : 30000;
+    shipping = flatRateFee(shippingPolicy, total);
   return (
     <div className="atelier-page">
       <TraditionalHeader />
@@ -191,6 +193,7 @@ export default function TraditionalCheckout() {
                   type="submit"
                   form="checkout-recipient-form"
                   disabled={
+                    !shippingPolicy ||
                     ghnCheckout === undefined ||
                     loading ||
                     verifyingVoucher ||
@@ -224,6 +227,7 @@ export default function TraditionalCheckout() {
           </CheckoutSummary>
         }
       >
+        {policyError && <CheckoutNotice>Chưa tải được phí giao hàng. <button type="button" className="underline min-h-11" onClick={() => void retryPolicy()}>Thử lại</button></CheckoutNotice>}
         {error && <CheckoutNotice>{error}</CheckoutNotice>}
         {!items.length ? (
           <CheckoutCard title="Giỏ hàng đang trống">
@@ -255,9 +259,10 @@ export default function TraditionalCheckout() {
                 onSubmit={continueCheckout}
                 requireLegacyAddress={ghnCheckout === false}
                 ghnAddress={ghnCheckout === true}
-                initialValues={initialInfo}
+                initialValues={{ ...initialInfo, email: initialInfo.email || session?.user.email || "" }}
                 busy={
-                  ghnCheckout === undefined ||
+                  !shippingPolicy ||
+                    ghnCheckout === undefined ||
                   loading ||
                   verifyingVoucher ||
                   (!!appliedVoucher && appliedVoucher.subtotal !== total)

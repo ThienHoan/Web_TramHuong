@@ -1,0 +1,13 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+const source = 'https://provinces.open-api.vn/api/v2/?depth=2';
+const response = await fetch(source, { signal: AbortSignal.timeout(60000) });
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
+const provinces = await response.json();
+if (!Array.isArray(provinces) || provinces.length !== 34 || !provinces.every(p => Number.isInteger(p.code) && typeof p.name === 'string' && Array.isArray(p.wards) && p.wards.length && p.wards.every(w => Number.isInteger(w.code) && typeof w.name === 'string' && w.province_code === p.code))) throw new Error('Unexpected dataset; review source before updating');
+const directory = new URL('../public/data/addresses/v2/', import.meta.url);
+await mkdir(directory, { recursive: true });
+const division = ({ code, name }) => ({ code, name });
+const save = (name, data) => writeFile(new URL(name, directory), JSON.stringify(data) + '\n');
+await save('provinces.json', provinces.map(division));
+for (const province of provinces) await save(`${province.code}.json`, province.wards.map(division));
+await save('manifest.json', { source, capturedAt: new Date().toISOString().slice(0, 10), provinceCount: provinces.length, wardCount: provinces.reduce((n, p) => n + p.wards.length, 0), schema: 'two_level' });
