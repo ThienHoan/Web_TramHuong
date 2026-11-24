@@ -1,4 +1,8 @@
-import { reorderUrl, reorderSelectionUrl, storefrontOrigin } from './order-links';
+import {
+  reorderUrl,
+  reorderSelectionUrl,
+  storefrontOrigin,
+} from './order-links';
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
@@ -72,17 +76,49 @@ export class MailService {
   }
 
   async sendReviewReminder(payload: unknown): Promise<boolean> {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload))
+      return false;
     const data = payload as { to?: unknown; items?: unknown };
-    if (typeof data.to !== 'string' || data.to.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.to) || !Array.isArray(data.items) || !data.items.length || data.items.length > 100) return false;
-    const base = storefrontOrigin(this.configService.get<string>('FRONTEND_URL'));
+    if (
+      typeof data.to !== 'string' ||
+      data.to.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.to) ||
+      !Array.isArray(data.items) ||
+      !data.items.length ||
+      data.items.length > 100
+    )
+      return false;
+    const base = storefrontOrigin(
+      this.configService.get<string>('FRONTEND_URL'),
+    );
     if (!base) return false;
     const items: { title: string; url: string }[] = [];
-    for (const item of data.items) {
-      if (!item || typeof item.slug !== 'string' || !/^[\p{L}\p{N}][\p{L}\p{N}_-]{0,199}$/u.test(item.slug) || typeof item.title !== 'string' || !item.title || item.title.length > 300) return false;
-      items.push({ title: item.title, url: new URL(`/vi/products/${encodeURIComponent(item.slug)}?review=1#reviews`, base).href });
+    for (const raw of data.items as unknown[]) {
+      if (!raw || typeof raw !== 'object') return false;
+      const item = raw as { slug?: unknown; title?: unknown };
+      if (
+        typeof item.slug !== 'string' ||
+        !/^[\p{L}\p{N}][\p{L}\p{N}_-]{0,199}$/u.test(item.slug) ||
+        typeof item.title !== 'string' ||
+        !item.title ||
+        item.title.length > 300
+      )
+        return false;
+      items.push({
+        title: item.title,
+        url: new URL(
+          `/vi/products/${encodeURIComponent(item.slug)}?review=1#reviews`,
+          base,
+        ).href,
+      });
     }
-    return this.sendSafe({ to: data.to, subject: 'Chia sẻ cảm nhận về đơn hàng Thiên Phúc / Share your experience', template: './review-reminder', context: { items } });
+    return this.sendSafe({
+      to: data.to,
+      subject:
+        'Chia sẻ cảm nhận về đơn hàng Thiên Phúc / Share your experience',
+      template: './review-reminder',
+      context: { items },
+    });
   }
 
   async sendOrderConfirmation(order: IOrderForMail) {
@@ -99,7 +135,15 @@ export class MailService {
         template: './order-confirmation',
         context: {
           id: order.id,
-          reorderUrl: order.user_id ? reorderUrl(order.id, this.configService.get<string>('FRONTEND_URL')) : reorderSelectionUrl(order.items, this.configService.get<string>('FRONTEND_URL')),
+          reorderUrl: order.user_id
+            ? reorderUrl(
+                order.id,
+                this.configService.get<string>('FRONTEND_URL'),
+              )
+            : reorderSelectionUrl(
+                order.items,
+                this.configService.get<string>('FRONTEND_URL'),
+              ),
           total: this.formatPrice(order.total),
           payment: this.paymentLabel(order),
           items: order.items.map((item: { price?: number }) => ({

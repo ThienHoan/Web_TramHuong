@@ -59,7 +59,10 @@ class ShippingInfoDto {
   @IsNotEmpty()
   city: string; // Province
 
-  @Transform(({ value }) => typeof value === 'string' ? value.trim() || undefined : value)
+  // An empty or blank email means "not given"; anything else is left for @IsEmail to judge.
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() || undefined : value,
+  )
   @IsOptional()
   @IsEmail()
   @MaxLength(254)
