@@ -50,6 +50,8 @@ ENV NEXT_PUBLIC_MESSENGER_URL=$NEXT_PUBLIC_MESSENGER_URL
 RUN pnpm build
 
 # Production Stage
+# sharp is pinned to 0.34.x (pnpm overrides): from 0.35 its Alpine x64 binary refuses CPUs
+# without x86-64-v2, the production VPS is one, and Next then serves unresized originals.
 FROM node:22-alpine AS runner
 
 WORKDIR /app

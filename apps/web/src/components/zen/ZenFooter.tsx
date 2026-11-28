@@ -20,7 +20,7 @@ export default function ZenFooter() {
                         </p>
                     </div>
                     <div className="md:col-span-2 lg:col-span-2">
-                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">Shop</h4>
+                        <h4 className="type-label text-zen-900 dark:text-white mb-6">Shop</h4>
                         <ul className="space-y-4">
                             <li><Link href="/products" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">All products</Link></li>
                             <li><Link href="/contact" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Product advice</Link></li>
@@ -29,7 +29,7 @@ export default function ZenFooter() {
                         </ul>
                     </div>
                     <div className="md:col-span-2 lg:col-span-2">
-                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">About</h4>
+                        <h4 className="type-label text-zen-900 dark:text-white mb-6">About</h4>
                         <ul className="space-y-4">
                             <li><Link href="/#story" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Our Story</Link></li>
                             <li><Link href="/blog" className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors uppercase tracking-wide font-light font-zen-sans">Journal</Link></li>
@@ -38,13 +38,13 @@ export default function ZenFooter() {
                         </ul>
                     </div>
                     <div className="md:col-span-4 lg:col-span-3">
-                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-zen-900 dark:text-white mb-6 font-zen-sans">Contact</h4>
+                        <h4 className="type-label text-zen-900 dark:text-white mb-6">Contact</h4>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-light font-zen-sans">Hue City, Vietnam</p>
                         <a href={`mailto:${SHOP_CONTACT.email}`} className="text-xs text-gray-600 dark:text-gray-400 hover:text-zen-secondary transition-colors font-light block font-zen-sans">{SHOP_CONTACT.email}</a>
                     </div>
                 </div>
         <LegalLinks />
-                <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-gray-400 font-light font-zen-sans">
+                <div className="border-t border-zen-200/50 dark:border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs uppercase tracking-widest text-gray-400 font-light font-zen-sans">
                     <p>© {new Date().getFullYear()} Thiên Phúc · Vietnamese Agarwood.</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
                         <a href={SHOP_CONTACT.facebookUrl} className="hover:text-zen-secondary transition-colors">Facebook</a>

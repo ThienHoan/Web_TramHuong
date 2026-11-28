@@ -106,7 +106,7 @@ export default function ContactPage() {
                     </div>
 
                     <form className="shop-card flex flex-col gap-5 self-start" onSubmit={handleSubmit(onSubmit)} noValidate>
-                        <h2 className="font-serif text-2xl">{t('Gửi lời nhắn', 'Send a message')}</h2>
+                        <h2 className="type-h3">{t('Gửi lời nhắn', 'Send a message')}</h2>
                         <label className="shop-field">
                             {t('Họ và tên', 'Full name')}
                             <input type="text" autoComplete="name" {...fieldProps('full_name')} />

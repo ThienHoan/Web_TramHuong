@@ -26,8 +26,8 @@ export default function ZenHome({ products, categories = [] }: { products: Produ
                     <ScrollReveal animation="fade-up" className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
                         <div className="order-2 lg:order-1 space-y-10">
                             <div>
-                                <span className="block text-zen-secondary text-[10px] uppercase tracking-superwide mb-4">Provenance &amp; Craft</span>
-                                <h2 className="text-5xl md:text-6xl font-zen-display font-thin text-zen-900 dark:text-white leading-tight">
+                                <span className="block text-zen-secondary text-xs uppercase tracking-superwide mb-4">Provenance &amp; Craft</span>
+                                <h2 className="type-h2 text-zen-900 dark:text-white">
                                     Rooted in Hue,<br />Crafted by Time
                                 </h2>
                             </div>

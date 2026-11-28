@@ -193,7 +193,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                                 <div>
                                     <span className={`block text-sm font-bold uppercase tracking-widest mb-2 ${isExpiredOrCanceled ? 'text-trad-gray' : 'text-accent-gold'}`}>{t("Chi tiết đơn hàng", "Order details")}</span>
-                                    <h1 className={`font-serif text-3xl md:text-4xl font-bold flex items-center gap-3 ${statusConfig.mainColor}`}>
+                                    <h1 className={`type-h1 flex items-center gap-3 ${statusConfig.mainColor}`}>
                                         #{order.id?.slice(0, 8).toUpperCase()}
                                         <AppIcon name={statusConfig.headerIcon} className={`text-2xl ${isExpiredOrCanceled ? 'text-trad-gray/50' : 'text-accent-gold'}`} />
                                     </h1>
@@ -298,7 +298,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 {/* Product List */}
                                 <div className="bg-white rounded-2xl shadow-sm border border-[#E6DCC8] overflow-hidden">
                                     <div className="px-8 py-6 border-b border-[#F5EFE6] bg-[#FFFAF0]/50 flex items-center justify-between">
-                                        <h2 className="font-serif text-xl font-bold text-text-main flex items-center gap-2">
+                                        <h2 className="type-h4 text-text-main flex items-center gap-2">
                                             <AppIcon name="inventory_2" className="text-primary" />
                                             {t("Sản phẩm đã chọn", "Your items")}
                                         </h2>
@@ -324,7 +324,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     </div>
                                                     <div className="flex-1 space-y-2">
                                                         <div className="flex justify-between items-start">
-                                                            <h3 className="font-serif text-lg font-bold text-text-main group-hover:text-primary transition-colors">{title}</h3>
+                                                            <h3 className="type-h4 text-text-main group-hover:text-primary transition-colors">{title}</h3>
                                                             <div className="flex flex-col items-end gap-1">
                                                                 {hasDiscount && !isExpiredOrCanceled && (
                                                                     <span className="text-sm text-gray-500 line-through">
@@ -335,7 +335,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                                     {formatPrice(price * item.quantity)}
                                                                 </span>
                                                                 {hasDiscount && !isExpiredOrCanceled && (
-                                                                    <span className="text-[10px] text-red-500 font-medium whitespace-nowrap">
+                                                                    <span className="text-xs text-red-500 font-medium whitespace-nowrap">
                                                                         {t("Tiết kiệm", "You save")} {formatPrice(discountAmount * item.quantity)}
                                                                     </span>
                                                                 )}
@@ -345,7 +345,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                             <span className="px-2 py-0.5 rounded-md bg-surface-accent text-text-main font-medium border border-[#E6DCC8]">{t("Số lượng:", "Quantity:")} {item.quantity}</span>
                                                             {item.variant_name && <span className="bg-trad-bg-warm px-2 py-0.5 rounded-md border border-trad-border-warm">{item.variant_name}</span>}
                                                             {hasDiscount && !isExpiredOrCanceled && (
-                                                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
                                                                     -{Math.round((discountAmount / originalPrice) * 100)}%
                                                                 </span>
                                                             )}
@@ -395,7 +395,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                 <div className={`bg-white rounded-2xl shadow-sm border border-[#E6DCC8] p-6 relative overflow-hidden group ${isExpiredOrCanceled ? 'filter-expired pointer-events-none select-none' : ''}`}>
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-[#F5EFE6] rounded-bl-full -mr-4 -mt-4 z-0"></div>
                                     <div className="relative z-10">
-                                        <h3 className={`font-serif text-lg font-bold mb-6 flex items-center gap-2 ${isExpiredOrCanceled ? 'text-gray-500' : 'text-text-main'}`}>
+                                        <h3 className={`type-h4 mb-6 flex items-center gap-2 ${isExpiredOrCanceled ? 'text-gray-500' : 'text-text-main'}`}>
                                             <AppIcon name="local_shipping" className={`${isExpiredOrCanceled ? 'text-gray-400' : 'text-primary'}`} />
                                             {t("Thông tin giao hàng", "Delivery details")}
                                         </h3>
@@ -459,7 +459,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <div className={`absolute bottom-0 right-0 w-32 h-32 opacity-20 pointer-events-none ${isExpiredOrCanceled ? 'bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-black via-transparent to-transparent' : ''}`}></div>
 
                                             <div className="relative z-10 space-y-4">
-                                                <h3 className="font-serif text-lg font-bold text-accent-gold mb-4 border-b border-white/10 pb-4">{t("Tổng kết đơn hàng", "Order summary")}</h3>
+                                                <h3 className="type-h4 text-accent-gold mb-4 border-b border-white/10 pb-4">{t("Tổng kết đơn hàng", "Order summary")}</h3>
                                                 <div className={`flex justify-between text-sm ${isExpiredOrCanceled ? 'text-white/60 line-through' : 'text-white/80'}`}>
                                                     <span>{t("Tạm tính", "Subtotal")}</span>
                                                     <span>{formatPrice(subtotal)}</span>
@@ -498,7 +498,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                 )}
                                                 <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-end">
                                                     <span className={`text-sm font-medium uppercase tracking-wide ${isExpiredOrCanceled ? 'text-white/70' : 'text-white/90'}`}>Tổng cộng</span>
-                                                    <span className={`text-2xl font-serif font-bold ${isExpiredOrCanceled ? 'text-white/70' : 'text-accent-gold'}`}>{formatPrice(totalAmount)}</span>
+                                                    <span className={`type-money text-2xl ${isExpiredOrCanceled ? 'text-white/70' : 'text-accent-gold'}`}>{formatPrice(totalAmount)}</span>
                                                 </div>
 
                                                 {isExpiredOrCanceled ? (

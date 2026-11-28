@@ -182,9 +182,9 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                     {/* Breadcrumbs */}
                     <div className="flex flex-wrap items-center gap-2 py-4 mb-8 text-xs font-light tracking-wide text-zen-green-text/60 dark:text-white/60">
                         <Link className="hover:text-zen-green-primary transition-colors" href="/">Home</Link>
-                        <span className="text-[10px] opacity-50">/</span>
+                        <span className="text-xs opacity-50">/</span>
                         <Link className="hover:text-zen-green-primary transition-colors" href="/products">Shop</Link>
-                        <span className="text-[10px] opacity-50">/</span>
+                        <span className="text-xs opacity-50">/</span>
                         <span className="text-zen-green-text dark:text-white font-normal uppercase tracking-wider">{product.translation?.title}</span>
                     </div>
 
@@ -221,7 +221,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                         <div className="lg:col-span-5 flex flex-col pt-4">
                             {/* Header Info */}
                             <div className="mb-2 flex items-center gap-3">
-                                <span className="inline-flex items-center rounded-full bg-zen-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zen-green-text dark:bg-white/10 dark:text-white">
+                                <span className="inline-flex items-center rounded-full bg-zen-green-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-zen-green-text dark:bg-white/10 dark:text-white">
                                     {product.category?.slug === 'incense-sticks' ? 'Meditation Grade' : 'Premium Collection'}
                                 </span>
                             </div>
@@ -289,7 +289,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                     </button>
                                 </div>
                                 {product.stock > 0 && (
-                                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-zen-green-text/60 dark:text-white/60">
+                                    <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-zen-green-text/60 dark:text-white/60">
                                         <span className="h-1.5 w-1.5 rounded-full bg-zen-green-primary animate-pulse"></span>
                                         In Stock - Ready to ship
                                     </div>
@@ -327,11 +327,11 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                             </p>
                                             <div className="grid grid-cols-2 gap-8 border-t border-zen-green-100 dark:border-white/10 pt-8">
                                                 <div className="flex flex-col gap-2">
-                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-zen-green-text/40 dark:text-white/40">Origin</span>
+                                                    <span className="text-xs uppercase tracking-[0.2em] text-zen-green-text/40 dark:text-white/40">Origin</span>
                                                     <span className="text-sm font-medium text-zen-green-900 dark:text-white tracking-wide">Khanh Hoa, Vietnam</span>
                                                 </div>
                                                 <div className="flex flex-col gap-2">
-                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-zen-green-text/40 dark:text-white/40">Scent Profile</span>
+                                                    <span className="text-xs uppercase tracking-[0.2em] text-zen-green-text/40 dark:text-white/40">Scent Profile</span>
                                                     <span className="text-sm font-medium text-zen-green-900 dark:text-white tracking-wide">Woody, Sweet, Earthy</span>
                                                 </div>
                                             </div>
@@ -364,7 +364,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                 </div>
 
                                                 <div className="p-6 bg-zen-green-50 dark:bg-white/5 border border-zen-green-100 dark:border-white/10 rounded-sm">
-                                                    <span className="block mb-2 text-[10px] uppercase tracking-[0.2em] text-zen-green-primary">Mindful Tip</span>
+                                                    <span className="block mb-2 text-xs uppercase tracking-[0.2em] text-zen-green-primary">Mindful Tip</span>
                                                     <p className="text-sm italic font-light text-zen-green-900 dark:text-white">
                                                         &quot;The smoke of agarwood is a bridge between the earth and the heavens. Let it carry your intentions upward.&quot;
                                                     </p>
@@ -388,7 +388,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                                     <AppIcon name={star <= Math.round(reviewStats.average) ? 'star' : 'star_border'} key={star} className="fill-current text-[20px]" />
                                                                 ))}
                                                             </div>
-                                                            <span className="text-[10px] uppercase tracking-[0.15em] text-zen-green-text/50 dark:text-white/50 mt-1">
+                                                            <span className="text-xs uppercase tracking-[0.15em] text-zen-green-text/50 dark:text-white/50 mt-1">
                                                                 Based on {reviewStats.total} Reviews
                                                             </span>
                                                         </div>
@@ -400,7 +400,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                         const count = (reviewStats.distribution as Record<number, number>)[star] || 0;
                                                         const percent = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
                                                         return (
-                                                            <div key={star} className="flex items-center gap-3 text-[10px]">
+                                                            <div key={star} className="flex items-center gap-3 text-xs">
                                                                 <span className="w-3 text-zen-green-text/60 dark:text-white/60">{star}</span>
                                                                 <div className="flex-1 h-1 bg-zen-green-100 dark:bg-white/10 rounded-full overflow-hidden">
                                                                     <div className="h-full bg-zen-green-900 dark:bg-white" style={{ width: `${percent}%` }}></div>
@@ -423,7 +423,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                                         <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-zen-green-900 dark:text-white mb-1">
                                                                             {review.user?.full_name || 'Anonymous Guest'}
                                                                         </h4>
-                                                                        <span className="text-[10px] italic text-zen-green-text/40 dark:text-white/40">
+                                                                        <span className="text-xs italic text-zen-green-text/40 dark:text-white/40">
                                                                             {new Date(review.created_at).toLocaleDateString()}
                                                                         </span>
                                                                     </div>
@@ -455,7 +455,7 @@ export default function ZenProductDetail({ product, relatedProducts }: { product
                                                                         <button
                                                                             key={page}
                                                                             onClick={() => handlePageChange(page)}
-                                                                            className={`w-6 h-6 flex items-center justify-center text-[10px] rounded-full transition-all ${currentPage === page
+                                                                            className={`w-6 h-6 flex items-center justify-center text-xs rounded-full transition-all ${currentPage === page
                                                                                 ? 'bg-zen-green-900 text-white dark:bg-white dark:text-zen-green-900 font-bold'
                                                                                 : 'text-zen-green-text/60 hover:text-zen-green-900 dark:text-white/60 dark:hover:text-white'
                                                                                 }`}

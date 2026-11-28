@@ -5,6 +5,8 @@ import "./../globals.css";
 import "./../atelier.css";
 import "./../brand.css";
 import "./../legal.css";
+// Loaded after every other global sheet: one type scale for the whole storefront.
+import "./../typography.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
@@ -33,8 +35,11 @@ const beVietnamPro = Be_Vietnam_Pro({
   display: 'swap',
 });
 
+// Italic is declared so <em> accents in headings use Playfair's real italic,
+// not a slanted copy of the roman letters that the browser fakes.
 const playfairDisplay = Playfair_Display({
   preload: false,
+  style: ['normal', 'italic'],
   variable: "--font-serif",
   subsets: ["latin", "vietnamese"],
   display: 'swap',
@@ -43,6 +48,7 @@ const playfairDisplay = Playfair_Display({
 const cormorantGaramond = Cormorant_Garamond({
   preload: false,
   weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   variable: "--font-zen-display",
   subsets: ["latin", "vietnamese"],
   display: 'swap',

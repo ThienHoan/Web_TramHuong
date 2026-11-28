@@ -1,7 +1,8 @@
 "use client";
 
 import useSWR from 'swr';
-import { getCategories, getProductsPaginated } from '@/lib/api-client';
+import { getCategories } from '@/lib/api-client';
+import { linkableCategories } from '@/lib/stocked-categories';
 import { SHOP_CONTACT } from '@/lib/legal';
 import { CONTACT_CHANNELS } from '@/lib/contact-channels';
 import { useState, useEffect } from "react";
@@ -37,14 +38,9 @@ export default function TraditionalHeader() {
   const pathname = usePathname();
   const locale = useLocale();
   const { scrollYProgress } = useScroll();
-  const { data: menuCategories = [] } = useSWR(isMenuOpen ? ['mobile-categories', locale] : null, async () => {
-    const categories = await getCategories(locale);
-    const populated = await Promise.all(categories.filter(c => c.is_active).map(async category => {
-      const { data } = await getProductsPaginated(locale, { category: category.slug, limit: 1, page: 1 });
-      return data.some(p => p.is_active !== false) ? category : null;
-    }));
-    return populated.filter(c => c !== null);
-  }, { revalidateOnFocus: false });
+  // Shares its cache key with the chat suggestions.
+  const { data: menuCategories = [] } = useSWR(isMenuOpen ? ['linkable-categories', locale] : null,
+    async () => linkableCategories(locale, await getCategories(locale)), { revalidateOnFocus: false });
 
   const handleSearchClick = () => {
     setIsSearchOpen(true);
@@ -138,7 +134,7 @@ export default function TraditionalHeader() {
               >
                 <AppIcon name="favorite" className="" />
                 {wishlistItems.size > 0 && (
-                  <span className="absolute top-1 right-0.5 h-3 w-3 bg-trad-primary rounded-full border border-white flex items-center justify-center text-[8px] text-white font-bold">
+                  <span className="absolute top-1 right-0 h-4 min-w-4 px-0.5 bg-trad-primary rounded-full border border-white flex items-center justify-center text-xs leading-none text-white font-bold">
                     {wishlistItems.size}
                   </span>
                 )}
@@ -358,7 +354,7 @@ export default function TraditionalHeader() {
                       <AppIcon name="favorite" className="text-[20px]" />{" "}
                       Yêu thích
                       {wishlistItems.size > 0 && (
-                        <span className="bg-trad-red-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto">
+                        <span className="bg-trad-red-900 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-auto">
                           {wishlistItems.size}
                         </span>
                       )}

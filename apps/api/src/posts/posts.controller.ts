@@ -41,9 +41,11 @@ export class PostsController {
     @Query('limit') limit?: number,
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('category') category?: string,
+    @Query('sort') sort?: string,
   ) {
     return this.postsService.findAll(
-      { page, limit, search, status: status || 'all' },
+      { page, limit, search, category, sort, status: status || 'all' },
       true,
     );
   }

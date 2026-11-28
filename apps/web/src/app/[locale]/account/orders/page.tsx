@@ -108,7 +108,7 @@ export default function MyOrdersPage() {
                     {/* Header Section */}
                     <div className="text-center mb-16 relative">
                         <span className="font-serif text-[#785538] text-sm tracking-[0.2em] uppercase mb-2 block">{t("Tài khoản", "Account")}</span>
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-4">{t("Đơn hàng của tôi", "My orders")}</h1>
+                        <h1 className="type-h1 text-stone-800 mb-4">{t("Đơn hàng của tôi", "My orders")}</h1>
                         <div className="flex justify-center items-center gap-3">
                             <div className="h-[1px] w-12 bg-[#785538]/40"></div>
                             <span className="text-stone-500 font-serif text-xl italic">{t("Theo dõi những đơn bạn đã đặt", "Follow the orders you have placed")}</span>
@@ -213,7 +213,7 @@ export default function MyOrdersPage() {
                                                     <AppIcon name={statusConfig.icon} className={`text-sm ${status === 'AWAITING_PAYMENT' ? 'animate-pulse' : ''}`} />
                                                     <span className="text-xs font-bold tracking-widest uppercase">{statusConfig.label}</span>
                                                 </div>
-                                                <h3 className="font-serif text-3xl text-stone-800 font-bold mb-1">#{order.id.slice(0, 8).toUpperCase()}</h3>
+                                                <h3 className="type-h3 text-stone-800 mb-1">#{order.id.slice(0, 8).toUpperCase()}</h3>
                                                 <p className="font-serif text-lg text-stone-500 italic">
                                                     {new Date(order.created_at).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </p>
@@ -236,10 +236,10 @@ export default function MyOrdersPage() {
                                                     </div>
                                                     <div className="flex flex-col justify-between py-1 flex-1">
                                                         <div>
-                                                            <h4 className="font-serif font-semibold text-lg text-stone-800 leading-tight line-clamp-2">{title}</h4>
+                                                            <h4 className="type-h4 text-stone-800 line-clamp-2">{title}</h4>
                                                             {itemCount > 1 && <p className="text-xs text-stone-500 mt-1 font-serif">+{itemCount - 1} sản phẩm khác</p>}
                                                         </div>
-                                                        <div className="font-serif text-[#785538] text-lg font-bold">{formatPrice(Number(order.total_amount || order.total || 0))}</div>
+                                                        <div className="type-money text-[#785538] text-lg">{formatPrice(Number(order.total_amount || order.total || 0))}</div>
                                                     </div>
                                                 </div>
 

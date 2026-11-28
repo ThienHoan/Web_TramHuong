@@ -366,7 +366,7 @@
   font-weight: 500;
 }
 .tp-note-mark {
-  font-family: serif;
+  font-family: var(--font-serif), Georgia, serif;
   font-size: 36px;
   color: #84612f;
   border-right: 1px solid #b6a48180;

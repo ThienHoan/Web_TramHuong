@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const fresh = data.filter(post => !seenPosts.has(post.id));
     for (const post of fresh) {
       seenPosts.add(post.id);
-      entries.push({ url: absoluteUrl(`/vi/blog/${post.slug}`), lastModified: validDate(post.published_at || post.created_at) });
+      entries.push({ url: absoluteUrl(`/vi/blog/${post.slug}`), lastModified: validDate(post.updated_at || post.published_at || post.created_at) });
     }
     if (!fresh.length || page >= (meta.totalPages || 1)) break;
   }

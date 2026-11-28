@@ -270,7 +270,7 @@ export default function VerifyPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-2xl font-bold mb-4">{t("Xác thực chưa thành công", "Verification failed")}</h1>
+                    <h1 className="type-h3 mb-4">{t("Xác thực chưa thành công", "Verification failed")}</h1>
                     <p className="text-red-600 mb-6">{error}</p>
                     <p className="text-sm text-gray-600 mb-6">
                         {t("Liên kết xác thực có thể đã hết hạn hoặc không đúng.", "The verification link may have expired or is invalid.")}
@@ -292,7 +292,7 @@ export default function VerifyPage() {
             <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
                 <div className="text-center mb-6">
                     <div className="text-6xl mb-4">✅</div>
-                    <h1 className="text-2xl font-bold mb-2">{t("Đã xác thực email", "Email verified")}</h1>
+                    <h1 className="type-h3 mb-2">{t("Đã xác thực email", "Email verified")}</h1>
                     <p className="text-gray-600">{t("Giờ hãy tạo mật khẩu của bạn", "Now create your password")}</p>
                 </div>
 

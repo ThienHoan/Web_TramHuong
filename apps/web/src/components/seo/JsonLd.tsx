@@ -18,12 +18,9 @@ const JsonLd = () => {
                 'description': 'Tinh Hoa Trầm Hương Việt Nam - The Essence of Vietnamese Agarwood',
                 'publisher': {
                     '@id': `${baseUrl}/#store`
-                },
-                'potentialAction': {
-                    '@type': 'SearchAction',
-                    'target': `${baseUrl}/vi/products?search={search_term_string}`,
-                    'query-input': 'required name=search_term_string'
                 }
+                // No SearchAction: Google retired the sitelinks search box in 2024, and its
+                // crawler was fetching the literal "?search={search_term_string}" template.
             },
             {
                 '@type': 'Store', // More specific than LocalBusiness

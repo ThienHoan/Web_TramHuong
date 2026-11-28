@@ -74,7 +74,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                 <section className="w-full px-4 md:px-10 pt-20 pb-12">
                     <div className="max-w-[1280px] mx-auto flex flex-col items-center text-center space-y-6">
                         <p className="text-primary text-xs font-medium tracking-[0.3em] uppercase animate-fade-in">The Agarwood Journal</p>
-                        <h1 className="text-zen-900 dark:text-white text-4xl md:text-6xl font-thin leading-tight tracking-[0.15em] uppercase max-w-4xl">
+                        <h1 className="type-h1 text-zen-900 dark:text-white max-w-4xl">
                             Insights &amp; Reflections
                         </h1>
                         <p className="text-zen-800/70 dark:text-gray-400 text-sm md:text-base font-light tracking-wide max-w-lg leading-relaxed">
@@ -105,7 +105,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                             <span className="w-8 h-[1px] bg-primary"></span>
                                             <span className="text-primary text-xs font-medium tracking-[0.2em] uppercase">Featured Story</span>
                                         </div>
-                                        <h2 className="text-zen-900 dark:text-white text-2xl lg:text-4xl font-light leading-tight tracking-wide uppercase">
+                                        <h2 className="type-h3 text-zen-900 dark:text-white">
                                             {featuredPost.title}
                                         </h2>
                                         <p className="text-zen-800/80 dark:text-gray-300 text-sm font-light leading-relaxed tracking-wide line-clamp-4">
@@ -173,17 +173,17 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
-                                        <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-xl text-[10px] font-bold tracking-widest uppercase text-zen-900 dark:text-white">
+                                        <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-xl text-xs font-bold tracking-widest uppercase text-zen-900 dark:text-white">
                                             {post.category || 'Article'}
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 pt-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-zen-500 dark:text-gray-400 tracking-wider uppercase">
+                                        <div className="flex items-center gap-2 text-xs text-zen-500 dark:text-gray-400 tracking-wider uppercase">
                                             <span>{new Date(post.created_at).toLocaleDateString()}</span>
                                             <span className="size-1 rounded-full bg-primary/40"></span>
                                             <span>By {post.author?.full_name || 'Zen Team'}</span>
                                         </div>
-                                        <h3 className="text-xl font-light text-zen-900 dark:text-white uppercase tracking-wide leading-tight group-hover:text-primary transition-colors">
+                                        <h3 className="type-h4 text-zen-900 dark:text-white group-hover:text-primary transition-colors">
                                             {post.title}
                                         </h3>
                                         <p className="text-sm text-zen-600 dark:text-gray-400 line-clamp-2 font-light leading-relaxed">
@@ -199,7 +199,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                             {posts.length === 0 && (
                                 <div className="col-span-full text-center py-20">
                                     <AppIcon name="spa" className="text-4xl text-zen-300 dark:text-gray-600 mb-4" />
-                                    <h3 className="text-xl font-light text-zen-900 dark:text-white mb-2">No stories found</h3>
+                                    <h3 className="type-h4 text-zen-900 dark:text-white mb-2">No stories found</h3>
                                     <p className="text-zen-600 dark:text-gray-400 font-light">Try searching for something else.</p>
                                 </div>
                             )}
@@ -239,7 +239,7 @@ export default function ZenBlogList({ posts, meta, featuredPost, searchParams }:
                 <section className="w-full bg-zen-100/50 dark:bg-white/5 py-24 px-4">
                     <div className="max-w-md mx-auto text-center space-y-6">
                         <AppIcon name="spa" className="text-4xl text-primary font-light" />
-                        <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-zen-900 dark:text-white">Stories of Stillness</h2>
+                        <h2 className="type-h3 text-zen-900 dark:text-white">Stories of Stillness</h2>
                         <p className="text-sm text-zen-600 dark:text-gray-400 font-light leading-relaxed">
                             Explore contemplative stories, collection news and guides on the art of incense in our journal.
                         </p>

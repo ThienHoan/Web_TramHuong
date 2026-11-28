@@ -15,6 +15,8 @@
     "test:connections": "node scripts/test-integration-health.cjs && node scripts/test-google-auth.cjs",
     "test:checkout": "node --test scripts/test-checkout-attempt.cjs",
     "test:auth-provider": "node --test scripts/test-auth-provider.cjs",
+    "test:blog": "node --test scripts/test-blog.cjs",
+    "test:locale-routing": "node --test scripts/test-locale-routing.cjs",
     "test:upgrade": "node --test scripts/test-upgrade.cjs"
   },
   "dependencies": {
@@ -48,7 +50,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.6.0",
     "sanitize-html": "^2.18.1",
-    "sharp": "^0.35.5",
+    "sharp": "0.34.5",
     "sonner": "^2.0.7",
     "swr": "^2.3.8",
     "tailwind-merge": "^3.4.0",
@@ -75,7 +77,8 @@
       "ws@^8": "^8.21.0",
       "browserslist@^4": "^4.28.7",
       "baseline-browser-mapping@^2": "^2.11.0",
-      "@babel/core@^7": "^7.29.1"
+      "@babel/core@^7": "^7.29.1",
+      "sharp": "0.34.5"
     }
   }
 }

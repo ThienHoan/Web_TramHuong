@@ -13,7 +13,7 @@ function ErrorContent() {
   return (
     <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
       <Link href="/vi" className="inline-flex mb-8" aria-label="Thiên Phúc — Trang chủ"><BrandLockup /></Link>
-      <h1 className="text-2xl font-bold mb-4 text-red-600">Authentication Error</h1>
+      <h1 className="type-h3 mb-4 text-red-600">Authentication Error</h1>
       <p className="mb-4 text-gray-700">
         {error_description || 'An error occurred during authentication.'}
       </p>

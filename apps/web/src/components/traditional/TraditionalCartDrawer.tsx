@@ -32,7 +32,7 @@ export default function TraditionalCartDrawer() {
         >
           <ShoppingBag size={21} />
           {count > 0 && (
-            <span className="absolute right-0 top-0 rounded-full bg-trad-primary px-1.5 text-[10px] leading-4 text-white">
+            <span className="absolute right-0 top-0 rounded-full bg-trad-primary px-1.5 text-xs leading-4 text-white">
               {count}
             </span>
           )}

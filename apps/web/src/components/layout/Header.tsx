@@ -60,7 +60,7 @@ export default function Header() {
                                 className={`flex items-center gap-2 ${linkHoverClass} text-sm`}
                             >
                                 <span>{profile?.full_name || user.email?.split('@')[0]}</span>
-                                {role === 'ADMIN' && <span className="text-[10px] bg-red-600 text-white px-1 rounded-md">ADMIN</span>}
+                                {role === 'ADMIN' && <span className="text-xs bg-red-600 text-white px-1 rounded-md">ADMIN</span>}
                             </button>
 
                             {menuOpen && (

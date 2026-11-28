@@ -47,7 +47,7 @@ function OrderResult({ order }: { order: OrderLookupResult }) {
         <section className="shop-card mt-6 flex flex-col gap-6" aria-labelledby="order-result-title">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 id="order-result-title" ref={heading} tabIndex={-1} className="font-serif text-2xl outline-none">
+                    <h2 id="order-result-title" ref={heading} tabIndex={-1} className="type-h3 outline-none">
                         {t('Đơn', 'Order')} #{order.id.slice(0, 8)}
                     </h2>
                     <p className="shop-hint mt-1">
