@@ -8,6 +8,7 @@ import { BlogPost } from '@/types/blog'; // Verify type exists
 import { useRouter } from '@/i18n/routing'; // Use i18n routing
 import Image from 'next/image';
 import { AppIcon } from "@/components/icons/AppIcon";
+import { formatVnd } from '@/lib/commerce';
 
 interface ZenSearchOverlayProps {
     isOpen: boolean;
@@ -138,7 +139,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                     {!query && !results.loading && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div>
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-zen-400 mb-6">Popular Collections</h4>
+                                <h4 className="type-label text-zen-400 mb-6">Popular Collections</h4>
                                 <ul className="space-y-4">
                                     {['Incense', 'Bracelets', 'Essentials', 'Gift Sets'].map(item => (
                                         <li key={item}>
@@ -154,7 +155,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-zen-400 mb-6">Trending Searches</h4>
+                                <h4 className="type-label text-zen-400 mb-6">Trending Searches</h4>
                                 <div className="flex flex-wrap gap-3">
                                     {['Ky Nam', 'Meditation', 'Peace', 'Ceramic Burner', 'Premium'].map(tag => (
                                         <button
@@ -178,7 +179,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                             {results.products.length > 0 && (
                                 <section className="animate-fade-in-up">
                                     <div className="flex justify-between items-end mb-8 border-b border-zen-100 dark:border-zinc-800 pb-4">
-                                        <h3 className="text-xl font-light text-zen-900 dark:text-white uppercase tracking-widest">Products</h3>
+                                        <h3 className="type-h4 text-zen-900 dark:text-white">Products</h3>
                                         <button onClick={() => handleLinkClick(`/products?search=${query}`)} className="text-xs font-bold text-primary tracking-widest uppercase hover:underline">View All Products</button>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -192,7 +193,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                                                     )}
                                                 </div>
                                                 <h4 className="text-sm font-medium text-zen-900 dark:text-white group-hover:text-primary transition-colors">{product.translation?.title || product.title}</h4>
-                                                <p className="text-xs text-zen-500 mt-1">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</p>
+                                                <p className="text-xs text-zen-500 mt-1">{formatVnd(Number(product.price), locale)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -203,7 +204,7 @@ export default function ZenSearchOverlay({ isOpen, onClose, locale }: ZenSearchO
                             {results.posts.length > 0 && (
                                 <section className="animate-fade-in-up delay-100">
                                     <div className="flex justify-between items-end mb-8 border-b border-zen-100 dark:border-zinc-800 pb-4">
-                                        <h3 className="text-xl font-light text-zen-900 dark:text-white uppercase tracking-widest">Journal</h3>
+                                        <h3 className="type-h4 text-zen-900 dark:text-white">Journal</h3>
                                         <button onClick={() => handleLinkClick(`/blog?search=${query}`)} className="text-xs font-bold text-primary tracking-widest uppercase hover:underline">Read All Stories</button>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

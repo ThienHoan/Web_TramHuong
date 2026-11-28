@@ -1,5 +1,4 @@
-import AdminResourcePage from '@/components/admin/AdminResourcePage';
-
+import BlogManager from "@/components/admin/BlogManager";
 export default function Page() {
-  return <AdminResourcePage resource="posts" />;
+  return <BlogManager />;
 }

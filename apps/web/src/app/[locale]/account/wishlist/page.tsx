@@ -94,7 +94,7 @@ export default function WishlistPage() {
                             <AppIcon name="lock" className="text-4xl text-trad-text-muted" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-trad-red-900 mb-2 font-display">{t("Đăng nhập để xem danh sách yêu thích", "Sign in to see your wishlist")}</h1>
+                            <h1 className="type-h1 text-trad-red-900 mb-2">{t("Đăng nhập để xem danh sách yêu thích", "Sign in to see your wishlist")}</h1>
                             <p className="text-trad-text-muted text-lg font-serif italic">{t("Lưu lại những món bạn thích để xem lại sau.", "Save the pieces you like and come back to them.")}</p>
                         </div>
                         <Link href="/login?redirect=/account/wishlist" className="inline-flex items-center justify-center bg-trad-primary hover:bg-trad-red-900 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
@@ -127,7 +127,7 @@ export default function WishlistPage() {
                             transition={{ duration: 0.8 }}
                         >
                             <span className="text-trad-primary font-bold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 block">{t("Tài khoản", "Account")}</span>
-                            <h1 className="font-serif text-4xl md:text-6xl text-trad-red-900 mb-6 drop-shadow-sm">
+                            <h1 className="type-h1 text-trad-red-900 mb-6 drop-shadow-sm">
                                 {t("Danh sách yêu thích", "My wishlist")}
                             </h1>
                             <div className="flex items-center justify-center gap-4 text-trad-gold/60 mb-8">
@@ -155,7 +155,7 @@ export default function WishlistPage() {
                                     <AppIcon name="bookmark_border" className="text-5xl md:text-6xl text-trad-text-muted/50" />
                                 </div>
                             </div>
-                            <h2 className="font-display font-bold text-2xl md:text-3xl text-trad-text-main mb-4">
+                            <h2 className="type-h3 text-trad-text-main mb-4">
                                 {t("Chưa có gì ở đây cả", "Nothing here yet")}
                             </h2>
                             <p className="text-trad-text-muted text-lg mb-10 font-light">
@@ -213,7 +213,7 @@ export default function WishlistPage() {
                                         )}
                                     </div>
                                     <div className="text-center">
-                                        <h3 className="font-serif text-xl text-trad-text-main mb-2 hover:text-trad-primary transition-colors cursor-pointer">
+                                        <h3 className="type-h4 text-trad-text-main mb-2 hover:text-trad-primary transition-colors cursor-pointer">
                                             <Link href={`/products/${item.product?.slug}`}>{item.product_title}</Link>
                                         </h3>
                                         <div className="flex items-center justify-center gap-2">
@@ -235,7 +235,7 @@ export default function WishlistPage() {
                 <section className="relative z-10 w-full py-20 border-t border-trad-border-warm/50">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="text-center mb-12">
-                            <h3 className="font-serif text-3xl text-trad-red-900 mb-3">{t("Có thể bạn sẽ thích", "You might also like")}</h3>
+                            <h3 className="type-h2 text-trad-red-900 mb-3">{t("Có thể bạn sẽ thích", "You might also like")}</h3>
                             <p className="text-trad-text-muted italic">{t("Một vài gợi ý từ cửa hàng", "A few ideas from the shop")}</p>
                         </div>
 
@@ -262,10 +262,10 @@ export default function WishlistPage() {
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <h4 className="font-display font-bold text-lg text-trad-text-main mb-1 group-hover:text-trad-primary transition-colors">
+                                        <h4 className="type-h4 text-trad-text-main mb-1 group-hover:text-trad-primary transition-colors">
                                             <Link href={`/products/${product.slug}`}>{product.title || product.translation?.title || 'Product'}</Link>
                                         </h4>
-                                        <p className="font-serif text-trad-red-900">{formatPrice(product.price)}</p>
+                                        <p className="type-money text-trad-red-900">{formatPrice(product.price)}</p>
                                     </div>
                                 </div>
                             ))}

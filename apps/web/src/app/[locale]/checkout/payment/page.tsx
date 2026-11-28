@@ -16,7 +16,6 @@ import type { Order } from '@/types/order';
 const BANK_CODE = process.env.NEXT_PUBLIC_BANK_CODE;
 const BANK_ACC = process.env.NEXT_PUBLIC_BANK_ACC;
 const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME;
-const vnd = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
 function CopyRow({ label, value, shown, hint }: { label: string; value: string; shown?: string; hint?: string }) {
     const { t } = useBilingual();
@@ -60,7 +59,7 @@ function Notice({ title, body }: { title: string; body: string }) {
 }
 
 export default function CheckoutPaymentPage() {
-    const { en, t } = useBilingual();
+    const { t } = useBilingual();
     const { formatPrice } = useCurrency();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -166,9 +165,9 @@ export default function CheckoutPaymentPage() {
                         )}
                     </section>
                     <section className="shop-card">
-                        <h2 className="font-serif text-2xl">{t('Hoặc chuyển khoản thủ công', 'Or transfer manually')}</h2>
+                        <h2 className="type-h3">{t('Hoặc chuyển khoản thủ công', 'Or transfer manually')}</h2>
                         <div className="mt-3">
-                            <CopyRow label={t('Số tiền', 'Amount')} value={String(amount)} shown={vnd(amount)} hint={en ? `≈ ${formatPrice(amount)}` : undefined} />
+                            <CopyRow label={t('Số tiền', 'Amount')} value={String(amount)} shown={formatPrice(amount)} />
                             <div className="border-b border-trad-border-subtle py-3">
                                 <p className="shop-hint">{t('Ngân hàng', 'Bank')}</p>
                                 <p className="text-[15px] font-medium">{BANK_CODE}</p>

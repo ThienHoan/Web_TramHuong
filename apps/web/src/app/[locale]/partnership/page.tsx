@@ -105,7 +105,7 @@ export default function PartnershipPage() {
                 </section>
 
                 <section className="mx-auto w-full max-w-[1120px] px-5 py-12 lg:py-16">
-                    <h2 className="font-serif text-3xl">{t('Khi đồng hành cùng Thiên Phúc', 'What you can expect')}</h2>
+                    <h2 className="type-h2">{t('Khi đồng hành cùng Thiên Phúc', 'What you can expect')}</h2>
                     <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {benefits.map((item) => (
                             <li key={item.title} className="shop-card">
@@ -119,7 +119,7 @@ export default function PartnershipPage() {
                 <section className="mx-auto w-full max-w-[720px] px-5 pb-16 lg:pb-24">
                     <form className="shop-card flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
                         <div>
-                            <h2 className="font-serif text-2xl">{t('Gửi thông tin hợp tác', 'Apply to partner')}</h2>
+                            <h2 className="type-h3">{t('Gửi thông tin hợp tác', 'Apply to partner')}</h2>
                             <p className="shop-hint mt-1">{t('Để lại thông tin, Thiên Phúc sẽ liên hệ với bạn.', 'Leave your details and Thiên Phúc will be in touch.')}</p>
                         </div>
                         <div className="grid gap-5 md:grid-cols-2">

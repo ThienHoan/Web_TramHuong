@@ -1,234 +1,291 @@
-import { getPosts } from '@/lib/api-client';
-import TraditionalHeader from '@/components/traditional/TraditionalHeader';
-import TraditionalFooter from '@/components/traditional/TraditionalFooter';
-import Image from 'next/image';
-import { Link } from '@/i18n/routing';
-import { BlogToolbar } from '@/components/blog/BlogToolbar';
-import { Metadata } from 'next';
-import ZenBlogList from '@/components/zen/ZenBlogList';
-import ZenFooter from '@/components/zen/ZenFooter';
-import { AppIcon } from "@/components/icons/AppIcon";
+import type { Metadata } from "next";
+import { cache } from "react";
+import { notFound } from "next/navigation";
+import { getPosts } from "@/lib/api-client";
+import { Link } from "@/i18n/routing";
+import { ShopHeader, ShopFooter } from "@/components/layout/ShopChrome";
+import { BlogCard, BlogCover } from "@/components/blog/BlogCard";
+import { BlogFilters } from "@/components/blog/BlogFilters";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  blogCategory,
+  blogDate,
+  blogUrl,
+  readingMinutes,
+  BLOG_CATEGORIES,
+} from "@/lib/blog";
+import "@/components/blog/blog.css";
 
-export const metadata: Metadata = {
-    title: 'Thư Viện Trầm Hương - Kiến Thức & Văn Hóa',
-    description: 'Thư viện hương trầm Thiên Phúc Huế: tìm hiểu cách dùng, lựa chọn và bảo quản trầm hương, cùng những câu chuyện về văn hóa thưởng trầm.',
+type Query = { page?: string; category?: string; search?: string };
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Query>;
 };
+function filters(query: Query) {
+  const page = Number(query.page);
+  return {
+    page: Number.isSafeInteger(page) && page > 0 ? page : 1,
+    category: BLOG_CATEGORIES.some((item) => item.id === query.category)
+      ? query.category
+      : undefined,
+    search:
+      typeof query.search === "string"
+        ? query.search.trim().slice(0, 150)
+        : undefined,
+  };
+}
 
-export default async function BlogListPage({
-    params,
-    searchParams,
-}: {
-    params: Promise<{ locale: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-    const { locale } = await params;
-    const search = await searchParams;
+const fetchList = cache((page: number, category?: string, search?: string) =>
+  getPosts({ page, category, search, limit: 10, status: "published" }),
+);
 
-    const page = typeof search.page === 'string' ? parseInt(search.page) : 1;
-    const categoryQuery = typeof search.category === 'string' ? search.category : undefined;
-    const searchQuery = typeof search.search === 'string' ? search.search : undefined;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const f = filters(await searchParams);
+  const result = await fetchList(f.page, f.category, f.search);
+  const title =
+    locale === "en"
+      ? "Agarwood journal: knowledge, culture & care"
+      : "Thư viện trầm hương: Kiến thức, văn hóa & cách dùng";
+  const description =
+    locale === "en"
+      ? "Explore Vietnamese agarwood, how to use and care for incense, and stories from Thien Phuc in Hue. Articles are currently available in Vietnamese."
+      : "Tìm hiểu trầm hương, cách chọn, sử dụng và bảo quản; khám phá những câu chuyện về văn hóa thưởng trầm cùng Thiên Phúc tại Huế.";
+  const path = `/${locale}${blogUrl(f)}`;
+  return {
+    title: `${title}${f.page > 1 ? ` · ${locale === "en" ? "Page" : "Trang"} ${f.page}` : ""}`,
+    description,
+    alternates: {
+      canonical: path,
+      languages: {
+        vi: `/vi${blogUrl(f)}`,
+        en: `/en${blogUrl(f)}`,
+        "x-default": `/vi${blogUrl(f)}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      type: "website",
+      images: ["/brand/social-card.png"],
+    },
+    robots:
+      f.search || f.category || result.error || result.data.length === 0
+        ? { index: false, follow: true }
+        : undefined,
+  };
+}
 
-    // Fetch on Server
-    const { data: posts, meta } = await getPosts({
-        page,
-        limit: 10,
-        category: categoryQuery,
-        search: searchQuery,
-        status: 'published'
-    });
-
-    const featuredPost = (posts && posts.length > 0 && !searchQuery && !categoryQuery && page === 1)
-        ? posts.find(p => p.is_featured) || posts[0]
-        : null;
-
-    if (locale !== 'vi') {
-        const zenMeta = meta ? {
-            currentPage: meta.currentPage || page,
-            totalPages: meta.totalPages || 1,
-            totalItems: meta.totalItems || 0
-        } : {
-            currentPage: 1,
-            totalPages: 1,
-            totalItems: 0
-        };
-
-        return (
-            <>
-                <ZenBlogList
-                    posts={posts || []}
-                    meta={zenMeta}
-                    featuredPost={featuredPost || null}
-                    searchParams={{
-                        page,
-                        category: categoryQuery,
-                        search: searchQuery
-                    }}
-                />
-                <ZenFooter />
-            </>
-        );
-    }
-
-    // Traditional UI (Vietnamese)
-    const listPosts = featuredPost
-        ? posts.filter(p => p.id !== featuredPost.id)
-        : posts;
-
-    const CATEGORIES = [
-        { id: 'all', name: 'Tất Cả' },
-        { id: 'knowledge', name: 'Kiến Thức Trầm Hương' },
-        { id: 'culture', name: 'Văn Hóa & Tâm Linh' },
-        { id: 'health', name: 'Sức Khỏe & Đời Sống' }
-    ];
-
-    return (
-        <div className="bg-trad-bg-light font-display text-trad-text-main antialiased min-h-screen flex flex-col selection:bg-trad-primary selection:text-white">
-            <TraditionalHeader />
-
-            <div className="w-full bg-trad-cream/50">
-                {/* Breadcrumbs */}
-                <div className="w-full flex justify-center pt-6">
-                    <div className="max-w-[1200px] w-full px-4 lg:px-10">
-                        <div className="flex flex-wrap gap-2 items-center text-sm">
-                            <Link className="text-trad-text-muted hover:text-trad-primary transition-colors font-medium leading-normal" href="/">Trang Chủ</Link>
-                            <AppIcon name="chevron_right" className="text-[14px] text-trad-text-muted" />
-                            <span className="text-trad-text-main font-medium leading-normal">Thư Viện Hương Trầm</span>
-                        </div>
-                    </div>
+export default async function BlogListPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const en = locale === "en";
+  const f = filters(await searchParams);
+  const {
+    data: posts,
+    meta,
+    error,
+  } = await fetchList(f.page, f.category, f.search);
+  if (!error && f.page > meta.totalPages) notFound();
+  const featured =
+    f.page === 1 && !f.search && !f.category
+      ? posts.find((post) => post.is_featured) || posts[0]
+      : undefined;
+  const list = posts.filter((post) => post.id !== featured?.id);
+  const pages = Array.from(
+    new Set(
+      [1, meta.totalPages, f.page - 1, f.page, f.page + 1].filter(
+        (page) => page > 0 && page <= meta.totalPages,
+      ),
+    ),
+  ).sort((a, b) => a - b);
+  return (
+    <div className="journal-page">
+      <ShopHeader />
+      <main className="journal-main">
+        <nav
+          className="journal-breadcrumb"
+          aria-label={en ? "Breadcrumb" : "Đường dẫn"}
+        >
+          <Link href="/">{en ? "Home" : "Trang chủ"}</Link>
+          <ChevronRight size={12} />
+          <span>{en ? "Journal" : "Thư viện"}</span>
+        </nav>
+        <header className="journal-intro">
+          <span className="journal-label">
+            {en ? "The agarwood journal" : "Thư viện hương trầm"}
+          </span>
+          <h1>
+            {en
+              ? "Stories of scent. A Vietnamese heritage."
+              : "Chuyện hương. Nếp Việt."}
+          </h1>
+          <p>
+            {en
+              ? "Agarwood knowledge, everyday rituals and stories from Hue."
+              : "Kiến thức trầm hương, cách thưởng hương và những câu chuyện từ Huế."}
+          </p>
+          {en && (
+            <p className="journal-language-note">
+              Stories are currently written in Vietnamese.
+            </p>
+          )}
+        </header>
+        <BlogFilters
+          key={`${f.category || ""}:${f.search || ""}`}
+          category={f.category}
+          search={f.search}
+        />
+        {error ? (
+          <div className="journal-empty" role="alert">
+            <h2>
+              {en ? "Stories could not be loaded" : "Chưa tải được bài viết"}
+            </h2>
+            <p>
+              {en
+                ? "Please try again in a moment."
+                : "Kiểm tra kết nối và thử lại sau ít phút."}
+            </p>
+            <Link className="journal-button" href={blogUrl(f)}>
+              {en ? "Try again" : "Thử lại"}
+            </Link>
+          </div>
+        ) : (
+          <>
+            {featured && (
+              <Link
+                href={`/blog/${featured.slug}`}
+                className="journal-featured"
+              >
+                <BlogCover post={featured} priority />
+                <div className="journal-featured-copy">
+                  <span className="journal-label">
+                    {en ? "Featured story" : "Câu chuyện nổi bật"}
+                  </span>
+                  <h2 lang="vi">{featured.title}</h2>
+                  {featured.excerpt && <p lang="vi">{featured.excerpt}</p>}
+                  <div className="journal-meta">
+                    <span>{blogCategory(featured.category, locale)}</span>
+                    <span aria-hidden="true">·</span>
+                    <time
+                      dateTime={featured.published_at || featured.created_at}
+                    >
+                      {blogDate(
+                        featured.published_at || featured.created_at,
+                        locale,
+                      )}
+                    </time>
+                    <span aria-hidden="true">·</span>
+                    <span>
+                      {readingMinutes(featured.content)}{" "}
+                      {en ? "min read" : "phút đọc"}
+                    </span>
+                  </div>
+                  <span className="journal-text-link">
+                    {en ? "Read the story" : "Đọc câu chuyện"}
+                  </span>
                 </div>
-
-                {/* Page Heading & Intro */}
-                <div className="w-full flex justify-center py-8 lg:py-12 bg-pattern">
-                    <div className="max-w-[1200px] w-full px-4 lg:px-10">
-                        <div className="flex flex-col gap-4 text-center items-center">
-                            <h1 className="text-trad-text-main text-4xl lg:text-5xl font-black leading-tight tracking-[-0.02em] font-display">Thư Viện Hương Trầm</h1>
-                            <div className="w-24 h-1 bg-trad-primary rounded-full mb-2"></div>
-                            <p className="text-trad-text-muted text-lg lg:text-xl font-normal leading-relaxed max-w-2xl font-serif italic">
-                                &quot;Nơi Câu Chuyện Khởi Nguồn - Khám phá những câu chuyện sâu sắc về văn hóa, sức khỏe và nghệ thuật thưởng trầm truyền thống.&quot;
-                            </p>
-                        </div>
-                    </div>
+              </Link>
+            )}
+            <section
+              className="journal-list-section"
+              aria-labelledby="journal-list-title"
+            >
+              <div className="journal-section-heading">
+                <h2 id="journal-list-title">
+                  {f.search
+                    ? en
+                      ? `Results for “${f.search}”`
+                      : `Kết quả cho “${f.search}”`
+                    : f.category
+                      ? blogCategory(f.category, locale)
+                      : en
+                        ? "New in the journal"
+                        : "Mới trong thư viện"}
+                </h2>
+                <span className="journal-meta">
+                  {meta.totalItems}{" "}
+                  {en
+                    ? meta.totalItems === 1
+                      ? "story"
+                      : "stories"
+                    : "bài viết"}
+                </span>
+              </div>
+              {posts.length === 0 ? (
+                <div className="journal-empty">
+                  <h2>
+                    {en ? "No matching stories" : "Chưa tìm thấy bài phù hợp"}
+                  </h2>
+                  <p>
+                    {en
+                      ? "Try another search or browse all stories."
+                      : "Thử từ khóa khác hoặc xem tất cả bài viết."}
+                  </p>
+                  <Link className="journal-button" href="/blog">
+                    {en ? "All stories" : "Xem tất cả bài viết"}
+                  </Link>
                 </div>
-            </div>
-
-            <main className="w-full flex justify-center py-8 lg:py-12 flex-grow">
-                <div className="max-w-[1200px] w-full px-4 lg:px-10 flex flex-col gap-12">
-
-                    {/* Featured Article (Highlight Chapter) */}
-                    {featuredPost && (
-                        <section className="w-full">
-                            <Link href={`/blog/${featuredPost.slug}`} className="flex flex-col lg:flex-row items-stretch overflow-hidden rounded-2xl bg-white shadow-soft border border-trad-border-subtle hover:shadow-lg transition-all duration-300 group">
-                                <div className="w-full lg:w-3/5 bg-gray-200 relative overflow-hidden min-h-[300px] lg:min-h-[400px]">
-                                    <div className="absolute inset-0">
-                                        <Image
-                                            src={featuredPost.cover_image || '/photos/journal.webp'}
-                                            alt={featuredPost.title}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                            priority
-                                        />
-                                    </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-black/10"></div>
-                                    <div className="absolute top-4 left-4 bg-trad-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Bài Viết Nổi Bật</div>
-                                </div>
-                                <div className="w-full lg:w-2/5 flex flex-col justify-center p-6 lg:p-10 gap-4 bg-white relative">
-                                    <div className="absolute -left-3 top-1/2 w-6 h-6 bg-white rotate-45 hidden lg:block"></div>
-                                    <div className="flex items-center gap-2 text-trad-text-muted text-sm font-sans mb-1">
-                                        <AppIcon name="calendar_today" className="text-[16px]" />
-                                        <span>{new Date(featuredPost.created_at).toLocaleDateString('vi-VN')}</span>
-                                        <span className="mx-1">•</span>
-                                        <AppIcon name="person" className="text-[16px]" />
-                                        <span>{featuredPost.author?.full_name || 'Admin'}</span>
-                                    </div>
-                                    <h2 className="text-trad-text-main text-2xl lg:text-3xl font-bold leading-tight group-hover:text-trad-primary transition-colors font-display">
-                                        {featuredPost.title}
-                                    </h2>
-                                    <p className="text-trad-text-main/80 text-base leading-relaxed line-clamp-4 font-sans">
-                                        {featuredPost.excerpt}
-                                    </p>
-                                    <div className="pt-4">
-                                        <span className="inline-flex items-center gap-2 text-trad-primary font-bold uppercase tracking-wide text-sm hover:gap-3 transition-all">
-                                            Đọc Tiếp
-                                            <AppIcon name="arrow_forward" className="text-[18px]" />
-                                        </span>
-                                    </div>
-                                </div>
-                            </Link>
-                        </section>
+              ) : list.length > 0 ? (
+                <div className="journal-grid">
+                  {list.map((post) => (
+                    <BlogCard key={post.id} post={post} locale={locale} />
+                  ))}
+                </div>
+              ) : (
+                <p className="journal-meta">
+                  {en
+                    ? "More stories will be added to the journal."
+                    : "Các bài mới sẽ tiếp tục được cập nhật trong thư viện."}
+                </p>
+              )}
+            </section>
+            {meta.totalPages > 1 && (
+              <nav
+                className="journal-pagination"
+                aria-label={en ? "Journal pages" : "Phân trang bài viết"}
+              >
+                {f.page > 1 && (
+                  <Link
+                    rel="prev"
+                    href={blogUrl({ ...f, page: f.page - 1 })}
+                    aria-label={en ? "Previous page" : "Trang trước"}
+                  >
+                    <ChevronLeft size={18} />
+                  </Link>
+                )}
+                {pages.map((page, i) => (
+                  <span key={page}>
+                    {i > 0 && page - pages[i - 1] > 1 && (
+                      <span className="journal-page-gap">…</span>
                     )}
-
-                    {/* Toolbar (Search & Filter) - Client Component */}
-                    <BlogToolbar />
-
-                    {/* Blog Grid */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {listPosts && listPosts.length > 0 ? listPosts.map((post) => (
-                            <Link key={post.id} href={`/blog/${post.slug}`} className="group flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-trad-border-subtle">
-                                <div className="relative aspect-[4/3] overflow-hidden">
-                                    <div className="absolute inset-0">
-                                        <Image
-                                            src={post.cover_image || '/photos/journal-2.webp'}
-                                            alt={post.title}
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
-                                    </div>
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-trad-text-main text-xs font-bold px-2 py-1 rounded-xl shadow-sm">
-                                        {CATEGORIES.find(c => c.id === post.category)?.name || post.category}
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col flex-1 p-5 gap-3">
-                                    <div className="flex items-center gap-2 text-xs font-sans text-trad-text-muted">
-                                        <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
-                                        <span>•</span>
-                                        <span>{post.author?.full_name || 'Admin'}</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold leading-snug text-trad-text-main group-hover:text-trad-primary transition-colors line-clamp-2 font-display">
-                                        {post.title}
-                                    </h3>
-                                    <p className="text-trad-text-main/70 text-sm leading-relaxed line-clamp-3 font-sans mb-2">
-                                        {post.excerpt}
-                                    </p>
-                                    <div className="mt-auto pt-3 border-t border-trad-border-subtle flex justify-between items-center">
-                                        <span className="text-xs font-bold text-trad-text-muted uppercase tracking-wider group-hover:text-trad-primary transition-colors">Đọc Tiếp</span>
-                                        <AppIcon name="arrow_right_alt" className="text-[18px] text-trad-text-muted group-hover:text-trad-primary transition-transform group-hover:translate-x-1" />
-                                    </div>
-                                </div>
-                            </Link>
-                        )) : (
-                            <div className="col-span-full text-center py-20 bg-white rounded-xl border border-dashed border-trad-border-warm">
-                                <AppIcon name="sentiment_dissatisfied" className="text-4xl text-gray-300 mb-4" />
-                                <h3 className="text-xl font-bold text-trad-text-main mb-2">Không tìm thấy bài viết nào</h3>
-                                <p className="text-trad-text-muted">Thử thay đổi từ khóa hoặc danh mục tìm kiếm xem sao nhé.</p>
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Pagination */}
-                    {meta && meta.totalPages > 1 && (
-                        <div className="flex justify-center items-center gap-2 pt-8 pb-4">
-                            <Link
-                                href={page > 1 ? `/blog?page=${page - 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
-                                className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
-                            >
-                                <AppIcon name="chevron_left" className="" />
-                            </Link>
-
-                            <span className="flex items-center justify-center size-12 rounded-lg bg-trad-primary text-white font-bold shadow-md text-lg">{page}</span>
-
-                            <Link
-                                href={page < meta.totalPages ? `/blog?page=${page + 1}${categoryQuery ? `&category=${categoryQuery}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}` : '#'}
-                                className={`flex items-center justify-center size-12 rounded-lg border border-trad-border-warm bg-white text-trad-text-muted hover:border-trad-primary hover:text-trad-primary transition-colors ${page >= meta.totalPages ? 'opacity-50 pointer-events-none' : ''}`}
-                            >
-                                <AppIcon name="chevron_right" className="" />
-                            </Link>
-                        </div>
-                    )}
-                </div>
-            </main>
-
-            <TraditionalFooter />
-        </div>
-    );
+                    <Link
+                      href={blogUrl({ ...f, page })}
+                      aria-current={page === f.page ? "page" : undefined}
+                      aria-label={`${en ? "Page" : "Trang"} ${page}`}
+                    >
+                      {page}
+                    </Link>
+                  </span>
+                ))}
+                {f.page < meta.totalPages && (
+                  <Link
+                    rel="next"
+                    href={blogUrl({ ...f, page: f.page + 1 })}
+                    aria-label={en ? "Next page" : "Trang sau"}
+                  >
+                    <ChevronRight size={18} />
+                  </Link>
+                )}
+              </nav>
+            )}
+          </>
+        )}
+      </main>
+      <ShopFooter />
+    </div>
+  );
 }

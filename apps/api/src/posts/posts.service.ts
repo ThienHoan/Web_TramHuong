@@ -18,6 +18,7 @@ export class PostsService {
       category?: string;
       search?: string;
       status?: string;
+      sort?: string;
     },
     admin = false,
   ) {
@@ -27,7 +28,14 @@ export class PostsService {
     let query = this.client
       .from('posts')
       .select('*', { count: 'exact' })
-      .order('published_at', { ascending: false, nullsFirst: false });
+      .order(
+        admin && options?.sort === 'title'
+          ? 'title'
+          : admin
+            ? 'updated_at'
+            : 'published_at',
+        { ascending: admin && options?.sort === 'title', nullsFirst: false },
+      );
 
     // Only filter by status if not 'all'
     if (status !== 'all') {
@@ -82,10 +90,10 @@ export class PostsService {
   }
 
   async create(dto: CreatePostDto) {
-    // Auto generate slug if missing (basic implementation)
-    if (!dto.slug && dto.title) {
-      dto.slug = this.slugify(dto.title);
-    }
+    dto.title = dto.title.trim();
+    dto.slug = this.slugify(dto.slug?.trim() || dto.title);
+    if (!dto.slug) throw new BadRequestException('POST_SLUG_REQUIRED');
+    if (!dto.title) throw new BadRequestException('POST_TITLE_REQUIRED');
 
     const { data, error } = await this.client
       .from('posts')
@@ -102,11 +110,38 @@ export class PostsService {
   }
 
   async update(id: string, dto: UpdatePostDto) {
+    // Read publication data before editing: saving must not reset the original date.
+    const { data: currentData, error: readError } = await this.client
+      .from('posts')
+      .select('title,slug,published_at')
+      .eq('id', id)
+      .single();
+    // The generated DB type predates the blog publishing migration.
+    const current = currentData as unknown as {
+      title: string;
+      slug: string;
+      published_at: string | null;
+    } | null;
+    if (readError || !current) throw new BadRequestException('Post not found');
+    if (dto.title !== undefined) {
+      dto.title = dto.title.trim();
+      if (!dto.title) throw new BadRequestException('POST_TITLE_REQUIRED');
+    }
+    if (dto.slug !== undefined) {
+      dto.slug = this.slugify(dto.slug.trim() || dto.title || current.title);
+      if (!dto.slug) throw new BadRequestException('POST_SLUG_REQUIRED');
+      // Keep URLs that have already been shared/indexed stable, even after unpublishing.
+      if (current.published_at && current.slug && dto.slug !== current.slug) {
+        throw new BadRequestException(
+          'Không thể đổi đường dẫn của bài đã xuất bản.',
+        );
+      }
+    }
     const { data, error } = await this.client
       .from('posts')
       .update({
         ...dto,
-        ...(dto.status === PostStatus.PUBLISHED
+        ...(dto.status === PostStatus.PUBLISHED && !current.published_at
           ? { published_at: new Date().toISOString() }
           : {}),
         updated_at: new Date().toISOString(),
@@ -139,6 +174,7 @@ export class PostsService {
       .replace(/[ìíịỉĩ]/g, 'i')
       .replace(/\s+/g, '-')
       .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-');
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

@@ -8,7 +8,8 @@ import ChatMessage from './ChatMessage';
 import useSWR from 'swr';
 import { SHOP_CONTACT } from '@/lib/legal';
 import { CONTACT_CHANNELS } from '@/lib/contact-channels';
-import { getCategories, getProductsPaginated } from '@/lib/api-client';
+import { getCategories } from '@/lib/api-client';
+import { linkableCategories } from '@/lib/stocked-categories';
 import { chatWithAIStream } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { X, Send, Sparkles, MessageSquare, Trash2, Square, RotateCcw } from 'lucide-react';
@@ -39,16 +40,14 @@ export default function ChatWidget() {
     const isPreview = pathname.endsWith('/3d-lab') || /\/admin(?:\/|$)/.test(pathname);
     const isLanding = /^\/(vi|en)?\/?$/.test(pathname);
     const isCheckout = /\/checkout(?:\/|$)/.test(pathname);
+    // Pages where the visitor is filling in a form; an unprompted bubble would cover it.
+    const isFormPage = /\/(contact|partnership|login|auth|order-lookup|account|reorder)(?:\/|$)/.test(pathname);
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const { data: stockedCategories = [] } = useSWR(isOpen ? ['chat-categories', locale] : null, async () => {
-        const categories = await getCategories(locale);
-        const populated = await Promise.all(categories.filter(c => c.is_active).map(async c => {
-            const { data } = await getProductsPaginated(locale, { category: c.slug, limit: 1, page: 1 });
-            return data.some(p => p.is_active !== false) ? c : null;
-        }));
-        return populated.filter(c => c !== null).slice(0, 4);
-    }, { revalidateOnFocus: false });
+    // Shares its cache key with the phone menu's category list.
+    const { data: linkable = [] } = useSWR(isOpen ? ['linkable-categories', locale] : null,
+        async () => linkableCategories(locale, await getCategories(locale)), { revalidateOnFocus: false });
+    const stockedCategories = linkable.slice(0, 4);
     const suggestions = stockedCategories.length ? stockedCategories.map(c => locale === 'en' ? `Help me choose ${c.translation?.name || c.slug}` : `Tư vấn chọn ${c.translation?.name || c.slug}`) : (locale === 'en' ? ['How to use incense safely', 'Help choosing a product'] : ['Cách dùng trầm an toàn', 'Tư vấn chọn sản phẩm']);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -64,7 +63,7 @@ export default function ChatWidget() {
 
     // Auto-welcome bubble (first visit only)
     useEffect(() => {
-        if (isPreview || isLanding || isCheckout) {
+        if (isPreview || isLanding || isCheckout || isFormPage) {
             setShowWelcomeBubble(false);
             return;
         }
@@ -72,6 +71,8 @@ export default function ChatWidget() {
             setShowWelcomeBubble(false);
             return;
         }
+        // On phones the bubble covers half the screen; the chat button stays available.
+        if (window.matchMedia('(max-width: 767px)').matches) return;
 
         try {
             const alreadyShown = localStorage.getItem(WELCOME_SHOWN_KEY);
@@ -88,7 +89,7 @@ export default function ChatWidget() {
         }, WELCOME_DELAY_MS);
 
         return () => clearTimeout(timer);
-    }, [isOpen, isPreview, isLanding, isCheckout]);
+    }, [isOpen, isPreview, isLanding, isCheckout, isFormPage]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -263,7 +264,7 @@ export default function ChatWidget() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-sm">{locale === 'en' ? 'Thiên Phúc AI assistant' : 'Trợ lý AI Thiên Phúc'}</h3>
-                                    <p className="text-[10px] opacity-90 flex items-center gap-1">
+                                    <p className="text-xs opacity-90 flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
                                         {locale === 'en' ? (isLoading ? 'Responding…' : 'Ready to help') : (isLoading ? 'Đang trả lời…' : 'Sẵn sàng hỗ trợ')}
                                     </p>
@@ -394,7 +395,8 @@ export default function ChatWidget() {
                     >
                         <button
                             onClick={() => setShowWelcomeBubble(false)}
-                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1"
+                            aria-label={locale === 'en' ? 'Close' : 'Đóng'}
+                            className="absolute top-1 right-1 grid place-items-center w-9 h-9 text-gray-400 hover:text-gray-600"
                         >
                             <X size={16} />
                         </button>
@@ -403,27 +405,29 @@ export default function ChatWidget() {
                                 <Sparkles size={16} />
                             </div>
                             <p className="text-sm text-gray-700 leading-relaxed">
-                                Chào bạn! 👋 Mình là trợ lý AI trầm hương <strong>Thiên Phúc</strong>. Mình có thể giúp bạn chọn trầm hợp gu hoặc gợi ý quà tặng tinh tế.
+                                {locale === 'en'
+                                    ? <>Hello! 👋 I am the <strong>Thiên Phúc</strong> AI assistant. I can help you choose an agarwood product or a gift.</>
+                                    : <>Chào bạn! 👋 Mình là trợ lý AI trầm hương <strong>Thiên Phúc</strong>. Mình có thể giúp bạn chọn trầm hợp gu hoặc gợi ý quà tặng tinh tế.</>}
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             <button
-                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Tư vấn chọn trầm hương'), 100); }}
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend(locale === 'en' ? 'Help me choose agarwood' : 'Tư vấn chọn trầm hương'), 100); }}
                                 className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
                             >
-                                🌿 Chọn trầm
+                                {locale === 'en' ? '🌿 Choose' : '🌿 Chọn trầm'}
                             </button>
                             <button
-                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Gợi ý quà tặng trầm hương'), 100); }}
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend(locale === 'en' ? 'Suggest an agarwood gift' : 'Gợi ý quà tặng trầm hương'), 100); }}
                                 className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
                             >
-                                🎁 Quà tặng
+                                {locale === 'en' ? '🎁 Gifts' : '🎁 Quà tặng'}
                             </button>
                             <button
-                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend('Hướng dẫn cách đốt trầm'), 100); }}
+                                onClick={() => { setShowWelcomeBubble(false); setIsOpen(true); setTimeout(() => handleSend(locale === 'en' ? 'How do I burn incense cones?' : 'Hướng dẫn cách đốt trầm'), 100); }}
                                 className="text-xs bg-trad-primary/10 hover:bg-trad-primary/20 text-trad-primary px-3 py-1.5 rounded-full transition-colors"
                             >
-                                🔥 Cách đốt
+                                {locale === 'en' ? '🔥 How to burn' : '🔥 Cách đốt'}
                             </button>
                         </div>
                     </motion.div>

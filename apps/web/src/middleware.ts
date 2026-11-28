@@ -1,11 +1,27 @@
 import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, userAgent, type NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
+import { localeCookie, resolveRootLocale } from './i18n/root-locale';
 
 const handleI18nRouting = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
+    if (request.nextUrl.pathname === '/') {
+        const locale = resolveRootLocale({
+            isBot: userAgent(request).isBot,
+            preferredLocale: request.cookies.get(localeCookie.name)?.value,
+            acceptLanguage: request.headers.get('accept-language'),
+        });
+        const url = request.nextUrl.clone();
+        url.pathname = `/${locale}`;
+        const response = NextResponse.redirect(url, 307);
+        // This decision belongs to one visitor and must never be cached for others.
+        response.headers.set('Cache-Control', 'private, no-store');
+        response.headers.set('Vary', 'Accept-Language, Cookie, User-Agent');
+        return response;
+    }
+
     // OAuth callbacks and their error page are global routes, not localized pages.
     if (request.nextUrl.pathname === '/auth/callback' || request.nextUrl.pathname === '/auth/auth-code-error') {
         return NextResponse.next();
@@ -86,7 +102,19 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    const response = handleI18nRouting(request);
+    let response = handleI18nRouting(request);
+
+    // next-intl adds the missing locale with a temporary 307. Browser-language detection is
+    // off, so "/products" always means "/vi/products": say so permanently, otherwise Google
+    // keeps both URLs (Search Console listed /products/... and /policies/... separately).
+    const location = response.headers.get('location');
+    if (response.status === 307 && location) {
+        const permanent = NextResponse.redirect(location, 308);
+        response.headers.forEach((value, key) => {
+            if (key !== 'location') permanent.headers.set(key, value);
+        });
+        response = permanent;
+    }
 
     // Copy cookies from supabaseResponse (which has session updates/clearing) to the final response
     supabaseResponse.cookies.getAll().forEach(cookie => {

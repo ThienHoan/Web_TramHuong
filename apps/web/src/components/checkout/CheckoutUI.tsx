@@ -275,15 +275,6 @@ export function CheckoutSummary({
           </span>
           <strong>{formatPrice(total)}</strong>
         </div>
-        {en && !estimated && (
-          <p className="checkout-summary-hint">
-            Order total in VND:{" "}
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(total)}
-          </p>
-        )}
         {hint && <p className="checkout-summary-hint">{hint}</p>}
         {action && <div className="checkout-order-action">{action}</div>}
       </div>

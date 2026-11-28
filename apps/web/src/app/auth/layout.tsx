@@ -5,18 +5,25 @@ import { CartProvider } from '@/components/providers/CartProvider';
 import { WishlistProvider } from '@/components/providers/WishlistProvider';
 import { Toaster } from "@/components/ui/sonner";
 // import ZenHeader from '@/components/zen/ZenHeader'; // Optional: If you want header on auth pages
-import { Manrope } from "next/font/google";
+import { Be_Vietnam_Pro, Playfair_Display } from "next/font/google";
 import "../globals.css";
 import "../brand.css";
+import "../typography.css";
 
 export const metadata = {
     title: "Thiên Phúc — Tài khoản",
     icons: { icon: "/brand/mark.svg", apple: "/brand/icon-180.png" },
 };
 
-const manrope = Manrope({
-    weight: ['200', '300', '400', '500', '600', '700', '800'],
-    variable: "--font-manrope",
+// Same faces as the storefront, so the OAuth error page does not switch typeface.
+const beVietnamPro = Be_Vietnam_Pro({
+    weight: ['400', '500', '600'],
+    variable: "--font-display",
+    subsets: ["latin", "vietnamese"],
+    display: 'swap',
+});
+const playfairDisplay = Playfair_Display({
+    variable: "--font-serif",
     subsets: ["latin", "vietnamese"],
     display: 'swap',
 });
@@ -30,7 +37,7 @@ export default async function AuthRootLayout({
 
     return (
         <html lang="en">
-            <body className={`${manrope.variable} font-manrope antialiased bg-zen-green-50`}>
+            <body className={`${beVietnamPro.variable} ${playfairDisplay.variable} font-display antialiased bg-zen-green-50`}>
                 <NextIntlClientProvider messages={messages}>
                     <AuthProvider>
                         <CartProvider>

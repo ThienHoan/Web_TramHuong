@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
             <main className="relative z-10 container mx-auto px-4 py-12 max-w-6xl flex-grow">
                 <header className="mb-12 text-center">
-                    <h1 className="font-display text-4xl md:text-5xl font-bold text-trad-red-900 mb-3">{t("Hồ sơ của tôi", "My profile")}</h1>
+                    <h1 className="type-h1 text-trad-red-900 mb-3">{t("Hồ sơ của tôi", "My profile")}</h1>
                     <p className="text-trad-text-muted italic font-serif text-lg">{t("Thông tin này được dùng khi bạn đặt hàng.", "These details are used when you check out.")}</p>
                 </header>
 
@@ -118,7 +118,7 @@ export default function ProfilePage() {
                             <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-trad-gold opacity-20 rounded-br-xl"></div>
 
                             <div className="p-8 flex flex-col items-center text-center">
-                                <h2 className="font-display text-2xl font-bold mb-2 text-trad-primary">{t("Ảnh đại diện", "Profile photo")}</h2>
+                                <h2 className="type-h3 mb-2 text-trad-primary">{t("Ảnh đại diện", "Profile photo")}</h2>
                                 <p className="text-sm text-trad-text-muted mb-6">{t("Hiển thị trên tài khoản của bạn", "Shown on your account")}</p>
 
                                 <div className="relative w-40 h-40 mb-6 group cursor-pointer">
@@ -158,7 +158,7 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="bg-white dark:bg-stone-900 rounded-xl shadow-soft p-8 border border-trad-border-warm">
-                            <h3 className="font-display text-xl font-bold mb-6 flex items-center gap-2 text-trad-text-main">
+                            <h3 className="type-h4 mb-6 flex items-center gap-2 text-trad-text-main">
                                 <AppIcon name="person" className="text-trad-gold" />
                                 {t("Thông tin cá nhân", "Personal details")}
                             </h3>
@@ -202,7 +202,7 @@ export default function ProfilePage() {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black to-transparent"></div>
                                 <div className="absolute bottom-6 left-8">
-                                    <h2 className="font-display text-3xl font-bold text-trad-primary mb-1 shadow-black drop-shadow-sm">{t("Địa chỉ giao hàng", "Delivery address")}</h2>
+                                    <h2 className="type-h3 text-trad-primary mb-1 shadow-black drop-shadow-sm">{t("Địa chỉ giao hàng", "Delivery address")}</h2>
                                     <p className="text-trad-text-main font-medium italic">{t("Địa chỉ này sẽ được điền sẵn khi đặt hàng.", "This address is filled in for you at checkout.")}</p>
                                 </div>
                             </div>

@@ -51,7 +51,7 @@ export default function MyReviewsPage() {
 
     return (
         <div className="atelier-page max-w-4xl mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-8">My Reviews</h1>
+            <h1 className="type-h1 mb-8">My Reviews</h1>
 
             {reviews.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -75,7 +75,7 @@ export default function MyReviewsPage() {
                             {/* Content */}
                             <div className="flex-1">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="type-h4">
                                         <Link href={`/products/${review.product?.slug}`} className="hover:underline">
                                             {review.product_title || 'Unknown Product'}
                                         </Link>

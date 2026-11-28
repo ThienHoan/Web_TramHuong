@@ -23,6 +23,8 @@ export const blogService = {
         category?: string;
         search?: string;
         status?: string;
+        admin?: boolean;
+        sort?: string;
     }): Promise<BlogResult> => {
         const queryParams: Record<string, string | number | boolean | undefined> = {};
         if (options?.page) queryParams.page = options.page;
@@ -30,12 +32,23 @@ export const blogService = {
         if (options?.category) queryParams.category = options.category;
         if (options?.search) queryParams.search = options.search;
         if (options?.status) queryParams.status = options.status;
+        if (options?.sort) queryParams.sort = options.sort;
 
         try {
-            const url = buildUrl(options?.status && options.status !== 'published' ? '/posts/admin/list' : '/posts', queryParams);
-            const result = await fetchWithAuth<{ data: BlogPost[], meta: BlogMeta }>(url);
+            const admin = options?.admin || (!!options?.status && options.status !== 'published');
+            const url = buildUrl(admin ? '/posts/admin/list' : '/posts', queryParams);
+            const result = await fetchWithAuth<{ data: BlogPost[], meta: Partial<BlogMeta> & { last_page?: number } }>(url);
             const defaultMeta: BlogMeta = { total: 0, page: 1, limit: 10, currentPage: 1, totalPages: 1, totalItems: 0 };
-            return { data: result.data || [], meta: result.meta || defaultMeta, error: undefined };
+            // A published post saved without a URL handle has no page of its own; linking it
+            // would point at "/blog/" (the list) and send that URL to Google. Admin still sees it.
+            const data = (result.data || []).filter(post => admin || !!post.slug?.trim());
+            const raw = result.meta || {};
+            const page = raw.page || raw.currentPage || options?.page || 1;
+            const total = raw.total ?? raw.totalItems ?? 0;
+            const limit = raw.limit || options?.limit || 10;
+            const meta: BlogMeta = { ...defaultMeta, total, page, limit, currentPage: page,
+                totalItems: total, totalPages: raw.last_page || raw.totalPages || Math.max(1, Math.ceil(total / limit)) };
+            return { data, meta, error: undefined };
         } catch (e: unknown) {
             console.error('[blogService.getPosts]', e);
             const message = e instanceof Error ? e.message : 'Failed to load posts';

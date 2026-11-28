@@ -182,7 +182,7 @@ export default function ShipmentTrackingPage() {
             <p className="mb-2 text-xs uppercase tracking-[.18em] opacity-60">
               Thiên Phúc · GHN
             </p>
-            <h1 className="font-serif text-4xl md:text-5xl">
+            <h1 className="type-h1">
               {en ? "Your order’s journey" : "Hành trình đơn hàng"}
             </h1>
           </div>
@@ -214,7 +214,7 @@ export default function ShipmentTrackingPage() {
                 <section className="grid gap-8 border-y border-current/20 py-8 md:grid-cols-[1.4fr_1fr]">
                   <div>
                     <Truck size={28} strokeWidth={1.25} />
-                    <h2 className="my-3 font-serif text-3xl">
+                    <h2 className="type-h3 my-3">
                       {label(data.state)}
                     </h2>
                     <p className="text-sm opacity-70">
@@ -252,7 +252,7 @@ export default function ShipmentTrackingPage() {
                   </div>
                 </section>
                 <section className="my-10">
-                  <h2 className="mb-6 font-serif text-2xl">
+                  <h2 className="type-h3 mb-6">
                     {en ? "Delivery milestones" : "Các mốc vận chuyển"}
                   </h2>
                   {data.milestones.length ? (
@@ -282,7 +282,7 @@ export default function ShipmentTrackingPage() {
                 <section className="border-t border-current/20 pt-8">
                   <div className="flex items-center gap-2">
                     <PackageCheck size={20} />
-                    <h2 className="font-serif text-2xl">
+                    <h2 className="type-h3">
                       {en
                         ? "Need help with delivery?"
                         : "Bạn cần hỗ trợ giao hàng?"}
@@ -369,7 +369,7 @@ export default function ShipmentTrackingPage() {
                   </form>
                   {!!data.supportRequests?.length && (
                     <div className="mt-8 border-t border-current/20 pt-6">
-                      <h3 className="font-serif text-xl">
+                      <h3 className="type-h4">
                         {en
                           ? "Your support requests"
                           : "Yêu cầu hỗ trợ của bạn"}

@@ -57,7 +57,7 @@ export function ProductPrice({
         sm: {
             price: 'text-sm md:text-base',
             original: 'text-xs',
-            badge: 'text-[10px] px-1.5 py-0.5'
+            badge: 'text-xs px-1.5 py-0.5'
         },
         md: {
             price: 'text-base md:text-xl',
@@ -97,11 +97,11 @@ export function ProductPrice({
 
     return (
         <div className={`flex flex-col gap-1 ${className}`}>
-            <p className={`${sizes.original} ${styles.original} ${isActive ? 'line-through' : 'opacity-0 select-none'}`}>
-                {formDataPrice(originalPrice)}
+            <p className={`tabular-nums ${sizes.original} ${styles.original} ${isActive ? 'line-through' : 'opacity-0 select-none'}`}>
+                {formatPrice(Number(originalPrice))}
             </p>
             <div className={`flex items-center gap-2 ${badgePosition === 'bottom' ? 'flex-col items-start' : ''}`}>
-                <p className={`${sizes.price} font-bold ${isActive ? styles.discountPrice : styles.normalPrice}`}>
+                <p className={`type-money ${sizes.price} ${isActive ? styles.discountPrice : styles.normalPrice}`}>
                     {formatPrice(isActive ? finalPrice : originalPrice)}
                 </p>
                 {isActive && showBadge && (
@@ -114,7 +114,3 @@ export function ProductPrice({
     );
 }
 
-// Helper to format price for placeholder (just to keep height correct, use originalPrice or 0)
-function formDataPrice(price: number | string) {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(price));
-}

@@ -51,7 +51,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
 
             {/* Title & Meta */}
             <article className="w-full max-w-[960px] px-6 md:px-10 mt-12 text-center">
-                <h1 className="text-[#131b0e] dark:text-white text-3xl md:text-5xl lg:text-6xl font-extralight tracking-widest leading-tight uppercase mb-8">
+                <h1 className="type-h1 text-[#131b0e] dark:text-white mb-8">
                     {post.title}
                 </h1>
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 text-xs md:text-sm font-medium tracking-[0.15em] text-[#6d974e] uppercase mb-16">
@@ -136,7 +136,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                         )}
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold tracking-widest uppercase text-[#131b0e] dark:text-white mb-2">About The Author</h4>
+                        <h4 className="type-label text-[#131b0e] dark:text-white mb-2">About The Author</h4>
                         <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 mb-3">
                             {post.author?.full_name || 'Zen Team'} writes about the intersection of traditional Vietnamese incense culture and modern mindfulness practices.
                         </p>
@@ -149,7 +149,7 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
             {relatedPosts.length > 0 && (
                 <section className="w-full bg-white dark:bg-[#131b0e] py-20 px-6 border-t border-[#ecf3e7] dark:border-white/5">
                     <div className="max-w-[1200px] mx-auto">
-                        <h3 className="text-2xl font-light tracking-[0.2em] uppercase text-center mb-16 text-[#131b0e] dark:text-white">
+                        <h3 className="type-h2 text-center mb-16 text-[#131b0e] dark:text-white">
                             Further Reflections
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -165,8 +165,8 @@ export default function ZenBlogDetail({ post, relatedPosts }: ZenBlogDetailProps
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-[10px] font-bold tracking-widest uppercase text-[#6d974e]">{rel.category || 'Related'}</span>
-                                        <h4 className="text-lg font-light tracking-wider uppercase leading-snug group-hover:text-primary transition-colors">
+                                        <span className="text-xs font-bold tracking-widest uppercase text-[#6d974e]">{rel.category || 'Related'}</span>
+                                        <h4 className="type-h4 group-hover:text-primary transition-colors">
                                             {rel.title}
                                         </h4>
                                     </div>

@@ -19,10 +19,10 @@ export default function TraditionalProductCard({ product }: { product: Product }
         <ProductImage src={product.images?.[0] || "/placeholder.png"} alt={title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
       </Link>
       <div className="absolute right-3 top-3"><WishlistButton productId={product.id} /></div>
-      {isActive && <span className="absolute top-3 left-3 bg-[#fffdf8] px-3 py-1.5 text-[11px] text-[#59402e]">−{discountPercent}%</span>}
+      {isActive && <span className="absolute top-3 left-3 bg-[#fffdf8] px-3 py-1.5 text-xs text-[#59402e]">−{discountPercent}%</span>}
     </div>
     <div className="atelier-product-copy">
-      <p className="text-[10px] uppercase tracking-[.14em] text-trad-text-muted mb-2">{product.category?.translation?.name || "Tuyển chọn Thiên Phúc"}</p>
+      <p className="text-xs uppercase tracking-[.14em] text-trad-text-muted mb-2">{product.category?.translation?.name || "Tuyển chọn Thiên Phúc"}</p>
       <h3><Link onClick={selectProduct} href={`/products/${product.slug}`}>{title}</Link></h3>
       <div className="flex justify-between items-center gap-3 mt-4"><ProductPrice product={product} size="md" theme="traditional" /><Link onClick={selectProduct} href={`/products/${product.slug}`} aria-label={`Khám phá ${title}`} className="p-2 border border-trad-border-warm"><ArrowUpRight size={18} /></Link></div>
     </div>

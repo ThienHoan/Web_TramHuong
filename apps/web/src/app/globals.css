@@ -56,8 +56,13 @@
   --color-surface: #ffffff;
   --color-surface-accent: #FDE6C8;
 
-  --font-display: "Be Vietnam Pro", sans-serif;
-  --font-serif: "Playfair Display", serif;
+  /* "inline" copies these values into the utilities, so they must not name a locale's
+   * font directly: --font-ui/--font-heading are set on <body> from the active locale's
+   * next/font variables (Be Vietnam Pro + Playfair in vi, Montserrat + Cormorant in en). */
+  --font-display: var(--font-ui, "Be Vietnam Pro"), sans-serif;
+  --font-serif: var(--font-heading, "Playfair Display"), serif;
+  --font-zen-sans: var(--font-ui, "Montserrat"), sans-serif;
+  --font-zen-display: var(--font-heading, "Cormorant Garamond"), serif;
   --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-manrope: var(--font-display);
 
@@ -199,6 +204,12 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Read by the font-display / font-serif utilities (see @theme above). */
+    --font-ui: var(--font-display);
+    --font-heading: var(--font-serif);
+    /* Set here, not only on <html>: <html> cannot see the locale's font variables,
+     * which next/font puts on <body>, so unstyled text fell back to the vi face. */
+    font-family: var(--font-display), system-ui, sans-serif;
   }
 
   /* Defaults for native controls and older screens. Component classes can
@@ -233,7 +244,7 @@
 }
 
 .drop-cap::first-letter {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-serif), serif;
   font-size: 3.5rem;
   float: left;
   line-height: 0.8;

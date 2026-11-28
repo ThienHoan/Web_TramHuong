@@ -30,7 +30,7 @@ export default function ZenProductCard({ product }: ZenProductCardProps) {
                 {/* Badges */}
                 {product.is_featured && (
                     <div className="absolute top-3 left-3 flex flex-col gap-2">
-                        <span className="bg-zen-green-50/80 backdrop-blur-sm border border-zen-green-200 px-2 py-1 text-[10px] font-bold tracking-[0.1em] uppercase text-zen-green-text rounded-sm">
+                        <span className="bg-zen-green-50/80 backdrop-blur-sm border border-zen-green-200 px-2 py-1 text-xs font-bold tracking-[0.1em] uppercase text-zen-green-text rounded-sm">
                             Featured
                         </span>
                     </div>
@@ -49,10 +49,10 @@ export default function ZenProductCard({ product }: ZenProductCardProps) {
                 <div className="flex items-center justify-center md:justify-start gap-3">
                     <ProductPrice product={product} size="sm" theme="zen" />
                     {product.stock === 0 && (
-                        <span className="text-[10px] uppercase tracking-widest text-red-400 border-l border-zen-green-200 pl-3">Sold Out</span>
+                        <span className="text-xs uppercase tracking-widest text-red-400 border-l border-zen-green-200 pl-3">Sold Out</span>
                     )}
                     {product.stock > 0 && (
-                        <span className="text-[10px] uppercase tracking-widest text-zen-green-text/40 border-l border-zen-green-200 pl-3">
+                        <span className="text-xs uppercase tracking-widest text-zen-green-text/40 border-l border-zen-green-200 pl-3">
                             {product.category?.translation?.name || 'Collection'}
                         </span>
                     )}

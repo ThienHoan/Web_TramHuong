@@ -136,7 +136,7 @@ export default function ResetPasswordPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-2xl font-bold mb-4">{t("Liên kết không hợp lệ", "Invalid link")}</h1>
+                    <h1 className="type-h3 mb-4">{t("Liên kết không hợp lệ", "Invalid link")}</h1>
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
                         onClick={() => router.push('/auth/forgot-password')}
@@ -152,7 +152,7 @@ export default function ResetPasswordPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold mb-2">{t("Đặt lại mật khẩu", "Reset password")}</h1>
+                <h1 className="type-h3 mb-2">{t("Đặt lại mật khẩu", "Reset password")}</h1>
                 <p className="text-gray-600 mb-6">{t("Nhập mật khẩu mới của bạn bên dưới.", "Enter your new password below.")}</p>
 
                 {error && (

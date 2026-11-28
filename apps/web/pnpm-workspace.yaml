@@ -17,3 +17,6 @@ overrides:
   'browserslist@^4': '^4.28.7'
   'baseline-browser-mapping@^2': '^2.11.0'
   '@babel/core@^7': '^7.29.1'
+  # Next bundles its own sharp ^0.35, whose Alpine x64 binary needs x86-64-v2; the VPS CPU
+  # lacks it, so the image optimizer silently served full-size originals. Same pin as the API.
+  sharp: '0.34.5'

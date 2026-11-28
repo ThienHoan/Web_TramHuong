@@ -1,0 +1,520 @@
+/*
+ * Shared type scale for the storefront.
+ *
+ * Sizes used to be set rule by rule across a dozen stylesheets, so headings of the same
+ * rank ranged from 28px to 58px and labels went down to 7–10px. This file maps every text
+ * role to one scale. It is loaded last, and each selector is prefixed with `html` so it
+ * outranks the matching component rule whatever order Next emits the stylesheets in.
+ *
+ * Fluid sizes run from a 375px phone to a 1440px desktop.
+ */
+:root {
+  --type-display: clamp(2.5rem, 1.6rem + 3.85vw, 4.5rem);      /* 40 → 72  hero */
+  --type-h1: clamp(2rem, 1.65rem + 1.5vw, 3rem);                 /* 32 → 48  page title */
+  --type-h2: clamp(2rem, 1.55rem + 1.9vw, 3.25rem);              /* 32 → 52  section */
+  --type-h3: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);             /* 24 → 34  sub-section */
+  --type-h4-lg: clamp(1.375rem, 1.27rem + 0.45vw, 1.625rem);     /* 22 → 26  tile/journal */
+  --type-h4: clamp(1.1875rem, 1.12rem + 0.28vw, 1.375rem);       /* 19 → 22  product card */
+  --type-product: clamp(1.75rem, 1.5rem + 1vw, 2.5rem);          /* 28 → 40  product name */
+  --type-lead: clamp(1rem, 0.93rem + 0.3vw, 1.125rem);           /* 16 → 18 */
+  --type-body: clamp(0.9375rem, 0.91rem + 0.12vw, 1rem);         /* 15 → 16 */
+  --type-small: 0.875rem;                                        /* 14 */
+  --type-caption: 0.8125rem;                                     /* 13 */
+  --type-label: 0.75rem;                                         /* 12, uppercase */
+  --type-micro: 0.6875rem;                                       /* 11, ornaments only */
+  --type-button: 0.9375rem;                                      /* 15 */
+
+  --leading-display: 1.1;
+  --leading-heading: 1.18;
+  --leading-title: 1.3;
+  --leading-body: 1.7;
+  --leading-tight: 1.5;
+
+  --tracking-display: -0.025em;
+  --tracking-heading: -0.018em;
+  --tracking-title: -0.008em;
+  --tracking-label: 0.14em;
+}
+
+/* ---------- Role classes for markup styled with Tailwind utilities ----------
+ * Pages built from utility classes (blog, account, auth, order tracking, the English
+ * journal) put one of these on a heading instead of Tailwind size, weight and tracking classes.
+ * The html prefix lets them win over any utility that is left behind. */
+html :is(.type-h1, .type-h2, .type-h3, .type-h4) {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
+  text-transform: none;
+  text-wrap: balance;
+  font-synthesis: none;
+}
+html .type-h1 { font-size: var(--type-h1); line-height: 1.15; letter-spacing: var(--tracking-heading); }
+html .type-h2 { font-size: var(--type-h2); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); }
+html .type-h3 { font-size: var(--type-h3); line-height: 1.22; letter-spacing: var(--tracking-title); }
+html .type-h4 { font-size: var(--type-h4); line-height: var(--leading-title); letter-spacing: 0; }
+html .type-label {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--type-label);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+html .type-lead { font-size: var(--type-lead); line-height: 1.65; }
+html .type-body { font-size: var(--type-body); line-height: var(--leading-body); }
+html .type-small { font-size: var(--type-small); line-height: 1.6; }
+
+/* ---------- Headings: balanced lines, no faked bold or italic ---------- */
+html :is(.atelier-page, .pd-page, .checkout-experience) :is(h1, h2, h3) {
+  text-wrap: balance;
+  font-kerning: normal;
+  font-synthesis: none;
+}
+html :is(.atelier-page, .pd-page, .checkout-experience) :is(p, li, dd) {
+  text-wrap: pretty;
+}
+
+/* Italic accents ("an yên.", "phẩm trầm.") now use Playfair's real italic. Italic
+ * letters already sit closer together, so the roman heading's tight tracking is relaxed,
+ * and a hair of right padding stops the last glyph's overhang from being clipped. */
+html :is(.atelier-page, .pd-page, .checkout-experience, .lab-page) :is(h1, h2, h3, blockquote, figcaption, strong, p) em {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  padding-right: 0.04em;
+}
+
+/* ---------- Display ---------- */
+html .tp-hero h1 {
+  font-size: var(--type-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+}
+
+/* ---------- Page titles (h1) ---------- */
+html .collection-intro h1,
+html .shop-catalog .collection-intro h1,
+html .atelier-catalog-intro h1,
+html .checkout-heading h1,
+html .shop-title,
+html .atelier-account main h1,
+html .lab-intro :is(h1, h2) {
+  font-size: var(--type-h1);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-heading);
+}
+html .pd-summary h1 {
+  font-size: var(--type-product);
+  line-height: 1.16;
+  letter-spacing: var(--tracking-heading);
+}
+
+/* ---------- Section headings (h2) ---------- */
+html .tp-section-heading h2,
+html .tp-ritual h2,
+html .tp-contact-band h2,
+html .journey-root h2,
+html .journey-enhanced .journey-heading h2,
+html .journey-root .journey-sculpture h2,
+html .collection-page h2,
+html .collection-pause > p,
+html .shop-shopping-help h2,
+html .collection-closing h2,
+html .atelier-footer-heading h2,
+html .lab-config h2,
+html .lab-embedded .lab-intro :is(h1, h2),
+html .lab-references h2 {
+  font-size: var(--type-h2);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-heading);
+}
+/* Product page sections sit inside a narrower column: one step down. */
+html .pd-section-heading h2,
+html .pd-related h2,
+html .pd-feature-title,
+html .shop-empty h2 {
+  font-size: var(--type-h3);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-title);
+}
+
+/* ---------- Sub-sections (h3) ---------- */
+html .tp-story-chapter h3,
+html .journey-root .journey-world-copy h3,
+html .journey-root .journey-selected-text h3,
+html .journey-root .journey-detail h3,
+html .collection-gateway-copy strong,
+html .collection-ritual-story h3,
+html .collection-ritual-empty h3,
+html .collection-gift-copy h3,
+html .shop-shelf-note-copy strong,
+html .tp-quick-title,
+html .atelier-login-form h1,
+html .pd-story-lead {
+  font-size: var(--type-h3);
+  line-height: 1.22;
+  letter-spacing: var(--tracking-title);
+}
+html .pd-story-lead { line-height: 1.4; }
+
+/* ---------- Card titles ---------- */
+html .shop-product-card h3,
+html .tp-product-meta h3,
+html .atelier-product-copy h3 {
+  font-size: var(--type-h4);
+  line-height: var(--leading-title);
+  letter-spacing: 0;
+}
+html .shop-product-grid[data-product-count="1"] .shop-product-card h3 { font-size: var(--type-h4-lg); }
+html .tp-collection-caption h3,
+html .tp-journal-card h3,
+html .collection-mood figcaption,
+html .lab-reference-card h3,
+html .pd-reviews-heading h3 {
+  font-size: var(--type-h4-lg);
+  line-height: var(--leading-title);
+  letter-spacing: 0;
+}
+
+/* ---------- Lead and body copy ---------- */
+html .tp-hero-description,
+html .tp-home .tp-hero-description {
+  font-size: var(--type-lead);
+  line-height: 1.65;
+}
+html .tp-section-heading > p,
+html .tp-story-chapter p,
+html .tp-ritual-copy p:not(.tp-eyebrow),
+html .tp-journal-intro p,
+html .tp-quick-description,
+html .journey-world-copy > p:not(.journey-kicker),
+html .collection-intro-copy > p,
+html .collection-chapter-copy > p:not(.shop-kicker),
+html .collection-centered-heading > p:last-child,
+html .collection-ritual-empty > p:not(.shop-kicker),
+html .collection-gift-copy > p:not(.shop-kicker),
+html .shop-shopping-help-copy p,
+html .shop-discovery-support p,
+html .shop-shelf-note-copy > span:not(.tp-text-link),
+html .shop-lede,
+html .pd-intro,
+html .pd-story-body,
+html .pd-feature-text {
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+}
+
+/* ---------- Secondary copy ---------- */
+html .journey-detail > p,
+html .journey-selected-text > p:last-child,
+html .collection-ritual-story p,
+html .collection-gift-heading > p,
+html .collection-chapter-note p,
+html .shop-product-description,
+html .pd-steps p,
+html .pd-key-facts,
+html .pd-assurance,
+html .pd-specs > div,
+html .pd-reviews-heading p,
+html .pd-review-body p,
+html .lab-intro > p,
+html .lab-description,
+html .lab-references > div > p:not(.lab-eyebrow),
+html .lab-reference-card p,
+html .atelier-footer p,
+html .atelier-footer ul,
+html .tp-cart-item,
+html .tp-cart-heading p {
+  font-size: var(--type-small);
+  line-height: 1.65;
+}
+html .pd-steps h3 { font-size: 1rem; line-height: 1.45; }
+html .tp-hero-footnote,
+html .pd-steps-note,
+html .pd-in-cart,
+html .pd-rating,
+html .pd-policy-links,
+html .pd-buy-bar-text span,
+html .shop-product-rating,
+html .collection-chapter-note span,
+html .tp-cart-summary p,
+html .tp-cart-summary > p,
+html .journey-hint,
+html .journey-sculpture-hint,
+html .journey-reference p,
+html .lab-home-note,
+html .lab-config-bottom > p,
+html .lab-comparison-note p {
+  font-size: var(--type-caption);
+  line-height: 1.6;
+}
+
+/* ---------- Uppercase labels and eyebrows ---------- */
+html .tp-eyebrow,
+html .shop-kicker,
+html .shop-eyebrow,
+html .pd-eyebrow,
+html .checkout-eyebrow,
+html .journey-root .journey-kicker,
+html .atelier-footer-eyebrow,
+html .atelier-footer h3,
+html .atelier-catalog-intro p:first-child,
+html .collection-gateway-copy > span:first-child,
+html .lab-eyebrow,
+html .lab-config > .lab-eyebrow {
+  font-size: var(--type-label);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-label);
+  font-weight: 600;
+}
+/* Small uppercase meta lines: product category, numbering, provenance. */
+html .shop-product-category,
+html .tp-product-meta > p,
+html .tp-collection-number,
+html .tp-chapter-number,
+html .brand-provenance,
+html .tp-values span,
+html .tp-home .tp-values span,
+html .atelier-footer-bottom,
+html .brand-footer-signature > span:last-child,
+html .journey-enhanced .journey-world-number,
+html .journey-inspector-top,
+html .pd-availability {
+  font-size: var(--type-micro);
+  letter-spacing: 0.12em;
+  line-height: var(--leading-tight);
+}
+html .tp-values span,
+html .tp-home .tp-values span,
+html .pd-availability { font-size: var(--type-caption); letter-spacing: 0; }
+
+/* Decorative ornaments (vertical labels, captions on 3D scenes). They are mostly hidden
+ * from assistive tech, but 7–8px text still looks like a printing error. */
+html .tp-vertical-label,
+html .tp-hero-index,
+html .tp-hero-bottom,
+html .tp-gallery-footer > span,
+html .tp-story-image-label,
+html .journey-object-caption,
+html .journey-desk-mark small,
+html .lab-scene-label,
+html .lab-scene-tag,
+html .lab-gallery-picker > span,
+html .lab-concept-photo > span,
+html .lab-concept-label small,
+html .lab-footer,
+html .lab-brand small {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+
+/* ---------- Actions ---------- */
+html .tp-button,
+html .shop-btn,
+html body:not(:has(.atelier-admin)) form button[type=submit]:not([data-bare]),
+html .checkout-primary,
+html .tp-cart-summary .tp-button,
+html .tp-quick-copy .tp-button,
+html .pd-buy .shop-btn,
+html .shop-filter-sheet footer .shop-btn {
+  font-size: var(--type-button);
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+html .tp-text-link,
+html .tp-quick-copy .tp-text-link,
+html .journey-world-copy a,
+html .journey-explore,
+html .journey-root .journey-explore,
+html .journey-enhanced .journey-card-action,
+html .journey-selected-action a,
+html .pd-related-heading > a,
+html .pd-review-write,
+html .shop-results-heading a,
+html .lab-activate,
+html .lab-canvas-fallback .lab-activate {
+  font-size: var(--type-small);
+  font-weight: 500;
+}
+/* Small controls inside the interactive scenes: readable, still compact. */
+html .journey-dots button,
+html .journey-arrows button,
+html .journey-hotspot,
+html .journey-tone-picker legend,
+html .journey-tone-picker legend span,
+html .journey-reference small,
+html .journey-light-picker > span,
+html .journey-light-picker button,
+html .journey-reset,
+html .journey-scene-nav button,
+html .journey-selected-action > span,
+html .journey-enhanced .journey-exit-note,
+html .lab-back,
+html .lab-feature-tags > span,
+html .lab-fieldset legend,
+html .lab-swatches button,
+html .lab-option small,
+html .lab-motion-button,
+html .lab-reset,
+html .lab-reset-camera,
+html .lab-light-options button,
+html .lab-scene-toolbar > span,
+html .lab-comparison-note > span,
+html .lab-comparison-note a,
+html .lab-reference-card > span,
+html .lab-canvas-fallback span {
+  font-size: 0.75rem;
+}
+html .lab-option { font-size: var(--type-caption); }
+
+/* ---------- Navigation ---------- */
+html .shop-announcement,
+html .shop-announcement-mobile { font-size: var(--type-label); }
+html .atelier-header nav a { font-size: var(--type-small); letter-spacing: 0.01em; }
+html .shop-breadcrumb,
+html .shop-catalog .shop-breadcrumb,
+html .pd-breadcrumb { font-size: var(--type-caption); }
+html .shop-category-links a,
+html .collection-chapter-nav a,
+html .shop-catalog .collection-chapter-nav a,
+html .shop-results-heading,
+html .shop-catalog-pagination { font-size: var(--type-small); }
+
+/* ---------- Numbers and money ----------
+ * Playfair and Cormorant default to old-style figures (digits that rise and dip like
+ * lowercase letters). Use lining figures everywhere so a price or order number looks the
+ * same in a heading as in body text. Money always uses the locale's UI face, with
+ * tabular figures so amounts line up in columns. */
+html body { font-variant-numeric: lining-nums; }
+html .type-money {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+html .checkout-grand-total strong { letter-spacing: -0.01em; }
+html :is(.shop-product-price, .pd-price, .pd-buy-bar-text strong, .checkout-item-price, .checkout-totals, .checkout-grand-total, .tp-cart-summary, .collection-gift-price) {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+html .shop-product-price { font-size: 1.0625rem; font-weight: 600; line-height: 1.4; }
+html .shop-product-price > span { font-size: var(--type-caption); font-weight: 400; }
+html .pd-buy-bar-text strong { font-size: 1.0625rem; }
+html .tp-cart-summary > div { font-size: 1.125rem; }
+
+/* ---------- Checkout: the old desktop sizes went down to 11px ---------- */
+html .checkout-back { font-size: var(--type-small); }
+html .checkout-heading > div > p:last-child { font-size: var(--type-small); }
+html .checkout-progress li { font-size: var(--type-caption); }
+html .checkout-card-heading h2 { font-size: 1.125rem; line-height: 1.35; }
+html .checkout-card-heading p,
+html .checkout-login-note,
+html .checkout-recipient p,
+html .checkout-carrier p,
+html .checkout-payment-option > span > span,
+html .checkout-quote-result span,
+html .checkout-item-info > span,
+html .checkout-quantity > span { font-size: var(--type-caption); line-height: 1.55; }
+html .checkout-field > label,
+html .checkout-field label,
+html .checkout-legacy-location label,
+html .checkout-voucher > label,
+html .checkout-item-info,
+html .checkout-item-price,
+html .checkout-totals dl,
+html .checkout-recipient,
+html .checkout-edit-link,
+html .checkout-carrier strong,
+html .checkout-quote-result,
+html .checkout-quote-button,
+html .checkout-voucher-applied,
+html .checkout-empty p { font-size: var(--type-small); }
+html .checkout-field-help,
+html .checkout-form-note,
+html .checkout-field-error,
+html .checkout-summary-hint { font-size: var(--type-caption); line-height: 1.55; }
+html .checkout-payment-option strong { font-size: 0.9375rem; }
+html .checkout-count { font-size: var(--type-label); }
+html .checkout-voucher-entry button { font-size: var(--type-caption); }
+html .checkout-grand-total { font-size: 0.9375rem; }
+
+/* ---------- Brand lockup: the descriptor under the name was 7–8px ---------- */
+html .brand-lockup-descriptor { font-size: 0.5625rem; letter-spacing: 0.2em; }
+html .brand-lockup-compact .brand-lockup-descriptor,
+html .atelier-header .brand-lockup-descriptor { font-size: 0.5625rem; }
+
+/* ---------- Policy pages (legal.css used 9–12px for most of its text) ---------- */
+html .legal-policy-hero h1 { font-size: var(--type-h1); line-height: 1.15; letter-spacing: var(--tracking-heading); }
+html .legal-reading-section h2 { font-size: var(--type-h4-lg); line-height: var(--leading-title); }
+html .legal-policy-help h2 { font-size: var(--type-h4); line-height: var(--leading-title); }
+html .legal-policy-intro { font-size: var(--type-body); line-height: var(--leading-body); }
+html .legal-reading-section p { font-size: var(--type-body); line-height: 1.75; }
+html .legal-eyebrow,
+html .legal-side-label,
+html .legal-contents > p,
+html .legal-footer-links .legal-footer-links-label,
+html .legal-mobile-navigation summary > span {
+  font-size: var(--type-label);
+  letter-spacing: var(--tracking-label);
+  font-weight: 600;
+}
+html .legal-store-link,
+html .legal-back-link,
+html .legal-policy-nav a,
+html .legal-policy-help p,
+html .legal-policy-help a,
+html .legal-draft-notice h2,
+html .legal-draft-notice p,
+html .legal-contents a,
+html .legal-reading-contact a,
+html .legal-next-policy > a:last-child,
+html .legal-footer-links li a,
+html .legal-consent-choice,
+html .legal-mobile-navigation summary strong { font-size: var(--type-small); line-height: 1.6; }
+html .legal-breadcrumb,
+html .legal-document-meta > p,
+html .legal-document-meta > span,
+html .legal-document-meta > small,
+html .legal-policy-nav-number,
+html .legal-contents a > span,
+html .legal-reading-section > header > span,
+html .legal-reading-contact > span,
+html .legal-next-policy > a:last-child small,
+html .legal-page-footer,
+html .legal-consent-links a,
+html .legal-consent .legal-consent-note,
+html .legal-consent .legal-consent-draft { font-size: var(--type-caption); line-height: 1.55; }
+
+/* ---------- 3D page: the concept tiles' titles dropped to 11px on phones ---------- */
+html .lab-concept-label strong { font-size: var(--type-small); }
+html .lab-gallery-picker strong { font-size: var(--type-h4); }
+
+/* ---------- Admin: dense, but nothing below 12px ---------- */
+html :is(
+  .admin-store-tag, .admin-nav-group > p, .admin-sidebar-account div > span, .admin-access-label,
+  .admin-language, .admin-workspace-footer, .admin-eyebrow, .admin-result-count, .admin-filter-field label,
+  .admin-filter-icon, .admin-active-filters, .admin-saved-views, .admin-data-table th, .admin-subtext,
+  .admin-status, .admin-list-footnote, .admin-detail-meta, .admin-section-title > span,
+  .admin-task-grid div > span, .admin-range-selector button, .admin-metric-strip > div > div,
+  .admin-widget-heading > span, .admin-widget-heading > a, .admin-chart-legend > div,
+  .admin-recent-orders div > strong, .admin-recent-orders div > span, .admin-recent-orders > a > strong,
+  .admin-best-sellers > div > span, .admin-best-sellers div > div > strong, .admin-best-sellers div > div > span,
+  .admin-best-sellers > div > strong, .admin-import-upload > span, .admin-import-files > span, .admin-import-note,
+  .admin-import-summary > span, .admin-import-preview th, .admin-import-row-success > span, .admin-import-row-error > span,
+  .atelier-admin-sidebar p, .atelier-admin-content th
+) { font-size: var(--type-label); }
+html .admin-import-preview td > span:not(.admin-import-row-error):not(.admin-import-row-success) { font-size: var(--type-label); }
+html :is(.atelier-admin-topline, .atelier-admin-content table, .atelier-admin-sidebar nav a) { font-size: var(--type-caption); }
+
+/* ---------- Phones ---------- */
+@media (max-width: 767px) {
+  /* Long Vietnamese words wrap badly under tight tracking at phone widths. */
+  html .tp-hero h1 { letter-spacing: -0.02em; }
+  html :is(.tp-section-heading, .tp-ritual, .tp-contact-band, .journey-root, .collection-page) h2 { letter-spacing: -0.012em; }
+  html .tp-text-link { font-size: 0.9375rem; }
+  html .atelier-footer p,
+  html .atelier-footer ul { font-size: var(--type-body); }
+  html .atelier-footer-eyebrow,
+  html .atelier-footer h3,
+  html .atelier-footer-bottom { font-size: var(--type-label); }
+}

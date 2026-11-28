@@ -24,9 +24,9 @@ export default function ZenHeader({ locale }: { locale: string }) {
                             <BrandLockup locale="en" />
                         </Link>
                         <div className="hidden lg:flex items-center space-x-10 pl-8 border-l border-zen-200 dark:border-zinc-800 h-8">
-                            <Link href="/products" className="text-[11px] uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Shop</Link>
-                            <Link href="/blog" className="text-[11px] uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Journal</Link>
-                            <Link href="/order-lookup" className="text-[11px] uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Track Order</Link>
+                            <Link href="/products" className="text-xs uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Shop</Link>
+                            <Link href="/blog" className="text-xs uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Journal</Link>
+                            <Link href="/order-lookup" className="text-xs uppercase tracking-superwide font-light text-zen-800 hover:text-zen-primary transition-colors dark:text-gray-300">Track Order</Link>
                         </div>
                     </div>
                     <div className="tp-zen-actions flex items-center text-zen-800 dark:text-gray-300">
@@ -36,7 +36,7 @@ export default function ZenHeader({ locale }: { locale: string }) {
 
                         <TraditionalCartDrawer />
 
-                        <Link href={pathname} locale="vi" className="text-[11px] uppercase tracking-widest font-light hover:text-zen-primary transition-colors border border-zen-200 dark:border-zinc-700 px-2 py-1 rounded-sm">
+                        <Link href={pathname} locale="vi" className="text-xs uppercase tracking-widest font-light hover:text-zen-primary transition-colors border border-zen-200 dark:border-zinc-700 px-2 py-1 rounded-sm">
                             VI
                         </Link>
 

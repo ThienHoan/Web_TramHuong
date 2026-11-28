@@ -1,5 +1,6 @@
 import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
+import { localeCookie } from './root-locale';
 
 export const routing = defineRouting({
     // A list of all locales that are supported
@@ -7,7 +8,9 @@ export const routing = defineRouting({
 
     // Used when no locale matches
     defaultLocale: 'vi',
-    localeDetection: false
+    // Only the bare homepage detects language; explicit and legacy URLs stay stable.
+    localeDetection: false,
+    localeCookie,
 });
 
 // Lightweight wrappers around Next.js' navigation APIs

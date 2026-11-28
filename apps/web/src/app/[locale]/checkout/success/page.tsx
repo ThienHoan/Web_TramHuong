@@ -85,7 +85,7 @@ export default function CheckoutSuccessPage() {
 
                     {order?.items && order.items.length > 0 && (
                         <section className="shop-card flex flex-col gap-4">
-                            <h2 className="font-serif text-xl">{t('Sản phẩm đã đặt', 'Your items')}</h2>
+                            <h2 className="type-h4">{t('Sản phẩm đã đặt', 'Your items')}</h2>
                             <ul className="flex flex-col gap-3">
                                 {order.items.map((item, index) => (
                                     <li key={`${item.title}-${index}`} className="flex items-center gap-3">

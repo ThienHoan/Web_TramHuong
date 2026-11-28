@@ -8,6 +8,7 @@ import { parseCatalogFilters, type SearchValues } from '@/lib/catalog';
 import { catalogResults } from '@/lib/catalog-results';
 import type { Product } from '@/types/product';
 import { isCollectionOverview } from '@/lib/collections';
+import { linkableCategories } from '@/lib/stocked-categories';
 
 type Props={params:Promise<{locale:string}>;searchParams:Promise<SearchValues>};
 export async function generateMetadata({params,searchParams}:Props):Promise<Metadata> {
@@ -36,5 +37,7 @@ export default async function ProductsPage({params,searchParams}:Props) {
     result=catalogResults(candidates,filters);
   } else result=await getProductsPaginated(locale,{...options,limit:12,page:filters.page});
   const {data:products,meta}=result;
-  return <><CatalogView products={products}/><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Bộ sưu tập':'Products',item:`/${locale}/products`},...(category?[{name:category.translation?.name || category.slug,item:`/${locale}/products/category/${category.slug}`}]:[])]}/>{isCollectionOverview(locale,filters) ? <TraditionalProductList products={products} categories={categories}/> : <ShopCatalog products={products} categories={categories} filters={filters} pagination={meta} locale={locale}/>}</>;
+  // Resolve filters against every category, but only link to ones with products (or the one being viewed).
+  const linkCategories=await linkableCategories(locale,categories,category?.slug);
+  return <><CatalogView products={products}/><BreadcrumbJsonLd locale={locale} items={[{name:locale==='vi'?'Trang chủ':'Home',item:`/${locale}`},{name:locale==='vi'?'Bộ sưu tập':'Products',item:`/${locale}/products`},...(category?[{name:category.translation?.name || category.slug,item:`/${locale}/products/category/${category.slug}`}]:[])]}/>{isCollectionOverview(locale,filters) ? <TraditionalProductList products={products} categories={linkCategories}/> : <ShopCatalog products={products} categories={linkCategories} filters={filters} pagination={meta} locale={locale}/>}</>;
 }

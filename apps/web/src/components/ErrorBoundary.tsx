@@ -63,7 +63,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                         </div>
 
                         {/* Error Message */}
-                        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                        <h1 className="type-h3 text-gray-800 mb-2">
                             Đã có lỗi xảy ra
                         </h1>
                         <p className="text-gray-600 mb-6">
